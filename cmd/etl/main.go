@@ -28,12 +28,13 @@ func main() {
 
 	// initialize state-chain client
 
-	// initialize binance-chain dex client
+	// initialize binance-chain key-manager
 	bnbKeyManager, err := bnbkeys.NewKeyManager()
 	if err != nil {
 		log.Fatalf("failed to create binance-chain key-manager: %s", err)
 	}
 
+	// decide on binance-chain network type
 	var bnbNetworkType bnbtypes.ChainNetwork
 	switch svcCfg.BinanceChainNetworkType {
 	case "mainnet":
@@ -46,6 +47,7 @@ func main() {
 		log.Fatalf("invalid binance-chain network type: %s", svcCfg.BinanceChainNetworkType)
 	}
 
+	// initialize binance-chain dex client
 	binanceDEXClient, err := bnbsdk.NewDexClient(
 		svcCfg.BinanceChainAPIAddress, // baseUrl
 		bnbNetworkType,                // network
