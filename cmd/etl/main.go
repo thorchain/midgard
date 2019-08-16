@@ -10,9 +10,12 @@ import (
 	bnbsdk "github.com/binance-chain/go-sdk/client"
 	bnbtypes "github.com/binance-chain/go-sdk/common/types"
 	bnbkeys "github.com/binance-chain/go-sdk/keys"
+
+	"gitlab.com/thorchain/bepswap/chain-service/pkg/coinmarketcap"
 )
 
 type ServiceConfig struct {
+	CoinmarketCapAPIKey     string
 	BinanceChainAPIAddress  string
 	BinanceChainNetworkType string
 }
@@ -20,6 +23,7 @@ type ServiceConfig struct {
 func main() {
 	svcCfg := &ServiceConfig{}
 
+	flag.StringVar(&svcCfg.CoinmarketCapAPIKey, "coinmarketcap-api-key", "", "CoinmarketCap API Key")
 	flag.StringVar(&svcCfg.BinanceChainAPIAddress, "binance-chain-api-address", "dex.binance.org", "Binance-Chain API Address")
 	flag.StringVar(&svcCfg.BinanceChainNetworkType, "binance-chain-network", "mainnet", "Binance-Chain Network Type")
 
@@ -28,6 +32,7 @@ func main() {
 	// initialize logger
 
 	// initialize coinmarketcap client
+	cmcClient := coinmarketcap.NewClient(nil, svcCfg.CoinmarketCapAPIKey)
 
 	// initialize state-chain client
 
@@ -40,6 +45,7 @@ func main() {
 		log.Fatalf("failed to initialize binance-chain dex client: %s", err)
 	}
 
+	fmt.Println(cmcClient)
 	fmt.Println(dexClient)
 }
 
