@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/pkg/errors"
+
 	bnbsdk "github.com/binance-chain/go-sdk/client"
-	bnbws "github.com/binance-chain/go-sdk/client/websocket"
 	bnbtypes "github.com/binance-chain/go-sdk/common/types"
 	bnbkeys "github.com/binance-chain/go-sdk/keys"
 )
@@ -26,62 +27,51 @@ func main() {
 
 	// initialize logger
 
+	// initialize coinmarketcap client
+
 	// initialize state-chain client
 
-	// initialize binance-chain key-manager
-	bnbKeyManager, err := bnbkeys.NewKeyManager()
+	// initialize binance-chain dex client
+	dexClient, err := initBinanceChainClient(
+		svcCfg.BinanceChainAPIAddress,  // addr
+		svcCfg.BinanceChainNetworkType, // netType
+	)
 	if err != nil {
-		log.Fatalf("failed to create binance-chain key-manager: %s", err)
+		log.Fatalf("failed to initialize binance-chain dex client: %s", err)
+	}
+
+	fmt.Println(dexClient)
+}
+
+func initBinanceChainClient(addr string, nettype string) (bnbsdk.DexClient, error) {
+	// initialize binance-chain key-manager
+	keyManager, err := bnbkeys.NewKeyManager()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create binance-chain key-manager")
 	}
 
 	// decide on binance-chain network type
-	var bnbNetworkType bnbtypes.ChainNetwork
-	switch svcCfg.BinanceChainNetworkType {
+	var netType bnbtypes.ChainNetwork
+	switch nettype {
 	case "mainnet":
-		bnbNetworkType = bnbtypes.ProdNetwork
+		netType = bnbtypes.ProdNetwork
 
 	case "testnet":
-		bnbNetworkType = bnbtypes.TestNetwork
+		netType = bnbtypes.TestNetwork
 
 	default:
-		log.Fatalf("invalid binance-chain network type: %s", svcCfg.BinanceChainNetworkType)
+		log.Fatalf("invalid binance-chain network type: %s", nettype)
 	}
 
 	// initialize binance-chain dex client
-	binanceDEXClient, err := bnbsdk.NewDexClient(
-		svcCfg.BinanceChainAPIAddress, // baseUrl
-		bnbNetworkType,                // network
-		bnbKeyManager,                 // keyManager
+	dexClient, err := bnbsdk.NewDexClient(
+		addr,       // baseUrl
+		netType,    // network
+		keyManager, // keyManager
 	)
 	if err != nil {
-		log.Fatalf("failed to initialie binance dex client: %s", err)
+		return nil, errors.Wrap(err, "failed to initialie binance dex client")
 	}
 
-	quitCh := make(chan struct{})
-
-	onReceive := func(evt *bnbws.BlockHeightEvent) {
-		fmt.Printf("Event: %+v\n", evt)
-	}
-
-	onError := func(err error) {
-		fmt.Printf("Error: %+v\n", err)
-	}
-
-	onClose := func() {
-		fmt.Println("Closed")
-	}
-
-	if err := binanceDEXClient.SubscribeBlockHeightEvent(
-		quitCh,    // quickCh
-		onReceive, // onReceive
-		onError,   // onError
-		onClose,   // onClose
-	); err != nil {
-		log.Fatalf("failed to subscribe to block-height events")
-	}
-
-	select {
-	case <-quitCh:
-		break
-	}
+	return dexClient, nil
 }

@@ -49,7 +49,7 @@ func initHandlers() error {
 
 		// Stakers
 		routeDefinition{"/stakers", "GET", listStakers()},
-		routeDefinition{"/stakers/{addr}/pools", "GET", getStakerPools()},
+		routeDefinition{"/stakers/{addr}/pools", "GET", listStakerPools()},
 
 		// Nodes
 		routeDefinition{"/nodes", "GET", listNodes()},
@@ -99,7 +99,19 @@ func listStakers() handlerWithError {
 	}
 }
 
-func getStakerPools() handlerWithError {
+func listStakerPools() handlerWithError {
+	return func(w http.ResponseWriter, r *http.Request) *apiError {
+		return nil
+	}
+}
+
+func listNodes() handlerWithError {
+	return func(w http.ResponseWriter, r *http.Request) *apiError {
+		return nil
+	}
+}
+
+func listValidators() handlerWithError {
 	return func(w http.ResponseWriter, r *http.Request) *apiError {
 		return nil
 	}
