@@ -45,6 +45,7 @@ func initHandlers() error {
 		routeDefinition{"/pools/{symbol}/stakers", "GET", getPoolStakers()},
 
 		// Tokens
+		routeDefinition{"/tokens", "GET", listTokens()},
 		routeDefinition{"/tokens/{symbol}", "GET", getToken()},
 
 		// Stakers
@@ -69,13 +70,7 @@ func initHandlers() error {
 	return nil
 }
 
-func listPools() handlerWithError {
-	return func(w http.ResponseWriter, r *http.Request) *apiError {
-		return nil
-	}
-}
-
-func getPool() handlerWithError {
+func listStakers() handlerWithError {
 	return func(w http.ResponseWriter, r *http.Request) *apiError {
 		return nil
 	}
@@ -87,31 +82,7 @@ func getPoolStakers() handlerWithError {
 	}
 }
 
-func getToken() handlerWithError {
-	return func(w http.ResponseWriter, r *http.Request) *apiError {
-		return nil
-	}
-}
-
-func listStakers() handlerWithError {
-	return func(w http.ResponseWriter, r *http.Request) *apiError {
-		return nil
-	}
-}
-
 func listStakerPools() handlerWithError {
-	return func(w http.ResponseWriter, r *http.Request) *apiError {
-		return nil
-	}
-}
-
-func listNodes() handlerWithError {
-	return func(w http.ResponseWriter, r *http.Request) *apiError {
-		return nil
-	}
-}
-
-func listValidators() handlerWithError {
 	return func(w http.ResponseWriter, r *http.Request) *apiError {
 		return nil
 	}
