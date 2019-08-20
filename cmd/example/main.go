@@ -32,6 +32,11 @@ func main() {
 func initHandlers() error {
 	r := mux.NewRouter()
 
+	// TMP(or): mock a bunch of data-stores
+	tokenStore := &StubTokenStore{}
+	priceStore := &StubPriceStore{}
+	poolStore := &StubPoolStore{}
+
 	type routeDefinition struct {
 		Pattern string
 		Method  string
@@ -40,13 +45,14 @@ func initHandlers() error {
 
 	rtDefs := []routeDefinition{
 		// Pools
-		routeDefinition{"/pools", "GET", listPools()},
-		routeDefinition{"/pools/{symbol}", "GET", getPool()},
+		routeDefinition{"/pools", "GET", listPools(poolStore)},
+		routeDefinition{"/pools/{symbol}", "GET", getPool(poolStore)},
 		routeDefinition{"/pools/{symbol}/stakers", "GET", getPoolStakers()},
 
 		// Tokens
-		routeDefinition{"/tokens", "GET", listTokens()},
-		routeDefinition{"/tokens/{symbol}", "GET", getToken()},
+		routeDefinition{"/tokens", "GET", listTokens(tokenStore)},
+		routeDefinition{"/tokens/{symbol}", "GET", getToken(tokenStore)},
+		routeDefinition{"/tokens/{symbol}/price", "GET", getPrice(priceStore)},
 
 		// Stakers
 		routeDefinition{"/stakers", "GET", listStakers()},
