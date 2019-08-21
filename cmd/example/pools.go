@@ -9,12 +9,19 @@ import (
 )
 
 type Pool struct {
-	Symbol                   string  `json:"symbol"`
-	Depth                    float64 `json:"depth"`
-	Volume24Hour             float64 `json:"volume_24h"`
-	AverageTransactionAmount float64 `json:"avg_tx_amount"`
-	AverageLiquidityFee      float64 `json:"avg_liquidity_fee"`
-	HistoricalROI            float64 `json:"historical_roi"`
+	Symbol         string  `json:"symbol"`
+	TotalFeesToken int64   `json:"totalFeesTKN"`
+	TotalFeesRune  int64   `json:"totalFeesRune"`
+	Depth          int64   `json:"depth"`
+	Volume24Hour   float64 `json:"volume_24h"`
+	VolumeAllTime  int64   `json:"volume_all_time"`
+	Price          int64   `json:"price"`
+	StakersCount   int64   `json:"stakers_count"`
+	TxCount        int64   `json:"tx_count"`
+	StakingTxCount int64   `json:"staking_tx_count"`
+	ROI3Month      float64 `json:"roi3"`
+	ROI6Month      float64 `json:"roi6"`
+	ROI12Month     float64 `json:"roi12"`
 }
 
 type PoolStore interface {
