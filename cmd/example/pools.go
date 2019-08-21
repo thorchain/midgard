@@ -63,7 +63,7 @@ func getPool(poolStore PoolStore) handlerWithError {
 		ctx := r.Context()
 
 		vars := mux.Vars(r)
-		sym := vars["sym"]
+		sym := vars["symbol"]
 
 		p, err := poolStore.Get(ctx, sym)
 		if err == ErrNotFound {

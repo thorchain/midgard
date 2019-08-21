@@ -67,7 +67,7 @@ func getToken(tokenStore TokenStore) handlerWithError {
 		ctx := r.Context()
 
 		vars := mux.Vars(r)
-		sym := vars["sym"]
+		sym := vars["symbol"]
 
 		t, err := tokenStore.Get(ctx, sym)
 		if err == ErrNotFound {
@@ -137,7 +137,7 @@ func getPrice(priceStore PriceStore) handlerWithError {
 		ctx := r.Context()
 
 		vars := mux.Vars(r)
-		sym := vars["sym"]
+		sym := vars["symbol"]
 
 		p, err := priceStore.Get(ctx, sym)
 		if err == ErrNotFound {
