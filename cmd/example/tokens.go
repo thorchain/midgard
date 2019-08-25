@@ -115,6 +115,7 @@ func (s *StubPriceStore) Set(ctx context.Context, p *Price) error {
 	return s.SetFn(ctx, p)
 }
 
+/*
 func listPrices(priceStore PriceStore) handlerWithError {
 	return func(w http.ResponseWriter, r *http.Request) *apiError {
 		ctx := r.Context()
@@ -131,6 +132,7 @@ func listPrices(priceStore PriceStore) handlerWithError {
 		return nil
 	}
 }
+*/
 
 func getPrice(priceStore PriceStore) handlerWithError {
 	return func(w http.ResponseWriter, r *http.Request) *apiError {

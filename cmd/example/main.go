@@ -82,7 +82,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.ListenAndServe(svcCfg.RESTAPIBindAddress, nil)
+	if err := http.ListenAndServe(svcCfg.RESTAPIBindAddress, nil); err != nil {
+		panic(err)
+	}
 }
 
 func initHandlers(
