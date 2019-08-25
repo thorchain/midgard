@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/binance-chain/go-sdk v1.0.9
 	github.com/gorilla/mux v1.7.3
+	github.com/miguelmota/go-coinmarketcap v0.1.5
 	github.com/pkg/errors v0.8.0
 )
 
