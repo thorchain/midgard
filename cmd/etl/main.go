@@ -10,8 +10,7 @@ import (
 	bnbsdk "github.com/binance-chain/go-sdk/client"
 	bnbtypes "github.com/binance-chain/go-sdk/common/types"
 	bnbkeys "github.com/binance-chain/go-sdk/keys"
-
-	"gitlab.com/thorchain/bepswap/chain-service/pkg/coinmarketcap"
+	cmc "github.com/miguelmota/go-coinmarketcap/pro/v1"
 )
 
 type ServiceConfig struct {
@@ -32,7 +31,9 @@ func main() {
 	// initialize logger
 
 	// initialize coinmarketcap client
-	cmcClient := coinmarketcap.NewClient(nil, svcCfg.CoinmarketCapAPIKey)
+	cmcClient := cmc.NewClient(&cmc.Config{
+		ProAPIKey: svcCfg.CoinmarketCapAPIKey,
+	})
 
 	// initialize state-chain client
 
