@@ -3,10 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-
-	"github.com/pkg/errors"
 )
 
 // apiError is used to simplify api error handling
@@ -53,14 +50,6 @@ func mwJSONError(hn handlerWithError) handlerWithError {
 
 		return err
 	}
-}
-
-func extractErrorFromResponse(statusCode int, body io.Reader) error {
-	var errRes errResponse
-	if err := json.NewDecoder(body).Decode(&errRes); err != nil {
-		return errors.Wrapf(err, "request failed with status %d", statusCode)
-	}
-	return fmt.Errorf("request failed with status %d: %s", statusCode, errRes.Error)
 }
 
 func mwDiscardError(hn handlerWithError) http.HandlerFunc {
