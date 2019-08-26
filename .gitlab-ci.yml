@@ -1,7 +1,4 @@
-image: tmaier/docker-compose:latest
-
-services:
-  - docker:dind
+image: golang/alpine
 
 cache:
   paths:
@@ -10,14 +7,15 @@ cache:
 before_script:
   - mkdir -p .cache
   - export GOPATH="$CI_PROJECT_DIR/.cache"
-  - docker info
-  - docker-compose --version
 
 stages:
   - test
 
 unit_tests:
+  image: tmaier/docker-compose:latest
   stage: test
+  services:
+    - docker:dind
   tags:
     - docker
   script:
