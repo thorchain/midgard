@@ -1,4 +1,7 @@
-image: golang:1.11
+image: tmaier/docker-compose:latest
+
+services:
+  - docker:dind
 
 cache:
   paths:
@@ -7,20 +10,16 @@ cache:
 before_script:
   - mkdir -p .cache
   - export GOPATH="$CI_PROJECT_DIR/.cache"
+  - docker info
+  - docker-compose --version
 
 stages:
   - test
 
 unit_tests:
-  image: 
-    name: docker/compose:1.25.0-rc2-alpine
-    entrypoint: ["/bin/sh", "-c"]
-  services:
-    - docker:dind
   stage: test
-  before_script:
-    - docker version
-    - docker-compose version
+  tags:
+    - docker
   script:
     - ./scripts/run.sh etl make test-internal
 
