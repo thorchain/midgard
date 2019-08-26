@@ -9,6 +9,10 @@ import (
 	client "github.com/influxdata/influxdb1-client"
 )
 
+type ToPoint interface {
+	Point() client.Point
+}
+
 type Client struct {
 	Client   *client.Client
 	Database string
@@ -71,4 +75,8 @@ func (in Client) Writes(pts []client.Point) error {
 	}
 	_, err = in.Client.Write(bps)
 	return err
+}
+
+func (in Client) AddEvent(evt ToPoint) error {
+	return in.Write(evt.Point())
 }

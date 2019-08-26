@@ -30,7 +30,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(stake.Pool.String(), Equals, "BNB")
 	c.Check(stake.Address.String(), Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 
-	err := clc.AddStake(stake)
+	err := clc.AddEvent(stake)
 	c.Assert(err, IsNil)
 
 	// get the stake
@@ -39,6 +39,6 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Assert(resp, HasLen, 1)
 	c.Assert(resp[0].Series, HasLen, 1)
 	c.Assert(resp[0].Series[0].Values, HasLen, 1)
-	c.Check(resp[0].Series[0].Values[0][1], Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
-	c.Check(resp[0].Series[0].Values[0][3], Equals, "BNB", Commentf("%+v", resp[0].Series[0].Values))
+	c.Check(resp[0].Series[0].Values[0][2], Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	c.Check(resp[0].Series[0].Values[0][4], Equals, "BNB", Commentf("%+v", resp[0].Series[0].Values))
 }
