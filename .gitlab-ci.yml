@@ -23,9 +23,6 @@ unit_tests:
   before_script:
     - echo $GOPATH
   script:
-    - ./scripts/run.sh etl pwd
-    - ./scripts/run.sh etl pwd
-    - ./scripts/run.sh etl ls
     - ./scripts/run.sh etl go test ./...
 
 lint_code:
