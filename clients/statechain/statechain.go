@@ -75,6 +75,9 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 				return id, nil, err
 			}
 			tx, err := sc.Binance.GetTx(evt.InHash)
+			if err != nil {
+				return id, nil, err
+			}
 
 			var rAmt float64
 			var tAmt float64
@@ -103,6 +106,10 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 				return id, nil, err
 			}
 			tx, err := sc.Binance.GetTx(evt.InHash)
+			if err != nil {
+				return id, nil, err
+			}
+
 			var addr common.BnbAddress
 			if evt.Type == "stake" {
 				addr, err = common.NewBnbAddress(tx.FromAddress)
