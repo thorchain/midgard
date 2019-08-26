@@ -24,6 +24,7 @@ unit_tests:
     - echo $GOPATH
   script:
     - ./scripts/run.sh etl pwd
+    - ./scripts/run.sh etl pwd
     - ./scripts/run.sh etl ls
     - ./scripts/run.sh etl go test ./...
 
