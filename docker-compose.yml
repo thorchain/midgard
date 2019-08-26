@@ -10,6 +10,7 @@ services:
       - influxdb
     volumes:
       - ${GOPATH}:/root/go
+      - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
     working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
     environment:
       GOPATH: /root/go
