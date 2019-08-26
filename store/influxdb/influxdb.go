@@ -9,6 +9,12 @@ import (
 	client "github.com/influxdata/influxdb1-client"
 )
 
+type InfluxDB interface {
+	AddEvent(evt ToPoint) error
+	ListPools() ([]Pool, error)
+	LastID() int64
+}
+
 type ToPoint interface {
 	Point() client.Point
 }
