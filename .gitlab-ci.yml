@@ -13,7 +13,7 @@ stages:
 
 unit_tests:
   image: 
-    name: docker/compose
+    name: docker/compose:1.25.0-rc2-alpine
     entrypoint: ["/bin/sh", "-c"]
   services:
     - docker:dind
