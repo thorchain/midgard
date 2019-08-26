@@ -15,7 +15,7 @@ unit_tests:
   image: docker/compose:1.25.0-rc2-alpine
   stage: test
   variables:
-    GOPATH: ~
+    GOPATH: "~"
   services:
     - docker:dind
   tags:
