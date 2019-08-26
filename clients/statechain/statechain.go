@@ -61,8 +61,8 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 	}
 
 	maxID := id
-	pts := make([]client.Point, len(events))
-	for i, evt := range events {
+	pts := make([]client.Point, 0)
+	for _, evt := range events {
 		if maxID < int64(evt.ID.Float64()) {
 			maxID = int64(evt.ID.Float64())
 		}
@@ -72,11 +72,11 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 			var swap sTypes.EventSwap
 			err := json.Unmarshal(evt.Event, &swap)
 			if err != nil {
-				return id, nil, err
+				return maxID, pts, err
 			}
 			tx, err := sc.Binance.GetTx(evt.InHash)
 			if err != nil {
-				return id, nil, err
+				return maxID, pts, err
 			}
 
 			var rAmt float64
@@ -89,41 +89,41 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 				tAmt = swap.SourceCoin.Amount.Float64()
 			}
 
-			pts[i] = influxdb.NewSwapEvent(
+			pts = append(pts, influxdb.NewSwapEvent(
 				int64(evt.ID.Float64()),
 				rAmt,
 				tAmt,
 				swap.Slip.Float64(),
 				evt.Pool,
 				tx.Timestamp,
-			).Point()
+			).Point())
 
 		case "stake", "unstake":
 
 			var stake sTypes.EventStake
 			err := json.Unmarshal(evt.Event, &stake)
 			if err != nil {
-				return id, nil, err
+				return maxID, pts, err
 			}
 			tx, err := sc.Binance.GetTx(evt.InHash)
 			if err != nil {
-				return id, nil, err
+				return maxID, pts, err
 			}
 
 			var addr common.BnbAddress
 			if evt.Type == "stake" {
 				addr, err = common.NewBnbAddress(tx.FromAddress)
 				if err != nil {
-					return id, nil, err
+					return maxID, pts, err
 				}
 			} else if evt.Type == "unstake" {
 				addr, err = common.NewBnbAddress(tx.ToAddress)
 				if err != nil {
-					return id, nil, err
+					return maxID, pts, err
 				}
 			}
 
-			pts[i] = influxdb.NewStakeEvent(
+			pts = append(pts, influxdb.NewStakeEvent(
 				int64(evt.ID.Float64()),
 				stake.RuneAmount.Float64(),
 				stake.TokenAmount.Float64(),
@@ -131,7 +131,7 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 				evt.Pool,
 				addr,
 				tx.Timestamp,
-			).Point()
+			).Point())
 		}
 	}
 
