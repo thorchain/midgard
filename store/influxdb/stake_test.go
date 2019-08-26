@@ -39,6 +39,11 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Assert(resp, HasLen, 1)
 	c.Assert(resp[0].Series, HasLen, 1)
 	c.Assert(resp[0].Series[0].Values, HasLen, 1)
-	c.Check(resp[0].Series[0].Values[0][2], Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
-	c.Check(resp[0].Series[0].Values[0][4], Equals, "BNB", Commentf("%+v", resp[0].Series[0].Values))
+	for i := range resp[0].Series[0].Columns {
+		if resp[0].Series[0].Columns[i] == "address" {
+			c.Check(resp[0].Series[0].Values[0][i], Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+		} else if resp[0].Series[0].Columns[i] == "pool" {
+			c.Check(resp[0].Series[0].Values[0][i], Equals, "BNB", Commentf("%+v", resp[0].Series[0].Values))
+		}
+	}
 }
