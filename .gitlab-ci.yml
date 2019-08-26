@@ -21,7 +21,7 @@ unit_tests:
   tags:
     - docker
   script:
-    - ./scripts/run.sh etl make test-internal
+    - ./scripts/run.sh etl go test ./...
 
 lint_code:
   image: golangci/golangci-lint
