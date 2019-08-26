@@ -8,41 +8,38 @@ import (
 	"gitlab.com/thorchain/bepswap/common"
 )
 
-type StakeEvent struct {
+type SwapEvent struct {
 	ToPoint
 	ID          int64
 	RuneAmount  float64
 	TokenAmount float64
-	Units       float64
+	Slip        float64
 	Pool        common.Ticker
-	Address     common.BnbAddress
 	Timestamp   time.Time
 }
 
-func NewStakeEvent(id int64, rAmt, tAmt, units float64, pool common.Ticker, addr common.BnbAddress, ts time.Time) StakeEvent {
-	return StakeEvent{
+func NewSwapEvent(id int64, rAmt, tAmt, slip float64, pool common.Ticker, ts time.Time) SwapEvent {
+	return SwapEvent{
 		ID:          id,
 		RuneAmount:  rAmt,
 		TokenAmount: tAmt,
-		Units:       units,
+		Slip:        slip,
 		Pool:        pool,
-		Address:     addr,
 		Timestamp:   ts,
 	}
 }
 
-func (evt StakeEvent) Point() client.Point {
+func (evt SwapEvent) Point() client.Point {
 	return client.Point{
-		Measurement: "stakes",
+		Measurement: "swaps",
 		Tags: map[string]string{
-			"ID":      fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			"pool":    evt.Pool.String(),
-			"address": evt.Address.String(),
+			"ID":   fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			"pool": evt.Pool.String(),
 		},
 		Fields: map[string]interface{}{
 			"rune":  evt.RuneAmount,
 			"token": evt.TokenAmount,
-			"units": evt.Units,
+			"slip":  evt.Slip,
 		},
 		Time:      evt.Timestamp,
 		Precision: "s",
