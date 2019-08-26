@@ -13,7 +13,7 @@ RUN \
 	:
 
 RUN apk update && \
-    apk add curl make git && \
+    apk add curl make git linux-headers && \
     apk del curl && \
     rm -rf /var/cache/apk/*
 
