@@ -8,6 +8,7 @@ import (
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
+	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 	"gitlab.com/thorchain/bepswap/common"
 	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
@@ -18,45 +19,62 @@ var netClient = &http.Client{
 }
 
 type Binance interface {
-	GetTxTs(txHash string) (time.Time, error)
+	GetTx(txHash common.TxID) (binance.TxDetail, error)
+}
+
+type StatechainInterface interface {
+	GetEvents(id int64) ([]sTypes.Event, error)
 }
 
 type Statechain struct {
-	Store   influxdb.InfluxDB
-	URI     string
-	Binance Binance
+	Statechain StatechainInterface
+	Binance    Binance
 }
 
-func (sc Statechain) GetEvents(id int64) (int64, error) {
+type StatechainAPI struct {
+	URI string
+}
 
+func (sc StatechainAPI) GetEvents(id int64) ([]sTypes.Event, error) {
 	uri := fmt.Sprintf(sc.URI, id)
 	resp, err := netClient.Get(uri)
 	if err != nil {
-		return id, err
+		return nil, err
 	}
 
 	resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return id, err
+		return nil, err
 	}
 
 	var events []sTypes.Event
 	err = json.Unmarshal(body, &events)
+	return events, err
+}
+
+func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
+
+	events, err := sc.Statechain.GetEvents(id)
 	if err != nil {
-		return id, err
+		return id, nil, err
 	}
 
+	maxID := id
 	pts := make([]client.Point, len(events))
 	for i, evt := range events {
+		if maxID < int64(evt.ID.Float64()) {
+			maxID = int64(evt.ID.Float64())
+		}
+
 		switch evt.Type {
 		case "swap":
 			var swap sTypes.EventSwap
 			err := json.Unmarshal(evt.Event, &swap)
 			if err != nil {
-				return id, err
+				return id, nil, err
 			}
-			ts, err := sc.Binance.GetTxTs(evt.InHash.String())
+			tx, err := sc.Binance.GetTx(evt.InHash)
 
 			var rAmt float64
 			var tAmt float64
@@ -74,12 +92,41 @@ func (sc Statechain) GetEvents(id int64) (int64, error) {
 				tAmt,
 				swap.Slip.Float64(),
 				evt.Pool,
-				ts,
+				tx.Timestamp,
 			).Point()
-		case "stake":
-		case "unstake":
+
+		case "stake", "unstake":
+
+			var stake sTypes.EventStake
+			err := json.Unmarshal(evt.Event, &stake)
+			if err != nil {
+				return id, nil, err
+			}
+			tx, err := sc.Binance.GetTx(evt.InHash)
+			var addr common.BnbAddress
+			if evt.Type == "stake" {
+				addr, err = common.NewBnbAddress(tx.FromAddress)
+				if err != nil {
+					return id, nil, err
+				}
+			} else if evt.Type == "unstake" {
+				addr, err = common.NewBnbAddress(tx.ToAddress)
+				if err != nil {
+					return id, nil, err
+				}
+			}
+
+			pts[i] = influxdb.NewStakeEvent(
+				int64(evt.ID.Float64()),
+				stake.RuneAmount.Float64(),
+				stake.TokenAmount.Float64(),
+				stake.StakeUnits.Float64(),
+				evt.Pool,
+				addr,
+				tx.Timestamp,
+			).Point()
 		}
 	}
 
-	return 0, nil
+	return maxID, pts, nil
 }

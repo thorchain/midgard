@@ -18,7 +18,7 @@ var netClient = &http.Client{
 }
 
 type Binance interface {
-	GetTxTs(txID common.TxID) (time.Time, error)
+	GetTx(txID common.TxID) (time.Time, error)
 }
 
 type BinanceClient struct {
@@ -29,56 +29,61 @@ type httpRespGetTx struct {
 	Height string `json:"height"`
 }
 
-type httpRespGetBlock struct {
-	Height int64 `json:"blockHeight"`
-	Tx     []struct {
-		TxHash    string    `json:"txHash"`
-		Timestamp time.Time `json:"timeStamp"`
-	} `json:"tx"`
+type TxDetail struct {
+	TxHash      string    `json:"txHash"`
+	ToAddress   string    `json:"toAddr"`
+	FromAddress string    `json:"fromAddr"`
+	Timestamp   time.Time `json:"timeStamp"`
 }
 
-func (bnb BinanceClient) GetTxTs(txID common.TxID) (time.Time, error) {
+type httpRespGetBlock struct {
+	Height int64      `json:"blockHeight"`
+	Tx     []TxDetail `json:"tx"`
+}
+
+func (bnb BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
+	noTx := TxDetail{}
 	uri := fmt.Sprintf("%s/api/v1/tx/%s", bnb.BaseURL, txID.String())
 	resp, err := netClient.Get(uri)
 	if err != nil {
-		return time.Time{}, err
+		return noTx, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return time.Time{}, err
+		return noTx, err
 	}
 	resp.Body.Close()
 
 	var tx httpRespGetTx
 	err = json.Unmarshal(body, &tx)
 	if err != nil {
-		return time.Time{}, err
+		return noTx, err
 	}
 
 	uri = fmt.Sprintf("%s/api/v1/transactions-in-block/%s", bnb.BaseURL, tx.Height)
 	resp, err = netClient.Get(uri)
 	if err != nil {
-		return time.Time{}, err
+		return noTx, err
 	}
 
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return time.Time{}, err
+		return noTx, err
 	}
 	resp.Body.Close()
 
 	var block httpRespGetBlock
 	err = json.Unmarshal(body, &block)
 	if err != nil {
-		return time.Time{}, err
+		return noTx, err
 	}
 
 	for _, transaction := range block.Tx {
 		if transaction.TxHash == txID.String() {
-			return transaction.Timestamp, nil
+			return transaction, nil
 		}
 	}
 
-	return time.Time{}, nil
+	return noTx, nil
 }
