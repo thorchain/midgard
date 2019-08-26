@@ -43,6 +43,7 @@ type httpRespGetBlock struct {
 
 func (bnb BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
+	// Rate Limit: 10 requests per IP per second.
 	uri := fmt.Sprintf("%s/api/v1/tx/%s", bnb.BaseURL, txID.String())
 	resp, err := netClient.Get(uri)
 	if err != nil {
@@ -61,6 +62,7 @@ func (bnb BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
 		return noTx, err
 	}
 
+	// Rate Limit: 60 requests per IP per minute.
 	uri = fmt.Sprintf("%s/api/v1/transactions-in-block/%s", bnb.BaseURL, tx.Height)
 	resp, err = netClient.Get(uri)
 	if err != nil {
