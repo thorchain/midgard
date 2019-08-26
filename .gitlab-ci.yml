@@ -12,12 +12,14 @@ stages:
   - test
 
 unit_tests:
-  image: tmaier/docker-compose:latest
+  image: docker/compose:1.25.0-rc2-alpine
   stage: test
   services:
     - docker:dind
   tags:
     - docker
+  before_script:
+    - echo $GOPATH
   script:
     - ./scripts/run.sh etl pwd
     - ./scripts/run.sh etl ls
