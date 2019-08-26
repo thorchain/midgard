@@ -12,10 +12,10 @@ stages:
   - test
 
 unit_tests:
+  image: docker
   stage: test
-  coverage: '/^coverage:\s(\d+(?:\.\d+)?%)/'
   script:
-    - go test -mod=readonly -v -coverprofile .testCoverage.txt ./...
+    - make test
 
 lint_code:
   image: golangci/golangci-lint
