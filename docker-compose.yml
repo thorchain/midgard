@@ -9,13 +9,11 @@ services:
     depends_on:
       - influxdb
     volumes:
-      - ~:/root
-      - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
+      - ${GOPATH}:/root/go
     working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
-    env_file:
-      - .env
     environment:
       GOPATH: /root/go
+      GO111MODULE: "on"
       INFLUXDB_ADMIN_USER: admin
       INFLUXDB_ADMIN_PASSWORD: password
       INFLUXDB_HOST: influxdb
@@ -30,7 +28,7 @@ services:
       - "8086"
       - "8083"
     environment:
-      INFLUXDB_ADMIN_ENABLED: true
+      INFLUXDB_ADMIN_ENABLED: "true"
       INFLUXDB_ADMIN_USER: admin
       INFLUXDB_ADMIN_PASSWORD: password
       INFLUXDB_DB: db0

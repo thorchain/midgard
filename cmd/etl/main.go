@@ -4,8 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/url"
-	"os"
 
 	"github.com/pkg/errors"
 
@@ -15,7 +13,7 @@ import (
 	cmc "github.com/miguelmota/go-coinmarketcap/pro/v1"
 
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
-	client "github.com/influxdata/influxdb1-client"
+	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )
 
 type ServiceConfig struct {
@@ -41,21 +39,7 @@ func main() {
 	})
 
 	// initalize influxdb client
-	influxdbHost, err := url.Parse(
-		fmt.Sprintf("http://%s:%d", os.Getenv("INFLUXDB_HOST"), 8086),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// NOTE: this assumes you've setup a user and have setup shell env variables,
-	// namely INFLUX_USER/INFLUX_PWD. If not just omit Username/Password below.
-	conf := client.Config{
-		URL:      *influxdbHost,
-		Username: os.Getenv("INFLUXDB_ADMIN_USER"),
-		Password: os.Getenv("INFLUXDB_ADMIN_PASSWORD"),
-	}
-	influxClient, err := client.NewClient(conf)
+	influxClient, err := influxdb.NewClient()
 	if err != nil {
 		log.Fatal(err)
 	}
