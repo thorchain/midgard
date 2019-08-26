@@ -29,11 +29,20 @@ test-coverage:
 coverage-report: test-coverage
 	@tool cover -html=.testCoverage.txt
 
+test-internal:
+	@go test ./...
+
 test:
-	@go test -mod=readonly ./...
+	@./scripts/run.sh etl make test-internal
 
 clear:
 	clear
 
 test-watch: clear
 	@./scripts/watch.bash
+
+sh:
+	@docker-compose run --rm --no-deps etl /bin/sh
+
+influxdb:
+	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
