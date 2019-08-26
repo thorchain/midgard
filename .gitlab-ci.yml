@@ -15,7 +15,7 @@ unit_tests:
   image: docker
   stage: test
   script:
-    - make test
+    - ./scripts/run.sh etl go test ./...
 
 lint_code:
   image: golangci/golangci-lint
