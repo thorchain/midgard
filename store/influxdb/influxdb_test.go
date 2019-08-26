@@ -15,7 +15,8 @@ var _ = Suite(&InfluxdbSuite{})
 func NewTestClient(c *C) Client {
 	client, err := NewClient()
 	c.Assert(err, IsNil)
-	client.Query("DROP SERIES FROM /.*/") // clear the database
+	_, err = client.Query("DROP SERIES FROM /.*/") // clear the database
+	c.Assert(err, IsNil)
 	return client
 }
 

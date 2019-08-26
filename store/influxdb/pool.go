@@ -81,7 +81,7 @@ func (in Client) ListPools() ([]Pool, error) {
 			}
 		}
 		if !addr.IsEmpty() {
-			for i, _ := range pools {
+			for i := range pools {
 				if pools[i].Ticker.Equals(ticker) {
 					pools[i].Stakers += 1
 					break
@@ -106,7 +106,7 @@ func (in Client) ListPools() ([]Pool, error) {
 				if err != nil {
 					return nil, err
 				}
-				for i, _ := range pools {
+				for i := range pools {
 					if pools[i].Ticker.Equals(ticker) {
 						pools[i].Swaps, _ = series.Values[0][1].(json.Number).Int64()
 						break
