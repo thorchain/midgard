@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
+	"os"
 
 	"github.com/pkg/errors"
 
@@ -11,6 +13,9 @@ import (
 	bnbtypes "github.com/binance-chain/go-sdk/common/types"
 	bnbkeys "github.com/binance-chain/go-sdk/keys"
 	cmc "github.com/miguelmota/go-coinmarketcap/pro/v1"
+
+	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
+	client "github.com/influxdata/influxdb1-client"
 )
 
 type ServiceConfig struct {
@@ -35,6 +40,26 @@ func main() {
 		ProAPIKey: svcCfg.CoinmarketCapAPIKey,
 	})
 
+	// initalize influxdb client
+	influxdbHost, err := url.Parse(
+		fmt.Sprintf("http://%s:%d", os.Getenv("INFLUXDB_HOST"), 8086),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// NOTE: this assumes you've setup a user and have setup shell env variables,
+	// namely INFLUX_USER/INFLUX_PWD. If not just omit Username/Password below.
+	conf := client.Config{
+		URL:      *influxdbHost,
+		Username: os.Getenv("INFLUXDB_ADMIN_USER"),
+		Password: os.Getenv("INFLUXDB_ADMIN_PASSWORD"),
+	}
+	influxClient, err := client.NewClient(conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// initialize state-chain client
 
 	// initialize binance-chain dex client
@@ -47,6 +72,7 @@ func main() {
 	}
 
 	fmt.Println(cmcClient)
+	fmt.Println(influxClient)
 	fmt.Println(dexClient)
 }
 
