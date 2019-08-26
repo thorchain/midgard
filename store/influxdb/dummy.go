@@ -5,11 +5,10 @@ import client "github.com/influxdata/influxdb1-client"
 // InfluxDB interface for testing purposes
 type Dummy struct {
 	InfluxDB
-	lastPoint  client.Point
-	pointAdded bool
-	lastID     int64
-	pools      []Pool
-	err        error
+	lastPoint client.Point
+	lastID    int64
+	pools     []Pool
+	err       error
 }
 
 func (dum *Dummy) AddEvent(evt ToPoint) error {
