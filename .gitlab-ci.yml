@@ -13,9 +13,13 @@ stages:
 
 unit_tests:
   image: docker
+  services:
+    - docker:dind
   stage: test
   script:
-    - ./scripts/run.sh etl go test ./...
+    - apk add --no-cache py-pip python-dev libffi-dev openssl-dev gcc libc-dev make
+    - pip install docker-compose
+    - ./scripts/run.sh etl make test-internal
 
 lint_code:
   image: golangci/golangci-lint
