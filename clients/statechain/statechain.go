@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
@@ -59,6 +60,11 @@ func (sc Statechain) GetPoints(id int64) (int64, []client.Point, error) {
 	if err != nil {
 		return id, nil, err
 	}
+
+	// sort events lowest ID first. Ensures we don't process an event out of order
+	sort.Slice(events[:], func(i, j int) bool {
+		return events[i].ID.Float64() < events[j].ID.Float64()
+	})
 
 	maxID := id
 	pts := make([]client.Point, 0)
