@@ -1,4 +1,4 @@
-image: golang:1.11
+image: golang/alpine
 
 cache:
   paths:
@@ -12,10 +12,18 @@ stages:
   - test
 
 unit_tests:
+  image: docker/compose:1.25.0-rc2-alpine
   stage: test
-  coverage: '/^coverage:\s(\d+(?:\.\d+)?%)/'
+  variables:
+    GOPATH: "~"
+  services:
+    - docker:dind
+  tags:
+    - docker
+  before_script:
+    - echo $GOPATH
   script:
-    - go test -mod=readonly -v -coverprofile .testCoverage.txt ./...
+    - ./scripts/run.sh etl go test ./...
 
 lint_code:
   image: golangci/golangci-lint
