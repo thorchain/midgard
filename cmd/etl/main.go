@@ -11,6 +11,9 @@ import (
 	bnbtypes "github.com/binance-chain/go-sdk/common/types"
 	bnbkeys "github.com/binance-chain/go-sdk/keys"
 	cmc "github.com/miguelmota/go-coinmarketcap/pro/v1"
+
+	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
+	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )
 
 type ServiceConfig struct {
@@ -35,6 +38,12 @@ func main() {
 		ProAPIKey: svcCfg.CoinmarketCapAPIKey,
 	})
 
+	// initalize influxdb client
+	influxClient, err := influxdb.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// initialize state-chain client
 
 	// initialize binance-chain dex client
@@ -47,6 +56,7 @@ func main() {
 	}
 
 	fmt.Println(cmcClient)
+	fmt.Println(influxClient)
 	fmt.Println(dexClient)
 }
 

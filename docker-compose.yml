@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  etl:
+    build: .
+    image: bepswap-chain-service
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - ${GOPATH}:/root/go
+      - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
+    working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
+    environment:
+      GOPATH: /root/go
+      GO111MODULE: "on"
+      INFLUXDB_ADMIN_USER: admin
+      INFLUXDB_ADMIN_PASSWORD: password
+      INFLUXDB_HOST: influxdb
+      INFLUXDB_DB: db0
+
+  influxdb:
+    image: influxdb:1.5.4-alpine
+    ports:
+      - "8086:8086"
+      - "8083:8083"
+    expose:
+      - "8086"
+      - "8083"
+    environment:
+      INFLUXDB_ADMIN_ENABLED: "true"
+      INFLUXDB_ADMIN_USER: admin
+      INFLUXDB_ADMIN_PASSWORD: password
+      INFLUXDB_DB: db0
