@@ -7,8 +7,9 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/miguelmota/go-coinmarketcap v0.1.5
-	github.com/pkg/errors v0.8.0
+	github.com/pkg/errors v0.8.1
 	gitlab.com/thorchain/bepswap/common v0.0.0-20190823123750-2e16dc69db55
+	gitlab.com/thorchain/bepswap/statechain v0.0.0-20190826134211-8df2518d6572
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 )
 
