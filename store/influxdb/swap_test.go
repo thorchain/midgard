@@ -13,7 +13,6 @@ var _ = Suite(&SwapEventSuite{})
 
 func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	clc := NewTestClient(c)
-	now := time.Now().Add(-5 * time.Hour)
 
 	swap := NewSwapEvent(
 		1,
@@ -21,7 +20,7 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 		14.4,
 		0.07,
 		common.Ticker("BNB"),
-		now,
+		time.Now(),
 	)
 
 	c.Check(swap.RuneAmount, Equals, 12.3)
