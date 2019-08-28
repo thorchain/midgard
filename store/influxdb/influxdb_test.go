@@ -1,6 +1,7 @@
 package influxdb
 
 import (
+	"os"
 	"testing"
 
 	. "gopkg.in/check.v1"
@@ -14,13 +15,28 @@ type InfluxdbSuite struct{}
 
 var _ = Suite(&InfluxdbSuite{})
 
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
 func NewTestClient(c *C) *Client {
+	if testing.Short() {
+		c.Skip("Short mode: no integration tests")
+	}
+
+	host := getEnv("INFLUXDB_HOST", "localhost")
+	username := getEnv("INFLUXDB_ADMIN_USER", "admin")
+	password := getEnv("INFLUXDB_ADMIN_PASSWORD", "password")
+	dbname := getEnv("INFLUXDB_DB", "db0")
 	cfg := config.InfluxDBConfiguration{
-		Host:     "influxdb",
+		Host:     host,
 		Port:     8086,
-		UserName: "admin",
-		Password: "password",
-		Database: "db0",
+		UserName: username,
+		Password: password,
+		Database: dbname,
 	}
 	client, err := NewClient(cfg)
 	c.Assert(err, IsNil)
