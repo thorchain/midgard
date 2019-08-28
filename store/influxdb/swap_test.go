@@ -1,7 +1,6 @@
 package influxdb
 
 import (
-	"fmt"
 	"time"
 
 	"gitlab.com/thorchain/bepswap/common"
@@ -14,6 +13,8 @@ var _ = Suite(&SwapEventSuite{})
 
 func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	clc := NewTestClient(c)
+	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
 
 	swap := NewSwapEvent(
 		1,
@@ -25,6 +26,8 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 		0.4,
 		0.5,
 		common.Ticker("BNB"),
+		from,
+		to,
 		time.Now(),
 	)
 
@@ -48,8 +51,15 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	c.Assert(resp[0].Series, HasLen, 1)
 	c.Assert(resp[0].Series[0].Values, HasLen, 1)
 
-	fmt.Printf("SERIES: %+v\n", resp[0].Series[0])
 	v, ok := getStringValue(resp[0].Series[0], "pool")
 	c.Check(ok, Equals, true)
 	c.Check(v, Equals, "BNB", Commentf("%+v", resp[0].Series[0].Values))
+
+	v, ok = getStringValue(resp[0].Series[0], "from_address")
+	c.Check(ok, Equals, true)
+	c.Check(v, Equals, from.String(), Commentf("%+v", resp[0].Series[0].Values))
+
+	v, ok = getStringValue(resp[0].Series[0], "to_address")
+	c.Check(ok, Equals, true)
+	c.Check(v, Equals, to.String(), Commentf("%+v", resp[0].Series[0].Values))
 }

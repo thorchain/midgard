@@ -14,6 +14,8 @@ var _ = Suite(&PoolSuite{})
 func (s *PoolSuite) TestGetPool(c *C) {
 	clc := NewTestClient(c)
 	now := time.Now()
+	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
 
 	stake := NewStakeEvent(
 		1,
@@ -63,6 +65,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		0.03,
 		0.04,
 		common.Ticker("BNB"),
+		from,
+		to,
 		now,
 	)
 	err = clc.AddEvent(swap)
@@ -78,6 +82,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		0.03,
 		0.04,
 		common.Ticker("TCAN-014"),
+		from,
+		to,
 		now,
 	)
 	err = clc.AddEvent(swap)
@@ -93,6 +99,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		0.03,
 		0.04,
 		common.Ticker("TCAN-014"),
+		from,
+		to,
 		time.Now().Add(-72*time.Hour),
 	)
 	err = clc.AddEvent(swap)
