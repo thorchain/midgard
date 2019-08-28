@@ -19,6 +19,15 @@ type SwapEvent struct {
 }
 
 func NewSwapEvent(id int64, rAmt, tAmt, slip float64, pool common.Ticker, ts time.Time) SwapEvent {
+	// Fee ( x^2 *  Y ) / ( x + X )^2
+	/*
+		`X` is always the input side, `x` is the input, `Y` is the output side
+		For double swap:
+		`X`: always the input balance, in Tokens
+		`Y`: always the int-output balance, in RUNE
+		`R`: always the int-input balance, in RUNE
+		`Z`: always the output balance, in Tokens
+	*/
 	return SwapEvent{
 		ID:          id,
 		RuneAmount:  rAmt,
@@ -42,6 +51,6 @@ func (evt SwapEvent) Point() client.Point {
 			"slip":  evt.Slip,
 		},
 		Time:      evt.Timestamp,
-		Precision: "s",
+		Precision: precision,
 	}
 }
