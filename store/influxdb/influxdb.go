@@ -122,6 +122,7 @@ func getStringValue(row models.Row, key string) (string, bool) {
 func getFloatValue(row models.Row, key string) (float64, bool) {
 	for i, col := range row.Columns {
 		if col == key {
+			fmt.Printf("GET FLOAT: %+v\n", row.Values[0][i])
 			f, err := row.Values[0][i].(json.Number).Float64()
 			if err != nil {
 				return f, false
