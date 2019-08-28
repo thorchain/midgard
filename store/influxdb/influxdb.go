@@ -3,10 +3,14 @@ package influxdb
 import (
 	"fmt"
 	"net/url"
-	"os"
 
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
 	client "github.com/influxdata/influxdb1-client"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	"gitlab.com/thorchain/bepswap/chain-service/config"
 )
 
 type InfluxDB interface {
@@ -19,39 +23,49 @@ type ToPoint interface {
 	Point() client.Point
 }
 
+// Client influx db client
 type Client struct {
+	logger   zerolog.Logger
+	cfg      config.InfluxDBConfiguration
 	Client   *client.Client
 	Database string
 }
 
-func NewClient() (Client, error) {
-	// TODO: make port configurable
-	influxdbHost, err := url.Parse(
-		fmt.Sprintf("http://%s:%d", os.Getenv("INFLUXDB_HOST"), 8086),
-	)
+func NewClient(cfg config.InfluxDBConfiguration) (*Client, error) {
+	if len(cfg.Host) == 0 {
+		return nil, errors.New("influxdb host is empty")
+	}
+	if len(cfg.UserName) == 0 {
+		return nil, errors.New("influxdb username is empty")
+	}
+
+	influxDbUrl := fmt.Sprintf("http://%s:%d", cfg.Host, cfg.Port)
+	influxdbHost, err := url.Parse(influxDbUrl)
 	if err != nil {
-		return Client{}, err
+		return nil, err
 	}
 
 	conf := client.Config{
 		URL:      *influxdbHost,
-		Username: os.Getenv("INFLUXDB_ADMIN_USER"),
-		Password: os.Getenv("INFLUXDB_ADMIN_PASSWORD"),
+		Username: cfg.UserName,
+		Password: cfg.Password,
 	}
 	conn, err := client.NewClient(conf)
 	if err != nil {
-		return Client{}, err
+		return nil, errors.Wrap(err, "fail to create influxdb client")
 	}
 
-	client := Client{
+	client := &Client{
+		logger:   log.With().Str("module", "influx-client").Logger(),
+		cfg:      cfg,
 		Client:   conn,
-		Database: os.Getenv("INFLUXDB_DB"),
+		Database: cfg.Database,
 	}
 
 	return client, nil
 }
 
-func (in Client) Query(query string) (res []client.Result, err error) {
+func (in *Client) Query(query string) (res []client.Result, err error) {
 	q := client.Query{
 		Command:  query,
 		Database: in.Database,
@@ -67,12 +81,12 @@ func (in Client) Query(query string) (res []client.Result, err error) {
 }
 
 // Write a single point
-func (in Client) Write(pt client.Point) error {
+func (in *Client) Write(pt client.Point) error {
 	return in.Writes([]client.Point{pt})
 }
 
 // Write multiple points
-func (in Client) Writes(pts []client.Point) error {
+func (in *Client) Writes(pts []client.Point) error {
 	var err error
 	bps := client.BatchPoints{
 		Points:   pts,
@@ -83,6 +97,6 @@ func (in Client) Writes(pts []client.Point) error {
 	return err
 }
 
-func (in Client) AddEvent(evt ToPoint) error {
+func (in *Client) AddEvent(evt ToPoint) error {
 	return in.Write(evt.Point())
 }
