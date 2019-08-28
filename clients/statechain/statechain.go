@@ -9,10 +9,11 @@ import (
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 	"gitlab.com/thorchain/bepswap/common"
 	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
+
+	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )
 
 var netClient = &http.Client{
