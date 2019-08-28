@@ -105,6 +105,19 @@ func (in *Client) AddEvent(evt ToPoint) error {
 }
 
 // helper func to get tag
+func getTimeValue(row models.Row, key string) (time.Time, bool) {
+	for i, col := range row.Columns {
+		if col == key {
+			fmt.Printf("Time: %+v\n", row.Values[0])
+			f, ok := row.Values[0][i].(time.Time)
+			return f, ok
+		}
+	}
+
+	return time.Time{}, false
+}
+
+// helper func to get tag
 func getStringValue(row models.Row, key string) (string, bool) {
 	for i, col := range row.Columns {
 		if col == key {
