@@ -29,6 +29,9 @@ test-coverage:
 coverage-report: test-coverage
 	@tool cover -html=.testCoverage.txt
 
+test-short:
+	@go test -short ./...
+
 test-internal:
 	@go test ./...
 
