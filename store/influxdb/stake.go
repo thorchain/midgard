@@ -45,6 +45,6 @@ func (evt StakeEvent) Point() client.Point {
 			"units": evt.Units,
 		},
 		Time:      evt.Timestamp,
-		Precision: "s",
+		Precision: precision,
 	}
 }

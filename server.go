@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
+	"gitlab.com/thorchain/bepswap/common"
 )
 
 // Server
@@ -19,12 +21,18 @@ type Server struct {
 	logger     zerolog.Logger
 	engine     *gin.Engine
 	httpServer *http.Server
+	influxDB   *influxdb.Client
 }
 
 func NewServer(cfg config.Configuration) (*Server, error) {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 	engine.Use(gin.Recovery())
+	store, err := influxdb.NewClient(cfg.Influx)
+	if err != nil {
+		return nil, err
+	}
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
 		ReadTimeout:  cfg.ReadTimeout,
@@ -36,6 +44,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		logger:     log.With().Str("module", "server").Logger(),
 		engine:     engine,
 		httpServer: srv,
+		influxDB:   store,
 	}, nil
 }
 
@@ -48,6 +57,24 @@ func (s *Server) registerEndpoints() {
 	}))
 
 	s.engine.GET("/health", s.healthCheck)
+	s.engine.GET("/poolData", s.getPool)
+}
+
+func (s *Server) getPool(g *gin.Context) {
+	asset := g.Query("asset")
+	ticker, err := common.NewTicker(asset)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	pool, err := s.influxDB.GetPool(ticker)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	g.JSON(http.StatusOK, pool)
 }
 
 func (s *Server) healthCheck(g *gin.Context) {
