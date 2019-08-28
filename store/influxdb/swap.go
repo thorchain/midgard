@@ -13,26 +13,33 @@ type SwapEvent struct {
 	ID          int64
 	RuneAmount  float64
 	TokenAmount float64
-	Slip        float64
+	PriceSlip   float64
+	TradeSlip   float64
+	PoolSlip    float64
+	OutputSlip  float64
+	RuneFee     float64
+	TokenFee    float64
 	Pool        common.Ticker
 	Timestamp   time.Time
 }
 
-func NewSwapEvent(id int64, rAmt, tAmt, slip float64, pool common.Ticker, ts time.Time) SwapEvent {
-	// Fee ( x^2 *  Y ) / ( x + X )^2
-	/*
-		`X` is always the input side, `x` is the input, `Y` is the output side
-		For double swap:
-		`X`: always the input balance, in Tokens
-		`Y`: always the int-output balance, in RUNE
-		`R`: always the int-input balance, in RUNE
-		`Z`: always the output balance, in Tokens
-	*/
+func NewSwapEvent(id int64, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, ts time.Time) SwapEvent {
+	var runeFee, tokenFee float64
+	if rAmt > 0 {
+		runeFee = fee
+	} else {
+		tokenFee = fee
+	}
 	return SwapEvent{
 		ID:          id,
 		RuneAmount:  rAmt,
 		TokenAmount: tAmt,
-		Slip:        slip,
+		PriceSlip:   priceSlip,
+		TradeSlip:   tradeSlip,
+		PoolSlip:    poolSlip,
+		OutputSlip:  outputSlip,
+		RuneFee:     runeFee,
+		TokenFee:    tokenFee,
 		Pool:        pool,
 		Timestamp:   ts,
 	}
@@ -46,9 +53,14 @@ func (evt SwapEvent) Point() client.Point {
 			"pool": evt.Pool.String(),
 		},
 		Fields: map[string]interface{}{
-			"rune":  evt.RuneAmount,
-			"token": evt.TokenAmount,
-			"slip":  evt.Slip,
+			"rune":        evt.RuneAmount,
+			"token":       evt.TokenAmount,
+			"price_slip":  evt.PriceSlip,
+			"trade_slip":  evt.TradeSlip,
+			"pool_slip":   evt.PoolSlip,
+			"output_slip": evt.OutputSlip,
+			"rune_fee":    evt.RuneFee,
+			"token_fee":   evt.TokenFee,
 		},
 		Time:      evt.Timestamp,
 		Precision: precision,

@@ -58,6 +58,10 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		12.3,
 		14.4,
 		0.07,
+		0.01,
+		0.02,
+		0.03,
+		0.04,
 		common.Ticker("BNB"),
 		now,
 	)
@@ -69,6 +73,10 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		12.3,
 		14.4,
 		0.07,
+		0.01,
+		0.02,
+		0.03,
+		0.04,
 		common.Ticker("TCAN-014"),
 		now,
 	)
@@ -80,6 +88,10 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		12.3,
 		-4.4,
 		0.07,
+		0.01,
+		0.02,
+		0.03,
+		0.04,
 		common.Ticker("TCAN-014"),
 		time.Now().Add(-72*time.Hour),
 	)

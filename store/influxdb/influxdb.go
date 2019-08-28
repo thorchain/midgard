@@ -106,6 +106,18 @@ func (in *Client) AddEvent(evt ToPoint) error {
 	return in.Write(evt.Point())
 }
 
+// helper func to get tag
+func getStringValue(row models.Row, key string) (string, bool) {
+	for i, col := range row.Columns {
+		if col == key {
+			f, ok := row.Values[0][i].(string)
+			return f, ok
+		}
+	}
+
+	return "", false
+}
+
 // helper func to get values from query
 func getFloatValue(row models.Row, key string) (float64, bool) {
 	for i, col := range row.Columns {
