@@ -143,7 +143,11 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				int64(evt.ID.Float64()),
 				rAmt,
 				tAmt,
-				swap.Slip.Float64(),
+				swap.PriceSlip.Float64(),
+				swap.TradeSlip.Float64(),
+				swap.PoolSlip.Float64(),
+				swap.OutputSlip.Float64(),
+				swap.Fee.Float64(),
 				evt.Pool,
 				tx.Timestamp,
 			).Point())
