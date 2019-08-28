@@ -76,7 +76,6 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 		pool.Swaps, _ = getIntValue(series, "rune")
 		pool.TotalFeesTKN, _ = getFloatValue(series, "token_fee")
 		pool.TotalFeesRune, _ = getFloatValue(series, "rune_fee")
-
 	}
 
 	// Find Volumes
