@@ -1,17 +1,22 @@
 package influxdb
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
+	"time"
 
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
 	client "github.com/influxdata/influxdb1-client"
+	"github.com/influxdata/influxdb1-client/models"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 )
+
+const precision = "ms"
 
 type InfluxDB interface {
 	AddEvent(evt ToPoint) error
@@ -99,4 +104,41 @@ func (in *Client) Writes(pts []client.Point) error {
 
 func (in *Client) AddEvent(evt ToPoint) error {
 	return in.Write(evt.Point())
+}
+
+// helper func to get values from query
+func getFloatValue(row models.Row, key string) (float64, bool) {
+	for i, col := range row.Columns {
+		if col == key {
+			f, err := row.Values[0][i].(json.Number).Float64()
+			if err != nil {
+				return f, false
+			} else {
+				return f, true
+			}
+		}
+	}
+
+	return 0.0, false
+}
+
+// helper func to get values from query
+func getIntValue(row models.Row, key string) (int64, bool) {
+	for i, col := range row.Columns {
+		if col == key {
+			f, err := row.Values[0][i].(json.Number).Int64()
+			if err != nil {
+				return f, false
+			} else {
+				return f, true
+			}
+		}
+	}
+
+	return 0, false
+}
+
+// creates a epoch timestamp in ms (to match precision)
+func makeTimestamp(ts time.Time) int64 {
+	return ts.UnixNano() / int64(time.Millisecond)
 }
