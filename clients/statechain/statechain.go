@@ -149,6 +149,8 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				swap.OutputSlip.Float64(),
 				swap.Fee.Float64(),
 				evt.Pool,
+				common.BnbAddress(tx.FromAddress),
+				common.BnbAddress(tx.ToAddress),
 				tx.Timestamp,
 			).Point())
 

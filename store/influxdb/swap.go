@@ -11,6 +11,8 @@ import (
 type SwapEvent struct {
 	ToPoint
 	ID          int64
+	FromAddress common.BnbAddress
+	ToAddress   common.BnbAddress
 	RuneAmount  float64
 	TokenAmount float64
 	PriceSlip   float64
@@ -23,7 +25,7 @@ type SwapEvent struct {
 	Timestamp   time.Time
 }
 
-func NewSwapEvent(id int64, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, ts time.Time) SwapEvent {
+func NewSwapEvent(id int64, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
 	var runeFee, tokenFee float64
 	if rAmt > 0 {
 		runeFee = fee
@@ -32,6 +34,8 @@ func NewSwapEvent(id int64, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSl
 	}
 	return SwapEvent{
 		ID:          id,
+		FromAddress: from,
+		ToAddress:   to,
 		RuneAmount:  rAmt,
 		TokenAmount: tAmt,
 		PriceSlip:   priceSlip,
@@ -49,8 +53,10 @@ func (evt SwapEvent) Point() client.Point {
 	return client.Point{
 		Measurement: "swaps",
 		Tags: map[string]string{
-			"ID":   fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			"pool": evt.Pool.String(),
+			"ID":           fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			"pool":         evt.Pool.String(),
+			"from_address": evt.FromAddress.String(),
+			"to_address":   evt.ToAddress.String(),
 		},
 		Fields: map[string]interface{}{
 			"rune":        evt.RuneAmount,
