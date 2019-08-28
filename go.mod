@@ -23,4 +23,6 @@ require (
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
 
+replace gitlab.com/thorchain/bepswap/statechain => ../statechain
+
 replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43
