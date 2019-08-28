@@ -11,8 +11,9 @@ type PoolSuite struct{}
 
 var _ = Suite(&PoolSuite{})
 
-func (s *PoolSuite) TestPoolList(c *C) {
+func (s *PoolSuite) TestGetPool(c *C) {
 	clc := NewTestClient(c)
+	now := time.Now()
 
 	stake := NewStakeEvent(
 		1,
@@ -21,7 +22,7 @@ func (s *PoolSuite) TestPoolList(c *C) {
 		5.1,
 		common.Ticker("BNB"),
 		common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
-		time.Now(),
+		now,
 	)
 
 	err := clc.AddEvent(stake)
@@ -34,7 +35,7 @@ func (s *PoolSuite) TestPoolList(c *C) {
 		12,
 		common.Ticker("TCAN-014"),
 		common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
-		time.Now(),
+		now,
 	)
 	err = clc.AddEvent(stake)
 	c.Assert(err, IsNil)
@@ -46,7 +47,7 @@ func (s *PoolSuite) TestPoolList(c *C) {
 		30,
 		common.Ticker("TCAN-014"),
 		common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnA"),
-		time.Now(),
+		now,
 	)
 	err = clc.AddEvent(stake)
 	c.Assert(err, IsNil)
@@ -58,7 +59,7 @@ func (s *PoolSuite) TestPoolList(c *C) {
 		14.4,
 		0.07,
 		common.Ticker("BNB"),
-		time.Now(),
+		now,
 	)
 	err = clc.AddEvent(swap)
 	c.Assert(err, IsNil)
@@ -69,7 +70,7 @@ func (s *PoolSuite) TestPoolList(c *C) {
 		14.4,
 		0.07,
 		common.Ticker("TCAN-014"),
-		time.Now(),
+		now,
 	)
 	err = clc.AddEvent(swap)
 	c.Assert(err, IsNil)
@@ -77,28 +78,35 @@ func (s *PoolSuite) TestPoolList(c *C) {
 	swap = NewSwapEvent(
 		3,
 		12.3,
-		14.4,
+		-4.4,
 		0.07,
 		common.Ticker("TCAN-014"),
-		time.Now(),
+		time.Now().Add(-72*time.Hour),
 	)
 	err = clc.AddEvent(swap)
 	c.Assert(err, IsNil)
 
-	pools, err := clc.ListPools()
+	pool, err := clc.GetPool(common.Ticker("BNB"))
 	c.Assert(err, IsNil)
-	c.Assert(pools, HasLen, 2)
-	c.Check(pools[0].Ticker.String(), Equals, "BNB")
-	c.Check(pools[0].RuneAmount.String(), Equals, "12.3")
-	c.Check(pools[0].TokenAmount.String(), Equals, "14.4")
-	c.Check(pools[0].Units.String(), Equals, "5.1")
-	c.Check(pools[0].Stakers, Equals, int64(1))
-	c.Check(pools[0].Swaps, Equals, int64(1))
+	c.Check(pool.Ticker.String(), Equals, "BNB")
+	c.Check(pool.RuneAmount, Equals, 12.3)
+	c.Check(pool.TokenAmount, Equals, 14.4)
+	c.Check(pool.VolAT, Equals, 14.4)
+	c.Check(pool.Vol24, Equals, 14.4)
+	c.Check(pool.Units, Equals, 5.1)
+	c.Check(pool.Stakers, Equals, int64(1))
+	c.Check(pool.StakerTxs, Equals, int64(1))
+	c.Check(pool.Swaps, Equals, int64(1))
 
-	c.Check(pools[1].Ticker.String(), Equals, "TCAN-014")
-	c.Check(pools[1].RuneAmount.String(), Equals, "60.987")
-	c.Check(pools[1].TokenAmount.String(), Equals, "92.3835")
-	c.Check(pools[1].Units.String(), Equals, "42")
-	c.Check(pools[1].Stakers, Equals, int64(2))
-	c.Check(pools[1].Swaps, Equals, int64(2))
+	pool, err = clc.GetPool(common.Ticker("TCAN-014"))
+	c.Assert(err, IsNil)
+	c.Check(pool.Ticker.String(), Equals, "TCAN-014")
+	c.Check(pool.RuneAmount, Equals, 60.987)
+	c.Check(pool.TokenAmount, Equals, 92.3835)
+	c.Check(pool.Units, Equals, 42.0)
+	c.Check(pool.VolAT, Equals, 18.8)
+	c.Check(pool.Vol24, Equals, 14.4)
+	c.Check(pool.Stakers, Equals, int64(2))
+	c.Check(pool.StakerTxs, Equals, int64(2))
+	c.Check(pool.Swaps, Equals, int64(2))
 }

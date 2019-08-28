@@ -1,121 +1,104 @@
 package influxdb
 
 import (
-	"encoding/json"
+	"fmt"
+	"time"
 
 	"gitlab.com/thorchain/bepswap/common"
 )
 
 type Pool struct {
-	Ticker      common.Ticker
-	RuneAmount  common.Amount
-	TokenAmount common.Amount
-	Units       common.Amount
-	Stakers     int64
-	Swaps       int64
+	Ticker        common.Ticker `json:"asset"`
+	TotalFeesTKN  float64       `json:"totalFeesTKN"`  // TODO
+	TotalFeesRune float64       `json:"totalFeesRune"` // TODO
+	Vol24         float64       `json:"vol24hr"`
+	VolAT         float64       `json:"volAT"`
+	RuneAmount    float64       `json:"depth"`
+	TokenAmount   float64       `json:"-"`
+	Units         float64       `json:"poolUnits"`
+	RoiAT         float64       `json:"roiAT"`
+	Roi30         float64       `json:"roi30"` // TODO
+	Roi12         float64       `json:"roi12"` // TODO
+	Stakers       int64         `json:"numStakers"`
+	StakerTxs     int64         `json:"numStakeTx"`
+	Swaps         int64         `json:"numSwaps"`
 }
 
 type Pools []Pool
 
-func (in Client) ListPools() ([]Pool, error) {
+func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
+	var noPool Pool
 	resp, err := in.Query(
-		"SELECT SUM(rune), SUM(token), SUM(units) FROM stakes GROUP BY pool",
+		fmt.Sprintf("SELECT SUM(rune) AS rune, SUM(token) AS token, SUM(units) as units FROM stakes WHERE pool = '%s'", ticker.String()),
 	)
 	if err != nil {
-		return nil, err
-	}
-	pools := make(Pools, len(resp[0].Series))
-	for i, series := range resp[0].Series {
-		pool := Pool{}
-		for k, v := range series.Tags {
-			if k == "pool" {
-				ticker, err := common.NewTicker(v)
-				if err != nil {
-					return nil, err
-				}
-				pool.Ticker = ticker
-			}
-		}
-
-		pool.RuneAmount, err = common.NewAmount(series.Values[0][1].(json.Number).String())
-		if err != nil {
-			return nil, err
-		}
-
-		pool.TokenAmount, err = common.NewAmount(series.Values[0][2].(json.Number).String())
-		if err != nil {
-			return nil, err
-		}
-
-		pool.Units, err = common.NewAmount(series.Values[0][3].(json.Number).String())
-		if err != nil {
-			return nil, err
-		}
-
-		pools[i] = pool
+		return noPool, err
 	}
 
-	// Find the number of stakers, per pool
+	if len(resp) == 0 || len(resp[0].Series) == 0 {
+		return noPool, fmt.Errorf("Pool does not exist")
+	}
+
+	pool := Pool{
+		Ticker: ticker,
+	}
+
+	series := resp[0].Series[0]
+	pool.RuneAmount, _ = getFloatValue(series, "rune")
+	pool.TokenAmount, _ = getFloatValue(series, "token")
+	pool.Units, _ = getFloatValue(series, "units")
+
+	// Find the number of stakers
 	resp, err = in.Query(
-		"SELECT rune, token, units FROM stakes GROUP BY pool,address",
+		fmt.Sprintf("SELECT COUNT(rune) AS rune FROM stakes WHERE pool = '%s' GROUP BY address", ticker.String()),
 	)
 	if err != nil {
-		return nil, err
+		return noPool, err
 	}
-
-	for _, series := range resp[0].Series {
-		var ticker common.Ticker
-		var addr common.BnbAddress
-		for k, v := range series.Tags {
-			if k == "pool" {
-				ticker, err = common.NewTicker(v)
-				if err != nil {
-					return nil, err
-				}
-			}
-			if k == "address" {
-				addr, err = common.NewBnbAddress(v)
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
-		if !addr.IsEmpty() {
-			for i := range pools {
-				if pools[i].Ticker.Equals(ticker) {
-					pools[i].Stakers += 1
-					break
-				}
-			}
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		pool.Stakers = int64(len(resp[0].Series))
+		for _, series := range resp[0].Series {
+			txs, _ := getIntValue(series, "rune")
+			pool.StakerTxs += txs
 		}
 	}
 
-	// Find the number of swaps, per pool
+	// Find the number of swaps
 	resp, err = in.Query(
-		"SELECT COUNT(rune) FROM swaps GROUP BY pool",
+		fmt.Sprintf("SELECT COUNT(rune) AS rune FROM swaps WHERE pool = '%s'", ticker.String()),
 	)
 	if err != nil {
-		return nil, err
+		return noPool, err
 	}
 
-	for _, series := range resp[0].Series {
-		var ticker common.Ticker
-		for k, v := range series.Tags {
-			if k == "pool" {
-				ticker, err = common.NewTicker(v)
-				if err != nil {
-					return nil, err
-				}
-				for i := range pools {
-					if pools[i].Ticker.Equals(ticker) {
-						pools[i].Swaps, _ = series.Values[0][1].(json.Number).Int64()
-						break
-					}
-				}
-				break
-			}
-		}
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		pool.Swaps, _ = getIntValue(resp[0].Series[0], "rune")
 	}
 
-	return pools, nil
+	// Find Volumes
+	resp, err = in.Query(
+		fmt.Sprintf("SELECT SUM(token) AS token from (SELECT ABS(token) AS token FROM swaps WHERE pool = '%s')", ticker.String()),
+	)
+	if err != nil {
+		return noPool, err
+	}
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		pool.VolAT, _ = getFloatValue(resp[0].Series[0], "token")
+	}
+
+	// Find Volumes
+
+	query := fmt.Sprintf("SELECT SUM(token) AS token from (SELECT ABS(token) AS token FROM swaps WHERE pool = '%s' and time > %d)", ticker.String(), makeTimestamp(time.Now().Add(-24*time.Hour)))
+	resp, err = in.Query(query)
+	if err != nil {
+		return noPool, err
+	}
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		pool.Vol24, _ = getFloatValue(resp[0].Series[0], "token")
+	}
+
+	// calculate ROI
+	pool.RoiAT = (((pool.RuneAmount * pool.TokenAmount) / 2) - pool.Units) / pool.Units
+
+	return pool, nil
 }
