@@ -2,12 +2,15 @@ package binance
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"gitlab.com/thorchain/bepswap/common"
+
+	"gitlab.com/thorchain/bepswap/chain-service/config"
 )
 
 // Creating this binance client because the official go-sdk doesn't support
@@ -23,6 +26,14 @@ type Binance interface {
 
 type BinanceClient struct {
 	BaseURL string
+}
+
+// NewBinanceClient create a new instance of BinanceClient
+func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
+	if len(cfg.DEXHost) == 0 {
+		return nil, errors.New("DEXHost is empty")
+	}
+	return &BinanceClient{BaseURL: fmt.Sprintf("https:%s", cfg.DEXHost)}, nil
 }
 
 type httpRespGetTx struct {
@@ -41,6 +52,7 @@ type httpRespGetBlock struct {
 	Tx     []TxDetail `json:"tx"`
 }
 
+// TODO update it to get tx from binnance node as we are going to run  binane full node
 func (bnb BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
 	// Rate Limit: 10 requests per IP per second.

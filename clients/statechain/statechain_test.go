@@ -1,10 +1,15 @@
 package statechain
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/config"
+
 	"gitlab.com/thorchain/bepswap/common"
 	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
 	. "gopkg.in/check.v1"
@@ -17,45 +22,57 @@ type StatechainSuite struct{}
 var _ = Suite(&StatechainSuite{})
 
 func (s *StatechainSuite) TestStatechain(c *C) {
-	now := time.Now()
-	statechain := Statechain{
-		Statechain: Dummy{
-			Events: []sTypes.Event{
-				{
-					ID:     common.Amount("1"),
-					Type:   "swap",
-					InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA",
-					Pool:   common.Ticker("BNB"),
-					Event:  []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "21" }, "target_coin": { "denom": "BNB", "amount": "10" }, "slip": "1.15" }`),
-				},
-				{
-					ID:     common.Amount("2"),
-					Type:   "stake",
-					InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
-					Pool:   common.Ticker("BNB"),
-					Event:  []byte(`{ "rune_amount": "31", "token_amount": "35", "stake_units": "2.34" }`),
-				},
-				{
-					ID:     common.Amount("3"),
-					Type:   "unstake",
-					InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
-					Pool:   common.Ticker("BNB"),
-					Event:  []byte(`{ "rune_amount": "31", "token_amount": "35", "stake_units": "2.34" }`),
-				},
-			},
-			Err: nil,
-		},
-		Binance: binance.Dummy{
-			Detail: binance.TxDetail{
-				Timestamp:   now,
-				ToAddress:   "tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl",
-				FromAddress: "tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt",
-			},
-			Err: nil,
-		},
-	}
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	id, pts, err := statechain.GetPoints(0)
+		events := []sTypes.Event{
+			{
+				ID:     common.Amount("1"),
+				Type:   "swap",
+				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA",
+				Pool:   common.Ticker("BNB"),
+				Event:  []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "21" }, "target_coin": { "denom": "BNB", "amount": "10" }, "slip": "1.15" }`),
+			},
+			{
+				ID:     common.Amount("2"),
+				Type:   "stake",
+				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
+				Pool:   common.Ticker("BNB"),
+				Event:  []byte(`{ "rune_amount": "31", "token_amount": "35", "stake_units": "2.34" }`),
+			},
+			{
+				ID:     common.Amount("3"),
+				Type:   "unstake",
+				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
+				Pool:   common.Ticker("BNB"),
+				Event:  []byte(`{ "rune_amount": "31", "token_amount": "35", "stake_units": "2.34" }`),
+			},
+		}
+		buf, err := json.Marshal(events)
+		c.Assert(err, IsNil)
+		_, err = w.Write(buf)
+		c.Assert(err, IsNil)
+	})
+	srv := httptest.NewServer(h)
+
+	defer srv.Close()
+	now := time.Now()
+	b := &binance.Dummy{
+		Detail: binance.TxDetail{
+			Timestamp:   now,
+			ToAddress:   "tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl",
+			FromAddress: "tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt",
+		},
+		Err: nil,
+	}
+	stateChainApi, err := NewStatechainAPI(config.StateChainConfiguration{
+		Scheme:      "http",
+		Host:        srv.Listener.Addr().String(),
+		ReadTimeout: time.Second,
+	}, b)
+	c.Assert(err, IsNil)
+	c.Assert(stateChainApi, NotNil)
+
+	id, pts, err := stateChainApi.GetPoints(0)
 	c.Assert(err, IsNil)
 	c.Assert(pts, HasLen, 3)
 	c.Check(id, Equals, int64(3))
