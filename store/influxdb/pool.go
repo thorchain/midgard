@@ -9,8 +9,8 @@ import (
 
 type Pool struct {
 	Ticker        common.Ticker `json:"asset"`
-	TotalFeesTKN  float64       `json:"totalFeesTKN"`  // TODO
-	TotalFeesRune float64       `json:"totalFeesRune"` // TODO
+	TotalFeesTKN  float64       `json:"totalFeesTKN"`
+	TotalFeesRune float64       `json:"totalFeesRune"`
 	Vol24         float64       `json:"vol24hr"`
 	VolAT         float64       `json:"volAT"`
 	RuneAmount    float64       `json:"depth"`
@@ -65,14 +65,18 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 
 	// Find the number of swaps
 	resp, err = in.Query(
-		fmt.Sprintf("SELECT COUNT(rune) AS rune FROM swaps WHERE pool = '%s'", ticker.String()),
+		fmt.Sprintf("SELECT COUNT(rune) AS rune, SUM(token_fee) AS token_fee, SUM(rune_fee) AS rune_fee FROM swaps WHERE pool = '%s'", ticker.String()),
 	)
 	if err != nil {
 		return noPool, err
 	}
 
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
-		pool.Swaps, _ = getIntValue(resp[0].Series[0], "rune")
+		series := resp[0].Series[0]
+		pool.Swaps, _ = getIntValue(series, "rune")
+		pool.TotalFeesTKN, _ = getFloatValue(series, "token_fee")
+		pool.TotalFeesRune, _ = getFloatValue(series, "rune_fee")
+
 	}
 
 	// Find Volumes

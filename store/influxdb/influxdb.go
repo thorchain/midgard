@@ -80,8 +80,6 @@ func (in *Client) Query(query string) (res []client.Result, err error) {
 		return nil, err
 	}
 
-	// log.Println(resp.Results)
-
 	return resp.Results, err
 }
 
@@ -104,6 +102,18 @@ func (in *Client) Writes(pts []client.Point) error {
 
 func (in *Client) AddEvent(evt ToPoint) error {
 	return in.Write(evt.Point())
+}
+
+// helper func to get tag
+func getStringValue(row models.Row, key string) (string, bool) {
+	for i, col := range row.Columns {
+		if col == key {
+			f, ok := row.Values[0][i].(string)
+			return f, ok
+		}
+	}
+
+	return "", false
 }
 
 // helper func to get values from query

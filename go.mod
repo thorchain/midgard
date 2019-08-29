@@ -14,10 +14,9 @@ require (
 	github.com/rs/zerolog v1.15.0
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.2
-	github.com/superoo7/go-gecko v0.0.0-20190607060444-a448b0c99969 // indirect
+	github.com/superoo7/go-gecko v0.0.0-20190607060444-a448b0c99969
 	gitlab.com/thorchain/bepswap/common v0.0.0-20190823123750-2e16dc69db55
-	gitlab.com/thorchain/bepswap/statechain v0.0.0-20190826134211-8df2518d6572
-	golang.org/x/arch v0.0.0-20190815191158-8a70ba74b3a1 // indirect
+	gitlab.com/thorchain/bepswap/statechain v0.0.0-20190829062427-c76e6e1b14f4
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 	gopkg.in/h2non/gock.v1 v1.0.15 // indirect
 )

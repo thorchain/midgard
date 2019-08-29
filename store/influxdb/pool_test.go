@@ -14,6 +14,8 @@ var _ = Suite(&PoolSuite{})
 func (s *PoolSuite) TestGetPool(c *C) {
 	clc := NewTestClient(c)
 	now := time.Now()
+	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
 
 	stake := NewStakeEvent(
 		1,
@@ -58,7 +60,13 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		12.3,
 		14.4,
 		0.07,
+		0.01,
+		0.02,
+		0.03,
+		0.04,
 		common.Ticker("BNB"),
+		from,
+		to,
 		now,
 	)
 	err = clc.AddEvent(swap)
@@ -69,7 +77,13 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		12.3,
 		14.4,
 		0.07,
+		0.01,
+		0.02,
+		0.03,
+		0.04,
 		common.Ticker("TCAN-014"),
+		from,
+		to,
 		now,
 	)
 	err = clc.AddEvent(swap)
@@ -80,7 +94,13 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		12.3,
 		-4.4,
 		0.07,
+		0.01,
+		0.02,
+		0.03,
+		0.04,
 		common.Ticker("TCAN-014"),
+		from,
+		to,
 		time.Now().Add(-72*time.Hour),
 	)
 	err = clc.AddEvent(swap)
@@ -94,6 +114,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 	c.Check(pool.VolAT, Equals, 14.4)
 	c.Check(pool.Vol24, Equals, 14.4)
 	c.Check(pool.Units, Equals, 5.1)
+	c.Check(pool.TotalFeesTKN, Equals, 0.0)
+	c.Check(pool.TotalFeesRune, Equals, 0.04)
 	c.Check(pool.Stakers, Equals, int64(1))
 	c.Check(pool.StakerTxs, Equals, int64(1))
 	c.Check(pool.Swaps, Equals, int64(1))
@@ -106,6 +128,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 	c.Check(pool.Units, Equals, 42.0)
 	c.Check(pool.VolAT, Equals, 18.8)
 	c.Check(pool.Vol24, Equals, 14.4)
+	c.Check(pool.TotalFeesTKN, Equals, 0.0)
+	c.Check(pool.TotalFeesRune, Equals, 0.08)
 	c.Check(pool.Stakers, Equals, int64(2))
 	c.Check(pool.StakerTxs, Equals, int64(2))
 	c.Check(pool.Swaps, Equals, int64(2))
