@@ -7,21 +7,26 @@ import (
 
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"gitlab.com/thorchain/bepswap/common"
+
+	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
-	"gitlab.com/thorchain/bepswap/common"
 )
 
 // Server
 type Server struct {
-	cfg        config.Configuration
-	logger     zerolog.Logger
-	engine     *gin.Engine
-	httpServer *http.Server
-	influxDB   *influxdb.Client
+	cfg              config.Configuration
+	logger           zerolog.Logger
+	engine           *gin.Engine
+	httpServer       *http.Server
+	influxDB         *influxdb.Client
+	stateChainClient *statechain.StatechainAPI
 }
 
 func NewServer(cfg config.Configuration) (*Server, error) {
@@ -30,7 +35,15 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	engine.Use(gin.Recovery())
 	store, err := influxdb.NewClient(cfg.Influx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "fail to create influxdb")
+	}
+	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
+	if nil != err {
+		return nil, errors.Wrap(err, "fail to create binance client")
+	}
+	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient)
+	if nil != err {
+		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
 
 	srv := &http.Server{
@@ -40,11 +53,12 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		Handler:      engine,
 	}
 	return &Server{
-		cfg:        cfg,
-		logger:     log.With().Str("module", "server").Logger(),
-		engine:     engine,
-		httpServer: srv,
-		influxDB:   store,
+		cfg:              cfg,
+		logger:           log.With().Str("module", "server").Logger(),
+		engine:           engine,
+		httpServer:       srv,
+		influxDB:         store,
+		stateChainClient: stateChainApi,
 	}, nil
 }
 
@@ -58,8 +72,21 @@ func (s *Server) registerEndpoints() {
 
 	s.engine.GET("/health", s.healthCheck)
 	s.engine.GET("/poolData", s.getPool)
+	s.engine.GET("/tokens", s.getTokens)
 }
 
+func (s *Server) getTokens(g *gin.Context) {
+	pools, err := s.stateChainClient.GetPools()
+	if nil != err {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	p := make([]string, len(pools))
+	for idx, item := range pools {
+		p[idx] = item.Ticker.String()
+	}
+	g.JSON(http.StatusOK, p)
+}
 func (s *Server) getPool(g *gin.Context) {
 	asset := g.Query("asset")
 	ticker, err := common.NewTicker(asset)
