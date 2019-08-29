@@ -91,7 +91,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 
 	// Find Volumes
 
-	query := fmt.Sprintf("SELECT SUM(token) AS token from (SELECT ABS(token) AS token FROM swaps WHERE pool = '%s' and time > %d)", ticker.String(), makeTimestamp(time.Now().Add(-24*time.Hour)))
+	query := fmt.Sprintf("SELECT SUM(token) AS token from (SELECT ABS(token) AS token FROM swaps WHERE pool = '%s' and time > %d)", ticker.String(), time.Now().Add(-24*time.Hour).UnixNano())
 	resp, err = in.Query(query)
 	if err != nil {
 		return noPool, err

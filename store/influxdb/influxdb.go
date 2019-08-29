@@ -159,8 +159,3 @@ func getIntValue(row models.Row, key string) (int64, bool) {
 
 	return 0, false
 }
-
-// creates a epoch timestamp in ms (to match precision)
-func makeTimestamp(ts time.Time) int64 {
-	return ts.UnixNano() /// int64(time.Millisecond)
-}
