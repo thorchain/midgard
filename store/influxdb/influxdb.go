@@ -16,7 +16,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 )
 
-const precision = "ms"
+const precision = "n"
 
 type InfluxDB interface {
 	AddEvent(evt ToPoint) error
@@ -105,6 +105,18 @@ func (in *Client) AddEvent(evt ToPoint) error {
 }
 
 // helper func to get tag
+func getTimeValue(row models.Row, key string) (time.Time, bool) {
+	for i, col := range row.Columns {
+		if col == key {
+			f, err := time.Parse(time.RFC3339, row.Values[0][i].(string))
+			return f, err == nil
+		}
+	}
+
+	return time.Time{}, false
+}
+
+// helper func to get tag
 func getStringValue(row models.Row, key string) (string, bool) {
 	for i, col := range row.Columns {
 		if col == key {
@@ -146,9 +158,4 @@ func getIntValue(row models.Row, key string) (int64, bool) {
 	}
 
 	return 0, false
-}
-
-// creates a epoch timestamp in ms (to match precision)
-func makeTimestamp(ts time.Time) int64 {
-	return ts.UnixNano() / int64(time.Millisecond)
 }
