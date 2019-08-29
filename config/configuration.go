@@ -10,11 +10,13 @@ import (
 
 // Configuration  for chain service
 type Configuration struct {
-	ListenPort      int                   `json:"listen_port" mapstructure:"listen_port"`
-	ShutdownTimeout time.Duration         `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
-	ReadTimeout     time.Duration         `json:"read_timeout" mapstructure:"read_timeout"`
-	WriteTimeout    time.Duration         `json:"write_timeout" mapstructure:"write_timeout"`
-	Influx          InfluxDBConfiguration `json:"influx" mapstructure:"influx"`
+	ListenPort      int                     `json:"listen_port" mapstructure:"listen_port"`
+	ShutdownTimeout time.Duration           `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
+	ReadTimeout     time.Duration           `json:"read_timeout" mapstructure:"read_timeout"`
+	WriteTimeout    time.Duration           `json:"write_timeout" mapstructure:"write_timeout"`
+	Influx          InfluxDBConfiguration   `json:"influx" mapstructure:"influx"`
+	Statechain      StateChainConfiguration `json:"statechain" mapstructure:"statechain"`
+	Binance         BinanceConfiguration    `json:"binance" mapstructure:"binance"`
 }
 
 // InfluxDBConfiguration config for Influxdb
@@ -26,11 +28,30 @@ type InfluxDBConfiguration struct {
 	Database string `json:"database" mapstructure:"database"`
 }
 
+type StateChainConfiguration struct {
+	Scheme      string        `json:"scheme" mapstructure:"scheme"`
+	Host        string        `json:"host" mapstructure:"host"`
+	ReadTimeout time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
+}
+
+// BinanceConfiguration settings for binance client
+type BinanceConfiguration struct {
+	DEXHost string `json:"dex_host" mapstructure:"dex_host"`
+}
+
+// CoingeckoConfiguration settings for Coingecko
+type CoingeckoConfiguration struct {
+	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
+}
+
 func applyDefaultObserverConfig() {
 	viper.SetDefault("listen_port", 8080)
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
 	viper.SetDefault("influx.port", 8086)
+	viper.SetDefault("statechain.scheme", "http")
+	viper.SetDefault("statechain.host", "localhost:1317")
+	viper.SetDefault("statechain.read_timeout", "10s")
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
