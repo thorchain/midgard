@@ -73,17 +73,10 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/health", s.healthCheck)
 	s.engine.GET("/poolData", s.getPool)
 	s.engine.GET("/tokens", s.getTokens)
-	s.engine.GET("/stakeData", s.getStakerInfo)
+	s.engine.GET("/stakerData", s.getStakerInfo)
 }
 
 func (s *Server) getStakerInfo(g *gin.Context) {
-	asset := g.Query("asset")
-	ticker, err := common.NewTicker(asset)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	staker := g.Query("staker")
 	addr, err := common.NewBnbAddress(staker)
 	if err != nil {
@@ -91,13 +84,29 @@ func (s *Server) getStakerInfo(g *gin.Context) {
 		return
 	}
 
-	pool, err := s.influxDB.GetStakerDataForPool(ticker, addr)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	asset := g.Query("asset")
+	if len(asset) == 0 {
+		data, err := s.influxDB.ListStakerPools(addr)
+		if err != nil {
+			g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		g.JSON(http.StatusOK, data)
+	} else {
+		ticker, err := common.NewTicker(asset)
+		if err != nil {
+			g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-	g.JSON(http.StatusOK, pool)
+		data, err := s.influxDB.GetStakerDataForPool(ticker, addr)
+		if err != nil {
+			g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		g.JSON(http.StatusOK, data)
+	}
 }
 
 func (s *Server) getTokens(g *gin.Context) {
