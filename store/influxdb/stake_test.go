@@ -69,7 +69,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(tickers[0].String(), Equals, "BNB")
 	c.Check(tickers[1].String(), Equals, "LOKI")
 
-	events, err := clc.ListStakeEvents(addr, common.Ticker("LOKI"))
+	events, err := clc.ListStakeEvents(addr, common.Ticker("LOKI"), 0, 0)
 	c.Assert(err, IsNil)
 	c.Assert(events, HasLen, 1)
 	evt := events[0]
@@ -83,7 +83,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(evt.Address.String(), Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	c.Check(evt.Timestamp.UnixNano(), Equals, now.UnixNano())
 
-	events, err = clc.ListStakeEvents(addr, common.Ticker(""))
+	events, err = clc.ListStakeEvents(addr, common.Ticker(""), 0, 0)
 	c.Assert(err, IsNil)
 	c.Assert(events, HasLen, 2)
 	evt = events[0]

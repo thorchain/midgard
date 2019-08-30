@@ -56,13 +56,24 @@ func (evt StakeEvent) Point() client.Point {
 	}
 }
 
-func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker) (events []StakeEvent, err error) {
+func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker, limit, offset int) (events []StakeEvent, err error) {
+
+	// default to 100 limit
+	if limit == 0 {
+		limit = 100
+	}
+
+	// place an upper bound on limit to enforce people can't call for 10billion
+	// records
+	if limit > 100 {
+		limit = 100
+	}
 
 	var query string
 	if ticker.IsEmpty() {
-		query = fmt.Sprintf("SELECT * FROM stakes WHERE address = '%s'", address.String())
+		query = fmt.Sprintf("SELECT * FROM stakes WHERE address = '%s' LIMIT %d OFFSET %d", address.String(), limit, offset)
 	} else {
-		query = fmt.Sprintf("SELECT * FROM stakes WHERE address = '%s' and pool = '%s'", address.String(), ticker.String())
+		query = fmt.Sprintf("SELECT * FROM stakes WHERE address = '%s' and pool = '%s' LIMIT %d OFFSET %d", address.String(), ticker.String(), limit, offset)
 	}
 
 	// Find the number of stakers
