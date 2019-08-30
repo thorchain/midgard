@@ -44,9 +44,9 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 
 	series := resp[0].Series[0]
-	pool.RuneAmount, _ = getFloatValue(series, "rune")
-	pool.TokenAmount, _ = getFloatValue(series, "token")
-	pool.Units, _ = getFloatValue(series, "units")
+	pool.RuneAmount, _ = getFloatValue(series.Columns, series.Values[0], "rune")
+	pool.TokenAmount, _ = getFloatValue(series.Columns, series.Values[0], "token")
+	pool.Units, _ = getFloatValue(series.Columns, series.Values[0], "units")
 
 	// Find the number of stakers
 	resp, err = in.Query(
@@ -58,7 +58,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
 		pool.Stakers = int64(len(resp[0].Series))
 		for _, series := range resp[0].Series {
-			txs, _ := getIntValue(series, "rune")
+			txs, _ := getIntValue(series.Columns, series.Values[0], "rune")
 			pool.StakerTxs += txs
 		}
 	}
@@ -73,9 +73,9 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
 		series := resp[0].Series[0]
-		pool.Swaps, _ = getIntValue(series, "rune")
-		pool.TotalFeesTKN, _ = getFloatValue(series, "token_fee")
-		pool.TotalFeesRune, _ = getFloatValue(series, "rune_fee")
+		pool.Swaps, _ = getIntValue(series.Columns, series.Values[0], "rune")
+		pool.TotalFeesTKN, _ = getFloatValue(series.Columns, series.Values[0], "token_fee")
+		pool.TotalFeesRune, _ = getFloatValue(series.Columns, series.Values[0], "rune_fee")
 	}
 
 	// Find Volumes
@@ -86,18 +86,19 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 		return noPool, err
 	}
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
-		pool.VolAT, _ = getFloatValue(resp[0].Series[0], "token")
+		series := resp[0].Series[0]
+		pool.VolAT, _ = getFloatValue(series.Columns, series.Values[0], "token")
 	}
 
 	// Find Volumes
-
 	query := fmt.Sprintf("SELECT SUM(token) AS token from (SELECT ABS(token) AS token FROM swaps WHERE pool = '%s' and time > %d)", ticker.String(), time.Now().Add(-24*time.Hour).UnixNano())
 	resp, err = in.Query(query)
 	if err != nil {
 		return noPool, err
 	}
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
-		pool.Vol24, _ = getFloatValue(resp[0].Series[0], "token")
+		series := resp[0].Series[0]
+		pool.Vol24, _ = getFloatValue(series.Columns, series.Values[0], "token")
 	}
 
 	// calculate ROI

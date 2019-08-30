@@ -16,9 +16,15 @@ func (s *PoolSuite) TestGetPool(c *C) {
 	now := time.Now()
 	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
+	inHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD218")
+	c.Assert(err, IsNil)
+	outHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD21V")
+	c.Assert(err, IsNil)
 
 	stake := NewStakeEvent(
 		1,
+		inHash,
+		outHash,
 		12.3,
 		14.4,
 		5.1,
@@ -27,11 +33,13 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		now,
 	)
 
-	err := clc.AddEvent(stake)
+	err = clc.AddEvent(stake)
 	c.Assert(err, IsNil)
 
 	stake = NewStakeEvent(
 		2,
+		inHash,
+		outHash,
 		56.987,
 		87.3835,
 		12,
@@ -44,6 +52,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 
 	stake = NewStakeEvent(
 		3,
+		inHash,
+		outHash,
 		4,
 		5,
 		30,
@@ -57,6 +67,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 	// Add Swaps
 	swap := NewSwapEvent(
 		1,
+		inHash,
+		outHash,
 		12.3,
 		14.4,
 		0.07,
@@ -74,6 +86,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 
 	swap = NewSwapEvent(
 		2,
+		inHash,
+		outHash,
 		12.3,
 		14.4,
 		0.07,
@@ -91,6 +105,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 
 	swap = NewSwapEvent(
 		3,
+		inHash,
+		outHash,
 		12.3,
 		-4.4,
 		0.07,
