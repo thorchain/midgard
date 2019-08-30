@@ -35,7 +35,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 		return noPool, err
 	}
 
-	if len(resp) == 0 || len(resp[0].Series) == 0 {
+	if len(resp) == 0 || len(resp[0].Series) == 0 || len(resp[0].Series[0].Values) == 0 {
 		return noPool, fmt.Errorf("Pool does not exist")
 	}
 
@@ -55,7 +55,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	if err != nil {
 		return noPool, err
 	}
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		pool.Stakers = int64(len(resp[0].Series))
 		for _, series := range resp[0].Series {
 			txs, _ := getIntValue(series.Columns, series.Values[0], "rune")
@@ -71,7 +71,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 		return noPool, err
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		pool.Swaps, _ = getIntValue(series.Columns, series.Values[0], "rune")
 		pool.TotalFeesTKN, _ = getFloatValue(series.Columns, series.Values[0], "token_fee")
@@ -85,7 +85,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	if err != nil {
 		return noPool, err
 	}
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		pool.VolAT, _ = getFloatValue(series.Columns, series.Values[0], "token")
 	}
@@ -96,7 +96,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	if err != nil {
 		return noPool, err
 	}
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		pool.Vol24, _ = getFloatValue(series.Columns, series.Values[0], "token")
 	}
