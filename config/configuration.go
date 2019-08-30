@@ -36,7 +36,9 @@ type StateChainConfiguration struct {
 
 // BinanceConfiguration settings for binance client
 type BinanceConfiguration struct {
-	DEXHost string `json:"dex_host" mapstructure:"dex_host"`
+	DEXHost        string        `json:"dex_host" mapstructure:"dex_host"`
+	Scheme         string        `json:"scheme" mapstructure:"scheme"`
+	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 }
 
 // CoingeckoConfiguration settings for Coingecko
@@ -52,6 +54,8 @@ func applyDefaultObserverConfig() {
 	viper.SetDefault("statechain.scheme", "http")
 	viper.SetDefault("statechain.host", "localhost:1317")
 	viper.SetDefault("statechain.read_timeout", "10s")
+	viper.SetDefault("binance.scheme", "https")
+	viper.SetDefault("binance.request_timeout", "30s")
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
