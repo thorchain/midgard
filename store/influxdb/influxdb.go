@@ -79,11 +79,11 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 		BEGIN 
 			SELECT 
 				COUNT(token) AS total_token_tx,
-				ABS(SUM(token)) AS token_sum,
-				ABS(SUM(token_fee)) as token_fee_sum,
+				SUM(ABS(token)) AS token_sum,
+				SUM(ABS(token_fee)) as token_fee_sum,
 				COUNT(rune) AS total_rune_tx,
-				ABS(SUM(rune)) AS rune_sum,
-				ABS(SUM(rune_fee)) as rune_fee_sum
+				SUM(ABS(rune)) AS rune_sum,
+				SUM(ABS(rune_fee)) as rune_fee_sum
 			INTO "db0"."autogen"."swaps_usage" 
 			FROM "swaps" GROUP BY time(1d),target,pool,to_address
 		END
