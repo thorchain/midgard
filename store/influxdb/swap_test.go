@@ -19,6 +19,7 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	c.Assert(err, IsNil)
 	outHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD21V")
 	c.Assert(err, IsNil)
+	now := time.Now()
 
 	swap := NewSwapEvent(
 		1,
@@ -34,7 +35,7 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 		common.Ticker("BNB"),
 		from,
 		to,
-		time.Now(),
+		now,
 	)
 
 	c.Check(swap.ID, Equals, int64(1))
@@ -53,23 +54,60 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	err = clc.AddEvent(swap)
 	c.Assert(err, IsNil)
 
-	// get the swap
-	resp, err := clc.Query("SELECT * from swaps")
+	swap = NewSwapEvent(
+		2,
+		inHash,
+		outHash,
+		12.3,
+		14.4,
+		0.1,
+		0.2,
+		0.3,
+		0.4,
+		0.5,
+		common.Ticker("LOKI"),
+		from,
+		to,
+		now,
+	)
+	err = clc.AddEvent(swap)
 	c.Assert(err, IsNil)
-	c.Assert(resp, HasLen, 1)
-	c.Assert(resp[0].Series, HasLen, 1)
-	c.Assert(resp[0].Series[0].Values, HasLen, 1)
-	series := resp[0].Series[0]
 
-	v, ok := getStringValue(series.Columns, series.Values[0], "pool")
-	c.Check(ok, Equals, true)
-	c.Check(v, Equals, "BNB", Commentf("%+v", resp[0].Series[0].Values))
+	events, err := clc.ListSwapEvents("", "", "", 0, 0)
+	c.Assert(err, IsNil)
+	c.Assert(events, HasLen, 2)
+	evt := events[0]
+	c.Check(evt.ID, Equals, int64(1))
+	c.Check(evt.InHash, Equals, inHash)
+	c.Check(evt.OutHash, Equals, outHash)
+	c.Check(evt.RuneAmount, Equals, 12.3)
+	c.Check(evt.TokenAmount, Equals, 14.4)
+	c.Check(evt.PriceSlip, Equals, 0.1)
+	c.Check(evt.TradeSlip, Equals, 0.2)
+	c.Check(evt.PoolSlip, Equals, 0.3)
+	c.Check(evt.OutputSlip, Equals, 0.4)
+	c.Check(evt.RuneFee, Equals, 0.5)
+	c.Check(evt.TokenFee, Equals, 0.0)
+	c.Check(evt.Pool.String(), Equals, "BNB")
+	c.Check(evt.FromAddress.String(), Equals, from.String())
+	c.Check(evt.ToAddress.String(), Equals, to.String())
+	c.Check(evt.Timestamp.UnixNano(), Equals, now.UnixNano())
 
-	v, ok = getStringValue(series.Columns, series.Values[0], "from_address")
-	c.Check(ok, Equals, true)
-	c.Check(v, Equals, from.String(), Commentf("%+v", resp[0].Series[0].Values))
+	evt = events[1]
+	c.Check(evt.ID, Equals, int64(2))
+	c.Check(evt.InHash, Equals, inHash)
+	c.Check(evt.OutHash, Equals, outHash)
+	c.Check(evt.RuneAmount, Equals, 12.3)
+	c.Check(evt.TokenAmount, Equals, 14.4)
+	c.Check(evt.PriceSlip, Equals, 0.1)
+	c.Check(evt.TradeSlip, Equals, 0.2)
+	c.Check(evt.PoolSlip, Equals, 0.3)
+	c.Check(evt.OutputSlip, Equals, 0.4)
+	c.Check(evt.RuneFee, Equals, 0.5)
+	c.Check(evt.TokenFee, Equals, 0.0)
+	c.Check(evt.Pool.String(), Equals, "LOKI")
+	c.Check(evt.FromAddress.String(), Equals, from.String())
+	c.Check(evt.ToAddress.String(), Equals, to.String())
+	c.Check(evt.Timestamp.UnixNano(), Equals, now.UnixNano())
 
-	v, ok = getStringValue(series.Columns, series.Values[0], "to_address")
-	c.Check(ok, Equals, true)
-	c.Check(v, Equals, to.String(), Commentf("%+v", resp[0].Series[0].Values))
 }
