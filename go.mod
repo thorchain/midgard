@@ -6,7 +6,6 @@ require (
 	github.com/binance-chain/go-sdk v1.0.9
 	github.com/gin-contrib/logger v0.0.1
 	github.com/gin-gonic/gin v1.4.0
-	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/miguelmota/go-coinmarketcap v0.1.5
