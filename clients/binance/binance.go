@@ -33,6 +33,7 @@ func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 	if len(cfg.DEXHost) == 0 {
 		return nil, errors.New("DEXHost is empty")
 	}
+
 	return &BinanceClient{BaseURL: fmt.Sprintf("https:%s", cfg.DEXHost)}, nil
 }
 
