@@ -85,7 +85,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 				SUM(ABS(rune)) AS rune_sum,
 				SUM(ABS(rune_fee)) as rune_fee_sum
 			INTO "db0"."autogen"."swaps_usage" 
-			FROM "swaps" GROUP BY time(1d),target,pool,to_address
+			FROM "swaps" GROUP BY time(1d),target,pool,from_address
 		END
 		`,
 	}
