@@ -55,6 +55,14 @@ func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, priceSlip, 
 }
 
 func (evt SwapEvent) Point() client.Point {
+	// save which direction we are swapping. Saving as an tag is a faster query
+	// because tags are index, and fields are not.
+	var target string
+	if evt.RuneFee > 0 {
+		target = "rune"
+	} else {
+		target = "token"
+	}
 	return client.Point{
 		Measurement: "swaps",
 		Tags: map[string]string{
@@ -64,6 +72,7 @@ func (evt SwapEvent) Point() client.Point {
 			"to_address":   evt.ToAddress.String(),
 			"in_hash":      evt.InHash.String(),
 			"out_hash":     evt.OutHash.String(),
+			"target":       target,
 		},
 		Fields: map[string]interface{}{
 			"ID":          evt.ID,
