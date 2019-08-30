@@ -9,6 +9,7 @@
     "host": "localhost:1317"
   },
   "binance": {
+    "scheme": "https",
     "dex_host": "testnet-dex.binance.org"
   }
 }

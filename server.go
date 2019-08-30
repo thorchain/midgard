@@ -14,6 +14,7 @@ import (
 	"gitlab.com/thorchain/bepswap/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
@@ -27,6 +28,7 @@ type Server struct {
 	httpServer       *http.Server
 	influxDB         *influxdb.Client
 	stateChainClient *statechain.StatechainAPI
+	tokenService     *coingecko.TokenService
 }
 
 func NewServer(cfg config.Configuration) (*Server, error) {
@@ -41,11 +43,15 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
+
 	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
-
+	tokenService, err := coingecko.NewTokenService(cfg.Binance, store)
+	if nil != err {
+		return nil, errors.Wrap(err, "fail to create token service")
+	}
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
 		ReadTimeout:  cfg.ReadTimeout,
@@ -59,6 +65,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		httpServer:       srv,
 		influxDB:         store,
 		stateChainClient: stateChainApi,
+		tokenService:     tokenService,
 	}, nil
 }
 
@@ -74,6 +81,44 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/poolData", s.getPool)
 	s.engine.GET("/tokens", s.getTokens)
 	s.engine.GET("/stakerData", s.getStakerInfo)
+	s.engine.GET("/tokenData", s.getTokenData)
+}
+
+func (s *Server) getTokenData(g *gin.Context) {
+	token, ok := g.GetQuery("token")
+	if !ok {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+		return
+	}
+	td, err := s.tokenService.GetTokenDetail(token)
+	if nil != err {
+		s.logger.Error().Err(err).Str("symbol", token).Msg("fail to get token detail")
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	g.JSON(http.StatusOK, *td)
+}
+
+func (s *Server) getAToken(g *gin.Context, token string) {
+	if len(token) == 0 {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+		return
+	}
+	pool, err := s.stateChainClient.GetPool(token)
+	if nil != err {
+		s.logger.Error().Err(err).Str("symbol", token).Msg("fail to get pool")
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if nil == pool {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "pool doesn't exist"})
+	}
+	tokenData, err := s.tokenService.GetToken(token, *pool)
+	if nil != err {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	g.JSON(http.StatusOK, tokenData)
+
 }
 
 func (s *Server) getStakerInfo(g *gin.Context) {
@@ -108,11 +153,18 @@ func (s *Server) getStakerInfo(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, data)
+
 }
 
 func (s *Server) getTokens(g *gin.Context) {
+	token, ok := g.GetQuery("token")
+	if ok {
+		s.getAToken(g, token)
+		return
+	}
 	pools, err := s.stateChainClient.GetPools()
 	if nil != err {
+		s.logger.Error().Err(err).Msg("fail to get pools")
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

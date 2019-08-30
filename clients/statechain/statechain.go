@@ -3,7 +3,6 @@ package statechain
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sort"
 
@@ -62,6 +61,11 @@ func (sc *StatechainAPI) GetPools() ([]sTypes.Pool, error) {
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")
 	}
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("fail to close response body")
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
 	}
@@ -71,6 +75,32 @@ func (sc *StatechainAPI) GetPools() ([]sTypes.Pool, error) {
 		return nil, errors.Wrap(err, "fail to unmarshal pools")
 	}
 	return pools, nil
+}
+
+// GetPool with the given ticker
+func (sc *StatechainAPI) GetPool(ticker string) (*sTypes.Pool, error) {
+	if len(ticker) == 0 {
+		return nil, errors.New("ticker is empty")
+	}
+	poolUrl := fmt.Sprintf("%s/pool/%s", sc.baseUrl, ticker)
+	resp, err := sc.netClient.Get(poolUrl)
+	if nil != err {
+		return nil, errors.Wrap(err, "fail to get pools from statechain")
+	}
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("fail to close response body")
+		}
+	}()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
+	}
+	decoder := json.NewDecoder(resp.Body)
+	var pool sTypes.Pool
+	if err := decoder.Decode(&pool); nil != err {
+		return nil, errors.Wrap(err, "fail to unmarshal pool")
+	}
+	return &pool, nil
 }
 
 func (sc *StatechainAPI) GetEvents(id int64) ([]sTypes.Event, error) {
@@ -85,13 +115,9 @@ func (sc *StatechainAPI) GetEvents(id int64) ([]sTypes.Event, error) {
 			sc.logger.Error().Err(err).Msg("fail to close response body")
 		}
 	}()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to read response")
-	}
 
 	var events []sTypes.Event
-	if err := json.Unmarshal(body, &events); nil != err {
+	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal events")
 	}
 	return events, nil
