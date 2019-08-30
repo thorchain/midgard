@@ -30,7 +30,7 @@ type SwapEvent struct {
 
 func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
 	var runeFee, tokenFee float64
-	if rAmt > 0 {
+	if rAmt < 0 {
 		runeFee = fee
 	} else {
 		tokenFee = fee
@@ -109,7 +109,6 @@ func (in Client) ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker
 		query += fmt.Sprintf(" %s ", strings.Join(where, " and "))
 	}
 	query += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
-	fmt.Printf("QUERY: %s\n", query)
 
 	// Find the number of stakers
 	resp, err := in.Query(query)
@@ -170,6 +169,58 @@ func (in Client) ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker
 			)
 			events = append(events, event)
 		}
+	}
+	return
+}
+
+type SwapData struct {
+	Ticker       common.Ticker `json:"asset"`
+	AvgTokenTx   float64       `json:"aveTxTkn"`
+	AvgRuneTx    float64       `json:"aveTxRune"`
+	AvgTokenSlip float64       `json:"aveSlipTkn"`
+	AvgRuneSlip  float64       `json:"aveSlipRune"`
+	NumTokenTx   int64         `json:"numTxTkn"`
+	NumRuneTx    int64         `json:"numTxRune"`
+	AvgTokenFee  float64       `json:"aveFeeTkn"`
+	AvgRuneFee   float64       `json:"aveFeeRune"`
+}
+
+func (in Client) GetSwapData(ticker common.Ticker) (data SwapData, err error) {
+	data.Ticker = ticker
+
+	query := fmt.Sprintf(
+		"SELECT MEAN(token) AS aveTxTkn, MEAN(trade_slip) AS aveSlipTkn, COUNT(token) AS numTxTkn, MEAN(token_fee) AS aveFeeTkn FROM swaps WHERE pool = '%s' and token < 0",
+		ticker.String())
+	// Find the number of stakers
+	tokenResp, err := in.Query(query)
+	if err != nil {
+		return
+	}
+
+	query = fmt.Sprintf(
+		"SELECT MEAN(rune) AS aveTxRune, MEAN(trade_slip) AS aveSlipRune, COUNT(rune) AS numTxRune, MEAN(rune_fee) AS aveFeeRune FROM swaps WHERE pool = '%s' and rune < 0",
+		ticker.String())
+	// Find the number of stakers
+	runeResp, err := in.Query(query)
+	if err != nil {
+		return
+	}
+
+	if len(tokenResp) > 0 && len(tokenResp[0].Series) > 0 && len(tokenResp[0].Series[0].Values) > 0 && len(runeResp) > 0 && len(runeResp[0].Series) > 0 && len(runeResp[0].Series[0].Values) > 0 {
+		tokenCols := tokenResp[0].Series[0].Columns
+		tokenVals := tokenResp[0].Series[0].Values[0]
+
+		runeCols := runeResp[0].Series[0].Columns
+		runeVals := runeResp[0].Series[0].Values[0]
+
+		data.AvgTokenTx, _ = getFloatValue(tokenCols, tokenVals, "aveTxTkn")
+		data.AvgRuneTx, _ = getFloatValue(runeCols, runeVals, "aveTxRune")
+		data.AvgTokenSlip, _ = getFloatValue(tokenCols, tokenVals, "aveSlipTkn")
+		data.AvgRuneSlip, _ = getFloatValue(runeCols, runeVals, "aveSlipRune")
+		data.NumTokenTx, _ = getIntValue(tokenCols, tokenVals, "numTxTkn")
+		data.NumRuneTx, _ = getIntValue(runeCols, runeVals, "numTxRune")
+		data.AvgTokenFee, _ = getFloatValue(tokenCols, tokenVals, "aveFeeTkn")
+		data.AvgRuneFee, _ = getFloatValue(runeCols, runeVals, "aveFeeRune")
 	}
 	return
 }
