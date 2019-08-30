@@ -70,7 +70,7 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		inHash,
 		outHash,
 		12.3,
-		14.4,
+		-5.3,
 		0.07,
 		0.01,
 		0.02,
@@ -88,7 +88,7 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		2,
 		inHash,
 		outHash,
-		12.3,
+		-12.3,
 		14.4,
 		0.07,
 		0.01,
@@ -127,11 +127,11 @@ func (s *PoolSuite) TestGetPool(c *C) {
 	c.Check(pool.Ticker.String(), Equals, "BNB")
 	c.Check(pool.RuneAmount, Equals, 12.3)
 	c.Check(pool.TokenAmount, Equals, 14.4)
-	c.Check(pool.VolAT, Equals, 14.4)
-	c.Check(pool.Vol24, Equals, 14.4)
+	c.Check(pool.VolAT, Equals, 5.3)
+	c.Check(pool.Vol24, Equals, 5.3)
 	c.Check(pool.Units, Equals, 5.1)
-	c.Check(pool.TotalFeesTKN, Equals, 0.0)
-	c.Check(pool.TotalFeesRune, Equals, 0.04)
+	c.Check(pool.TotalFeesTKN, Equals, 0.04)
+	c.Check(pool.TotalFeesRune, Equals, 0.0)
 	c.Check(pool.Stakers, Equals, int64(1))
 	c.Check(pool.StakerTxs, Equals, int64(1))
 	c.Check(pool.Swaps, Equals, int64(1))
@@ -144,8 +144,8 @@ func (s *PoolSuite) TestGetPool(c *C) {
 	c.Check(pool.Units, Equals, 42.0)
 	c.Check(pool.VolAT, Equals, 18.8)
 	c.Check(pool.Vol24, Equals, 14.4)
-	c.Check(pool.TotalFeesTKN, Equals, 0.0)
-	c.Check(pool.TotalFeesRune, Equals, 0.08)
+	c.Check(pool.TotalFeesTKN, Equals, 0.04)
+	c.Check(pool.TotalFeesRune, Equals, 0.04)
 	c.Check(pool.Stakers, Equals, int64(2))
 	c.Check(pool.StakerTxs, Equals, int64(2))
 	c.Check(pool.Swaps, Equals, int64(2))

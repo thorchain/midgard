@@ -75,8 +75,25 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/poolData", s.getPool)
 	s.engine.GET("/tokens", s.getTokens)
 	s.engine.GET("/swapTx", s.getSwapTx)
+	s.engine.GET("/swapData", s.getSwapData)
 	s.engine.GET("/stakerTx", s.getStakerTx)
 	s.engine.GET("/stakerData", s.getStakerInfo)
+}
+
+func (s *Server) getSwapData(g *gin.Context) {
+	asset, err := common.NewTicker(g.Query("asset"))
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	data, err := s.influxDB.GetSwapData(asset)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	g.JSON(http.StatusOK, data)
 }
 
 func (s *Server) getSwapTx(g *gin.Context) {
