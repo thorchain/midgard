@@ -74,8 +74,38 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/health", s.healthCheck)
 	s.engine.GET("/poolData", s.getPool)
 	s.engine.GET("/tokens", s.getTokens)
+	s.engine.GET("/swapTx", s.getSwapTx)
 	s.engine.GET("/stakerTx", s.getStakerTx)
 	s.engine.GET("/stakerData", s.getStakerInfo)
+}
+
+func (s *Server) getSwapTx(g *gin.Context) {
+	to, _ := common.NewBnbAddress(g.Query("dest"))
+	from, _ := common.NewBnbAddress(g.Query("sender"))
+
+	limit, err := strconv.Atoi(g.DefaultQuery("limit", "25"))
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	offset, err := strconv.Atoi(g.DefaultQuery("offset", "0"))
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	asset, err := common.NewTicker(g.Query("asset"))
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	data, err := s.influxDB.ListSwapEvents(to, from, asset, limit, offset)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	g.JSON(http.StatusOK, data)
 }
 
 func (s *Server) getStakerTx(g *gin.Context) {
