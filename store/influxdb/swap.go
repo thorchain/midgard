@@ -11,6 +11,8 @@ import (
 type SwapEvent struct {
 	ToPoint
 	ID          int64
+	InHash      common.TxID
+	OutHash     common.TxID
 	FromAddress common.BnbAddress
 	ToAddress   common.BnbAddress
 	RuneAmount  float64
@@ -25,7 +27,7 @@ type SwapEvent struct {
 	Timestamp   time.Time
 }
 
-func NewSwapEvent(id int64, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
+func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
 	var runeFee, tokenFee float64
 	if rAmt > 0 {
 		runeFee = fee
@@ -34,6 +36,8 @@ func NewSwapEvent(id int64, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSl
 	}
 	return SwapEvent{
 		ID:          id,
+		InHash:      inhash,
+		OutHash:     outhash,
 		FromAddress: from,
 		ToAddress:   to,
 		RuneAmount:  rAmt,
@@ -57,8 +61,11 @@ func (evt SwapEvent) Point() client.Point {
 			"pool":         evt.Pool.String(),
 			"from_address": evt.FromAddress.String(),
 			"to_address":   evt.ToAddress.String(),
+			"in_hash":      evt.InHash.String(),
+			"out_hash":     evt.OutHash.String(),
 		},
 		Fields: map[string]interface{}{
+			"ID":          evt.ID,
 			"rune":        evt.RuneAmount,
 			"token":       evt.TokenAmount,
 			"price_slip":  evt.PriceSlip,
