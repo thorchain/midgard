@@ -82,7 +82,7 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		for _, vals := range resp[0].Series[0].Values {
 			var inhash, outhash common.TxID
@@ -132,7 +132,7 @@ func (in Client) ListStakerPools(address common.BnbAddress) (tickers []common.Ti
 		return
 	}
 
-	if len(resp) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		for _, series := range resp[0].Series {
 			var units float64
 			units, _ = getFloatValue(series.Columns, series.Values[0], "units")
@@ -177,7 +177,7 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		staker.Rune, _ = getFloatValue(series.Columns, series.Values[0], "rune")
 		staker.Token, _ = getFloatValue(series.Columns, series.Values[0], "token")
@@ -192,7 +192,7 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		poolRuneAmount, _ := getFloatValue(series.Columns, series.Values[0], "rune")
 		poolTokenAmount, _ := getFloatValue(series.Columns, series.Values[0], "token")
@@ -211,7 +211,7 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		staker.DateFirstStaked, _ = getTimeValue(series.Columns, series.Values[0], "time")
 	}
