@@ -3,6 +3,8 @@
   "influx": {
     "host": "localhost",
     "user_name": "admin"
+    "resample": "10m",
+    "resample_for": "1d"
   },
   "statechain": {
     "scheme": "http",
