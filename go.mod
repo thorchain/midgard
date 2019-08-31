@@ -4,6 +4,8 @@ go 1.12
 
 require (
 	github.com/binance-chain/go-sdk v1.0.9
+	github.com/cbarraford/cache v0.0.0-20180208105705-d1dc2ca7c0a7
+	github.com/gin-contrib/cache v1.1.0
 	github.com/gin-contrib/logger v0.0.1
 	github.com/gin-gonic/gin v1.4.0
 	github.com/gorilla/mux v1.7.3
