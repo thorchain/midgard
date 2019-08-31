@@ -26,10 +26,6 @@ func (in Client) GetUsageData() (usage UsageData, err error) {
 	}
 
 	if len(resp) > 0 && len(resp[0].Series) > 1 {
-		// ensure rune if first in the series
-		if resp[0].Series[1].Tags["target"] == "rune" {
-			//resp[0].Series[0], resp[0].Series[1] = resp[0].Series[1], resp[0].Series[0]
-		}
 		for _, series := range resp[0].Series {
 			cols := series.Columns
 			vals := series.Values[0]

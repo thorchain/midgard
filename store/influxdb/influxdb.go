@@ -102,7 +102,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 
 	for _, cq := range queries {
 		query := fmt.Sprintf(cq, resampleRate, resampleFor)
-		fmt.Printf("Continuous Query: %s\n", query)
+		// fmt.Printf("Continuous Query: %s\n", query)
 		_, err := in.Query(query)
 		if err != nil {
 			return err
