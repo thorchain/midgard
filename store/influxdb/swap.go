@@ -2,6 +2,7 @@ package influxdb
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
@@ -29,7 +30,7 @@ type SwapEvent struct {
 
 func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
 	var runeFee, tokenFee float64
-	if rAmt > 0 {
+	if rAmt < 0 {
 		runeFee = fee
 	} else {
 		tokenFee = fee
@@ -78,4 +79,148 @@ func (evt SwapEvent) Point() client.Point {
 		Time:      evt.Timestamp,
 		Precision: precision,
 	}
+}
+
+func (in Client) ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker, limit, offset int) (events []SwapEvent, err error) {
+
+	// default to 100 limit
+	if limit == 0 {
+		limit = 100
+	}
+
+	// place an upper bound on limit to enforce people can't call for 10billion
+	// records
+	if limit > 100 {
+		limit = 100
+	}
+
+	var where []string
+	if !to.IsEmpty() {
+		where = append(where, fmt.Sprintf("to_address = '%s'", to.String()))
+	}
+	if !from.IsEmpty() {
+		where = append(where, fmt.Sprintf("from_address = '%s'", from.String()))
+	}
+	if !ticker.IsEmpty() {
+		where = append(where, fmt.Sprintf("pool = '%s'", ticker.String()))
+	}
+	query := "SELECT * FROM swaps"
+	if len(where) > 0 {
+		query += fmt.Sprintf(" %s ", strings.Join(where, " and "))
+	}
+	query += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
+
+	// Find the number of stakers
+	resp, err := in.Query(query)
+	if err != nil {
+		return
+	}
+
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		for _, vals := range resp[0].Series[0].Values {
+			var fee float64
+			var inhash, outhash common.TxID
+			var pool common.Ticker
+			var to, from common.BnbAddress
+			id, _ := getIntValue(series.Columns, vals, "ID")
+			temp, _ := getStringValue(series.Columns, vals, "in_hash")
+			inhash, err = common.NewTxID(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "out_hash")
+			outhash, err = common.NewTxID(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "to_address")
+			to, err = common.NewBnbAddress(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "from_address")
+			from, err = common.NewBnbAddress(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "pool")
+			pool, err = common.NewTicker(temp)
+			if err != nil {
+				return
+			}
+			rAmt, _ := getFloatValue(series.Columns, vals, "rune")
+			tAmt, _ := getFloatValue(series.Columns, vals, "token")
+			priceSlip, _ := getFloatValue(series.Columns, vals, "price_slip")
+			tradeSlip, _ := getFloatValue(series.Columns, vals, "trade_slip")
+			poolSlip, _ := getFloatValue(series.Columns, vals, "pool_slip")
+			outputSlip, _ := getFloatValue(series.Columns, vals, "output_slip")
+			runeFee, _ := getFloatValue(series.Columns, vals, "rune_fee")
+			tokenFee, _ := getFloatValue(series.Columns, vals, "token_fee")
+			ts, _ := getTimeValue(series.Columns, vals, "time")
+			if runeFee > 0 {
+				fee = runeFee
+			} else {
+				fee = tokenFee
+			}
+
+			event := NewSwapEvent(
+				id, inhash, outhash, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee, pool, from, to, ts,
+			)
+			events = append(events, event)
+		}
+	}
+	return
+}
+
+type SwapData struct {
+	Ticker       common.Ticker `json:"asset"`
+	AvgTokenTx   float64       `json:"aveTxTkn"`
+	AvgRuneTx    float64       `json:"aveTxRune"`
+	AvgTokenSlip float64       `json:"aveSlipTkn"`
+	AvgRuneSlip  float64       `json:"aveSlipRune"`
+	NumTokenTx   int64         `json:"numTxTkn"`
+	NumRuneTx    int64         `json:"numTxRune"`
+	AvgTokenFee  float64       `json:"aveFeeTkn"`
+	AvgRuneFee   float64       `json:"aveFeeRune"`
+}
+
+func (in Client) GetSwapData(ticker common.Ticker) (data SwapData, err error) {
+	data.Ticker = ticker
+
+	query := fmt.Sprintf(
+		"SELECT MEAN(token) AS aveTxTkn, MEAN(trade_slip) AS aveSlipTkn, COUNT(token) AS numTxTkn, MEAN(token_fee) AS aveFeeTkn FROM swaps WHERE pool = '%s' and token < 0",
+		ticker.String())
+	// Find the number of stakers
+	tokenResp, err := in.Query(query)
+	if err != nil {
+		return
+	}
+
+	query = fmt.Sprintf(
+		"SELECT MEAN(rune) AS aveTxRune, MEAN(trade_slip) AS aveSlipRune, COUNT(rune) AS numTxRune, MEAN(rune_fee) AS aveFeeRune FROM swaps WHERE pool = '%s' and rune < 0",
+		ticker.String())
+	// Find the number of stakers
+	runeResp, err := in.Query(query)
+	if err != nil {
+		return
+	}
+
+	if len(tokenResp) > 0 && len(tokenResp[0].Series) > 0 && len(tokenResp[0].Series[0].Values) > 0 && len(runeResp) > 0 && len(runeResp[0].Series) > 0 && len(runeResp[0].Series[0].Values) > 0 {
+		tokenCols := tokenResp[0].Series[0].Columns
+		tokenVals := tokenResp[0].Series[0].Values[0]
+
+		runeCols := runeResp[0].Series[0].Columns
+		runeVals := runeResp[0].Series[0].Values[0]
+
+		data.AvgTokenTx, _ = getFloatValue(tokenCols, tokenVals, "aveTxTkn")
+		data.AvgRuneTx, _ = getFloatValue(runeCols, runeVals, "aveTxRune")
+		data.AvgTokenSlip, _ = getFloatValue(tokenCols, tokenVals, "aveSlipTkn")
+		data.AvgRuneSlip, _ = getFloatValue(runeCols, runeVals, "aveSlipRune")
+		data.NumTokenTx, _ = getIntValue(tokenCols, tokenVals, "numTxTkn")
+		data.NumRuneTx, _ = getIntValue(runeCols, runeVals, "numTxRune")
+		data.AvgTokenFee, _ = getFloatValue(tokenCols, tokenVals, "aveFeeTkn")
+		data.AvgRuneFee, _ = getFloatValue(runeCols, runeVals, "aveFeeRune")
+	}
+	return
 }

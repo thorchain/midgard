@@ -30,7 +30,7 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 				InHash:  "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA",
 				OutHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FB",
 				Pool:    common.Ticker("BNB"),
-				Event:   []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "21" }, "target_coin": { "denom": "BNB", "amount": "10" }, "trade_slip": "1.12", "price_slip": "1.15", "pool_slip": "2.22", "output_slip": "3.33", "fee": "33" }`),
+				Event:   []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "21" }, "target_coin": { "denom": "BNB", "amount": "-10" }, "trade_slip": "1.12", "price_slip": "1.15", "pool_slip": "2.22", "output_slip": "3.33", "fee": "33" }`),
 			},
 			{
 				ID:     common.Amount("2"),
@@ -82,13 +82,13 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 	c.Check(pts[0].Tags["in_hash"], Equals, "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA")
 	c.Check(pts[0].Tags["out_hash"], Equals, "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FB")
 	c.Check(pts[0].Fields["rune"], Equals, 21.0)
-	c.Check(pts[0].Fields["token"], Equals, 10.0)
+	c.Check(pts[0].Fields["token"], Equals, -10.0)
 	c.Check(pts[0].Fields["price_slip"], Equals, 1.15)
 	c.Check(pts[0].Fields["trade_slip"], Equals, 1.12)
 	c.Check(pts[0].Fields["pool_slip"], Equals, 2.22)
 	c.Check(pts[0].Fields["output_slip"], Equals, 3.33)
-	c.Check(pts[0].Fields["rune_fee"], Equals, 33.0)
-	c.Check(pts[0].Fields["token_fee"], Equals, 0.0)
+	c.Check(pts[0].Fields["rune_fee"], Equals, 0.0)
+	c.Check(pts[0].Fields["token_fee"], Equals, 33.0)
 	c.Check(pts[0].Time.UnixNano(), Equals, now.UnixNano())
 
 	c.Check(pts[1].Measurement, Equals, "stakes")
