@@ -1,7 +1,6 @@
 package influxdb
 
 import (
-	"fmt"
 	"time"
 
 	"gitlab.com/thorchain/bepswap/common"
@@ -13,7 +12,6 @@ type UsageSuite struct{}
 var _ = Suite(&UsageSuite{})
 
 func (s *UsageSuite) TestUsage(c *C) {
-	fmt.Println("Usage tests...")
 	clc := NewTestClient(c)
 	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
@@ -75,5 +73,5 @@ func (s *UsageSuite) TestUsage(c *C) {
 	c.Check(data.TotalUsers, Equals, int64(1))
 	c.Check(data.MonthlyActiveUsers, Equals, int64(1))
 	c.Check(data.DailyActiveUsers, Equals, int64(1))
-
+	c.Check(data.TotalEarned, Equals, 0.92708333)
 }

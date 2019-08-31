@@ -1,7 +1,6 @@
 package influxdb
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -25,17 +24,23 @@ func (in Client) GetUsageData() (usage UsageData, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("Results: %+v\n", resp)
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 1 {
+		// ensure rune if first in the series
+		if resp[0].Series[1].Tags["target"] == "rune" {
+			//resp[0].Series[0], resp[0].Series[1] = resp[0].Series[1], resp[0].Series[0]
+		}
 		for _, series := range resp[0].Series {
 			cols := series.Columns
 			vals := series.Values[0]
+
 			if series.Tags["target"] == "rune" {
 				totalRuneTx, _ := getIntValue(cols, vals, "total_rune_tx")
 				usage.TotalTx += totalRuneTx
 				volRune, _ := getFloatValue(cols, vals, "rune_sum")
-				usage.TotalVolAT += math.Abs(volRune)
+				usage.TotalVolAT = math.Abs(volRune)
+				feeRune, _ := getFloatValue(cols, vals, "rune_fee_sum")
+				usage.TotalEarned += math.Abs(feeRune)
 			} else {
 				totalTokenTx, _ := getIntValue(cols, vals, "total_token_tx")
 				usage.TotalTx += totalTokenTx
@@ -43,6 +48,11 @@ func (in Client) GetUsageData() (usage UsageData, err error) {
 				// getting total rune volume.
 				volRune, _ := getFloatValue(cols, vals, "rune_sum")
 				usage.TotalVolAT += math.Abs(volRune)
+				volToken, _ := getFloatValue(cols, vals, "token_sum")
+				feeToken, _ := getFloatValue(cols, vals, "token_fee_sum")
+				usage.TotalEarned += (feeToken / volToken) * volRune
+				// Round to nearest 8 decimal points
+				usage.TotalEarned = math.Floor(usage.TotalEarned*100000000) / 100000000
 			}
 		}
 		// round to 8 decimal places
@@ -50,12 +60,11 @@ func (in Client) GetUsageData() (usage UsageData, err error) {
 	}
 
 	// Find the usage stats, for 30d
-	query = "SELECT total_rune_tx, total_token_tx FROM swaps_usage WHERE time > now() -30d"
+	query = "SELECT total_rune_tx, total_token_tx, token_sum, rune_sum FROM swaps_usage WHERE time > now() -30d"
 	resp, err = in.Query(query)
 	if err != nil {
 		return
 	}
-	fmt.Printf("Results: %+v\n", resp)
 
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
 		cols := resp[0].Series[0].Columns
@@ -72,7 +81,6 @@ func (in Client) GetUsageData() (usage UsageData, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("Results: %+v\n", resp)
 
 	if len(resp) > 0 && len(resp[0].Series) > 0 {
 		for _, series := range resp[0].Series {
