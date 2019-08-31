@@ -167,6 +167,8 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 
 			pts = append(pts, influxdb.NewSwapEvent(
 				int64(evt.ID.Float64()),
+				evt.InHash,
+				evt.OutHash,
 				rAmt,
 				tAmt,
 				swap.PriceSlip.Float64(),
@@ -207,6 +209,8 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 
 			pts = append(pts, influxdb.NewStakeEvent(
 				int64(evt.ID.Float64()),
+				evt.InHash,
+				evt.OutHash,
 				stake.RuneAmount.Float64(),
 				stake.TokenAmount.Float64(),
 				stake.StakeUnits.Float64(),
