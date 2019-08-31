@@ -22,6 +22,35 @@ func (s *UsageSuite) TestUsage(c *C) {
 	now := time.Now()
 	yesterday := now.Add(-48 * time.Hour)
 
+	stake := NewStakeEvent(
+		1,
+		inHash,
+		outHash,
+		12.3,
+		14.4,
+		5.1,
+		common.Ticker("BNB"),
+		from,
+		now,
+	)
+
+	err = clc.AddEvent(stake)
+	c.Assert(err, IsNil)
+
+	stake = NewStakeEvent(
+		2,
+		inHash,
+		outHash,
+		12.3,
+		14.4,
+		5.1,
+		common.Ticker("LOKI"),
+		to,
+		now,
+	)
+	err = clc.AddEvent(stake)
+	c.Assert(err, IsNil)
+
 	swap := NewSwapEvent(
 		1,
 		inHash,
@@ -74,4 +103,5 @@ func (s *UsageSuite) TestUsage(c *C) {
 	c.Check(data.MonthlyActiveUsers, Equals, int64(1))
 	c.Check(data.DailyActiveUsers, Equals, int64(1))
 	c.Check(data.TotalEarned, Equals, 0.92708333)
+	c.Check(data.TotalStaked, Equals, 49.2)
 }

@@ -134,5 +134,17 @@ func (in Client) GetUsageData() (usage UsageData, err error) {
 		usage.DailyActiveUsers = int64(len(resp[0].Series))
 	}
 
+	// Find daily active users
+	query = "SELECT rune_total FROM stakes_usage"
+	resp, err = in.Query(query)
+	if err != nil {
+		return
+	}
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		cols := resp[0].Series[0].Columns
+		vals := resp[0].Series[0].Values[0]
+		total, _ := getFloatValue(cols, vals, "rune_total")
+		usage.TotalStaked = total * 2 // multiple by two to represent both rune and token staked
+	}
 	return
 }

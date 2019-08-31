@@ -88,11 +88,21 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 			FROM "swaps" GROUP BY time(1d),target,pool,from_address
 		END
 		`,
+		`
+		CREATE CONTINUOUS QUERY "cq_usage_2" ON "db0" 
+			RESAMPLE EVERY %s FOR %s
+		BEGIN 
+			SELECT 
+				SUM(rune) as rune_total
+			INTO "db0"."autogen"."stakes_usage" 
+			FROM "stakes" GROUP BY time(1d)
+		END
+		`,
 	}
 
 	for _, cq := range queries {
 		query := fmt.Sprintf(cq, resampleRate, resampleFor)
-		// fmt.Printf("Continuous Query: %s\n", query)
+		fmt.Printf("Continuous Query: %s\n", query)
 		_, err := in.Query(query)
 		if err != nil {
 			return err
