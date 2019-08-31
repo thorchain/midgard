@@ -53,6 +53,9 @@ func NewTokenService(cfg config.BinanceConfiguration, storeClient *influxdb.Clie
 
 const limitCoins = 5000
 
+// TODO right now we get the coin from coingecko, tokens from binance api
+// We could write a tool to pull these data from the source , and then save it to our
+// database , to ensure we have high availability
 func (ts *TokenService) ensureCoinsListExist() error {
 	if nil == ts.cachedCGCoins {
 		coinList, err := ts.cgClient.CoinsList()

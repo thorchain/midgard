@@ -30,6 +30,7 @@ type Server struct {
 	influxDB         *influxdb.Client
 	stateChainClient *statechain.StatechainAPI
 	tokenService     *coingecko.TokenService
+	binanceClient    *binance.BinanceClient
 }
 
 func NewServer(cfg config.Configuration) (*Server, error) {
@@ -67,6 +68,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		influxDB:         store,
 		stateChainClient: stateChainApi,
 		tokenService:     tokenService,
+		binanceClient:    binanceClient,
 	}, nil
 }
 
@@ -86,6 +88,21 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/stakerTx", s.getStakerTx)
 	s.engine.GET("/stakerData", s.getStakerInfo)
 	s.engine.GET("/tokenData", s.getTokenData)
+	s.engine.GET("/tradeData", s.getTradeData)
+}
+
+func (s *Server) getTradeData(g *gin.Context) {
+	symbol, ok := g.GetQuery("symbol")
+	if !ok {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid symbol"})
+	}
+	md, err := s.binanceClient.GetMarketData(symbol)
+	if nil != err {
+		s.logger.Error().Err(err).Msg("fail to get market data")
+		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	g.JSON(http.StatusOK, *md)
 }
 
 func (s *Server) getTokenData(g *gin.Context) {
