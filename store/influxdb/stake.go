@@ -11,6 +11,8 @@ import (
 type StakeEvent struct {
 	ToPoint
 	ID          int64
+	InHash      common.TxID
+	OutHash     common.TxID
 	RuneAmount  float64
 	TokenAmount float64
 	Units       float64
@@ -19,9 +21,11 @@ type StakeEvent struct {
 	Timestamp   time.Time
 }
 
-func NewStakeEvent(id int64, rAmt, tAmt, units float64, pool common.Ticker, addr common.BnbAddress, ts time.Time) StakeEvent {
+func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units float64, pool common.Ticker, addr common.BnbAddress, ts time.Time) StakeEvent {
 	return StakeEvent{
 		ID:          id,
+		InHash:      inhash,
+		OutHash:     outhash,
 		RuneAmount:  rAmt,
 		TokenAmount: tAmt,
 		Units:       units,
@@ -35,11 +39,14 @@ func (evt StakeEvent) Point() client.Point {
 	return client.Point{
 		Measurement: "stakes",
 		Tags: map[string]string{
-			"ID":      fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			"pool":    evt.Pool.String(),
-			"address": evt.Address.String(),
+			"ID":       fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			"pool":     evt.Pool.String(),
+			"address":  evt.Address.String(),
+			"in_hash":  evt.InHash.String(),
+			"out_hash": evt.OutHash.String(),
 		},
 		Fields: map[string]interface{}{
+			"ID":    evt.ID,
 			"rune":  evt.RuneAmount,
 			"token": evt.TokenAmount,
 			"units": evt.Units,
@@ -47,6 +54,72 @@ func (evt StakeEvent) Point() client.Point {
 		Time:      evt.Timestamp,
 		Precision: precision,
 	}
+}
+
+func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker, limit, offset int) (events []StakeEvent, err error) {
+
+	// default to 100 limit
+	if limit == 0 {
+		limit = 100
+	}
+
+	// place an upper bound on limit to enforce people can't call for 10billion
+	// records
+	if limit > 100 {
+		limit = 100
+	}
+
+	var query string
+	if ticker.IsEmpty() {
+		query = fmt.Sprintf("SELECT * FROM stakes WHERE address = '%s' LIMIT %d OFFSET %d", address.String(), limit, offset)
+	} else {
+		query = fmt.Sprintf("SELECT * FROM stakes WHERE address = '%s' and pool = '%s' LIMIT %d OFFSET %d", address.String(), ticker.String(), limit, offset)
+	}
+
+	// Find the number of stakers
+	resp, err := in.Query(query)
+	if err != nil {
+		return
+	}
+
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		for _, vals := range resp[0].Series[0].Values {
+			var inhash, outhash common.TxID
+			var pool common.Ticker
+			var addr common.BnbAddress
+			id, _ := getIntValue(series.Columns, vals, "ID")
+			temp, _ := getStringValue(series.Columns, vals, "in_hash")
+			inhash, err = common.NewTxID(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "out_hash")
+			outhash, err = common.NewTxID(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "address")
+			addr, err = common.NewBnbAddress(temp)
+			if err != nil {
+				return
+			}
+			temp, _ = getStringValue(series.Columns, vals, "pool")
+			pool, err = common.NewTicker(temp)
+			if err != nil {
+				return
+			}
+			rAmt, _ := getFloatValue(series.Columns, vals, "rune")
+			tAmt, _ := getFloatValue(series.Columns, vals, "token")
+			units, _ := getFloatValue(series.Columns, vals, "units")
+			ts, _ := getTimeValue(series.Columns, vals, "time")
+			event := NewStakeEvent(
+				id, inhash, outhash, rAmt, tAmt, units, pool, addr, ts,
+			)
+			events = append(events, event)
+		}
+	}
+	return
 }
 
 func (in Client) ListStakerPools(address common.BnbAddress) (tickers []common.Ticker, err error) {
@@ -59,10 +132,10 @@ func (in Client) ListStakerPools(address common.BnbAddress) (tickers []common.Ti
 		return
 	}
 
-	if len(resp) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		for _, series := range resp[0].Series {
 			var units float64
-			units, _ = getFloatValue(series, "units")
+			units, _ = getFloatValue(series.Columns, series.Values[0], "units")
 			if (units) > 0 {
 				var ticker common.Ticker
 				ticker, err = common.NewTicker(series.Tags["pool"])
@@ -104,11 +177,11 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
-		staker.Rune, _ = getFloatValue(series, "rune")
-		staker.Token, _ = getFloatValue(series, "token")
-		staker.Units, _ = getFloatValue(series, "units")
+		staker.Rune, _ = getFloatValue(series.Columns, series.Values[0], "rune")
+		staker.Token, _ = getFloatValue(series.Columns, series.Values[0], "token")
+		staker.Units, _ = getFloatValue(series.Columns, series.Values[0], "units")
 	}
 
 	// Get pool data
@@ -119,11 +192,11 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
-		poolRuneAmount, _ := getFloatValue(series, "rune")
-		poolTokenAmount, _ := getFloatValue(series, "token")
-		poolUnits, _ := getFloatValue(series, "units")
+		poolRuneAmount, _ := getFloatValue(series.Columns, series.Values[0], "rune")
+		poolTokenAmount, _ := getFloatValue(series.Columns, series.Values[0], "token")
+		poolUnits, _ := getFloatValue(series.Columns, series.Values[0], "units")
 
 		// calculate earned rune and tokens
 		staker.EarnedRune = staker.Units / poolUnits * (poolRuneAmount - staker.Rune)
@@ -138,9 +211,9 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 		return
 	}
 
-	if len(resp) > 0 && len(resp[0].Series) > 0 {
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
-		staker.DateFirstStaked, _ = getTimeValue(series, "time")
+		staker.DateFirstStaked, _ = getTimeValue(series.Columns, series.Values[0], "time")
 	}
 
 	return
