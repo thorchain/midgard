@@ -1,6 +1,9 @@
 package influxdb
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type UsageData struct {
 	DailyActiveUsers   int64   `json:"dau"`
@@ -16,36 +19,112 @@ type UsageData struct {
 }
 
 func (in Client) GetUsageData() (usage UsageData, err error) {
-	// Find the usage stats
+	// Find the usage stats, for all time
 	query := "SELECT * FROM swaps_usage GROUP BY target"
 	resp, err := in.Query(query)
 	if err != nil {
 		return
 	}
+	fmt.Printf("Results: %+v\n", resp)
 
-	if len(resp) > 0 && len(resp[0].Series) > 1 && len(resp[0].Series[0].Values) > 0 {
-		var runeCols, tokenCols []string
-		var runeVals, tokenVals []interface{}
-		if resp[0].Series[0].Tags["target"] == "rune" {
-			runeCols = resp[0].Series[0].Columns
-			runeVals = resp[0].Series[0].Values[0]
-			tokenCols = resp[0].Series[1].Columns
-			tokenVals = resp[0].Series[1].Values[0]
-		} else {
-			runeCols = resp[0].Series[1].Columns
-			runeVals = resp[0].Series[1].Values[0]
-			tokenCols = resp[0].Series[0].Columns
-			tokenVals = resp[0].Series[0].Values[0]
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		for _, series := range resp[0].Series {
+			cols := series.Columns
+			vals := series.Values[0]
+			if series.Tags["target"] == "rune" {
+				totalRuneTx, _ := getIntValue(cols, vals, "total_rune_tx")
+				usage.TotalTx += totalRuneTx
+				volRune, _ := getFloatValue(cols, vals, "rune_sum")
+				usage.TotalVolAT += math.Abs(volRune)
+			} else {
+				totalTokenTx, _ := getIntValue(cols, vals, "total_token_tx")
+				usage.TotalTx += totalTokenTx
+				// we get the amount of rune in this case too because we're
+				// getting total rune volume.
+				volRune, _ := getFloatValue(cols, vals, "rune_sum")
+				usage.TotalVolAT += math.Abs(volRune)
+			}
 		}
-		totalTokenTx, _ := getIntValue(tokenCols, tokenVals, "total_token_tx")
-		totalRuneTx, _ := getIntValue(runeCols, runeVals, "total_rune_tx")
-		usage.TotalTx = totalTokenTx + totalRuneTx
-		volToken, _ := getFloatValue(tokenCols, tokenVals, "token_sum")
-		volRune, _ := getFloatValue(runeCols, runeVals, "rune_sum")
-		usage.TotalVolAT = volToken + volRune
+		// round to 8 decimal places
+		usage.TotalVolAT = math.Floor(usage.TotalVolAT*100000000) / 100000000
 	}
 
+	// Find the usage stats, for 30d
+	query = "SELECT total_rune_tx, total_token_tx FROM swaps_usage WHERE time > now() -30d"
+	resp, err = in.Query(query)
+	if err != nil {
+		return
+	}
 	fmt.Printf("Results: %+v\n", resp)
+
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		cols := resp[0].Series[0].Columns
+		vals := resp[0].Series[0].Values[0]
+		total, _ := getIntValue(cols, vals, "total_token_tx")
+		usage.MonthlyTx += total
+		total, _ = getIntValue(cols, vals, "total_rune_tx")
+		usage.MonthlyTx += total
+	}
+
+	// Find the usage stats, for 1 day
+	query = "SELECT * FROM swaps_usage WHERE time > now() - 1d GROUP BY target"
+	resp, err = in.Query(query)
+	if err != nil {
+		return
+	}
+	fmt.Printf("Results: %+v\n", resp)
+
+	if len(resp) > 0 && len(resp[0].Series) > 0 {
+		for _, series := range resp[0].Series {
+			cols := series.Columns
+			vals := series.Values[0]
+			if series.Tags["target"] == "rune" {
+				totalRuneTx, _ := getIntValue(cols, vals, "total_rune_tx")
+				usage.DailyTx += totalRuneTx
+				volRune, _ := getFloatValue(cols, vals, "rune_sum")
+				usage.TotalVol24 += math.Abs(volRune)
+			} else {
+				totalTokenTx, _ := getIntValue(cols, vals, "total_token_tx")
+				usage.DailyTx += totalTokenTx
+				// we get the amount of rune in this case too because we're
+				// getting total rune volume.
+				volRune, _ := getFloatValue(cols, vals, "rune_sum")
+				usage.TotalVol24 += math.Abs(volRune)
+			}
+		}
+		// round to 8 decimal places
+		usage.TotalVolAT = math.Floor(usage.TotalVolAT*100000000) / 100000000
+	}
+
+	// Find total active users
+	query = "SELECT token_fee_sum FROM swaps_usage GROUP BY from_address"
+	resp, err = in.Query(query)
+	if err != nil {
+		return
+	}
+	if len(resp) > 0 {
+		usage.TotalUsers = int64(len(resp[0].Series))
+	}
+
+	// Find monthly active users
+	query = "SELECT token_fee_sum FROM swaps_usage WHERE time > now() -30d GROUP BY from_address"
+	resp, err = in.Query(query)
+	if err != nil {
+		return
+	}
+	if len(resp) > 0 {
+		usage.MonthlyActiveUsers = int64(len(resp[0].Series))
+	}
+
+	// Find daily active users
+	query = "SELECT token_fee_sum FROM swaps_usage WHERE time > now() -1d GROUP BY from_address"
+	resp, err = in.Query(query)
+	if err != nil {
+		return
+	}
+	if len(resp) > 0 {
+		usage.DailyActiveUsers = int64(len(resp[0].Series))
+	}
 
 	return
 }
