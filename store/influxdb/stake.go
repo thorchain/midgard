@@ -36,6 +36,14 @@ func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units floa
 }
 
 func (evt StakeEvent) Point() client.Point {
+	// save which direction we are staking. Saving as an tag is a faster query
+	// because tags are index, and fields are not.
+	var eType string
+	if evt.Units > 0 {
+		eType = "staking"
+	} else {
+		eType = "unstaking"
+	}
 	return client.Point{
 		Measurement: "stakes",
 		Tags: map[string]string{
@@ -44,6 +52,7 @@ func (evt StakeEvent) Point() client.Point {
 			"address":  evt.Address.String(),
 			"in_hash":  evt.InHash.String(),
 			"out_hash": evt.OutHash.String(),
+			"type":     eType,
 		},
 		Fields: map[string]interface{}{
 			"ID":    evt.ID,

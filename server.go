@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/cbarraford/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -31,6 +34,7 @@ type Server struct {
 	stateChainClient *statechain.StatechainAPI
 	tokenService     *coingecko.TokenService
 	binanceClient    *binance.BinanceClient
+	cacheStore       persistence.CacheStore
 }
 
 func NewServer(cfg config.Configuration) (*Server, error) {
@@ -54,6 +58,9 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create token service")
 	}
+
+	cacheStore := persistence.NewInMemoryStore(10 * time.Minute)
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
 		ReadTimeout:  cfg.ReadTimeout,
@@ -69,6 +76,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		stateChainClient: stateChainApi,
 		tokenService:     tokenService,
 		binanceClient:    binanceClient,
+		cacheStore:       cacheStore,
 	}, nil
 }
 
@@ -83,6 +91,9 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/health", s.healthCheck)
 	s.engine.GET("/poolData", s.getPool)
 	s.engine.GET("/tokens", s.getTokens)
+	s.engine.GET("/userData",
+		cache.CachePage(s.cacheStore, 10*time.Minute, s.getUserData),
+	)
 	s.engine.GET("/swapTx", s.getSwapTx)
 	s.engine.GET("/swapData", s.getSwapData)
 	s.engine.GET("/stakerTx", s.getStakerTx)
@@ -140,6 +151,15 @@ func (s *Server) getAToken(g *gin.Context, token string) {
 	}
 	g.JSON(http.StatusOK, tokenData)
 
+}
+
+func (s *Server) getUserData(g *gin.Context) {
+	data, err := s.influxDB.GetUsageData()
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	g.JSON(http.StatusOK, data)
 }
 
 func (s *Server) getSwapData(g *gin.Context) {

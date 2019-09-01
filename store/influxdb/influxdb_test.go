@@ -32,11 +32,13 @@ func NewTestClient(c *C) *Client {
 	password := getEnv("INFLUXDB_ADMIN_PASSWORD", "password")
 	dbname := getEnv("INFLUXDB_DB", "db0")
 	cfg := config.InfluxDBConfiguration{
-		Host:     host,
-		Port:     8086,
-		UserName: username,
-		Password: password,
-		Database: dbname,
+		Host:         host,
+		Port:         8086,
+		UserName:     username,
+		Password:     password,
+		Database:     dbname,
+		ResampleRate: "1s",
+		ResampleFor:  "3d",
 	}
 	client, err := NewClient(cfg)
 	c.Assert(err, IsNil)
