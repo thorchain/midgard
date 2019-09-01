@@ -21,11 +21,13 @@ type Configuration struct {
 
 // InfluxDBConfiguration config for Influxdb
 type InfluxDBConfiguration struct {
-	Host     string `json:"host" mapstructure:"host"`
-	Port     int    `json:"port" mapstructure:"port"`
-	UserName string `json:"user_name" mapstructure:"user_name"`
-	Password string `json:"password" mapstructure:"password"`
-	Database string `json:"database" mapstructure:"database"`
+	Host         string `json:"host" mapstructure:"host"`
+	Port         int    `json:"port" mapstructure:"port"`
+	UserName     string `json:"user_name" mapstructure:"user_name"`
+	Password     string `json:"password" mapstructure:"password"`
+	Database     string `json:"database" mapstructure:"database"`
+	ResampleRate string `json:"resample" mapstructure:"resample"`
+	ResampleFor  string `json:"resample_for" mapstructure:"resample_for"`
 }
 
 type StateChainConfiguration struct {
