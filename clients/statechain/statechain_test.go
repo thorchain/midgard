@@ -9,6 +9,7 @@ import (
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 
 	"gitlab.com/thorchain/bepswap/common"
 	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
@@ -64,11 +65,14 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 		},
 		Err: nil,
 	}
+	// create the client , but we don't actually use it
+	client := &influxdb.Client{}
+
 	stateChainApi, err := NewStatechainAPI(config.StateChainConfiguration{
 		Scheme:      "http",
 		Host:        srv.Listener.Addr().String(),
 		ReadTimeout: time.Second,
-	}, b)
+	}, b, client)
 	c.Assert(err, IsNil)
 	c.Assert(stateChainApi, NotNil)
 

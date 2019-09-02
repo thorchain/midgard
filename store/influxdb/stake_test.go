@@ -21,6 +21,10 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	outHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD21V")
 	c.Assert(err, IsNil)
 
+	maxID, err := clc.GetMaxIDStakes()
+	c.Assert(err, IsNil)
+	c.Check(maxID, Equals, int64(0))
+
 	stake := NewStakeEvent(
 		1,
 		inHash,
@@ -41,6 +45,10 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 
 	err = clc.AddEvent(stake)
 	c.Assert(err, IsNil)
+
+	maxID, err = clc.GetMaxIDStakes()
+	c.Assert(err, IsNil)
+	c.Check(maxID, Equals, int64(1))
 
 	stake = NewStakeEvent(
 		2,
@@ -115,4 +123,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(staker.Token, Equals, 14.4)
 	c.Check(staker.Units, Equals, 5.1)
 	c.Check(staker.DateFirstStaked.UnixNano(), Equals, now.UnixNano())
+	maxID, err = clc.GetMaxIDStakes()
+	c.Assert(err, IsNil)
+	c.Check(maxID, Equals, int64(2))
 }
