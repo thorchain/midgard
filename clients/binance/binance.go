@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/binance-chain/go-sdk/common/types"
+	bmsg "github.com/binance-chain/go-sdk/types/msg"
+	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -42,7 +46,12 @@ func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 	if len(cfg.DEXHost) == 0 {
 		return nil, errors.New("DEXHost is empty")
 	}
-
+	if len(cfg.FullNodeHost) == 0 {
+		return nil, errors.New("FullNodeHost is empty")
+	}
+	if cfg.IsTestNet {
+		types.Network = types.TestNetwork
+	}
 	return &BinanceClient{
 		logger: log.With().Str("module", "binance-client").Logger(),
 		cfg:    cfg,
@@ -181,20 +190,11 @@ func (bc *BinanceClient) GetMarketData(symbol string) (*MarketData, error) {
 	return &md, nil
 }
 
-type httpRespGetTx struct {
-	Height string `json:"height"`
-}
-
 type TxDetail struct {
 	TxHash      string    `json:"txHash"`
 	ToAddress   string    `json:"toAddr"`
 	FromAddress string    `json:"fromAddr"`
 	Timestamp   time.Time `json:"timeStamp"`
-}
-
-type httpRespGetBlock struct {
-	Height int64      `json:"blockHeight"`
-	Tx     []TxDetail `json:"tx"`
 }
 
 func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
@@ -207,14 +207,40 @@ func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 	return u.String()
 }
 
-// TODO update it to get tx from binnance node as we are going to run  binance full node
+func (bc *BinanceClient) getTxDetailUrl(hash common.TxID) string {
+	uri := url.URL{
+		Scheme: bc.cfg.FullNodeScheme,
+		Host:   bc.cfg.FullNodeHost,
+		Path:   "tx",
+	}
+	q := uri.Query()
+	q.Set("hash", fmt.Sprintf("0x%s", hash))
+	q.Set("prove", "true")
+	uri.RawQuery = q.Encode()
+	return uri.String()
+}
+func (bc *BinanceClient) getBlockUrl(height string) string {
+	uri := url.URL{
+		Scheme: bc.cfg.FullNodeScheme,
+		Host:   bc.cfg.FullNodeHost,
+		Path:   "block",
+	}
+	q := uri.Query()
+	q.Set("height", height)
+	uri.RawQuery = q.Encode()
+	return uri.String()
+}
+
+// GetTxEx given the txID , we get the tx detail from binance full node
 func (bc *BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
-	// Rate Limit: 10 requests per IP per second.
-	uri := bc.getBinanceApiUrl(fmt.Sprintf("/api/v1/tx/%s", txID.String()), "")
-	resp, err := bc.httpClient.Get(uri)
-	if err != nil {
-		return noTx, errors.Wrap(err, "fail to get response from binance api")
+	if txID.IsEmpty() {
+		return noTx, errors.New("txID is empty")
+	}
+	requestUrl := bc.getTxDetailUrl(txID)
+	resp, err := bc.httpClient.Get(requestUrl)
+	if nil != err {
+		return noTx, errors.Wrap(err, "fail to get tx from binance full node")
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
@@ -224,34 +250,66 @@ func (bc *BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
 	if resp.StatusCode != http.StatusOK {
 		return noTx, errors.Errorf("unexpected status code %d", resp.StatusCode)
 	}
-
-	var tx httpRespGetTx
-	if err := json.NewDecoder(resp.Body).Decode(&tx); nil != err {
-		return noTx, errors.Wrap(err, "fail to unmarshal response to httpRespGetTx")
+	var fnr FullNodeTxResp
+	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
+		return noTx, errors.Wrap(err, "fail to decode response body")
 	}
+	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
+	if nil != err {
+		return noTx, errors.Wrap(err, "fail to base64 decode tx")
+	}
+	var t tx.StdTx
+	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
+		return noTx, errors.Wrap(err, "fail to unmarshal tx")
+	}
+	// usually we don't expect too many msgs in it , but given it is a slice, let's enumerate it
+	for _, m := range t.Msgs {
+		switch mt := m.(type) {
+		case bmsg.SendMsg:
+			txDetail := bc.getTxDetailFromMsg(fnr.Result.Hash, mt)
+			blockTime, err := bc.getTimeFromBlock(fnr.Result.Height)
+			if nil != err {
+				return noTx, errors.Wrap(err, "fail to get block time")
+			}
+			txDetail.Timestamp = blockTime
+			return txDetail, nil
+		default:
+		}
+	}
+	return noTx, nil
+}
 
-	// Rate Limit: 60 requests per IP per minute.
-	uri = bc.getBinanceApiUrl(fmt.Sprintf("/api/v1/transactions-in-block/%s", tx.Height), "")
-	resp, err = bc.httpClient.Get(uri)
-	if err != nil {
-		return noTx, err
+func (bc *BinanceClient) getTimeFromBlock(height string) (time.Time, error) {
+	t := time.Time{}
+	requestUrl := bc.getBlockUrl(height)
+	resp, err := bc.httpClient.Get(requestUrl)
+	if nil != err {
+		return t, errors.Wrap(err, "fail to get block from binance full node")
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
 			bc.logger.Error().Err(err).Msg("fail to close response body")
 		}
 	}()
-
-	var block httpRespGetBlock
-	if err := json.NewDecoder(resp.Body).Decode(&block); nil != err {
-		return noTx, errors.Wrap(err, "fail to get blocks from binance api")
+	var br BlockResponse
+	if err := json.NewDecoder(resp.Body).Decode(&br); nil != err {
+		return t, errors.Wrap(err, "fail to unmarshal block response")
 	}
+	return br.Result.Block.Header.Time, nil
+}
 
-	for _, transaction := range block.Tx {
-		if transaction.TxHash == txID.String() {
-			return transaction, nil
-		}
+func (bc *BinanceClient) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
+	td := TxDetail{
+		TxHash:      hash,
+		ToAddress:   "",
+		FromAddress: "",
+		Timestamp:   time.Time{},
 	}
-
-	return noTx, nil
+	if len(msg.Inputs) > 0 {
+		td.FromAddress = msg.Inputs[0].Address.String()
+	}
+	if len(msg.Outputs) > 0 {
+		td.ToAddress = msg.Outputs[0].Address.String()
+	}
+	return td
 }
