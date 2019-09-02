@@ -44,6 +44,9 @@ type BinanceConfiguration struct {
 	Scheme               string        `json:"scheme" mapstructure:"scheme"`
 	RequestTimeout       time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 	MarketsCacheDuration time.Duration `json:"markets_cache_duration" mapstructure:"markets_cache_duration"`
+	FullNodeHost         string        `json:"full_node_host" mapstructure:"full_node_host"`
+	FullNodeScheme       string        `json:"full_node_scheme" mapstructure:"full_node_scheme"`
+	IsTestNet            bool          `json:"is_testnet" mapstructure:"is_testnet"`
 }
 
 // CoingeckoConfiguration settings for Coingecko
@@ -64,6 +67,8 @@ func applyDefaultObserverConfig() {
 	viper.SetDefault("binance.scheme", "https")
 	viper.SetDefault("binance.request_timeout", "30s")
 	viper.SetDefault("binance.markets_cache_duration", "24h")
+	viper.SetDefault("binance.full_node_scheme", "http")
+	viper.SetDefault("binance.is_testnet", "true")
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
