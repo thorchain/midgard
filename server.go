@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cbarraford/cache"
+	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
