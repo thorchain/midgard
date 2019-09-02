@@ -5,6 +5,7 @@ import (
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
+	"github.com/pkg/errors"
 	"gitlab.com/thorchain/bepswap/common"
 )
 
@@ -226,4 +227,17 @@ func (in Client) GetStakerDataForPool(ticker common.Ticker, address common.BnbAd
 	}
 
 	return
+}
+
+func (in Client) GetMaxIDStakes() (int64, error) {
+	resp, err := in.Query("SELECT MAX(ID) as maxID FROM stakes")
+	if nil != err {
+		return 0, errors.Wrap(err, "fail to get max id from stakers")
+	}
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		id, _ := getIntValue(series.Columns, series.Values[0], "maxID")
+		return id, nil
+	}
+	return 0, nil
 }

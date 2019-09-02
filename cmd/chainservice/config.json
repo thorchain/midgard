@@ -2,13 +2,17 @@
   "listen_port": 8080,
   "influx": {
     "host": "localhost",
-    "user_name": "admin"
+    "user_name": "admin",
+    "password": "password",
+    "database": "db0"
     "resample": "10m",
     "resample_for": "1d"
   },
   "statechain": {
     "scheme": "http",
-    "host": "localhost:1317"
+    "host": "localhost:1317",
+    "enable_scan": true,
+    "scan_start_pos": 1
   },
   "binance": {
     "scheme": "https",

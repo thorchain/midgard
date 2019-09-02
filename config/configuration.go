@@ -31,9 +31,11 @@ type InfluxDBConfiguration struct {
 }
 
 type StateChainConfiguration struct {
-	Scheme      string        `json:"scheme" mapstructure:"scheme"`
-	Host        string        `json:"host" mapstructure:"host"`
-	ReadTimeout time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
+	Scheme          string        `json:"scheme" mapstructure:"scheme"`
+	Host            string        `json:"host" mapstructure:"host"`
+	ReadTimeout     time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
+	EnableScan      bool          `json:"enable_scan" mapstructure:"enable_scan"`
+	NoEventsBackoff time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
 }
 
 // BinanceConfiguration settings for binance client
@@ -57,6 +59,8 @@ func applyDefaultObserverConfig() {
 	viper.SetDefault("statechain.scheme", "http")
 	viper.SetDefault("statechain.host", "localhost:1317")
 	viper.SetDefault("statechain.read_timeout", "10s")
+	viper.SetDefault("statechain.no_events_backoff", "30s")
+	viper.SetDefault("statechain.scan_start_pos", 1)
 	viper.SetDefault("binance.scheme", "https")
 	viper.SetDefault("binance.request_timeout", "30s")
 	viper.SetDefault("binance.markets_cache_duration", "24h")
