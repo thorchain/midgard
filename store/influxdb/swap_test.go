@@ -21,6 +21,9 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	c.Assert(err, IsNil)
 	now := time.Now()
 
+	maxID, err := clc.GetMaxIDSwaps()
+	c.Assert(err, IsNil)
+	c.Check(maxID, Equals, int64(0))
 	swap := NewSwapEvent(
 		1,
 		inHash,
@@ -53,6 +56,10 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 
 	err = clc.AddEvent(swap)
 	c.Assert(err, IsNil)
+
+	maxID, err = clc.GetMaxIDSwaps()
+	c.Assert(err, IsNil)
+	c.Check(maxID, Equals, int64(1))
 
 	swap = NewSwapEvent(
 		2,
@@ -197,4 +204,7 @@ func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	c.Check(data.NumRuneTx, Equals, int64(2))
 	c.Check(data.AvgTokenFee, Equals, 7.5)
 	c.Check(data.AvgRuneFee, Equals, 9.5)
+	maxID, err = clc.GetMaxIDSwaps()
+	c.Assert(err, IsNil)
+	c.Check(maxID, Equals, int64(6))
 }

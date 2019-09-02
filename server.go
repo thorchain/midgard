@@ -50,7 +50,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient)
+	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient, store)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
@@ -338,11 +338,14 @@ func (s *Server) Start() error {
 			s.logger.Error().Err(err).Msg("fail to start server")
 		}
 	}()
-	return nil
+	return s.stateChainClient.StartScan()
 }
 
 // Stop the server
 func (s *Server) Stop() error {
+	if err := s.stateChainClient.StopScan(); nil != err {
+		s.logger.Error().Err(err).Msg("fail to stop statechain scan")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
 	defer cancel()
 	return s.httpServer.Shutdown(ctx)
