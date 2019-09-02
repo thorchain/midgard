@@ -6,6 +6,7 @@ import (
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
+	"github.com/pkg/errors"
 	"gitlab.com/thorchain/bepswap/common"
 )
 
@@ -232,4 +233,18 @@ func (in Client) GetSwapData(ticker common.Ticker) (data SwapData, err error) {
 		data.AvgRuneFee, _ = getFloatValue(runeCols, runeVals, "aveFeeRune")
 	}
 	return
+}
+
+func (in Client) GetMaxIDSwaps() (int64, error) {
+	resp, err := in.Query("SELECT MAX(ID) as maxID FROM swaps")
+	if nil != err {
+		return 0, errors.Wrap(err, "fail to get max id from swaps")
+	}
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		id, _ := getIntValue(series.Columns, series.Values[0], "maxID")
+		return id, nil
+	}
+	// no data
+	return 0, nil
 }

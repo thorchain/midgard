@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	client "github.com/influxdata/influxdb1-client"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -33,15 +36,21 @@ type StatechainAPI struct {
 	baseUrl       string
 	binanceClient Binance
 	netClient     *http.Client
+	wg            *sync.WaitGroup
+	store         *influxdb.Client
+	stopchan      chan struct{}
 }
 
 // NewStatechainAPI create a new instance of StatechainAPI which can talk to statechain
-func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance) (*StatechainAPI, error) {
+func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance, store *influxdb.Client) (*StatechainAPI, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("statechain host is empty")
 	}
 	if nil == binanceClient {
 		return nil, errors.New("binance client is nil")
+	}
+	if nil == store {
+		return nil, errors.New("store is nil")
 	}
 	return &StatechainAPI{
 		cfg:           cfg,
@@ -50,7 +59,10 @@ func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance)
 		netClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
-		baseUrl: fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
+		store:    store,
+		baseUrl:  fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
+		stopchan: make(chan struct{}),
+		wg:       &sync.WaitGroup{},
 	}, nil
 }
 
@@ -103,7 +115,7 @@ func (sc *StatechainAPI) GetPool(ticker string) (*sTypes.Pool, error) {
 	return &pool, nil
 }
 
-func (sc *StatechainAPI) GetEvents(id int64) ([]sTypes.Event, error) {
+func (sc *StatechainAPI) getEvents(id int64) ([]sTypes.Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", sc.baseUrl, id)
 	resp, err := sc.netClient.Get(uri)
 	if err != nil {
@@ -126,7 +138,7 @@ func (sc *StatechainAPI) GetEvents(id int64) ([]sTypes.Event, error) {
 // GetPoints from statechain and local db
 func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 
-	events, err := sc.GetEvents(id)
+	events, err := sc.getEvents(id)
 	if err != nil {
 		return id, nil, errors.Wrap(err, "fail to get events")
 	}
@@ -222,4 +234,100 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 	}
 
 	return maxID, pts, nil
+}
+
+// StartScan start to scan
+func (sc *StatechainAPI) StartScan() error {
+	if !sc.cfg.EnableScan {
+		return nil
+	}
+	sc.wg.Add(1)
+	go sc.scan()
+	return nil
+}
+
+func (sc *StatechainAPI) getMaxID() (int64, error) {
+	stakeID, err := sc.store.GetMaxIDStakes()
+	if err != nil {
+		return 0, errors.Wrap(err, "fail to get max stakes id from store")
+	}
+
+	swapID, err := sc.store.GetMaxIDSwaps()
+	if err != nil {
+		return 0, errors.Wrap(err, "fail to get max swap id from store")
+	}
+
+	if stakeID > swapID {
+		return stakeID, nil
+	}
+	return swapID, nil
+
+}
+func (sc *StatechainAPI) scan() {
+	defer sc.wg.Done()
+	sc.logger.Info().Msg("start statechain event scanning")
+	defer sc.logger.Info().Msg("statechain event scanning stopped")
+	currentPos := int64(1) // we start from 1
+	maxID, err := sc.getMaxID()
+	if nil != err {
+		sc.logger.Error().Err(err).Msg("fail to get currentPos from data store")
+	} else {
+		sc.logger.Info().Int64("previous pos", maxID).Msg("find previous max id")
+		currentPos = maxID + 1
+	}
+	for {
+		select {
+		case <-sc.stopchan:
+			return
+		default:
+			sc.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
+			maxID, points, err := sc.GetPoints(currentPos)
+			if nil != err {
+				sc.logger.Error().Err(err).Msg("fail to get points from statechain")
+				continue // we will retry a bit later
+			}
+			if len(points) == 0 { // nothing in it
+				select {
+				case <-sc.stopchan:
+				case <-time.After(sc.cfg.NoEventsBackoff):
+				}
+				continue
+			}
+			if err := sc.writeToStoreWithRetry(points); nil != err {
+				sc.logger.Error().Err(err).Msg("fail to write points to data store")
+				continue //
+			}
+			currentPos = maxID + 1
+
+		}
+	}
+}
+
+func (sc *StatechainAPI) writeToStoreWithRetry(points []client.Point) error {
+	bf := backoff.NewExponentialBackOff()
+	try := 1
+	for {
+		err := sc.store.Writes(points)
+		if nil == err {
+			return nil
+		}
+		sc.logger.Error().Err(err).Msgf("fail to write points to store, try %d", try)
+		b := bf.NextBackOff()
+		if b == backoff.Stop {
+			return errors.New("fail to write points to store after maximum retry")
+		}
+		select {
+		case <-sc.stopchan:
+			return err
+		case <-time.After(b):
+		}
+		try++
+	}
+}
+func (sc *StatechainAPI) StopScan() error {
+	sc.logger.Info().Msg("stop scan request received")
+	close(sc.stopchan)
+	sc.wg.Wait()
+
+	return nil
 }
