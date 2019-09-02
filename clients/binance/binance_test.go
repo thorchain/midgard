@@ -20,18 +20,322 @@ type BinanceSuite struct{}
 
 var _ = Suite(&BinanceSuite{})
 
-func (s *BinanceSuite) TestGetTx(c *C) {
-	txID, err := common.NewTxID("ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA")
+const txReturn = `{
+  "jsonrpc": "2.0",
+  "id": "",
+  "result": {
+    "hash": "10C4E872A5DC842BE72AC8DE9C6A13F97DF6D345336F01B87EBA998F5A3BC36D",
+    "height": "35345060",
+    "index": 0,
+    "tx_result": {
+      "log": "Msg 0: ",
+      "tags": [
+        {
+          "key": "c2VuZGVy",
+          "value": "dGJuYjFnZ2RjeWhrOHJjN2ZnenA4d2Eyc3UyMjBhY2xjZ2djc2Q5NHllNQ=="
+        },
+        {
+          "key": "cmVjaXBpZW50",
+          "value": "dGJuYjF5eWNuNG1oNmZmd3BqZjU4NHQ4bHBwN2MyN2dodTAzZ3B2cWtmag=="
+        },
+        {
+          "key": "YWN0aW9u",
+          "value": "c2VuZA=="
+        }
+      ]
+    },
+    "tx": "3gHwYl3uClYqLIf6CicKFEIbgl7HHjyUCCd3VQ4pT+4/hCMQEg8KCFJVTkUtQTFGEIDC1y8SJwoUITE67vpKXBkmh6rP8IfYV5F+PigSDwoIUlVORS1BMUYQgMLXLxJwCibrWumHIQOki6+6K5zhbjAndqURWmVv5ZVY+ePXfi/DxUTzcenLWhJAUr5kAtjMfsb+IO+7ligNJRXhpL8WZLkH0IIWeQ2Cb4xEcN8ANIVgKjzU6IQYOKnNYpoCpMWQJTYXFg+Q95ztCBiSsyogFRoMd2l0aGRyYXc6Qk5CIAE=",
+    "proof": {
+      "RootHash": "A06D7798436C26BAF00177873C901C8A2337F8B0C18A75AAA9D86D615BE24938",
+      "Data": "3gHwYl3uClYqLIf6CicKFEIbgl7HHjyUCCd3VQ4pT+4/hCMQEg8KCFJVTkUtQTFGEIDC1y8SJwoUITE67vpKXBkmh6rP8IfYV5F+PigSDwoIUlVORS1BMUYQgMLXLxJwCibrWumHIQOki6+6K5zhbjAndqURWmVv5ZVY+ePXfi/DxUTzcenLWhJAUr5kAtjMfsb+IO+7ligNJRXhpL8WZLkH0IIWeQ2Cb4xEcN8ANIVgKjzU6IQYOKnNYpoCpMWQJTYXFg+Q95ztCBiSsyogFRoMd2l0aGRyYXc6Qk5CIAE=",
+      "Proof": {
+        "total": "1",
+        "index": "0",
+        "leaf_hash": "oG13mENsJrrwAXeHPJAciiM3+LDBinWqqdhtYVviSTg=",
+        "aunts": []
+      }
+    }
+  }
+}`
+const blockReturn = `{
+  "jsonrpc": "2.0",
+  "id": "",
+  "result": {
+    "block_meta": {
+      "block_id": {
+        "hash": "70ACBB83610BFA2DC03B116EFF1AD8E3C8F2C3B346A08CC3FE51725435D8A031",
+        "parts": {
+          "total": "1",
+          "hash": "D88D6CCDA76E9B3F6CC0CF870CD9200482526E8A78D4CBF127560D1A4E5C35C4"
+        }
+      },
+      "header": {
+        "version": {
+          "block": "10",
+          "app": "0"
+        },
+        "chain_id": "Binance-Chain-Nile",
+        "height": "35345060",
+        "time": "2019-08-24T05:58:03.884506426Z",
+        "num_txs": "1",
+        "total_txs": "37465228",
+        "last_block_id": {
+          "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+          "parts": {
+            "total": "1",
+            "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+          }
+        },
+        "last_commit_hash": "D75EA970736254E60490421CD64B2C5C11F55228ECFE72DDFE6F1DF50D836D33",
+        "data_hash": "A06D7798436C26BAF00177873C901C8A2337F8B0C18A75AAA9D86D615BE24938",
+        "validators_hash": "80D9AB0FC10D18CA0E0832D5F4C063C5489EC1443DFB738252D038A82131B27A",
+        "next_validators_hash": "80D9AB0FC10D18CA0E0832D5F4C063C5489EC1443DFB738252D038A82131B27A",
+        "consensus_hash": "294D8FBD0B94B767A7EBA9840F299A3586DA7FE6B5DEAD3B7EECBA193C400F93",
+        "app_hash": "73AE819E16A6F136D7BDCBFEBE7BB5869D74678EB745BFC6534EC5FF40FBDF35",
+        "last_results_hash": "",
+        "evidence_hash": "",
+        "proposer_address": "18E69CC672973992BB5F76D049A5B2C5DDF77436"
+      }
+    },
+    "block": {
+      "header": {
+        "version": {
+          "block": "10",
+          "app": "0"
+        },
+        "chain_id": "Binance-Chain-Nile",
+        "height": "35345060",
+        "time": "2019-08-24T05:58:03.884506426Z",
+        "num_txs": "1",
+        "total_txs": "37465228",
+        "last_block_id": {
+          "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+          "parts": {
+            "total": "1",
+            "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+          }
+        },
+        "last_commit_hash": "D75EA970736254E60490421CD64B2C5C11F55228ECFE72DDFE6F1DF50D836D33",
+        "data_hash": "A06D7798436C26BAF00177873C901C8A2337F8B0C18A75AAA9D86D615BE24938",
+        "validators_hash": "80D9AB0FC10D18CA0E0832D5F4C063C5489EC1443DFB738252D038A82131B27A",
+        "next_validators_hash": "80D9AB0FC10D18CA0E0832D5F4C063C5489EC1443DFB738252D038A82131B27A",
+        "consensus_hash": "294D8FBD0B94B767A7EBA9840F299A3586DA7FE6B5DEAD3B7EECBA193C400F93",
+        "app_hash": "73AE819E16A6F136D7BDCBFEBE7BB5869D74678EB745BFC6534EC5FF40FBDF35",
+        "last_results_hash": "",
+        "evidence_hash": "",
+        "proposer_address": "18E69CC672973992BB5F76D049A5B2C5DDF77436"
+      },
+      "data": {
+        "txs": [
+          "3gHwYl3uClYqLIf6CicKFEIbgl7HHjyUCCd3VQ4pT+4/hCMQEg8KCFJVTkUtQTFGEIDC1y8SJwoUITE67vpKXBkmh6rP8IfYV5F+PigSDwoIUlVORS1BMUYQgMLXLxJwCibrWumHIQOki6+6K5zhbjAndqURWmVv5ZVY+ePXfi/DxUTzcenLWhJAUr5kAtjMfsb+IO+7ligNJRXhpL8WZLkH0IIWeQ2Cb4xEcN8ANIVgKjzU6IQYOKnNYpoCpMWQJTYXFg+Q95ztCBiSsyogFRoMd2l0aGRyYXc6Qk5CIAE="
+        ]
+      },
+      "evidence": {
+        "evidence": null
+      },
+      "last_commit": {
+        "block_id": {
+          "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+          "parts": {
+            "total": "1",
+            "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+          }
+        },
+        "precommits": [
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.909720588Z",
+            "validator_address": "06FD60078EB4C2356137DD50036597DB267CF616",
+            "validator_index": "0",
+            "signature": "C3OiJeazLHQ4k4TKN5t4Y4a49oJAvAPQB5lkUMOQ/+4GkQZCT1eNst8bYzt3L6f7MWfKV34fypogeGunNzaWAQ=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.883383283Z",
+            "validator_address": "18E69CC672973992BB5F76D049A5B2C5DDF77436",
+            "validator_index": "1",
+            "signature": "pN/zpbUBhupENVoXkRTJ5XlY60qEqLbll5piGEAGE4FvnHMCbr+lKxlqurEdsu4qRJbsNDfbDonXRFCqhywPCA=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.885206084Z",
+            "validator_address": "344C39BB8F4512D6CAB1F6AAFAC1811EF9D8AFDF",
+            "validator_index": "2",
+            "signature": "/fdzePWoner8l0U8/Xbh77RydvIylodS0OJw0GoavpZJQ2nXIcXAMCgFEEyjkfjtgvjq8msL52midtGjn2FaAA=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.911164769Z",
+            "validator_address": "37EF19AF29679B368D2B9E9DE3F8769B35786676",
+            "validator_index": "3",
+            "signature": "zXrqCWm/CKPOaQiLA7wVRvI5SNv/GiW2qXkd14gF7KDKHNnWFAxnag/eGvTGHGsgV+pYsPgxoXYbNHiJk4nDBA=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.820534225Z",
+            "validator_address": "62633D9DB7ED78E951F79913FDC8231AA77EC12B",
+            "validator_index": "4",
+            "signature": "JohvjdQ1hmaVQo37gZnAANL9v1eIE9lWzUXvka9wcQPa9P36oK8k34LG4YQ3JFCHlyHyBV/epIdzoHUNHq9HBw=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.824653475Z",
+            "validator_address": "7B343E041CA130000A8BC00C35152BD7E7740037",
+            "validator_index": "5",
+            "signature": "Vnp8hKVO2KVWzUxTtyS4LT2nouUvG+4n76qdtsGVoJbqsyQVBURXD2AoMEJ+T6bGnNmvFXVTdoqcKrE98GR/AQ=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.884506426Z",
+            "validator_address": "91844D296BD8E591448EFC65FD6AD51A888D58FA",
+            "validator_index": "6",
+            "signature": "Ufk2rfx2g2RgI2WfDVxvOqfNUUvoReaVDrTwXvwIVAMEfmBvw1dzhDoqGkyiQjcBDw1H/S9eklOWqq+2W+A3Dw=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.885597258Z",
+            "validator_address": "B3727172CE6473BC780298A2D66C12F1A14F5B2A",
+            "validator_index": "7",
+            "signature": "/C9BKXGhv278+hM8eesU+fTsN0YEhFUkH2OagYZFcp5ZPkFIEj213/AC099YBqun0LS59cPIF9u88Q+OHp6zCw=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.911429854Z",
+            "validator_address": "B6F20C7FAA2B2F6F24518FA02B71CB5F4A09FBA3",
+            "validator_index": "8",
+            "signature": "irm6pRFnLcTSWFPbavsJ0ip1NGUpRBuf5lG/SwyEim438qhcU/UQ5gVkzc2/BzksQvPZMT1S6F2RUIrEJlI2DQ=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.821315524Z",
+            "validator_address": "E0DD72609CC106210D1AA13936CB67B93A0AEE21",
+            "validator_index": "9",
+            "signature": "JliuJder4dYczZ/sfCeYM98hl+msUZO1EoavTsUoNqbeIerwL8Y2v4YSj9PW04OrnM2O9aD70+XPtWpVc1euDA=="
+          },
+          {
+            "type": 2,
+            "height": "35345059",
+            "round": "0",
+            "block_id": {
+              "hash": "4A30601314F6F66CFE009130AC1A90CB443E742449B5881F42A04097934CF207",
+              "parts": {
+                "total": "1",
+                "hash": "A04C05E7A6FD92D06B8BF7EE06B4C2CD6313C5D475996192DC8B96888B896657"
+              }
+            },
+            "timestamp": "2019-08-24T05:58:03.821561691Z",
+            "validator_address": "FC3108DC3814888F4187452182BC1BAF83B71BC9",
+            "validator_index": "10",
+            "signature": "1lmPtOjpPTWwe3ViwGsRjShAEnC/YTgA06RNt4g9jltDkkjE00bNZyNOz7KVz4G2cZ+EIee0D5nJqN/XRSJ7AQ=="
+          }
+        ]
+      }
+    }
+  }
+}`
+
+func (s *BinanceSuite) TestGetTxEx(c *C) {
+	txID, err := common.NewTxID("10C4E872A5DC842BE72AC8DE9C6A13F97DF6D345336F01B87EBA998F5A3BC36D")
 	c.Assert(err, IsNil)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Log("received http request", r.RequestURI)
-		if strings.HasSuffix(r.RequestURI, txID.String()) {
-			_, err := w.Write([]byte(`{"code":0,"data":"Tx{D401F0625DEE0A542A2C87FA0A260A14FE6431AD7D2E103A953CBFACBE460D6DF2F4A7CE120E0A074C4F4B2D3343301080C2D72F12260A148BACE841B631A45205C146EDDEDC8C4BA80B1D51120E0A074C4F4B2D3343301080C2D72F12700A26EB5AE9872102D8DEA708C755F1A1F546274EEEE3DAE851857E1956E50A6F8C01B284B234E70F1240C485B1C3B0DE278E10F3CD2D6A810BD7F3B3249AA5A3F81489430C320DAEA8EB3631331C50B3A4DCAD320DB29D912D81F92A20C3489E42C932EB696D5F587F1D18ADB12920011A04746573742001}","hash":"ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA","height":"22466368","log":"Msg 0: ","ok":true}`))
+		if strings.Contains(r.RequestURI, txID.String()) {
+			_, err := w.Write([]byte(txReturn))
 			c.Assert(err, IsNil)
 			return
 		}
-		if r.RequestURI == "/api/v1/transactions-in-block/22466368" {
-			_, err := w.Write([]byte(`{"blockHeight":22466368,"tx":[{"txHash":"ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA","blockHeight":22466368,"txType":"TRANSFER","timeStamp":"2019-06-19T10:17:48.441Z","fromAddr":"tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt","toAddr":"tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl","value":"1.00000000","txAsset":"LOK-3C0","txFee":"0.00037500","proposalId":null,"txAge":null,"orderId":null,"code":0,"data":null,"confirmBlocks":0,"memo":"test","source":1,"sequence":1}]}`))
+		if r.RequestURI == "/block?height=35345060" {
+			_, err := w.Write([]byte(blockReturn))
 			c.Assert(err, IsNil)
 		}
 
@@ -43,17 +347,20 @@ func (s *BinanceSuite) TestGetTx(c *C) {
 		Scheme:               "http",
 		RequestTimeout:       time.Second,
 		MarketsCacheDuration: time.Hour,
+		FullNodeHost:         srv.Listener.Addr().String(),
+		FullNodeScheme:       "http",
+		IsTestNet:            true,
 	})
 	c.Assert(err, IsNil)
 	tx, err := bc.GetTx(txID)
 	c.Assert(err, IsNil)
-	t1, err := time.Parse(time.RFC3339, "2019-06-19T10:17:48.441Z")
+	t1, err := time.Parse(time.RFC3339, "2019-08-24T05:58:03.884506426Z")
 	c.Assert(err, IsNil)
 	c.Check(tx.Timestamp.UnixNano(), Equals, t1.UnixNano())
-	c.Check(tx.ToAddress, Equals, "tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl")
-	c.Check(tx.FromAddress, Equals, "tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt")
+	c.Check(tx.ToAddress, Equals, "tbnb1yycn4mh6ffwpjf584t8lpp7c27ghu03gpvqkfj")
+	c.Check(tx.FromAddress, Equals, "tbnb1ggdcyhk8rc7fgzp8wa2su220aclcggcsd94ye5")
 }
-func (s *BinanceSuite) TestGetTxEx(c *C) {
+func (s *BinanceSuite) TestGetTxErrorConditions(c *C) {
 	txID, err := common.NewTxID("ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA")
 	noTx := TxDetail{}
 	c.Assert(err, IsNil)
@@ -65,6 +372,9 @@ func (s *BinanceSuite) TestGetTxEx(c *C) {
 			Scheme:               "http",
 			RequestTimeout:       time.Second,
 			MarketsCacheDuration: time.Hour,
+			FullNodeHost:         srv.Listener.Addr().String(),
+			FullNodeScheme:       "http",
+			IsTestNet:            true,
 		})
 		c.Assert(err, IsNil)
 		tx, err := bc.GetTx(txID)
@@ -86,18 +396,7 @@ func (s *BinanceSuite) TestGetTxEx(c *C) {
 
 	testFunc(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Log("received http request", r.RequestURI)
-		if strings.HasSuffix(r.RequestURI, txID.String()) {
-			_, err := w.Write([]byte(`{"code":0,"data":"Tx{D401F0625DEE0A542A2C87FA0A260A14FE6431AD7D2E103A953CBFACBE460D6DF2F4A7CE120E0A074C4F4B2D3343301080C2D72F12260A148BACE841B631A45205C146EDDEDC8C4BA80B1D51120E0A074C4F4B2D3343301080C2D72F12700A26EB5AE9872102D8DEA708C755F1A1F546274EEEE3DAE851857E1956E50A6F8C01B284B234E70F1240C485B1C3B0DE278E10F3CD2D6A810BD7F3B3249AA5A3F81489430C320DAEA8EB3631331C50B3A4DCAD320DB29D912D81F92A20C3489E42C932EB696D5F587F1D18ADB12920011A04746573742001}","hash":"ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA","height":"22466368","log":"Msg 0: ","ok":true}`))
-			c.Assert(err, IsNil)
-			w.WriteHeader(http.StatusAccepted)
-			return
-		}
-
-	}), txID, noTx, NotNil)
-
-	testFunc(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Log("received http request", r.RequestURI)
-		if strings.HasSuffix(r.RequestURI, txID.String()) {
+		if strings.Contains(r.RequestURI, txID.String()) {
 			_, err := w.Write([]byte(`whatever`))
 			c.Assert(err, IsNil)
 			return
@@ -106,8 +405,19 @@ func (s *BinanceSuite) TestGetTxEx(c *C) {
 	}), txID, noTx, NotNil)
 	testFunc(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Log("received http request", r.RequestURI)
-		if strings.HasSuffix(r.RequestURI, txID.String()) {
-			_, err := w.Write([]byte(`{"code":0,"data":"Tx{D401F0625DEE0A542A2C87FA0A260A14FE6431AD7D2E103A953CBFACBE460D6DF2F4A7CE120E0A074C4F4B2D3343301080C2D72F12260A148BACE841B631A45205C146EDDEDC8C4BA80B1D51120E0A074C4F4B2D3343301080C2D72F12700A26EB5AE9872102D8DEA708C755F1A1F546274EEEE3DAE851857E1956E50A6F8C01B284B234E70F1240C485B1C3B0DE278E10F3CD2D6A810BD7F3B3249AA5A3F81489430C320DAEA8EB3631331C50B3A4DCAD320DB29D912D81F92A20C3489E42C932EB696D5F587F1D18ADB12920011A04746573742001}","hash":"ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA","height":"22466368","log":"Msg 0: ","ok":true}`))
+		if strings.Contains(r.RequestURI, txID.String()) {
+			w.WriteHeader(http.StatusAccepted)
+			_, err := w.Write([]byte(txReturn))
+			c.Assert(err, IsNil)
+			return
+		}
+
+	}), txID, noTx, NotNil)
+
+	testFunc(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Log("received http request", r.RequestURI)
+		if strings.Contains(r.RequestURI, txID.String()) {
+			_, err := w.Write([]byte(txReturn))
 			c.Assert(err, IsNil)
 			return
 		}
@@ -117,17 +427,17 @@ func (s *BinanceSuite) TestGetTxEx(c *C) {
 	}), txID, noTx, NotNil)
 	testFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Log("received http request", r.RequestURI)
-		if strings.HasSuffix(r.RequestURI, txID.String()) {
-			_, err := w.Write([]byte(`{"code":0,"data":"Tx{D401F0625DEE0A542A2C87FA0A260A14FE6431AD7D2E103A953CBFACBE460D6DF2F4A7CE120E0A074C4F4B2D3343301080C2D72F12260A148BACE841B631A45205C146EDDEDC8C4BA80B1D51120E0A074C4F4B2D3343301080C2D72F12700A26EB5AE9872102D8DEA708C755F1A1F546274EEEE3DAE851857E1956E50A6F8C01B284B234E70F1240C485B1C3B0DE278E10F3CD2D6A810BD7F3B3249AA5A3F81489430C320DAEA8EB3631331C50B3A4DCAD320DB29D912D81F92A20C3489E42C932EB696D5F587F1D18ADB12920011A04746573742001}","hash":"ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA","height":"22466368","log":"Msg 0: ","ok":true}`))
+		if strings.Contains(r.RequestURI, txID.String()) {
+			_, err := w.Write([]byte(txReturn))
 			c.Assert(err, IsNil)
 			return
 		}
-		if r.RequestURI == "/api/v1/transactions-in-block/22466368" {
-			_, err := w.Write([]byte(`{"blockHeight":22466368,"tx":[{"txHash":"XD92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA","blockHeight":22466368,"txType":"TRANSFER","timeStamp":"2019-06-19T10:17:48.441Z","fromAddr":"tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt","toAddr":"tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl","value":"1.00000000","txAsset":"LOK-3C0","txFee":"0.00037500","proposalId":null,"txAge":null,"orderId":null,"code":0,"data":null,"confirmBlocks":0,"memo":"test","source":1,"sequence":1}]}`))
+		if r.RequestURI == "/block?height=35345060" {
+			_, err := w.Write([]byte("something"))
 			c.Assert(err, IsNil)
 		}
 
-	}, txID, noTx, IsNil)
+	}, txID, noTx, NotNil)
 }
 
 func (BinanceSuite) TestGetMarketData(c *C) {
@@ -140,6 +450,9 @@ func (BinanceSuite) TestGetMarketData(c *C) {
 			Scheme:               "http",
 			RequestTimeout:       time.Second,
 			MarketsCacheDuration: time.Hour,
+			FullNodeHost:         srv.Listener.Addr().String(),
+			FullNodeScheme:       "http",
+			IsTestNet:            true,
 		})
 		c.Assert(err, IsNil)
 		md, err := bc.GetMarketData(symbol)
