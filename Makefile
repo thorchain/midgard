@@ -2,6 +2,7 @@ all: lint install
 
 install: go.sum
 	GO111MODULE=on go install -v ./cmd/etl
+	GO111MODULE=on go install -v ./cmd/chainservice
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
