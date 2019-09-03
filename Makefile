@@ -37,7 +37,7 @@ test-internal:
 	@go test ./...
 
 test:
-	@./scripts/run.sh etl make test-internal
+	@./scripts/run.sh chain-service make test-internal
 
 clear:
 	clear
@@ -46,7 +46,13 @@ test-watch: clear
 	@./scripts/watch.bash
 
 sh:
-	@docker-compose run --rm --no-deps etl /bin/sh
+	@docker-compose run --rm chain-service /bin/sh
 
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
+
+run:
+	@${GOBIN}/chainservice -c cmd/chainservice/config.json
+
+up:
+	@docker-compose up
