@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	flag "github.com/spf13/pflag"
 
-	"gitlab.com/thorchain/bepswap/chain-service"
+	chain_service "gitlab.com/thorchain/bepswap/chain-service"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 )
 
@@ -55,11 +55,11 @@ func main() {
 	initLog(*logLevel, *pretty)
 	cfg, err := config.LoadConfiguration(*cfgFile)
 	if nil != err {
-		log.Fatal().Err(err).Msg("fail to load observer config ")
+		log.Fatal().Err(err).Msg("fail to load chain service config ")
 	}
 	s, err := chain_service.NewServer(*cfg)
 	if nil != err {
-		log.Fatal().Err(err).Msg("fail to create new server")
+		log.Fatal().Err(err).Msg("fail to create chain service")
 	}
 	if err := s.Start(); nil != err {
 		log.Fatal().Err(err).Msg("fail to start server")
@@ -69,6 +69,6 @@ func main() {
 	<-ch
 	log.Info().Msg("stop signal received")
 	if err := s.Stop(); nil != err {
-		log.Fatal().Err(err).Msg("fail to stop observer")
+		log.Fatal().Err(err).Msg("fail to stop chain service")
 	}
 }

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -74,8 +76,9 @@ func applyDefaultObserverConfig() {
 func LoadConfiguration(file string) (*Configuration, error) {
 	applyDefaultObserverConfig()
 	var cfg Configuration
-	viper.SetConfigName(file)
+	viper.SetConfigName(strings.TrimRight(path.Base(file), ".json"))
 	viper.AddConfigPath(".")
+	viper.AddConfigPath(filepath.Dir(file))
 	if err := viper.ReadInConfig(); nil != err {
 		return nil, errors.Wrap(err, "fail to read from config file")
 	}
