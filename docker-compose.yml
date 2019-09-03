@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  etl:
+  chain-service:
     build: .
     image: bepswap-chain-service
     links:
@@ -12,8 +12,10 @@ services:
       - ${GOPATH}:/root/go
       - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
     working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
+    command: make install run
     environment:
       GOPATH: /root/go
+      GOBIN: /root/go/bin
       GO111MODULE: "on"
       INFLUXDB_ADMIN_USER: admin
       INFLUXDB_ADMIN_PASSWORD: password

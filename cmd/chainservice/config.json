@@ -4,7 +4,7 @@
     "host": "localhost",
     "user_name": "admin",
     "password": "password",
-    "database": "db0"
+    "database": "db0",
     "resample": "10m",
     "resample_for": "1d"
   },

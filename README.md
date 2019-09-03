@@ -13,7 +13,7 @@ make influxdb
 
 In the second tab, run...
 ```bash
-make install
+make install run
 ```
 
 

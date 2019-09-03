@@ -23,7 +23,7 @@ unit_tests:
   before_script:
     - echo $GOPATH
   script:
-    - ./scripts/run.sh etl go test ./...
+    - ./scripts/run.sh chain-service go test ./...
 
 lint_code:
   image: golangci/golangci-lint
