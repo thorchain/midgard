@@ -2,3 +2,5 @@
 node_modules/
 .envrc
 build/log/*
+bin/*
+
