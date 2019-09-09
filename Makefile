@@ -1,3 +1,5 @@
+GOBIN?=$$GOPATH/bin
+
 all: lint install
 
 install: go.sum
