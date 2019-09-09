@@ -80,6 +80,17 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	}, nil
 }
 
+func CORS() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+    c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+    c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+    c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+    c.Next()
+  }
+}
+
 // register all your endpoint here
 func (s *Server) registerEndpoints() {
 	// connect log with gin
@@ -87,6 +98,9 @@ func (s *Server) registerEndpoints() {
 		Logger: &s.logger,
 		UTC:    true,
 	}))
+
+	// setup CORS
+	s.engine.Use(CORS())
 
 	s.engine.GET("/health", s.healthCheck)
 	s.engine.GET("/poolData", s.getPool)
