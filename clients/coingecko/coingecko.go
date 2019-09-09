@@ -142,9 +142,10 @@ func (ts *TokenService) GetToken(symbol string, pool sTypes.Pool) (*TokenData, e
 		}
 	}
 	var price float64
-	if !pool.BalanceToken.GreaterThen(0) {
+	if pool.BalanceToken.GreaterThen(0) {
 		price = pool.BalanceRune.Float64() / pool.BalanceToken.Float64()
 	}
+
 	return &TokenData{
 		Symbol: symbol,
 		Ticker: ticker,
