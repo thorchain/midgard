@@ -132,9 +132,9 @@ func (s *Server) getTradeData(g *gin.Context) {
 }
 
 func (s *Server) getTokenData(g *gin.Context) {
-	token, ok := g.GetQuery("token")
+	token, ok := g.GetQuery("symbol")
 	if !ok {
-		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid symbol"})
 		return
 	}
 	td, err := s.tokenService.GetTokenDetail(token)
