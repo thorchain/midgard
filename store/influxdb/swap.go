@@ -116,7 +116,7 @@ func (in Client) ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker
 	}
 	query := "SELECT * FROM swaps"
 	if len(where) > 0 {
-		query += fmt.Sprintf(" %s ", strings.Join(where, " and "))
+		query += fmt.Sprintf(" where %s ", strings.Join(where, " and "))
 	}
 	query += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
 
