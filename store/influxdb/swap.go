@@ -200,7 +200,7 @@ func (in Client) GetSwapData(ticker common.Ticker) (data SwapData, err error) {
 	data.Ticker = ticker
 
 	query := fmt.Sprintf(
-		"SELECT MEAN(token) AS aveTxTkn, MEAN(trade_slip) AS aveSlipTkn, COUNT(token) AS numTxTkn, MEAN(token_fee) AS aveFeeTkn FROM swaps WHERE pool = '%s' and token > 0",
+		"SELECT MEAN(token) AS aveTxTkn, MEAN(trade_slip) AS aveSlipTkn, COUNT(token) AS numTxTkn, MEAN(token_fee) AS aveFeeTkn FROM swaps WHERE pool = '%s' and token < 0",
 		ticker.String())
 	// Find the number of stakers
 	tokenResp, err := in.Query(query)
@@ -209,7 +209,7 @@ func (in Client) GetSwapData(ticker common.Ticker) (data SwapData, err error) {
 	}
 
 	query = fmt.Sprintf(
-		"SELECT MEAN(rune) AS aveTxRune, MEAN(trade_slip) AS aveSlipRune, COUNT(rune) AS numTxRune, MEAN(rune_fee) AS aveFeeRune FROM swaps WHERE pool = '%s' and rune > 0",
+		"SELECT MEAN(rune) AS aveTxRune, MEAN(trade_slip) AS aveSlipRune, COUNT(rune) AS numTxRune, MEAN(rune_fee) AS aveFeeRune FROM swaps WHERE pool = '%s' and rune < 0",
 		ticker.String())
 	// Find the number of stakers
 	runeResp, err := in.Query(query)

@@ -170,11 +170,11 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 			var rAmt float64
 			var tAmt float64
 			if common.IsRune(swap.SourceCoin.Denom) {
-				rAmt = swap.SourceCoin.Amount.Float64()
+				rAmt = swap.SourceCoin.Amount.Float64() * -1
 				tAmt = swap.TargetCoin.Amount.Float64()
 			} else {
 				rAmt = swap.TargetCoin.Amount.Float64()
-				tAmt = swap.SourceCoin.Amount.Float64()
+				tAmt = swap.SourceCoin.Amount.Float64() * -1
 			}
 
 			pts = append(pts, influxdb.NewSwapEvent(
