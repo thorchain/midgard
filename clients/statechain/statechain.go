@@ -170,11 +170,11 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 			var rAmt float64
 			var tAmt float64
 			if common.IsRune(swap.SourceCoin.Denom) {
-				rAmt = swap.SourceCoin.Amount.Float64()
-				tAmt = swap.TargetCoin.Amount.Float64()
+				rAmt = common.UintToFloat64(swap.SourceCoin.Amount)
+				tAmt = common.UintToFloat64(swap.TargetCoin.Amount) * -1
 			} else {
-				rAmt = swap.TargetCoin.Amount.Float64()
-				tAmt = swap.SourceCoin.Amount.Float64()
+				rAmt = common.UintToFloat64(swap.TargetCoin.Amount) * -1
+				tAmt = common.UintToFloat64(swap.SourceCoin.Amount)
 			}
 
 			pts = append(pts, influxdb.NewSwapEvent(
@@ -183,19 +183,18 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				evt.OutHash,
 				rAmt,
 				tAmt,
-				swap.PriceSlip.Float64(),
-				swap.TradeSlip.Float64(),
-				swap.PoolSlip.Float64(),
-				swap.OutputSlip.Float64(),
-				swap.Fee.Float64(),
+				common.UintToFloat64(swap.PriceSlip),
+				common.UintToFloat64(swap.TradeSlip),
+				common.UintToFloat64(swap.PoolSlip),
+				common.UintToFloat64(swap.OutputSlip),
+				common.UintToFloat64(swap.Fee),
 				evt.Pool,
 				common.BnbAddress(tx.FromAddress),
 				common.BnbAddress(tx.ToAddress),
 				tx.Timestamp,
 			).Point())
 
-		case "stake", "unstake":
-
+		case "stake":
 			var stake sTypes.EventStake
 			err := json.Unmarshal(evt.Event, &stake)
 			if err != nil {
@@ -206,26 +205,42 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				return maxID, pts, err
 			}
 
-			var addr common.BnbAddress
-			if evt.Type == "stake" {
-				addr, err = common.NewBnbAddress(tx.FromAddress)
-				if err != nil {
-					return maxID, pts, errors.Wrap(err, "fail to parse from address")
-				}
-			} else if evt.Type == "unstake" {
-				addr, err = common.NewBnbAddress(tx.ToAddress)
-				if err != nil {
-					return maxID, pts, errors.Wrap(err, "fail to parse unstake address")
-				}
+			addr, err := common.NewBnbAddress(tx.FromAddress)
+			if err != nil {
+				return maxID, pts, errors.Wrap(err, "fail to parse from address")
 			}
-
 			pts = append(pts, influxdb.NewStakeEvent(
 				int64(evt.ID.Float64()),
 				evt.InHash,
 				evt.OutHash,
-				stake.RuneAmount.Float64(),
-				stake.TokenAmount.Float64(),
-				stake.StakeUnits.Float64(),
+				common.UintToFloat64(stake.RuneAmount),
+				common.UintToFloat64(stake.TokenAmount),
+				common.UintToFloat64(stake.StakeUnits),
+				evt.Pool,
+				addr,
+				tx.Timestamp,
+			).Point())
+		case "unstake":
+			var unstake sTypes.EventUnstake
+			err := json.Unmarshal(evt.Event, &unstake)
+			if err != nil {
+				return maxID, pts, errors.Wrap(err, "fail to unmarshal unstake event")
+			}
+			tx, err := sc.binanceClient.GetTx(evt.InHash)
+			if err != nil {
+				return maxID, pts, err
+			}
+			addr, err := common.NewBnbAddress(tx.ToAddress)
+			if err != nil {
+				return maxID, pts, errors.Wrap(err, "fail to parse unstake address")
+			}
+			pts = append(pts, influxdb.NewStakeEvent(
+				int64(evt.ID.Float64()),
+				evt.InHash,
+				evt.OutHash,
+				float64(unstake.RuneAmount.Int64()),
+				float64(unstake.TokenAmount.Int64()),
+				float64(unstake.StakeUnits.Int64()),
 				evt.Pool,
 				addr,
 				tx.Timestamp,

@@ -8,10 +8,12 @@ import (
 	"sync"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	coingecko "github.com/superoo7/go-gecko/v3"
+	"gitlab.com/thorchain/bepswap/common"
 	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
 
 	"gitlab.com/thorchain/bepswap/chain-service/config"
@@ -142,8 +144,8 @@ func (ts *TokenService) GetToken(symbol string, pool sTypes.Pool) (*TokenData, e
 		}
 	}
 	var price float64
-	if pool.BalanceToken.GreaterThen(0) {
-		price = pool.BalanceRune.Float64() / pool.BalanceToken.Float64()
+	if pool.BalanceToken.GT(sdk.ZeroUint()) {
+		price = common.UintToFloat64(pool.BalanceRune) / common.UintToFloat64(pool.BalanceToken)
 	}
 
 	return &TokenData{
