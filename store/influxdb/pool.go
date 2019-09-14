@@ -102,7 +102,9 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 
 	// calculate ROI
-	pool.RoiAT = (((pool.RuneAmount * pool.TokenAmount) / 2) - pool.Units) / pool.Units
+	if pool.Units > 0 {
+		pool.RoiAT = (((pool.RuneAmount * pool.TokenAmount) / 2) - pool.Units) / pool.Units
+	}
 
 	return pool, nil
 }
