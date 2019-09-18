@@ -19,6 +19,7 @@ type Configuration struct {
 	Influx          InfluxDBConfiguration   `json:"influx" mapstructure:"influx"`
 	Statechain      StateChainConfiguration `json:"statechain" mapstructure:"statechain"`
 	Binance         BinanceConfiguration    `json:"binance" mapstructure:"binance"`
+	Price           PriceConfiguration      `json:"price" mapstructure:"price"`
 }
 
 // InfluxDBConfiguration config for Influxdb
@@ -56,6 +57,13 @@ type CoingeckoConfiguration struct {
 	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 }
 
+// PriceConfiguration settings for Coingecko
+type PriceConfiguration struct {
+	Id         string        `json:"id" mapstructure:"id"`
+	VsCurrency string        `json:"vs_currency" mapstructure:"vs_currency"`
+	UpdateTime time.Duration `json:"update_time" mapstructure:"update_time"`
+}
+
 func applyDefaultObserverConfig() {
 	viper.SetDefault("listen_port", 8080)
 	viper.SetDefault("read_timeout", "30s")
@@ -71,6 +79,10 @@ func applyDefaultObserverConfig() {
 	viper.SetDefault("binance.markets_cache_duration", "24h")
 	viper.SetDefault("binance.full_node_scheme", "http")
 	viper.SetDefault("binance.is_testnet", "true")
+	viper.SetDefault("price.id", "thorchain")
+	viper.SetDefault("price.vs_currency", "usd")
+	viper.SetDefault("price.update_time", "10s")
+
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {

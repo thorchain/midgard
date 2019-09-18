@@ -35,6 +35,7 @@ type Server struct {
 	tokenService     *coingecko.TokenService
 	binanceClient    *binance.BinanceClient
 	cacheStore       persistence.CacheStore
+	priceService     *coingecko.PriceService
 }
 
 func NewServer(cfg config.Configuration) (*Server, error) {
@@ -77,6 +78,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		tokenService:     tokenService,
 		binanceClient:    binanceClient,
 		cacheStore:       cacheStore,
+		priceService:     coingecko.NewPriceService(coingecko.NewCache(), cfg.Price.Id, cfg.Price.VsCurrency),
 	}, nil
 }
 
@@ -115,6 +117,22 @@ func (s *Server) registerEndpoints() {
 	s.engine.GET("/stakerData", s.getStakerInfo)
 	s.engine.GET("/tokenData", s.getTokenData)
 	s.engine.GET("/tradeData", s.getTradeData)
+	s.engine.GET("/rune_usd", s.getRuneUsd)
+}
+
+func (s *Server) getRuneUsd(g *gin.Context) {
+	resp, err := s.priceService.GetPrice()
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{"error": "get price error " + err.Error()})
+		return
+	}
+
+	g.JSON(http.StatusOK, gin.H{"thorchain": struct {
+		Usd float32 `json:"usd"`
+	}{
+		Usd: resp.Price,
+	},
+	})
 }
 
 func (s *Server) getTradeData(g *gin.Context) {

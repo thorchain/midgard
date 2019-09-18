@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	flag "github.com/spf13/pflag"
@@ -61,6 +63,9 @@ func main() {
 	if nil != err {
 		log.Fatal().Err(err).Msg("fail to create chain service")
 	}
+
+	go coingecko.NewPriceService(coingecko.NewCache(), cfg.Price.Id, cfg.Price.VsCurrency).Run(cfg.Price.UpdateTime)
+
 	if err := s.Start(); nil != err {
 		log.Fatal().Err(err).Msg("fail to start server")
 	}
