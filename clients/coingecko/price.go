@@ -11,10 +11,6 @@ import (
 	coingecko "github.com/superoo7/go-gecko/v3"
 )
 
-type runner interface {
-	Run(timeDuration time.Duration)
-}
-
 type PriceServiceResponse struct {
 	CoinName     string
 	CurrencyName string
