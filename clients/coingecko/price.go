@@ -61,16 +61,14 @@ func (ps *PriceService) Run(timeDuration time.Duration, stop chan struct{}) {
 		case <-stop:
 			return
 		default:
-			for tick := range time.Tick(timeDuration) {
-				select {
-				default:
-					err := ps.setPrice()
-					if err != nil {
-						ps.logger.Error().Str(tick.String()+"price service error", err.Error())
-						continue
-					}
-					ps.logger.Info().Str(tick.String()+"price service", "updated")
+			for tick := range time.NewTicker(timeDuration).C {
+				err := ps.setPrice()
+				if err != nil {
+					ps.logger.Error().Str(tick.String()+"price service error", err.Error())
+					continue
 				}
+				ps.logger.Info().Str(tick.String()+"price service", "updated")
+
 			}
 		}
 	}
