@@ -50,25 +50,39 @@ func (ps *PriceService) GetPrice() (*PriceServiceResponse, error) {
 	return result, nil
 }
 
-func (ps *PriceService) Run(timeDuration time.Duration) {
+func (ps *PriceService) Run(timeDuration time.Duration, stop chan struct{}) {
 	err := ps.setPrice()
 	if err != nil {
-		ps.logger.Log().Str("on start price service error", err.Error())
+		ps.logger.Error().Str("on start price service error", err.Error())
 	}
-	for tick := range time.Tick(timeDuration) {
-		err := ps.setPrice()
-		if err != nil {
-			ps.logger.Log().Str(tick.String()+"price service error", err.Error())
-			continue
+
+	for {
+		select {
+		case <-stop:
+			return
+		default:
+			for tick := range time.Tick(timeDuration) {
+				select {
+				default:
+					err := ps.setPrice()
+					if err != nil {
+						ps.logger.Error().Str(tick.String()+"price service error", err.Error())
+						continue
+					}
+					ps.logger.Info().Str(tick.String()+"price service", "updated")
+				}
+			}
 		}
-		ps.logger.Log().Str(tick.String()+"price service", "updated")
 	}
+
 }
 
 func (ps *PriceService) setPrice() error {
 	res, err := ps.cgClient.SimplePrice([]string{ps.id}, []string{ps.vsCurrency})
+	if res == nil {
+		return fmt.Errorf("price not found in ID %s", ps.id)
+	}
 	result := (*res)[ps.id]
-
 	ps.cache.Set(ps.id, &PriceServiceResponse{
 		CoinName:     ps.id,
 		CurrencyName: ps.vsCurrency,

@@ -64,7 +64,8 @@ func main() {
 		log.Fatal().Err(err).Msg("fail to create chain service")
 	}
 
-	go coingecko.NewPriceService(coingecko.NewCache(), cfg.Price.Id, cfg.Price.VsCurrency).Run(cfg.Price.UpdateTime)
+	stopch := make(chan struct{}, 1)
+	go coingecko.NewPriceService(coingecko.NewCache(), cfg.Price.Id, cfg.Price.VsCurrency).Run(cfg.Price.UpdateTime, stopch)
 
 	if err := s.Start(); nil != err {
 		log.Fatal().Err(err).Msg("fail to start server")
@@ -76,4 +77,6 @@ func main() {
 	if err := s.Stop(); nil != err {
 		log.Fatal().Err(err).Msg("fail to stop chain service")
 	}
+	close(stopch)
+
 }

@@ -123,6 +123,7 @@ func (s *Server) registerEndpoints() {
 func (s *Server) getRuneUsd(g *gin.Context) {
 	resp, err := s.priceService.GetPrice()
 	if err != nil {
+		s.logger.Error().Err(err).Msg("fail to get price" + err.Error())
 		g.JSON(http.StatusBadRequest, gin.H{"error": "get price error " + err.Error()})
 		return
 	}
