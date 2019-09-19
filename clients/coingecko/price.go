@@ -79,9 +79,14 @@ func (ps *PriceService) Run(timeDuration time.Duration, stop chan struct{}) {
 
 func (ps *PriceService) setPrice() error {
 	res, err := ps.cgClient.SimplePrice([]string{ps.id}, []string{ps.vsCurrency})
+	if err != nil {
+		return fmt.Errorf("got error in set price %s", err.Error())
+	}
+
 	if res == nil {
 		return fmt.Errorf("price not found in ID %s", ps.id)
 	}
+
 	result := (*res)[ps.id]
 	ps.cache.Set(ps.id, &PriceServiceResponse{
 		CoinName:     ps.id,
