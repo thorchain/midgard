@@ -3,9 +3,10 @@ module gitlab.com/thorchain/bepswap/chain-service
 go 1.12
 
 require (
-	github.com/binance-chain/go-sdk v1.0.9
+	github.com/binance-chain/go-sdk v1.1.3
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cosmos/cosmos-sdk v0.37.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-contrib/cache v1.1.0
 	github.com/gin-contrib/logger v0.0.1
 	github.com/gin-gonic/gin v1.4.0
@@ -29,6 +30,7 @@ require (
 	gitlab.com/thorchain/bepswap/common v1.0.0
 	gitlab.com/thorchain/bepswap/statechain v0.0.0-20190914112626-edde6ee51ae0
 	golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7 // indirect
+	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 	gopkg.in/h2non/gock.v1 v1.0.15 // indirect
 )
