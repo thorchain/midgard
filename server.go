@@ -3,7 +3,6 @@ package chain_service
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"net/http"
 	"strconv"
 	"time"
@@ -310,8 +309,6 @@ func (s *Server) getTokens(g *gin.Context) {
 		return
 	}
 	pools, err := s.stateChainClient.GetPools()
-
-	spew.Dump(pools)
 
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get pools")
