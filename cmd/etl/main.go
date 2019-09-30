@@ -37,7 +37,7 @@ func main() {
 		ProAPIKey: svcCfg.CoinmarketCapAPIKey,
 	})
 
-	// initalize influxdb client
+	// initialize influxdb client
 	//influxClient, err := influxdb.NewClient()
 	//if err != nil {
 	//	log.Fatal(err)
