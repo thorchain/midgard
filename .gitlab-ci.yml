@@ -10,7 +10,7 @@ stages:
   - test
   - deploy
 
-unit_tests:
+test:unit:
   image: docker/compose:1.25.0-rc2-alpine
   stage: test
   variables:
@@ -24,7 +24,7 @@ unit_tests:
   script:
     - ./scripts/run.sh chain-service go test ./...
 
-lint:
+test:lint:
   image: golangci/golangci-lint
   stage: test
   script:
