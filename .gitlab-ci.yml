@@ -80,8 +80,6 @@ deploy:production:
     - apk update
     - apk add python py-pip make git
     - pip install awscli
-  except:
-    - schedules
   environment:
     name: production
   script: make -C ./build deploy
