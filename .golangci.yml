@@ -20,4 +20,4 @@ issues:
     - composite
 run:
   tests: false
-  deadline: 1m
+  deadline: 5m
