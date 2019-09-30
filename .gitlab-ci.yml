@@ -24,16 +24,57 @@ unit_tests:
   script:
     - ./scripts/run.sh chain-service go test ./...
 
-# TODO This is broker for some reason and blocking the cicd pipline.
-#lint_code:
-#  image: golangci/golangci-lint
-#  stage: test
-#  script:
-#    - make lint-verbose
+lint:
+  image: golangci/golangci-lint
+  stage: test
+  script:
+    - make lint-verbose
 
-trigger_build_and_deploy:
+deploy:develop:
   stage: deploy
+  before_script:
+    - apk update
+    - apk add python py-pip make git
+    - pip install awscli
+  except:
+    - schedules
+  environment:
+    name: develop
+  script: make -C ./build deploy
   only:
     - master
-  script:
-    - "curl -X POST -F token=$TOKEN -F ref=master https://gitlab.com/api/v4/projects/14289231/trigger/pipeline"
+
+deploy:staging:
+  stage: deploy
+  before_script:
+    - apk update
+    - apk add python py-pip make git
+    - pip install awscli
+  environment:
+    name: staging
+  script: make -C ./build deploy
+  only:
+    - schedules
+
+deploy:production:
+  stage: deploy
+  before_script:
+    - apk update
+    - apk add python py-pip make git
+    - pip install awscli
+  except:
+    - schedules
+  environment:
+    name: production
+  script: make -C ./build deploy
+  only:
+    - master
+  when: manual
+
+# TODO Review once new deployment method is running
+#trigger_build_and_deploy:
+#  stage: deploy
+#  only:
+#    - master
+#  script:
+#    - "curl -X POST -F token=$TOKEN -F ref=master https://gitlab.com/api/v4/projects/14289231/trigger/pipeline"
