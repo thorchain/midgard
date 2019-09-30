@@ -10,7 +10,7 @@ stages:
   - test
   - deploy
 
-test:unit:
+unit:
   image: docker/compose:1.25.0-rc2-alpine
   stage: test
   variables:
@@ -24,7 +24,7 @@ test:unit:
   script:
     - ./scripts/run.sh chain-service go test ./...
 
-test:lint:
+lint:
   image: golangci/golangci-lint
   stage: test
   script:
@@ -32,6 +32,10 @@ test:lint:
 
 deploy:develop:
   stage: deploy
+  image: docker:stable
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
   before_script:
     - apk update
     - apk add python py-pip make git
@@ -46,6 +50,10 @@ deploy:develop:
 
 deploy:staging:
   stage: deploy
+  image: docker:stable
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
   before_script:
     - apk update
     - apk add python py-pip make git
@@ -58,6 +66,10 @@ deploy:staging:
 
 deploy:production:
   stage: deploy
+  image: docker:stable
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
   before_script:
     - apk update
     - apk add python py-pip make git
