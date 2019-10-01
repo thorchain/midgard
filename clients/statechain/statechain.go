@@ -3,7 +3,6 @@ package statechain
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"net/http"
 	"sort"
 	"sync"
@@ -70,8 +69,8 @@ func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance,
 // GetPools from statechain
 func (sc *StatechainAPI) GetPools() ([]sTypes.Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", sc.baseUrl)
+
 	resp, err := sc.netClient.Get(poolUrl)
-	spew.Dump(resp)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")
 	}

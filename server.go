@@ -41,10 +41,13 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 	engine.Use(gin.Recovery())
+
+	// Setup influxdb
 	store, err := influxdb.NewClient(cfg.Influx)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create influxdb")
 	}
+
 	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create binance client")
