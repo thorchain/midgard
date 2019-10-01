@@ -41,6 +41,7 @@ func initLog(level string, pretty bool) {
 	zerolog.SetGlobalLevel(l)
 	log.Logger = log.Output(out).With().Str("service", serverIdentity).Logger()
 }
+
 func main() {
 	showVersion := flag.Bool("version", false, "Shows version")
 	// TODO set the default log level to info later

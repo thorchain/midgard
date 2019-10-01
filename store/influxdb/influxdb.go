@@ -36,6 +36,12 @@ type Client struct {
 }
 
 func NewClient(cfg config.InfluxDBConfiguration) (*Client, error) {
+	log.Printf("CFG:%v\n", cfg)
+
+	// Time needed to wait while influxdb comes online.
+	// TODO Replace this with a exponential backoff method.
+	time.Sleep(time.Second * 3)
+
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("influxdb host is empty")
 	}
