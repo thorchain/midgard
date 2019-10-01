@@ -1,21 +1,29 @@
 FROM golang:alpine
 
-RUN \
-	apk add --update \
-		python \
-		python-dev \
-		py-pip \
-		build-base \
-	&& \
-	pip install dumb-init \
-	&& \
-	rm -rf /var/cache/apk/* && \
-	:
+ARG chain_host
+ARG influx_host
+
+ENV CHAIN_HOST=$chain_host
+ENV INFLUX_HOST=$influx_host
+
+RUN env
 
 RUN apk update && \
-    apk add curl make git linux-headers && \
+    apk add python python-dev py-pip build-base && \
+    apk add curl make git linux-headers jq && \
     apk del curl && \
+    pip install dumb-init && \
     rm -rf /var/cache/apk/*
+
+COPY . /tmp/chainservice
+WORKDIR /tmp/chainservice
+RUN mkdir -p /etc/chainservice
+RUN cat ./cmd/chainservice/config.json | jq \
+  --arg CHAIN_HOST "$CHAIN_HOST" \
+  --arg INFLUX_HOST "$INFLUX_HOST" \
+  '.influx["host"] = $INFLUX_HOST | \
+  .statechain["host"] = $CHAIN_HOST' > /etc/chainservice/config.json
+RUN cat /etc/chainservice/config.json
 
 ENTRYPOINT ["dumb-init"]
 CMD ["/bin/sh"]

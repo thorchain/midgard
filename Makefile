@@ -36,7 +36,7 @@ test-short:
 	@go test -short ./...
 
 test-internal:
-	@go test ./...
+	@go test -cover ./...
 
 test:
 	@./scripts/run.sh chain-service make test-internal
@@ -52,6 +52,9 @@ sh:
 
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
+
+run-in-docker:
+	@${GOBIN}/chainservice -c /etc/chainservice/config.json
 
 run:
 	@${GOBIN}/chainservice -c cmd/chainservice/config.json

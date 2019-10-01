@@ -2,8 +2,15 @@ version: '3'
 
 services:
   chain-service:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        influx_host: $INFLUX_HOST
+        chain_host: $CHAIN_HOST
     image: bepswap-chain-service
+    ports:
+      - 8080:8080
     links:
       - influxdb
     depends_on:
@@ -12,7 +19,7 @@ services:
       - ${GOPATH}:/root/go
       - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
     working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
-    command: make install run
+    command: make install run-in-docker
     environment:
       GOPATH: /root/go
       GOBIN: /root/go/bin
@@ -22,8 +29,14 @@ services:
       INFLUXDB_HOST: influxdb
       INFLUXDB_DB: db0
 
+  chronograf:
+    image: chronograf:latest
+    depends_on:
+      - influxdb
+    ports:
+      - 8888:8888
   influxdb:
-    image: influxdb:alpine
+    image: influxdb:latest
     ports:
       - "8086:8086"
       - "8083:8083"
