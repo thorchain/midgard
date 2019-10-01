@@ -26,6 +26,9 @@ unit:
 
 lint:
   image: golangci/golangci-lint
+  before_script:
+    - apk update
+    - apk add make
   stage: test
   script:
     - make lint-verbose
