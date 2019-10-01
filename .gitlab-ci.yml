@@ -21,14 +21,13 @@ unit:
     - docker
   before_script:
     - echo $GOPATH
+    - apk update
+    - apk add make
   script:
     - make test
 
 lint:
   image: golangci/golangci-lint
-  before_script:
-    - apk update
-    - apk add make
   stage: test
   script:
     - make lint-verbose
