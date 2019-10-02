@@ -57,6 +57,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
+
 	tokenService, err := coingecko.NewTokenService(cfg.Binance, store)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to create token service")
