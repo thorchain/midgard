@@ -38,8 +38,14 @@ func initLog(level string, pretty bool) {
 	if pretty {
 		out = zerolog.ConsoleWriter{Out: os.Stdout}
 	}
+
+	// Add caller in debug logging
+	if level == "debug" {
+		log.Logger = log.With().Caller().Logger()
+	}
+
 	zerolog.SetGlobalLevel(l)
-	log.Logger = log.Output(out).With().Str("service", serverIdentity).Logger()
+	log.Logger = log.Logger.Output(out).With().Str("service", serverIdentity).Logger()
 }
 
 func main() {
