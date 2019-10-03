@@ -1,11 +1,12 @@
 package influxdb
 
 import (
-  "fmt"
-  "github.com/davecgh/go-spew/spew"
-  "time"
+	"fmt"
+	"time"
 
-  "gitlab.com/thorchain/bepswap/common"
+	"github.com/davecgh/go-spew/spew"
+
+	"gitlab.com/thorchain/bepswap/common"
 )
 
 type Pool struct {
@@ -14,9 +15,9 @@ type Pool struct {
 	TotalFeesRune float64       `json:"totalFeesRune"`
 	Vol24         float64       `json:"vol24hr"`
 	VolAT         float64       `json:"volAT"`
-	RuneAmount    int64       `json:"depth"`
-	TokenAmount   int64       `json:"-"`
-	Units         int64       `json:"poolUnits"`
+	RuneAmount    int64         `json:"depth"`
+	TokenAmount   int64         `json:"-"`
+	Units         int64         `json:"poolUnits"`
 	RoiAT         float64       `json:"roiAT"`
 	Roi30         float64       `json:"roi30"` // TODO
 	Roi12         float64       `json:"roi12"` // TODO
@@ -106,8 +107,9 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 
 	// calculate ROI
-  pool.RoiAT = float64((((pool.RuneAmount + pool.TokenAmount) / 2) - pool.Units) / pool.Units)
-  spew.Dump(pool)
+	// {(((pool.RuneAmount + pool.TokenAmount) / 2.0) - pool.Units) / pool.Units}now
+	pool.RoiAT = ((float64(pool.RuneAmount) + float64(pool.TokenAmount)/2.0) - float64(pool.Units)) / float64(pool.Units)
+	spew.Dump(pool)
 
 	return pool, nil
 }
