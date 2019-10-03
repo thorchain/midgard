@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
@@ -197,6 +198,22 @@ func getIntValue(cols []string, vals []interface{}, key string) (int64, bool) {
 	for i, col := range cols {
 		if col == key {
 			f, err := vals[i].(json.Number).Int64()
+			if err != nil {
+				return f, false
+			} else {
+				return f, true
+			}
+		}
+	}
+
+	return 0, false
+}
+
+// helper func to get values from query
+func getUintValue(cols []string, vals []interface{}, key string) (uint64, bool) {
+	for i, col := range cols {
+		if col == key {
+			f, err := strconv.ParseUint(vals[i].(string), 10, 64)
 			if err != nil {
 				return f, false
 			} else {
