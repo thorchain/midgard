@@ -168,14 +168,14 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				return maxID, pts, errors.Wrap(err, "fail to get tx from binance")
 			}
 
-			var rAmt float64
-			var tAmt float64
+			var rAmt uint64
+			var tAmt uint64
 			if common.IsRune(swap.SourceCoin.Denom) {
-				rAmt = common.UintToFloat64(swap.SourceCoin.Amount)
-				tAmt = common.UintToFloat64(swap.TargetCoin.Amount) * -1
+				rAmt = common.UintToUint64(swap.SourceCoin.Amount)
+				tAmt = common.UintToUint64(swap.TargetCoin.Amount) * 0 // TODO/FIXME feature required to cal volume better
 			} else {
-				rAmt = common.UintToFloat64(swap.TargetCoin.Amount) * -1
-				tAmt = common.UintToFloat64(swap.SourceCoin.Amount)
+				rAmt = common.UintToUint64(swap.TargetCoin.Amount) * 0 // TODO/FIXME feature required to cal volume better
+				tAmt = common.UintToUint64(swap.SourceCoin.Amount)
 			}
 
 			pts = append(pts, influxdb.NewSwapEvent(
@@ -188,7 +188,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				common.UintToFloat64(swap.TradeSlip),
 				common.UintToFloat64(swap.PoolSlip),
 				common.UintToFloat64(swap.OutputSlip),
-				common.UintToFloat64(swap.Fee),
+				common.UintToUint64(swap.Fee),
 				evt.Pool,
 				common.BnbAddress(tx.FromAddress),
 				common.BnbAddress(tx.ToAddress),
@@ -214,9 +214,9 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				int64(evt.ID.Float64()),
 				evt.InHash,
 				evt.OutHash,
-				common.UintToFloat64(stake.RuneAmount),
-				common.UintToFloat64(stake.TokenAmount),
-				common.UintToFloat64(stake.StakeUnits),
+				common.UintToUint64(stake.RuneAmount),
+				common.UintToUint64(stake.TokenAmount),
+				common.UintToUint64(stake.StakeUnits),
 				evt.Pool,
 				addr,
 				tx.Timestamp,
@@ -239,9 +239,9 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				int64(evt.ID.Float64()),
 				evt.InHash,
 				evt.OutHash,
-				float64(unstake.RuneAmount.Int64()),
-				float64(unstake.TokenAmount.Int64()),
-				float64(unstake.StakeUnits.Int64()),
+				common.IntToUint64(unstake.RuneAmount),
+				common.IntToUint64(unstake.TokenAmount),
+				common.IntToUint64(unstake.StakeUnits),
 				evt.Pool,
 				addr,
 				tx.Timestamp,

@@ -14,15 +14,15 @@ type StakeEvent struct {
 	ID          int64
 	InHash      common.TxID
 	OutHash     common.TxID
-	RuneAmount  float64
-	TokenAmount float64
-	Units       float64
+	RuneAmount  uint64
+	TokenAmount uint64
+	Units       uint64
 	Pool        common.Ticker
 	Address     common.BnbAddress
 	Timestamp   time.Time
 }
 
-func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units float64, pool common.Ticker, addr common.BnbAddress, ts time.Time) StakeEvent {
+func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units uint64, pool common.Ticker, addr common.BnbAddress, ts time.Time) StakeEvent {
 	return StakeEvent{
 		ID:          id,
 		InHash:      inhash,
@@ -119,9 +119,9 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 			if err != nil {
 				return
 			}
-			rAmt, _ := getFloatValue(series.Columns, vals, "rune")
-			tAmt, _ := getFloatValue(series.Columns, vals, "token")
-			units, _ := getFloatValue(series.Columns, vals, "units")
+			rAmt, _ := getUintValue(series.Columns, vals, "rune")
+			tAmt, _ := getUintValue(series.Columns, vals, "token")
+			units, _ := getUintValue(series.Columns, vals, "units")
 			ts, _ := getTimeValue(series.Columns, vals, "time")
 			event := NewStakeEvent(
 				id, inhash, outhash, rAmt, tAmt, units, pool, addr, ts,

@@ -17,20 +17,20 @@ type SwapEvent struct {
 	OutHash     common.TxID
 	FromAddress common.BnbAddress
 	ToAddress   common.BnbAddress
-	RuneAmount  float64
-	TokenAmount float64
+	RuneAmount  uint64
+	TokenAmount uint64
 	PriceSlip   float64
 	TradeSlip   float64
 	PoolSlip    float64
 	OutputSlip  float64
-	RuneFee     float64
-	TokenFee    float64
+	RuneFee     uint64
+	TokenFee    uint64
 	Pool        common.Ticker
 	Timestamp   time.Time
 }
 
-func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
-	var runeFee, tokenFee float64
+func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt uint64, priceSlip, tradeSlip, poolSlip, outputSlip float64, fee uint64, pool common.Ticker, from, to common.BnbAddress, ts time.Time) SwapEvent {
+	var runeFee, tokenFee uint64
 	if rAmt < 0 {
 		runeFee = fee
 	} else {
@@ -129,7 +129,7 @@ func (in Client) ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker
 	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		for _, vals := range resp[0].Series[0].Values {
-			var fee float64
+			var fee uint64
 			var inhash, outhash common.TxID
 			var pool common.Ticker
 			var to, from common.BnbAddress
@@ -159,14 +159,14 @@ func (in Client) ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker
 			if err != nil {
 				return
 			}
-			rAmt, _ := getFloatValue(series.Columns, vals, "rune")
-			tAmt, _ := getFloatValue(series.Columns, vals, "token")
+			rAmt, _ := getUintValue(series.Columns, vals, "rune")
+			tAmt, _ := getUintValue(series.Columns, vals, "token")
 			priceSlip, _ := getFloatValue(series.Columns, vals, "price_slip")
 			tradeSlip, _ := getFloatValue(series.Columns, vals, "trade_slip")
 			poolSlip, _ := getFloatValue(series.Columns, vals, "pool_slip")
 			outputSlip, _ := getFloatValue(series.Columns, vals, "output_slip")
-			runeFee, _ := getFloatValue(series.Columns, vals, "rune_fee")
-			tokenFee, _ := getFloatValue(series.Columns, vals, "token_fee")
+			runeFee, _ := getUintValue(series.Columns, vals, "rune_fee")
+			tokenFee, _ := getUintValue(series.Columns, vals, "token_fee")
 			ts, _ := getTimeValue(series.Columns, vals, "time")
 			if runeFee > 0 {
 				fee = runeFee

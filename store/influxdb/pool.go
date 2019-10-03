@@ -11,19 +11,19 @@ import (
 
 type Pool struct {
 	Ticker        common.Ticker `json:"asset"`
-	TotalFeesTKN  float64       `json:"totalFeesTKN"`
-	TotalFeesRune float64       `json:"totalFeesRune"`
-	Vol24         float64       `json:"vol24hr"`
-	VolAT         float64       `json:"volAT"`
-	RuneAmount    int64         `json:"depth"`
-	TokenAmount   int64         `json:"-"`
-	Units         int64         `json:"poolUnits"`
+	TotalFeesTKN  uint64        `json:"totalFeesTKN"`
+	TotalFeesRune uint64        `json:"totalFeesRune"`
+	Vol24         uint64        `json:"vol24hr"`
+	VolAT         uint64        `json:"volAT"`
+	RuneAmount    uint64        `json:"depth"`
+	TokenAmount   uint64        `json:"-"`
+	Units         uint64        `json:"poolUnits"`
 	RoiAT         float64       `json:"roiAT"`
 	Roi30         float64       `json:"roi30"` // TODO
 	Roi12         float64       `json:"roi12"` // TODO
-	Stakers       int64         `json:"numStakers"`
-	StakerTxs     int64         `json:"numStakeTx"`
-	Swaps         int64         `json:"numSwaps"`
+	Stakers       uint64        `json:"numStakers"`
+	StakerTxs     uint64        `json:"numStakeTx"`
+	Swaps         uint64        `json:"numSwaps"`
 }
 
 type Pools []Pool
@@ -49,9 +49,11 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 
 	series := resp[0].Series[0]
-	pool.RuneAmount, _ = getIntValue(series.Columns, series.Values[0], "rune")
-	pool.TokenAmount, _ = getIntValue(series.Columns, series.Values[0], "token")
-	pool.Units, _ = getIntValue(series.Columns, series.Values[0], "units")
+	spew.Dump(series)
+
+	pool.RuneAmount, _ = getUintValue(series.Columns, series.Values[0], "rune")
+	pool.TokenAmount, _ = getUintValue(series.Columns, series.Values[0], "token")
+	pool.Units, _ = getUintValue(series.Columns, series.Values[0], "units")
 
 	// Query influx for Stakers (numStakers) and StakerTxs(numStakeTx)
 	resp, err = in.Query(
@@ -61,9 +63,9 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 		return noPool, err
 	}
 	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
-		pool.Stakers = int64(len(resp[0].Series))
+		pool.Stakers = uint64(len(resp[0].Series))
 		for _, series := range resp[0].Series {
-			txs, _ := getIntValue(series.Columns, series.Values[0], "rune")
+			txs, _ := getUintValue(series.Columns, series.Values[0], "rune")
 			pool.StakerTxs += txs
 		}
 	}
@@ -78,9 +80,9 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 
 	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
-		pool.Swaps, _ = getIntValue(series.Columns, series.Values[0], "rune")
-		pool.TotalFeesTKN, _ = getFloatValue(series.Columns, series.Values[0], "token_fee")
-		pool.TotalFeesRune, _ = getFloatValue(series.Columns, series.Values[0], "rune_fee")
+		pool.Swaps, _ = getUintValue(series.Columns, series.Values[0], "rune")
+		pool.TotalFeesTKN, _ = getUintValue(series.Columns, series.Values[0], "token_fee")
+		pool.TotalFeesRune, _ = getUintValue(series.Columns, series.Values[0], "rune_fee")
 	}
 
 	// Query influx for VolAT (volAT)
@@ -92,7 +94,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
-		pool.VolAT, _ = getFloatValue(series.Columns, series.Values[0], "token")
+		pool.VolAT, _ = getUintValue(series.Columns, series.Values[0], "token")
 	}
 
 	// Query influx for Vol24 (vol24hr)
@@ -103,7 +105,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
-		pool.Vol24, _ = getFloatValue(series.Columns, series.Values[0], "token")
+		pool.Vol24, _ = getUintValue(series.Columns, series.Values[0], "token")
 	}
 
 	// calculate ROI
