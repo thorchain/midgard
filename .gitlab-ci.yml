@@ -8,6 +8,7 @@ before_script:
 
 stages:
   - test
+  - build
   - deploy
 
 unit:
@@ -31,6 +32,22 @@ lint:
   stage: test
   script:
     - make lint-verbose
+
+build:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - apk update
+    - apk add python py-pip make git
+    - pip install awscli
+  environment:
+    name: develop
+  script: make -C ./build build
 
 deploy:develop:
   stage: deploy
