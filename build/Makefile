@@ -30,24 +30,19 @@ login:
 logger: login
 	mkdir -p ./log
 
-# Build and Deploy statechain then chain-svc
-deploy: config deploy-chain-svc
-
-# --------------------------------------------------------------- chain service ------------------------------------------ #
-
 # Step 1
-build-chain-svc: logger
+build: logger
 	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg influx_host=${INFLUX_HOST} --build-arg chain_host=${CHAIN_HOST} . | tee ./log/chain-service-build.log
 
 # Step 2
-tag-chain-svc: build-chain-svc
+tag: build
 	docker tag ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:${CHAIN_SERVICE_IMAGE_HASH}
 
 # Step 3
-push-chain-svc: tag-chain-svc
+push: tag
 	docker push ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:${CHAIN_SERVICE_IMAGE_HASH}
 	docker push ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest
 
 # Step 4
-deploy-chain-svc: push-chain-svc
+deploy: config push
 	aws ecs update-service --force-new-deployment --cluster ${ECS_CLUSTER} --service ${ECR_CHAIN_SVC}
