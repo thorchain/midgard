@@ -904,11 +904,6 @@ domain-browser@^1.1.1:
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"
   integrity sha512-jnjyiM6eRyZl2H+W8Q/zLMA481hzi0eszAaBUzIVnmYVDBbnLxVNnfu1HgEBvCbL+71FrxMl3E6lpKH7Ge3OXA==
 
-dompurify@^1.0.11:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-1.0.11.tgz#fe0f4a40d147f7cebbe31a50a1357539cfc1eb4d"
-  integrity sha512-XywCTXZtc/qCX3iprD1pIklRVk/uhl8BKpkTxr+ZyMVUzSUg7wkQXRBp/euJ5J5moa1QvfpvaPQVP71z1O59dQ==
-
 dompurify@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.0.3.tgz#5cc4965a487d54aedba6ba9634b137cfbd7eb50d"
@@ -944,7 +939,7 @@ dredd-transactions@9.0.6:
     fury-adapter-swagger "0.27.2"
     uri-template "1.0.1"
 
-dredd@^12.0.5:
+dredd@^12.1.0:
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/dredd/-/dredd-12.1.0.tgz#1201e066d4d0512abcaca6bcc5d1a07206b121ef"
   integrity sha512-kKTZpTjKYN4Q7+N6NCIBI0dkh14HCz7f1emqCjqV1R7s1wm0Hfp93Pry2eHyx3narZXs6Izvpn7LknTJWM4bpg==
@@ -1913,7 +1908,7 @@ mem@^4.0.0:
     mimic-fn "^2.0.0"
     p-is-promise "^2.0.0"
 
-memoize-one@^5.0.0, memoize-one@^5.0.5:
+memoize-one@^5.0.0:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-5.1.1.tgz#047b6e3199b508eaec03504de71229b8eb1d75c0"
   integrity sha512-HKeeBpWvqiVJD57ZUAsJNm71eHTykffzcLZVYWiVfQeI1rJtuEaS7hQiEpWfVVk18donPwJEcFKIkCmPJNOhHA==
@@ -2018,7 +2013,7 @@ mobx-react-lite@1.4.0:
   resolved "https://registry.yarnpkg.com/mobx-react-lite/-/mobx-react-lite-1.4.0.tgz#193beb5fdddf17ae61542f65ff951d84db402351"
   integrity sha512-5xCuus+QITQpzKOjAOIQ/YxNhOl/En+PlNJF+5QU4Qxn9gnNMJBbweAdEW3HnuVQbfqDYEUnkGs5hmkIIStehg==
 
-mobx-react@^6.1.1, mobx-react@^6.1.3:
+mobx-react@^6.1.3:
   version "6.1.3"
   resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-6.1.3.tgz#ad07880ea60cdcdb2a7e2a0d54e01379710cf00a"
   integrity sha512-eT/jO9dYIoB1AlZwI2VC3iX0gPOeOIqZsiwg7tDJV1B7Z69h+TZZL3dgOE0UeS2zoHhGeKbP+K+OLeLMnnkGnA==
@@ -2576,7 +2571,7 @@ react-dropdown@^1.6.4:
   dependencies:
     classnames "^2.2.3"
 
-react-hot-loader@^4.12.10, react-hot-loader@^4.12.14:
+react-hot-loader@^4.12.14:
   version "4.12.14"
   resolved "https://registry.yarnpkg.com/react-hot-loader/-/react-hot-loader-4.12.14.tgz#81ca06ffda0b90aad15d6069339f73ed6428340a"
   integrity sha512-ecxH4eBvEaJ9onT8vkEmK1FAAJUh1PqzGqds9S3k+GeihSp7nKAp4fOxytO+Ghr491LiBD38jaKyDXYnnpI9pQ==
@@ -2637,10 +2632,10 @@ readdirp@~3.1.3:
   dependencies:
     picomatch "^2.0.4"
 
-redoc-cli@^0.8.3:
-  version "0.8.6"
-  resolved "https://registry.yarnpkg.com/redoc-cli/-/redoc-cli-0.8.6.tgz#3f870fa6d57afd3b0a7843c0954502c6d36a562c"
-  integrity sha512-YjwSts4Yh7mUYYsq064ElNI4xAETPRUIq76A51sZpGZ0+36+2elo23oQYAzCSOBX7/Bj6W5vzMHaPPDewFnZbg==
+redoc-cli@^0.9.2:
+  version "0.9.2"
+  resolved "https://registry.yarnpkg.com/redoc-cli/-/redoc-cli-0.9.2.tgz#d7717ef1b2c018aaf56cd0dddd3d9244555f9062"
+  integrity sha512-IhKBBuyBKY28jAT5/XRrHPvpACajPbKIr8YYfSzqKKICIiXkeaeZ31sRAiGA/wQ35t3vk58uFLtk1Q4rVPY5yg==
   dependencies:
     chokidar "^3.0.2"
     handlebars "^4.1.2"
@@ -2650,42 +2645,12 @@ redoc-cli@^0.8.3:
     node-libs-browser "^2.2.1"
     react "^16.8.6"
     react-dom "^16.8.6"
-    redoc "2.0.0-rc.13"
+    redoc "2.0.0-rc.16"
     styled-components "^4.3.2"
     tslib "^1.10.0"
     yargs "^13.3.0"
 
-redoc@2.0.0-rc.13:
-  version "2.0.0-rc.13"
-  resolved "https://registry.yarnpkg.com/redoc/-/redoc-2.0.0-rc.13.tgz#243e4d003ca9bd45006c215d8856a3b1229ca8bb"
-  integrity sha512-t0vlss1TIUknYXTI9RIZ1nRMyIW/pjo4KMMDFOMdRq5/8jopkNyf37q25BwBuAJfDxQV+tIUoy6o+rAAffeDkQ==
-  dependencies:
-    classnames "^2.2.6"
-    decko "^1.2.0"
-    dompurify "^1.0.11"
-    eventemitter3 "^4.0.0"
-    json-pointer "^0.6.0"
-    json-schema-ref-parser "^6.1.0"
-    lunr "2.3.6"
-    mark.js "^8.11.1"
-    marked "^0.7.0"
-    memoize-one "^5.0.5"
-    mobx-react "^6.1.1"
-    openapi-sampler "1.0.0-beta.15"
-    perfect-scrollbar "^1.4.0"
-    polished "^3.4.1"
-    prismjs "^1.17.1"
-    prop-types "^15.7.2"
-    react-dropdown "^1.6.4"
-    react-hot-loader "^4.12.10"
-    react-tabs "^3.0.0"
-    slugify "^1.3.4"
-    stickyfill "^1.1.1"
-    swagger2openapi "^5.3.1"
-    tslib "^1.10.0"
-    uri-template-lite "^19.4.0"
-
-redoc@^2.0.0-rc.2:
+redoc@2.0.0-rc.16, redoc@^2.0.0-rc.2:
   version "2.0.0-rc.16"
   resolved "https://registry.yarnpkg.com/redoc/-/redoc-2.0.0-rc.16.tgz#01d5dafba6ae266a5934dc9904b87bc8a175b222"
   integrity sha512-5YWk7NBebYZ8xMbKXA1sD++QsSh7NbnB2sStJRKLeP/rU4oX586SIqHXl+MW1OhIZW44mYFMHpYzxpZKCllk9w==
@@ -2952,7 +2917,7 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
   integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
 
-slugify@^1.3.4, slugify@^1.3.5:
+slugify@^1.3.5:
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/slugify/-/slugify-1.3.5.tgz#90210678818b6d533cb060083aed0e8238133508"
   integrity sha512-5VCnH7aS13b0UqWOs7Ef3E5rkhFe8Od+cp7wybFv5mv/sYSRkucZlJX0bamAJky7b2TTtGvrJBWVdpdEicsSrA==
@@ -3162,7 +3127,7 @@ swagger-parser@^8.0.0:
     swagger-methods "^2.0.1"
     z-schema "^4.1.1"
 
-swagger2openapi@^5.3.0, swagger2openapi@^5.3.1:
+swagger2openapi@^5.3.1:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/swagger2openapi/-/swagger2openapi-5.3.1.tgz#a60f6ade642c867b13300e1a3c4f265fa5c74685"
   integrity sha512-2EIs1gJs9LH4NjrxHPJs6N0Kh9pg66He+H9gIcfn1Q9dvdqPPVTC2NRdXalqT+98rIoV9kSfAtNBD4ASC0Q1mg==
@@ -3306,11 +3271,6 @@ uri-js@^4.2.2:
   integrity sha512-KY9Frmirql91X2Qgjry0Wd4Y+YTdrdZheS8TFwvkbLWf/G5KNJDCh6pKL5OZctEW4+0Baa5idK2ZQuELRwPznQ==
   dependencies:
     punycode "^2.1.0"
-
-uri-template-lite@^19.4.0:
-  version "19.4.0"
-  resolved "https://registry.yarnpkg.com/uri-template-lite/-/uri-template-lite-19.4.0.tgz#cbc2c072cf4931428a2f9d3aea36b8254a33cce5"
-  integrity sha512-VY8dgwyMwnCztkzhq0cA/YhNmO+YZqow//5FdmgE2fZU/JPi+U0rPL7MRDi0F+Ch4vJ7nYidWzeWAeY7uywe9g==
 
 uri-template@1.0.1:
   version "1.0.1"

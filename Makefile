@@ -1,14 +1,20 @@
 all: lint install
 
-API_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
-API_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
-API_DOCO_GEN_LOCATION=./public/rest/v1/api.html
+API_REST_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
+API_REST_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
+API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
+
+bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
+
+# cli tool for openapi
+${GOPATH}/bin/oapi-codegen:
+	go get -u github.com/deepmap/oapi-codegen/cmd/oapi-codegen
+
+# node_modules for API dev tools
+node_modules:
+	yarn
 
 install: go.sum
-	# cli tool for openapi
-	yarn
-	go get -u github.com/deepmap/oapi-codegen/cmd/oapi-codegen
-	GO111MODULE=on go install -v ./cmd/etl
 	GO111MODULE=on go install -v ./cmd/chainservice
 
 go.sum: go.mod
@@ -25,15 +31,8 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v
 
-dev: build
-	./bin/chainservice-api-v1
-
-
-build: clean oapi-codegen-server doco
-	@go build -o ./bin/chainservice-api-v1 ./cmd/chainservice-api-v1/main.go
-
-clean:
-	rm -rf ${GOBIN}/*
+build: oapi-codegen-server doco
+	@go build ./...
 
 test-coverage:
 	@go test -mod=readonly -v -coverprofile .testCoverage.txt ./...
@@ -67,15 +66,13 @@ influxdb:
 
 # Open API Makefile targets
 openapi3validate:
-	oas-validate -v ${API_SPEC}
+	oas-validate -v ${API_REST_SPEC}
 
-# TODO Setup auto versioning outputter
 oapi-codegen-server: openapi3validate
-	oapi-codegen --package=api --generate types,server,spec ${API_SPEC} > ${API_CODE_GEN_LOCATION}
+	oapi-codegen --package=api --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
 
 doco:
-	redoc-cli bundle ${API_SPEC} -o ${API_DOCO_GEN_LOCATION}
-
+	redoc-cli bundle ${API_REST_SPEC} -o ${API_REST_DOCO_GEN_LOCATION}
 
 # -----------------------------------------------------------------------------------------
 
