@@ -1,5 +1,3 @@
-GOBIN?=$$GOPATH/bin
-
 all: lint install
 
 API_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
@@ -29,6 +27,7 @@ lint-verbose: lint-pre
 
 dev: build
 	./bin/chainservice-api-v1
+
 
 build: clean oapi-codegen-server doco
 	@go build -o ./bin/chainservice-api-v1 ./cmd/chainservice-api-v1/main.go

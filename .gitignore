@@ -1,6 +1,7 @@
 .idea/
 node_modules/
+bin/*
 .envrc
 build/log/*
-bin/*
+
 
