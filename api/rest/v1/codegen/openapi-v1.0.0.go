@@ -18,8 +18,26 @@ import (
 type ServerInterface interface {
 	// This swagger/openapi 3.0 generated documentation// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
+	// (GET /v1/health)
+	GetHealth(ctx echo.Context) error
+	// (GET /v1/poolData)
+	GetPoolData(ctx echo.Context) error
+	// (GET /v1/stakerData)
+	GetStakerInfo(ctx echo.Context) error
+	// (GET /v1/stakerTx)
+	GetStakerTx(ctx echo.Context) error
 	// JSON swagger/openapi 3.0 specification endpoint// (GET /v1/swagger.json)
 	GetSwagger(ctx echo.Context) error
+	// (GET /v1/swapTx)
+	GetSwapTx(ctx echo.Context) error
+	// (GET /v1/tokenData)
+	GetTokenData(ctx echo.Context) error
+	// (GET /v1/tokens)
+	GetTokens(ctx echo.Context) error
+	// (GET /v1/tradeData)
+	GetTradeData(ctx echo.Context) error
+	// (GET /v1/userData)
+	GetUserData(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -36,12 +54,93 @@ func (w *ServerInterfaceWrapper) GetDocs(ctx echo.Context) error {
 	return err
 }
 
+// GetHealth converts echo context to params.
+func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetHealth(ctx)
+	return err
+}
+
+// GetPoolData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPoolData(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPoolData(ctx)
+	return err
+}
+
+// GetStakerInfo converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakerInfo(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetStakerInfo(ctx)
+	return err
+}
+
+// GetStakerTx converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakerTx(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetStakerTx(ctx)
+	return err
+}
+
 // GetSwagger converts echo context to params.
 func (w *ServerInterfaceWrapper) GetSwagger(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetSwagger(ctx)
+	return err
+}
+
+// GetSwapTx converts echo context to params.
+func (w *ServerInterfaceWrapper) GetSwapTx(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetSwapTx(ctx)
+	return err
+}
+
+// GetTokenData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTokenData(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetTokenData(ctx)
+	return err
+}
+
+// GetTokens converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTokens(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetTokens(ctx)
+	return err
+}
+
+// GetTradeData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTradeData(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetTradeData(ctx)
+	return err
+}
+
+// GetUserData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUserData(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetUserData(ctx)
 	return err
 }
 
@@ -53,20 +152,32 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	}
 
 	router.GET("/v1/doc", wrapper.GetDocs)
+	router.GET("/v1/health", wrapper.GetHealth)
+	router.GET("/v1/poolData", wrapper.GetPoolData)
+	router.GET("/v1/stakerData", wrapper.GetStakerInfo)
+	router.GET("/v1/stakerTx", wrapper.GetStakerTx)
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
+	router.GET("/v1/swapTx", wrapper.GetSwapTx)
+	router.GET("/v1/tokenData", wrapper.GetTokenData)
+	router.GET("/v1/tokens", wrapper.GetTokens)
+	router.GET("/v1/tradeData", wrapper.GetTradeData)
+	router.GET("/v1/userData", wrapper.GetUserData)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/4xSPW/cMAz9KwKXLq7tS4YGmvqRDunQBnW24AZGYmwVZ0oQ5QuKg/97QefQxuklyCSB",
-	"4nt8j3oHcHFMkYmLgD3MFQS+j2C1zgVd0SuNGHZgwdNePpYhZjdg4DrmHuYKPInLIZUQGSx80af3HeV9",
-	"cGSup7tdcObT9RVUUELZ0este8ryyLOp27pV+piIMQWwcL6UKkhYBhULzX7T+Oj02tOiNCbKqEquPFgt",
-	"XkYnUEEmSZGFFthZ2+qx1i0P2PeUm+M4c163RhI50xMrJ3njlWueK5BpHDH/Bgs3QxBzCrpCTSNxWWTp",
-	"FrAXsLdwuapvlVf9HMnqX6KyXjbWPfa9ydswjcgG2ZsR3RCYTCb0eLej/7Sr5XAf3DLLEPsUA5dnrr91",
-	"P76blxZ2Av3PdPe0QU0rL2X9drC3B5iy5mwoJdmm2Zx90B+vN/aivdAsPH2XEw3bv4Oeb+AYss+U5AGT",
-	"WSXwnZifX7ubYwIZx1czOm/nPwEAAP//5Se2+zQDAAA=",
+	"H4sIAAAAAAAC/5SVP2/bMBDFvwpxSxdVlpOhgab+SZGmQ2vU7hR4uFBniY1EEiRlpzD03YuTbCd2bUmZ",
+	"bJDv8Xd3eMJtQZrKGk06eEi3TQRKrwykfK4DysB/qUJVQgoZrf3HUBgnC1Q6Ni6HJoKMvHTKBmU0pPCF",
+	"r97Pya2VJDGrH0slxafZPUQQVCipX7Im57t3pnESJ/y8saTRKkjhuj2KwGIouFiYrKeTzEj+m1NbqbHk",
+	"kCu5zyCFOwq3RnqIwJG3RntqbVdJwj/HdfsN5jm5yQ4nruNEeEtS5KT5TcpExm81TQS+rip0fyGFRaG8",
+	"OGc9ctUV6dCWxVPA3EP6ALdH50t+l/spCMtQ9LX0rVOMaeqOgujkohNLEmbVzrpp9kRrTHmLAfuYs71m",
+	"LJUNgh1i5Ux1QvQBn8gNMeet6p7jOJbaWQRHeAC+eB5GL57fCg4OtUfJF5f5XVriP57dPTV0ulElFHWF",
+	"WqDORIWyUJqEI8zwsaT/wsmZVislW5YgnVmjdDiJ9ff5zx/i0hdxxv2S6vlrwUuq/QbtwMg7xeiBb9CO",
+	"GncwT6SHorY4iMbyW0c/1A8S/dtw/izKYUaD/R1Eo4HsuNhf7Yc/3997zVgkG84QOZjkeDFA+rCF2vEm",
+	"KkKw6WQyvfrAOyGepjfJDW+L1/f+jGB5SOppBbs19JksZ1Uc7ah3Xvz6Ol/sdpTGqneLNcvmXwAAAP//",
+	"mJtZ/1YHAAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
