@@ -65,6 +65,9 @@ test-watch: clear
 sh:
 	@docker-compose run --rm chain-service /bin/sh
 
+chronograf:
+	@docker-compose run --rm chronograf
+
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
 
@@ -90,7 +93,7 @@ run:
 	@${GOBIN}/chainservice -c cmd/chainservice/config.json
 
 run-api-v1:
-	@${GOBIN}/chainservice-api-v1 # -c cmd/chainservice/config.json
+	@${GOBIN}/chainservice-api-v1 -c cmd/chainservice/config.json
 
 up:
 	@docker-compose up --build

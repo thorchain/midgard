@@ -1,63 +1,34 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"sync"
+	flag "github.com/spf13/pflag"
 
-	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
-
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"gitlab.com/thorchain/bepswap/chain-service/server/echo"
 )
 
-var e *echo.Echo
-var once sync.Once
-
-func Run() *echo.Echo {
-	once.Do(func() {
-		e = loadService()
-	})
-	return e
-}
-
-func loadService() *echo.Echo {
-	//log.Debug("main.loadService called")
-	// Setup the echo router.
-	e = echo.New()
-
-	// Setup Echo logger
-	//e.Logger = logrusmiddleware.Logger{Logger: log.GetLogger()}
-	//e.Use(logrusmiddleware.Hook())
-
-	// Load Recover
-	e.Use(middleware.Recover())
-
-	swagger, err := api.GetSwagger()
-	if err != nil {
-		log.Panicln("Error loading swagger spec: ", err.Error())
-	}
-	swagger.Servers = nil
-
-	// Initialise handlers
-	//log.Debug("initialising handlers")
-	s := handlers.New()
-
-	// Register handlers with API handlers
-	//log.Debug("Registering service with API handlers")
-	api.RegisterHandlers(e, s)
-
-	return e
-}
-
 func main() {
-	//log.Debug("main.main called")
-	var port = flag.Int("port", 8080, "Port for testing HTTP server")
+
+	cfgFile := flag.StringP("cfg", "c", "config", "configuration file with extension")
 	flag.Parse()
 
-	// Serve HTTP
-	e.Logger.Fatal(Run().Start(fmt.Sprintf("0.0.0.0:%d", *port)))
+	s, err := echo.New(cfgFile)
+	if err != nil {
+
+	}
+
+	if err := s.Start(); err != nil {
+
+	}
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+	// log.Info().Msg("stop signal received")
+	if err := s.Stop(); nil != err {
+		// log.Fatal().Err(err).Msg("fail to stop chain service")
+	}
 }
