@@ -4,17 +4,21 @@ import (
 	"net/http"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
+	"gitlab.com/thorchain/bepswap/chain-service/store"
 
 	"github.com/labstack/echo/v4"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
+	store store.Store
 }
 
 // New creates a new service interface with the Datastore of your choise
-func New() *Handlers {
-	return &Handlers{}
+func New(store store.Store) *Handlers {
+	return &Handlers{
+		store: store,
+	}
 }
 
 // GetDocs returns the html docs page for the openapi / swagger spec
