@@ -1,10 +1,17 @@
 all: lint install
 
+GOBIN?=${GOPATH}/bin
+
 API_REST_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
 API_REST_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
 API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 
-bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
+bootstrap: node_modules ${GOPATH}/bin/oapi-codegen build install
+
+.PHONY: config
+config:
+	@echo GOBIN: ${GOBIN}
+	@echo GOPATH: ${GOPATH}
 
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
@@ -16,6 +23,7 @@ node_modules:
 
 install: go.sum
 	GO111MODULE=on go install -v ./cmd/chainservice
+	GO111MODULE=on go install -v ./cmd/chainservice-api-v1
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
@@ -82,5 +90,8 @@ run-in-docker:
 run:
 	@${GOBIN}/chainservice -c cmd/chainservice/config.json
 
+run-api-v1:
+	@${GOBIN}/chainservice-api-v1 # -c cmd/chainservice/config.json
+
 up:
-	@docker-compose up
+	@docker-compose up --build

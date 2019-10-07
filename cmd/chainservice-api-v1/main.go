@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	service "gitlab.com/thorchain/bepswap/chain-service/service/rest/v1"
-
 	"sync"
+
+	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
+	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -44,7 +44,7 @@ func loadService() *echo.Echo {
 
 	// Initialise service
 	//log.Debug("initialising service")
-	s := service.New()
+	s := handlers.New()
 
 	// Register service with API handlers
 	//log.Debug("Registering service with API handlers")
