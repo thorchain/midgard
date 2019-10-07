@@ -12,7 +12,7 @@ servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
 paths:
-  /v1/doc:
+  /v2/doc:
     get:
       tags:
         - Documentation
@@ -21,7 +21,7 @@ paths:
       responses:
         "200":
           description: swagger/openapi 3.0 spec generated docs
-  /v1/swagger.json:
+  /v2/swagger.json:
     get:
       tags:
         - Specification
