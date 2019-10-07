@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	flag "github.com/spf13/pflag"
 
-	"gitlab.com/thorchain/bepswap/chain-service/server/echo"
+	server "gitlab.com/thorchain/bepswap/chain-service/server/echo"
 )
 
 func main() {
@@ -15,20 +16,20 @@ func main() {
 	cfgFile := flag.StringP("cfg", "c", "config", "configuration file with extension")
 	flag.Parse()
 
-	s, err := echo.New(cfgFile)
+	s, err := server.New(cfgFile)
 	if err != nil {
-
+		log.Fatal("fail to create service")
 	}
 
 	if err := s.Start(); err != nil {
-
+		log.Fatal("fail to start server")
 	}
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	<-ch
-	// log.Info().Msg("stop signal received")
+	s.Log().Info().Msg("stop signal received")
 	if err := s.Stop(); nil != err {
-		// log.Fatal().Err(err).Msg("fail to stop chain service")
+		s.Log().Fatal().Err(err).Msg("fail to stop chain service")
 	}
 }

@@ -22,48 +22,48 @@ func New(store store.Store) *Handlers {
 }
 
 // GetDocs returns the html docs page for the openapi / swagger spec
-func (s *Handlers) GetDocs(ctx echo.Context) error {
+func (h *Handlers) GetDocs(ctx echo.Context) error {
 	return ctx.File("public/rest/v1/api.html")
 }
 
 // Get Swagger spec
-func (s *Handlers) GetSwagger(ctx echo.Context) error {
+func (h *Handlers) GetSwagger(ctx echo.Context) error {
 	swagger, _ := api.GetSwagger()
 	return ctx.JSONPretty(http.StatusOK, swagger, "   ")
 }
 
-func (s *Handlers) GetHealth(ctx echo.Context) error {
+func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetPoolData(ctx echo.Context) error {
+func (h *Handlers) GetPoolData(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetTokens(ctx echo.Context) error {
+func (h *Handlers) GetTokens(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetUserData(ctx echo.Context) error {
+func (h *Handlers) GetUserData(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetSwapTx(ctx echo.Context) error {
+func (h *Handlers) GetSwapTx(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetStakerTx(ctx echo.Context) error {
+func (h *Handlers) GetStakerTx(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetStakerInfo(ctx echo.Context) error {
+func (h *Handlers) GetStakerInfo(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetTokenData(ctx echo.Context) error {
+func (h *Handlers) GetTokenData(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (s *Handlers) GetTradeData(ctx echo.Context) error {
+func (h *Handlers) GetTradeData(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }

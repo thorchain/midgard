@@ -38,7 +38,7 @@ type Server struct {
 	cacheStore       persistence.CacheStore
 }
 
-func initLog(level string, pretty bool) {
+func initLog(level string, pretty bool) zerolog.Logger {
 	l, err := zerolog.ParseLevel(level)
 	if err != nil {
 		log.Warn().Msgf("%s is not a valid log-level, falling back to 'info'", level)
@@ -48,7 +48,7 @@ func initLog(level string, pretty bool) {
 		out = zerolog.ConsoleWriter{Out: os.Stdout}
 	}
 	zerolog.SetGlobalLevel(l)
-	log.Logger = log.Output(out).With().Str("service", "chain-service").Logger()
+	return log.Output(out).With().Str("service", "chain-service").Logger()
 }
 
 func New(cfgFile *string) (*Server, error) {
@@ -58,6 +58,9 @@ func New(cfgFile *string) (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to load chain service config")
 	}
+
+	// TODO update configuration with logger level and pretty settings
+	log := initLog("debug", false)
 
 	// Setup influxdb
 	store, err := influxdb.NewClient(cfg.Influx)
@@ -159,4 +162,8 @@ func (s *Server) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
 	defer cancel()
 	return s.httpServer.Shutdown(ctx)
+}
+
+func (s *Server) Log() *zerolog.Logger {
+	return &s.logger
 }
