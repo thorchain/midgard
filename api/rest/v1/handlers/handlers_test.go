@@ -1,4 +1,4 @@
-package v1
+package handlers
 
 import (
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
