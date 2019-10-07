@@ -18,6 +18,10 @@ import (
 type ServerInterface interface {
 	// This swagger/openapi 3.0 generated documentation// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
+	// (GET /v1/graphql)
+	GraphqlPlaygroundGet(ctx echo.Context) error
+	// (POST /v1/graphql/query)
+	GraphqlQueryPost(ctx echo.Context) error
 	// (GET /v1/health)
 	GetHealth(ctx echo.Context) error
 	// (GET /v1/poolData)
@@ -51,6 +55,24 @@ func (w *ServerInterfaceWrapper) GetDocs(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetDocs(ctx)
+	return err
+}
+
+// GraphqlPlaygroundGet converts echo context to params.
+func (w *ServerInterfaceWrapper) GraphqlPlaygroundGet(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GraphqlPlaygroundGet(ctx)
+	return err
+}
+
+// GraphqlQueryPost converts echo context to params.
+func (w *ServerInterfaceWrapper) GraphqlQueryPost(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GraphqlQueryPost(ctx)
 	return err
 }
 
@@ -152,6 +174,8 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	}
 
 	router.GET("/v1/doc", wrapper.GetDocs)
+	router.GET("/v1/graphql", wrapper.GraphqlPlaygroundGet)
+	router.POST("/v1/graphql/query", wrapper.GraphqlQueryPost)
 	router.GET("/v1/health", wrapper.GetHealth)
 	router.GET("/v1/poolData", wrapper.GetPoolData)
 	router.GET("/v1/stakerData", wrapper.GetStakerInfo)
@@ -168,16 +192,16 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/5SVP2/bMBDFvwpxSxdVlpOhgab+SZGmQ2vU7hR4uFBniY1EEiRlpzD03YuTbCd2bUmZ",
-	"bJDv8Xd3eMJtQZrKGk06eEi3TQRKrwykfK4DysB/qUJVQgoZrf3HUBgnC1Q6Ni6HJoKMvHTKBmU0pPCF",
-	"r97Pya2VJDGrH0slxafZPUQQVCipX7Im57t3pnESJ/y8saTRKkjhuj2KwGIouFiYrKeTzEj+m1NbqbHk",
-	"kCu5zyCFOwq3RnqIwJG3RntqbVdJwj/HdfsN5jm5yQ4nruNEeEtS5KT5TcpExm81TQS+rip0fyGFRaG8",
-	"OGc9ctUV6dCWxVPA3EP6ALdH50t+l/spCMtQ9LX0rVOMaeqOgujkohNLEmbVzrpp9kRrTHmLAfuYs71m",
-	"LJUNgh1i5Ux1QvQBn8gNMeet6p7jOJbaWQRHeAC+eB5GL57fCg4OtUfJF5f5XVriP57dPTV0ulElFHWF",
-	"WqDORIWyUJqEI8zwsaT/wsmZVislW5YgnVmjdDiJ9ff5zx/i0hdxxv2S6vlrwUuq/QbtwMg7xeiBb9CO",
-	"GncwT6SHorY4iMbyW0c/1A8S/dtw/izKYUaD/R1Eo4HsuNhf7Yc/3997zVgkG84QOZjkeDFA+rCF2vEm",
-	"KkKw6WQyvfrAOyGepjfJDW+L1/f+jGB5SOppBbs19JksZ1Uc7ah3Xvz6Ol/sdpTGqneLNcvmXwAAAP//",
-	"mJtZ/1YHAAA=",
+	"H4sIAAAAAAAC/6SVT1PbPBDGv4pmL+8lr+3AoYxP/UOH0um0oUlPDIdF3tgqtiQkOcBk/N07a0NC0sQ2",
+	"0xMe6Xn2tyt2s2uQprJGkw4e0nUzAaWXBlI+1wFl4E+qUJWQQkYr/z4UxskClY6My6GZQEZeOmWDMhpS",
+	"+MRX/8/JrZQkMatvSyXFh9klTCCoUFK/ZEXOd3GmURIlHN5Y0mgVpHDaHk3AYig4WYhX0zgzkj9zajM1",
+	"lhxyJpcZpHBB4dxIDxNw5K3RnlrbSZLwn928/QPmObn4GSdOo0R4S1LkpDkmZSLjWE0zAV9XFbonSGFR",
+	"KC8OWXdcdUU6tGnxK2DuIb2G853zG47L9eQObXFfHq+pu5+V+JQ7U+vsgsKoAlvj1TdhN05omj1qfF8T",
+	"17UGa/xx+BWrZqz4Z3BBWIai7z/4pVOMIlEQnVx0YknCLNvW2hKtMeU5Buxjzl40Y6lsEOwQS2eqPaIP",
+	"eEduiDlvVZc8fWOpnUXwxA7AF4/D6MXjW8HBofYo+eI4vxuO6Ldnd08OnW5UCkVdoRaoM1GhLJQm4Qgz",
+	"vC3pr1nkEVZLJVuWIJ1Zo3TYm+Kv8x/fxbEfgAPu7RDPXwu2Q+wf0A48eacY/eAPaEc9dzB3pIdabbER",
+	"jeW3jn6oHyT6t+H8QZTDjAbr24hGA9lxtL7aD4/vrxfNWCQbDhC5McnxHoT0eg2148VbhGDTOJ6evOMV",
+	"GE3Ts+SMl+Pre39AcLPp1P0MnrfuR7Lcq2JnJf/nxc/P88XzStZY9S7t5qb5EwAA///8DKDTRQgAAA==",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

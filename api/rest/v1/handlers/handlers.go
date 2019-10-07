@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"github.com/99designs/gqlgen/handler"
+	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
+	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"net/http"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
@@ -66,4 +69,20 @@ func (h *Handlers) GetTokenData(ctx echo.Context) error {
 
 func (h *Handlers) GetTradeData(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
+}
+
+func (h *Handlers) GraphqlPlaygroundGet(ctx echo.Context) error {
+	handlerFunc := handler.Playground("GraphQL playground", "/v1/graphql/query")
+	req := ctx.Request()
+	res := ctx.Response()
+	handlerFunc.ServeHTTP(res, req)
+	return nil
+}
+
+func (h *Handlers) GraphqlQueryPost(ctx echo.Context) error {
+	handleFunc := handler.GraphQL(codegen.NewExecutableSchema(codegen.Config{Resolvers: &resolvers.Resolver{}}))
+	req := ctx.Request()
+	res := ctx.Response()
+	handleFunc.ServeHTTP(res, req)
+	return nil
 }
