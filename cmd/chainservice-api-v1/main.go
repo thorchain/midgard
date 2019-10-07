@@ -42,11 +42,11 @@ func loadService() *echo.Echo {
 	}
 	swagger.Servers = nil
 
-	// Initialise service
-	//log.Debug("initialising service")
+	// Initialise handlers
+	//log.Debug("initialising handlers")
 	s := handlers.New()
 
-	// Register service with API handlers
+	// Register handlers with API handlers
 	//log.Debug("Registering service with API handlers")
 	api.RegisterHandlers(e, s)
 

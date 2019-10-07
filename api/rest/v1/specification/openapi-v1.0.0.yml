@@ -7,7 +7,7 @@ info:
     email: devs@thorchain.org
 tags:
   - name: Chain-Service Public API
-    description: The magically Chain-Service's Public API
+    description: Public Bepswap Chain-Service's REST API
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
