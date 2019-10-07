@@ -1,0 +1,15 @@
+# .gqlgen.yml example
+#
+# Refer to https://gqlgen.com/config/
+# for detailed .gqlgen.yml documentation.
+
+schema:
+- ./schema/schema.graphql
+exec:
+  filename: ./codegen/generated.go
+model:
+  filename: ./models/models_gen.go
+resolver:
+  filename: ./resolvers/resolver.go
+  type: Resolver
+autobind: []
