@@ -6,7 +6,7 @@ API_REST_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
 API_REST_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
 API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 
-bootstrap: node_modules ${GOPATH}/bin/oapi-codegen build install
+bootstrap: node_modules ${GOPATH}/bin/oapi-codegen install
 
 .PHONY: config
 config:
@@ -21,7 +21,7 @@ ${GOPATH}/bin/oapi-codegen:
 node_modules:
 	yarn
 
-install: go.sum
+install: go.sum build
 	GO111MODULE=on go install -v ./cmd/chainservice
 	GO111MODULE=on go install -v ./cmd/chainservice-api-v1
 
@@ -40,7 +40,6 @@ lint-verbose: lint-pre
 	@golangci-lint run -v
 
 build: oapi-codegen-server doco
-	@go build ./...
 
 test-coverage:
 	@go test -mod=readonly -v -coverprofile .testCoverage.txt ./...
