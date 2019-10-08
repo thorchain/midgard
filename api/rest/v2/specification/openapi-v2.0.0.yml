@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: Chain-Service Public API
+  description: Chain-Service Public API
+  contact:
+    email: devs@thorchain.org
+tags:
+  - name: Chain-Service Public API
+    description: The magically Chain-Service's Public API
+servers:
+  - url: http://127.0.0.1:8080
+  - url: https://127.0.0.1:8080
+paths:
+  /v2/doc:
+    get:
+      tags:
+        - Documentation
+      summary: This swagger/openapi 3.0 generated documentation
+      operationId: getDocs
+      responses:
+        "200":
+          description: swagger/openapi 3.0 spec generated docs
+  /v2/swagger.json:
+    get:
+      tags:
+        - Specification
+      summary: JSON swagger/openapi 3.0 specification endpoint
+      operationId: getSwagger
+      responses:
+        "200":
+          description: human and machine readable swagger/openapi specification endpoint

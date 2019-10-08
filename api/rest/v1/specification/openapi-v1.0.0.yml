@@ -1,0 +1,86 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Chain-Service Public API
+  description: Chain-Service Public API
+  contact:
+    email: devs@thorchain.org
+tags:
+  - name: Chain-Service Public API
+    description: Public Bepswap Chain-Service's REST API
+servers:
+  - url: http://127.0.0.1:8080
+  - url: https://127.0.0.1:8080
+paths:
+  /v1/doc:
+    get:
+      tags:
+        - Documentation
+      summary: This swagger/openapi 3.0 generated documentation
+      operationId: GetDocs
+      responses:
+        "200":
+          description: swagger/openapi 3.0 spec generated docs
+  /v1/swagger.json:
+    get:
+      tags:
+        - Specification
+      summary: JSON swagger/openapi 3.0 specification endpoint
+      operationId: GetSwagger
+      responses:
+        "200":
+          description: human and machine readable swagger/openapi specification endpoint
+  /v1/health:
+    get:
+      operationId: GetHealth
+      responses:
+        "200":
+          description: "Get Health responce of API"
+  /v1/poolData:
+    get:
+      operationId: GetPoolData
+      responses:
+        "200":
+          description: "Get Pool Data from API"
+  /v1/tokens:
+    get:
+      operationId: GetTokens
+      responses:
+        "200":
+          description: "Get Tokens from API"
+  /v1/userData:
+    get:
+      operationId: GetUserData
+      responses:
+        "200":
+          description: "Get User Data from API"
+  /v1/swapTx:
+    get:
+      operationId: GetSwapTx
+      responses:
+        "200":
+          description: "Get Swap transaction Data from API"
+  /v1/stakerTx:
+    get:
+      operationId: GetStakerTx
+      responses:
+        "200":
+          description: "Get Staker transaction Data from API"
+  /v1/stakerData:
+    get:
+      operationId: GetStakerInfo
+      responses:
+        "200":
+          description: "Get Staker info Data from API"
+  /v1/tokenData:
+    get:
+      operationId: GetTokenData
+      responses:
+        "200":
+          description: "Get Token Data from API"
+  /v1/tradeData:
+    get:
+      operationId: GetTradeData
+      responses:
+        "200":
+          description: "Get Trade Data from API"
