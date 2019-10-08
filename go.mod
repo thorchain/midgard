@@ -5,7 +5,6 @@ go 1.12
 require (
 	cloud.google.com/go v0.46.3 // indirect
 	github.com/99designs/gqlgen v0.10.1
-	github.com/agnivade/levenshtein v1.0.2 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/anaskhan96/soup v1.1.1 // indirect
 	github.com/binance-chain/go-sdk v1.1.3
@@ -20,7 +19,6 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/cosmos/cosmos-sdk v0.37.2
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepmap/oapi-codegen v1.3.0
@@ -32,7 +30,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20190930153522-6ce02741cba3 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.11.3 // indirect
@@ -59,16 +56,12 @@ require (
 	github.com/rogpeppe/go-internal v1.5.0 // indirect
 	github.com/rs/zerolog v1.15.0
 	github.com/russross/blackfriday v2.0.0+incompatible // indirect
-	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
-	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/superoo7/go-gecko v0.0.0-20190607060444-a448b0c99969
 	github.com/tendermint/crypto v0.0.0-20190823183015-45b1026d81ae // indirect
 	github.com/ugorji/go v1.1.7 // indirect
-	github.com/urfave/cli v1.22.1 // indirect
 	github.com/valyala/fasttemplate v1.1.0 // indirect
-	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/vektah/gqlparser v1.1.2
 	gitlab.com/thorchain/bepswap/common v1.0.0
 	gitlab.com/thorchain/bepswap/statechain v0.0.0-20191006024012-f2356437f55f
@@ -91,7 +84,6 @@ require (
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/h2non/gock.v1 v1.0.15 // indirect
-	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0 // indirect
 )
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
