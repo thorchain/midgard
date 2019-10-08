@@ -12,6 +12,18 @@ servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
 paths:
+  /v1/graphql/query:
+    post:
+      operationId: GraphqlQueryPost
+      responses:
+        "200":
+          description: GraphQL playground
+  /v1/graphql:
+    get:
+      operationId: GraphqlPlaygroundGet
+      responses:
+        "200":
+          description: GraphQL playground
   /v1/doc:
     get:
       tags:
