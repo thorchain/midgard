@@ -37,46 +37,6 @@ type Server struct {
 	cacheStore       persistence.CacheStore
 }
 
-func New(cfg config.Configuration) (*Server, error) {
-	// Setup influxdb
-	store, err := influxdb.NewClient(cfg.Influx)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to create influxdb")
-	}
-
-	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
-	if nil != err {
-		return nil, errors.Wrap(err, "fail to create binance client")
-	}
-
-	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient, store)
-	if nil != err {
-		return nil, errors.Wrap(err, "fail to create statechain api instance")
-	}
-	tokenService, err := coingecko.NewTokenService(cfg.Binance, store)
-	if nil != err {
-		return nil, errors.Wrap(err, "fail to create token service")
-	}
-
-	cacheStore := persistence.NewInMemoryStore(10 * time.Minute)
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
-	}
-	return &Server{
-		cfg:              cfg,
-		logger:           log.With().Str("module", "server").Logger(),
-		httpServer:       srv,
-		influxDB:         store,
-		stateChainClient: stateChainApi,
-		tokenService:     tokenService,
-		binanceClient:    binanceClient,
-		cacheStore:       cacheStore,
-	}, nil
-}
-
 // NewServer is designed around a gin API server.
 func NewServer(cfg config.Configuration) (*Server, error) {
 	gin.SetMode(gin.ReleaseMode)
