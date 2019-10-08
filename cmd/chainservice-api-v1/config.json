@@ -1,0 +1,24 @@
+{
+  "listen_port": 8080,
+  "influx": {
+    "host": "localhost",
+    "user_name": "admin",
+    "password": "password",
+    "database": "db0",
+    "resample": "10m",
+    "resample_for": "1d"
+  },
+  "statechain": {
+    "scheme": "http",
+    "host": "localhost:1317",
+    "enable_scan": true,
+    "scan_start_pos": 1
+  },
+  "binance": {
+    "scheme": "https",
+    "dex_host": "testnet-dex.binance.org",
+    "full_node_host": "data-seed-pre-0-s3.binance.org",
+    "full_node_scheme": "https",
+    "is_testnet": true
+  }
+}

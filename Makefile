@@ -1,10 +1,29 @@
-GOBIN?=$$GOPATH/bin
-
 all: lint install
 
-install: go.sum
-	GO111MODULE=on go install -v ./cmd/etl
+GOBIN?=${GOPATH}/bin
+
+API_REST_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
+API_REST_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
+API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
+
+bootstrap: node_modules ${GOPATH}/bin/oapi-codegen install
+
+.PHONY: config
+config:
+	@echo GOBIN: ${GOBIN}
+	@echo GOPATH: ${GOPATH}
+
+# cli tool for openapi
+${GOPATH}/bin/oapi-codegen:
+	go get -u github.com/deepmap/oapi-codegen/cmd/oapi-codegen
+
+# node_modules for API dev tools
+node_modules:
+	yarn
+
+install: go.sum build
 	GO111MODULE=on go install -v ./cmd/chainservice
+	GO111MODULE=on go install -v ./cmd/chainservice-api-v1
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
@@ -20,11 +39,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v
 
-build:
-	@go build ./...
-
-clean:
-	rm ${GOBIN}/etl
+build: oapi-codegen-server doco
 
 test-coverage:
 	@go test -mod=readonly -v -coverprofile .testCoverage.txt ./...
@@ -50,8 +65,26 @@ test-watch: clear
 sh:
 	@docker-compose run --rm chain-service /bin/sh
 
+chronograf:
+	@docker-compose run --rm chronograf
+
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
+
+
+# -------------------------------------------- API Targets ------------------------------------
+
+# Open API Makefile targets
+openapi3validate:
+	oas-validate -v ${API_REST_SPEC}
+
+oapi-codegen-server: openapi3validate
+	oapi-codegen --package=api --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
+
+doco:
+	redoc-cli bundle ${API_REST_SPEC} -o ${API_REST_DOCO_GEN_LOCATION}
+
+# -----------------------------------------------------------------------------------------
 
 run-in-docker:
 	@${GOBIN}/chainservice -c /etc/chainservice/config.json
@@ -59,5 +92,8 @@ run-in-docker:
 run:
 	@${GOBIN}/chainservice -c cmd/chainservice/config.json
 
+run-api-v1:
+	@${GOBIN}/chainservice-api-v1 -c cmd/chainservice/config.json
+
 up:
-	@docker-compose up
+	@docker-compose up --build

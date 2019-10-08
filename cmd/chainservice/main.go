@@ -11,8 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 	flag "github.com/spf13/pflag"
 
-	chain_service "gitlab.com/thorchain/bepswap/chain-service"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
+	chain_service "gitlab.com/thorchain/bepswap/chain-service/server/gin"
 )
 
 // we define version / revision here , so we could inject the version from CI pipeline if we want to
