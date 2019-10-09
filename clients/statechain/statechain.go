@@ -8,7 +8,10 @@ import (
 	"sync"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/cenkalti/backoff"
+
 	client "github.com/influxdata/influxdb1-client"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -41,6 +44,16 @@ type StatechainAPI struct {
 	stopchan      chan struct{}
 }
 
+type Pool struct {
+	BalanceRune  sdk.Uint          `json:"balance_rune"`  // how many RUNE in the pool
+	BalanceToken sdk.Uint          `json:"balance_token"` // how many token in the pool
+	Ticker       common.Ticker     `json:"symbol"`        // what's the token's ticker
+	PoolUnits    sdk.Uint          `json:"pool_units"`    // total units of the pool
+	PoolAddress  common.BnbAddress `json:"pool_address"`  // bnb liquidity pool address
+	// Status              PoolStatus        `json:"status"`                 // status //TODO Cant find this used anywhere?
+	ExpiryInBlockHeight int `json:"expiry_in_block_height,string"` // means the pool address will be changed after these amount of blocks
+}
+
 // NewStatechainAPI create a new instance of StatechainAPI which can talk to statechain
 func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance, store *influxdb.Client) (*StatechainAPI, error) {
 	if len(cfg.Host) == 0 {
@@ -67,7 +80,7 @@ func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance,
 }
 
 // GetPools from statechain
-func (sc *StatechainAPI) GetPools() ([]sTypes.Pool, error) {
+func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", sc.baseUrl)
 
 	resp, err := sc.netClient.Get(poolUrl)
@@ -83,7 +96,7 @@ func (sc *StatechainAPI) GetPools() ([]sTypes.Pool, error) {
 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
 	}
 	decoder := json.NewDecoder(resp.Body)
-	var pools []sTypes.Pool
+	var pools []Pool
 	if err := decoder.Decode(&pools); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal pools")
 	}
@@ -91,7 +104,7 @@ func (sc *StatechainAPI) GetPools() ([]sTypes.Pool, error) {
 }
 
 // GetPool with the given ticker
-func (sc *StatechainAPI) GetPool(ticker string) (*sTypes.Pool, error) {
+func (sc *StatechainAPI) GetPool(ticker string) (*Pool, error) {
 	if len(ticker) == 0 {
 		return nil, errors.New("ticker is empty")
 	}
@@ -109,7 +122,7 @@ func (sc *StatechainAPI) GetPool(ticker string) (*sTypes.Pool, error) {
 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
 	}
 	decoder := json.NewDecoder(resp.Body)
-	var pool sTypes.Pool
+	var pool Pool
 	if err := decoder.Decode(&pool); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal pool")
 	}
