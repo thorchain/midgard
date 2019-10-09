@@ -6,7 +6,7 @@ API_REST_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
 API_REST_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
 API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 
-bootstrap: node_modules ${GOPATH}/bin/oapi-codegen install
+bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
 
 .PHONY: config
 config:
@@ -15,15 +15,14 @@ config:
 
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
-	go get -u github.com/deepmap/oapi-codegen/cmd/oapi-codegen
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
 
 # node_modules for API dev tools
 node_modules:
 	yarn
 
-install: go.sum build
+install: bootstrap go.sum build
 	GO111MODULE=on go install -v ./cmd/chainservice
-	GO111MODULE=on go install -v ./cmd/chainservice-api-v1
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
@@ -79,7 +78,7 @@ openapi3validate:
 	oas-validate -v ${API_REST_SPEC}
 
 oapi-codegen-server: openapi3validate
-	oapi-codegen --package=api --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
+	@${GOBIN}/oapi-codegen --package=api --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
 
 doco:
 	redoc-cli bundle ${API_REST_SPEC} -o ${API_REST_DOCO_GEN_LOCATION}
@@ -91,9 +90,6 @@ run-in-docker:
 
 run:
 	@${GOBIN}/chainservice -c cmd/chainservice/config.json
-
-run-api-v1:
-	@${GOBIN}/chainservice-api-v1 -c cmd/chainservice/config.json
 
 up:
 	@docker-compose up --build
