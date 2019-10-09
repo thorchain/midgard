@@ -14,8 +14,8 @@ import (
 	"github.com/rs/zerolog/log"
 	coingecko "github.com/superoo7/go-gecko/v3"
 	"gitlab.com/thorchain/bepswap/common"
-	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
 
+	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )
@@ -131,7 +131,7 @@ func (ts *TokenService) GetTokenDetail(symbol string) (*TokenDetail, error) {
 }
 
 // GetToken return a token data
-func (ts *TokenService) GetToken(symbol string, pool sTypes.Pool) (*TokenData, error) {
+func (ts *TokenService) GetToken(symbol string, pool statechain.Pool) (*TokenData, error) {
 	// TODO check last updated time, if it is too old , then we get it from binance again
 	if err := ts.ensureTokensExist(); nil != err {
 		return nil, errors.Wrap(err, "fail to get tokens from binance")
