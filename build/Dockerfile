@@ -57,9 +57,9 @@ COPY --from=build /etc/chainservice /etc/chainservice
 
 # Copy the chain service public folder ie generated docs
 RUN pwd
-RUN ls -l
+RUN ls -l /go/bin/public
 
-COPY --from=build /tmp/chainservice/public /go/bin/public
+COPY --from=build /tmp/chainservice/public/* /go/bin/public
 
 EXPOSE 8080
 
