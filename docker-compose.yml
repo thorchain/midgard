@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        influx_host: $INFLUX_HOST
+        influx_host: influxdb
         chain_host: $CHAIN_HOST
     image: bepswap-chain-service
     ports:
