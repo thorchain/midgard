@@ -55,6 +55,9 @@ COPY --from=build /tmp/chainservice/cmd/chainservice/chainservice /go/bin/chains
 # Copy the chain service config.
 COPY --from=build /etc/chainservice /etc/chainservice
 
+# Copy the chain service public folder ie generated docs
+COPY --from=build /tmp/chainservice/public /go/bin/chainservice/public
+
 EXPOSE 8080
 
 CMD ["chainservice", "-c", "/etc/chainservice/config.json"]
