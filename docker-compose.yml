@@ -1,33 +1,33 @@
 version: '3'
 
 services:
-#  chain-service:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        influx_host: $INFLUX_HOST
-#        chain_host: $CHAIN_HOST
-#    image: bepswap-chain-service
-#    ports:
-#      - 8080:8080
-#    links:
-#      - influxdb
-#    depends_on:
-#      - influxdb
-#    volumes:
-#      - ${GOPATH}:/root/go
-#      - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
-#    working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
-#    command: make install run-in-docker
-#    environment:
-#      GOPATH: /root/go
-#      GOBIN: /root/go/bin
-#      GO111MODULE: "on"
-#      INFLUXDB_ADMIN_USER: admin
-#      INFLUXDB_ADMIN_PASSWORD: password
-#      INFLUXDB_HOST: influxdb
-#      INFLUXDB_DB: db0
+  chain-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        influx_host: $INFLUX_HOST
+        chain_host: $CHAIN_HOST
+    image: bepswap-chain-service
+    ports:
+      - 8080:8080
+    links:
+      - influxdb
+    depends_on:
+      - influxdb
+    volumes:
+      - ${GOPATH}:/root/go
+      - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
+    working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
+    command: make install run-in-docker
+    environment:
+      GOPATH: /root/go
+      GOBIN: /root/go/bin
+      GO111MODULE: "on"
+      INFLUXDB_ADMIN_USER: admin
+      INFLUXDB_ADMIN_PASSWORD: password
+      INFLUXDB_HOST: influxdb
+      INFLUXDB_DB: db0
 
   chronograf:
     image: chronograf:latest
