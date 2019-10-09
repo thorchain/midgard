@@ -14,6 +14,8 @@ stages:
 unit:
   image: docker/compose:1.25.0-rc2-alpine
   stage: test
+  except:
+    - master
   variables:
     GOPATH: "~"
   services:
@@ -30,12 +32,16 @@ unit:
 lint:
   image: golangci/golangci-lint
   stage: test
+  except:
+    - master
   script:
     - make lint-verbose
 
 build:
   stage: build
   image: docker:stable
+  except:
+    - master
   services:
     - docker:dind
   variables:
