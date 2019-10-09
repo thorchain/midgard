@@ -63,6 +63,7 @@ require (
 	github.com/ugorji/go v1.1.7 // indirect
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vektah/gqlparser v1.1.2
+	github.com/ziflex/lecho/v2 v2.0.0
 	gitlab.com/thorchain/bepswap/common v1.0.0
 	gitlab.com/thorchain/bepswap/statechain v0.0.0-20191006024012-f2356437f55f
 	go.opencensus.io v0.22.1 // indirect

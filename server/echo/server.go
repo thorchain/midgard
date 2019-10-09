@@ -18,6 +18,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/ziflex/lecho/v2"
 	"gitlab.com/thorchain/bepswap/common"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
@@ -105,19 +106,8 @@ func New(cfgFile *string) (*Server, error) {
 	// setup CORS
 	ginEngine.Use(CORS())
 
-	// TODO Setup Echo logger with zerolog
-	//e.Logger = logrusmiddleware.Logger{Logger: log.GetLogger()}
-	//e.Use(logrusmiddleware.Hook())
-
 	// Load Recover
 	echoEngine.Use(middleware.Recover())
-
-	// TODO not sure if this is needed anymore?
-	// swagger, err := api.GetSwagger()
-	// if err != nil {
-	// 	// log.Panicln("Error loading swagger spec: ", err.Error())
-	// }
-	// swagger.Servers = nil
 
 	// Initialise handlers
 	handlers := handlers.New(store)
@@ -166,6 +156,7 @@ func CORS() gin.HandlerFunc {
 func (s *Server) Start() error {
 	s.logger.Info().Msgf("start http httpServer, listen on port:%d", s.cfg.ListenPort)
 
+	s.registerEchoWithLogger()
 	s.registerGinWithLogger()
 	s.registerEndpoints()
 
@@ -192,6 +183,13 @@ func (s *Server) Log() *zerolog.Logger {
 	return &s.logger
 }
 
+// ----------------------------------- Echo -----------------------------------------------
+func (s *Server) registerEchoWithLogger() {
+	l := lecho.New(s.logger)
+	s.echoEngine.Use(lecho.Middleware(lecho.Config{Logger: l}))
+	s.echoEngine.Use(middleware.RequestID())
+}
+
 // ----------------------------------- GIN -----------------------------------------------
 
 // register all your endpoint here
@@ -213,7 +211,6 @@ func (s *Server) registerEndpoints() {
 	s.ginEngine.GET("/", func(ctx *gin.Context) {
 		http.Redirect(ctx.Writer, ctx.Request, "http://"+ctx.Request.Host+"/v1/doc", 301)
 	})
-
 }
 
 func (s *Server) registerGinWithLogger() {
