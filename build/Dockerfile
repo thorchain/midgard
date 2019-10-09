@@ -39,9 +39,6 @@ RUN GO111MODULE=on go mod verify
 WORKDIR /tmp/chainservice/cmd/chainservice
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o chainservice .
 
-WORKDIR /tmp/chainservice/cmd/etl
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o etl .
-
 #
 # Main
 #
@@ -54,7 +51,6 @@ RUN apk add --update busybox-extras && \
 
 # Copy the compiled binaires over.
 COPY --from=build /tmp/chainservice/cmd/chainservice/chainservice /go/bin/chainservice
-COPY --from=build /tmp/chainservice/cmd/etl/etl /go/bin/etl
 
 # Copy the chain service config.
 COPY --from=build /etc/chainservice /etc/chainservice
