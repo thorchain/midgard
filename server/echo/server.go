@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
+	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -101,6 +102,8 @@ func New(cfgFile *string) (*Server, error) {
 	ginEngine := gin.New()
 	ginEngine.Use(gin.Recovery())
 
+	// setup CORS
+	ginEngine.Use(CORS())
 
 	// TODO Setup Echo logger with zerolog
 	//e.Logger = logrusmiddleware.Logger{Logger: log.GetLogger()}
@@ -116,18 +119,22 @@ func New(cfgFile *string) (*Server, error) {
 	// }
 	// swagger.Servers = nil
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
-		// Handler: engine,
-	}
-
 	// Initialise handlers
 	handlers := handlers.New(store)
 
 	// Register handlers with API handlers
 	api.RegisterHandlers(echoEngine, handlers)
+
+	mux := http.NewServeMux()
+	mux.Handle("/", ginEngine)
+	mux.Handle("/v1/", echoEngine)
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
+		Handler:      mux,
+	}
 
 	return &Server{
 		echoEngine:       echoEngine,
@@ -143,27 +150,30 @@ func New(cfgFile *string) (*Server, error) {
 	}, nil
 }
 
-// TODO for echo
-// func CORS() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		origin := c.Request.Header.Get("Origin")
-// 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-// 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-// 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-// 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-//
-// 		c.Next()
-// 	}
-// }
+// TODO for echo or direct http server
+func CORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		c.Next()
+	}
+}
 
 func (s *Server) Start() error {
 	s.logger.Info().Msgf("start http httpServer, listen on port:%d", s.cfg.ListenPort)
 
+	s.registerGinWithLogger()
 	s.registerEndpoints()
 
 	// Serve HTTP
 	go func() {
-		s.echoEngine.Logger.Fatal(s.echoEngine.StartServer(s.httpServer))
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			s.logger.Error().Err(err).Msg("fail to start server")
+		}
 	}()
 
 	return s.stateChainClient.StartScan()
@@ -186,15 +196,6 @@ func (s *Server) Log() *zerolog.Logger {
 
 // register all your endpoint here
 func (s *Server) registerEndpoints() {
-	// connect log with gin
-	// s.engine.Use(logger.SetLogger(logger.Config{
-	// 	Logger: &s.logger,
-	// 	UTC:    true,
-	// }))
-
-	// setup CORS
-	// s.engine.Use(CORS())
-
 	s.ginEngine.GET("/health", s.healthCheck)
 	s.ginEngine.GET("/poolData", s.getPool)
 	s.ginEngine.GET("/tokens", s.getTokens)
@@ -207,6 +208,14 @@ func (s *Server) registerEndpoints() {
 	s.ginEngine.GET("/stakerData", s.getStakerInfo)
 	s.ginEngine.GET("/tokenData", s.getTokenData)
 	s.ginEngine.GET("/tradeData", s.getTradeData)
+}
+
+func (s *Server) registerGinWithLogger() {
+	// connect log with gin
+	s.ginEngine.Use(logger.SetLogger(logger.Config{
+		Logger: &s.logger,
+		UTC:    true,
+	}))
 }
 
 func (s *Server) getTradeData(g *gin.Context) {
