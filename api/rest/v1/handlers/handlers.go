@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/99designs/gqlgen/handler"
 
@@ -30,16 +28,7 @@ func New(store store.Store) *Handlers {
 
 // GetDocs returns the html docs page for the openapi / swagger spec
 func (h *Handlers) GetDocs(ctx echo.Context) error {
-	dir, _ := os.Getwd()
-	fmt.Println("dir: ", dir)
-
-	err := ctx.File("public/rest/v1/api.html")
-	if err != nil {
-		fmt.Println("Err: ", err.Error())
-		return err
-	}
-
-	return nil
+	return ctx.File("public/rest/v1/api.html")
 }
 
 // Get Swagger spec
