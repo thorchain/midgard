@@ -207,10 +207,11 @@ func (s *Server) registerEndpoints() {
 	s.ginEngine.GET("/tokenData", s.getTokenData)
 	s.ginEngine.GET("/tradeData", s.getTradeData)
 
+	// TODO re-enabled once /v1/doc bug is fixed.
 	// redirect to docs .
-	s.ginEngine.GET("/", func(ctx *gin.Context) {
-		http.Redirect(ctx.Writer, ctx.Request, "http://"+ctx.Request.Host+"/v1/doc", 301)
-	})
+	// s.ginEngine.GET("/", func(ctx *gin.Context) {
+	// 	http.Redirect(ctx.Writer, ctx.Request, "http://"+ctx.Request.Host+"/v1/doc", 301)
+	// })
 }
 
 func (s *Server) registerGinWithLogger() {
