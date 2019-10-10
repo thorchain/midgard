@@ -96,17 +96,14 @@ func New(cfgFile *string) (*Server, error) {
 	// Setup Cache store
 	cacheStore := persistence.NewInMemoryStore(10 * time.Minute)
 
-	// Setup the echoEngine router.
-	echoEngine := echo.New()
-
+	// Setup gin
 	gin.SetMode(gin.ReleaseMode)
 	ginEngine := gin.New()
 	ginEngine.Use(gin.Recovery())
-
-	// setup CORS
 	ginEngine.Use(CORS())
 
-	// Load Recover
+	// Setup echo
+	echoEngine := echo.New()
 	echoEngine.Use(middleware.Recover())
 
 	// Initialise handlers
