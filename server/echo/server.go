@@ -206,7 +206,7 @@ func (s *Server) registerEndpoints() {
 
 	// redirect to docs .
 	s.ginEngine.GET("/", func(ctx *gin.Context) {
-		http.Redirect(ctx.Writer, ctx.Request, "http://"+ctx.Request.Host+"/v1/doc", 301)
+		http.Redirect(ctx.Writer, ctx.Request, "http://"+ctx.Request.Host+"/v1/doc", http.StatusTemporaryRedirect)
 	})
 }
 
