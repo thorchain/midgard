@@ -6,7 +6,7 @@ info:
   title: Chain-Service Public API
   version: 1.0.0-oas3
 paths:
-  "/doc":
+  "/v1/doc":
     get:
       operationId: GetDocs
       responses:
@@ -15,25 +15,25 @@ paths:
       summary: This swagger/openapi 3.0 generated documentation
       tags:
         - Documentation
-  "/graphql":
+  "/v1/graphql":
     get:
       operationId: GraphqlPlaygroundGet
       responses:
         "200":
           description: GraphQL playground
-  "/graphql/query":
+  "/v1/graphql/query":
     post:
       operationId: GraphqlQueryPost
       responses:
         "200":
           description: GraphQL playground
-  "/health":
+  "/v1/health":
     get:
       operationId: GetHealth
       responses:
         "200":
           description: Get Health responce of API
-  "/poolData":
+  "/v1/poolData":
     get:
       operationId: GetPoolData
       parameters:
@@ -50,7 +50,7 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/PoolData"
-  "/stakerData":
+  "/v1/stakerData":
     get:
       operationId: GetStakerInfo
       responses:
@@ -62,13 +62,13 @@ paths:
                 oneOf:
                   - "$ref": "#/components/schemas/StakerInfo"
                   - "$ref": "#/components/schemas/StakerInfoWithAsset"
-  "/stakerTx":
+  "/v1/stakerTx":
     get:
       operationId: GetStakerTx
       responses:
         "200":
           description: Get Staker transaction Data from API
-  "/swagger.json":
+  "/v1/swagger.json":
     get:
       operationId: GetSwagger
       responses:
@@ -77,7 +77,7 @@ paths:
       summary: JSON swagger/openapi 3.0 specification endpoint
       tags:
         - Specification
-  "/swapData":
+  "/v1/swapData":
     get:
       operationId: GetSwapData
       parameters:
@@ -94,19 +94,19 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/SwapData"
-  "/swapTx":
+  "/v1/swapTx":
     get:
       operationId: GetSwapTx
       responses:
         "200":
           description: Get Swap transaction Data from API
-  "/tokenData":
+  "/v1/tokenData":
     get:
       operationId: GetTokenData
       responses:
         "200":
           description: Get Token Data from API
-  "/tokens":
+  "/v1/tokens":
     get:
       parameters:
         - in: query
@@ -125,13 +125,13 @@ paths:
                 oneOf:
                   - "$ref": "#/components/schemas/TokenList"
                   - "$ref": "#/components/schemas/TokenData"
-  "/tradeData":
+  "/v1/tradeData":
     get:
       operationId: GetTradeData
       responses:
         "200":
           description: Get Trade Data from API
-  "/userData":
+  "/v1/userData":
     get:
       operationId: GetUserData
       responses:
