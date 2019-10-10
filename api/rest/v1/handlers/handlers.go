@@ -1,14 +1,14 @@
 package handlers
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/99designs/gqlgen/handler"
-	"github.com/davecgh/go-spew/spew"
 
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
-	"io/ioutil"
-	"log"
-	"net/http"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/store"
@@ -30,15 +30,15 @@ func New(store store.Store) *Handlers {
 
 // GetDocs returns the html docs page for the openapi / swagger spec
 func (h *Handlers) GetDocs(ctx echo.Context) error {
-	err := ctx.File("./public/rest/v1/api.html")
+	dir, _ := os.Getwd()
+	fmt.Println("dir: ", dir)
+
+	err := ctx.File("public/rest/v1/api.html")
 	if err != nil {
-		files, err := ioutil.ReadDir("./public/rest/v1/")
-		if err != nil {
-			log.Fatal(err)
-		}
-		spew.Dump(files)
+		fmt.Println("Err: ", err.Error())
 		return err
 	}
+
 	return nil
 }
 
