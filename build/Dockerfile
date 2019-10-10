@@ -16,6 +16,7 @@ ENV INFLUX_HOST=$influx_host
 RUN env
 
 WORKDIR /tmp
+# TODO Move away from the embed clone as this will only work for master branchs
 RUN git config --global http.sslVerify "false"
 RUN git clone https://gitlab.com/thorchain/bepswap/chain-service.git /tmp/chainservice
 
