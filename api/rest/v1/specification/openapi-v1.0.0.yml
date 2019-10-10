@@ -1,98 +1,270 @@
 openapi: 3.0.0
 info:
-  version: 1.0.0
-  title: Chain-Service Public API
-  description: Chain-Service Public API
   contact:
     email: devs@thorchain.org
-tags:
-  - name: Chain-Service Public API
-    description: Public Bepswap Chain-Service's REST API
-servers:
-  - url: http://127.0.0.1:8080
-  - url: https://127.0.0.1:8080
+  description: Chain-Service Public API
+  title: Chain-Service Public API
+  version: 1.0.0-oas3
 paths:
-  /v1/graphql/query:
-    post:
-      operationId: GraphqlQueryPost
+  "/v1/doc":
+    get:
+      operationId: GetDocs
       responses:
         "200":
-          description: GraphQL playground
-  /v1/graphql:
+          description: swagger/openapi 3.0 spec generated docs
+      summary: This swagger/openapi 3.0 generated documentation
+      tags:
+        - Documentation
+  "/v1/graphql":
     get:
       operationId: GraphqlPlaygroundGet
       responses:
         "200":
           description: GraphQL playground
-  /v1/doc:
-    get:
-      tags:
-        - Documentation
-      summary: This swagger/openapi 3.0 generated documentation
-      operationId: GetDocs
+  "/v1/graphql/query":
+    post:
+      operationId: GraphqlQueryPost
       responses:
         "200":
-          description: swagger/openapi 3.0 spec generated docs
-  /v1/swagger.json:
-    get:
-      tags:
-        - Specification
-      summary: JSON swagger/openapi 3.0 specification endpoint
-      operationId: GetSwagger
-      responses:
-        "200":
-          description: human and machine readable swagger/openapi specification endpoint
-  /v1/health:
+          description: GraphQL playground
+  "/v1/health":
     get:
       operationId: GetHealth
       responses:
         "200":
-          description: "Get Health responce of API"
-  /v1/poolData:
+          description: Get Health responce of API
+  "/v1/poolData":
     get:
       operationId: GetPoolData
+      parameters:
+        - in: query
+          name: asset
+          description: Specify asset
+          required: true
+          schema:
+            type: string
       responses:
         "200":
-          description: "Get Pool Data from API"
-  /v1/tokens:
-    get:
-      operationId: GetTokens
-      responses:
-        "200":
-          description: "Get Tokens from API"
-  /v1/userData:
-    get:
-      operationId: GetUserData
-      responses:
-        "200":
-          description: "Get User Data from API"
-  /v1/swapTx:
-    get:
-      operationId: GetSwapTx
-      responses:
-        "200":
-          description: "Get Swap transaction Data from API"
-  /v1/stakerTx:
-    get:
-      operationId: GetStakerTx
-      responses:
-        "200":
-          description: "Get Staker transaction Data from API"
-  /v1/stakerData:
+          description: Asset pool information
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PoolData"
+  "/v1/stakerData":
     get:
       operationId: GetStakerInfo
       responses:
         "200":
-          description: "Get Staker info Data from API"
-  /v1/tokenData:
+          description: Get Staker info Data from API
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - "$ref": "#/components/schemas/StakerInfo"
+                  - "$ref": "#/components/schemas/StakerInfoWithAsset"
+  "/v1/stakerTx":
+    get:
+      operationId: GetStakerTx
+      responses:
+        "200":
+          description: Get Staker transaction Data from API
+  "/v1/swagger.json":
+    get:
+      operationId: GetSwagger
+      responses:
+        "200":
+          description: human and machine readable swagger/openapi specification endpoint
+      summary: JSON swagger/openapi 3.0 specification endpoint
+      tags:
+        - Specification
+  "/v1/swapData":
+    get:
+      operationId: GetSwapData
+      parameters:
+        - in: query
+          name: asset
+          description: Specify asset
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Swap data information
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SwapData"
+  "/v1/swapTx":
+    get:
+      operationId: GetSwapTx
+      responses:
+        "200":
+          description: Get Swap transaction Data from API
+  "/v1/tokenData":
     get:
       operationId: GetTokenData
       responses:
         "200":
-          description: "Get Token Data from API"
-  /v1/tradeData:
+          description: Get Token Data from API
+  "/v1/tokens":
+    get:
+      parameters:
+        - in: query
+          name: token
+          description: Specify token
+          required: false
+          schema:
+            type: string
+      operationId: GetTokens
+      responses:
+        "200":
+          description: Get Tokens from API
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - "$ref": "#/components/schemas/TokenList"
+                  - "$ref": "#/components/schemas/TokenData"
+  "/v1/tradeData":
     get:
       operationId: GetTradeData
       responses:
         "200":
-          description: "Get Trade Data from API"
+          description: Get Trade Data from API
+  "/v1/userData":
+    get:
+      operationId: GetUserData
+      responses:
+        "200":
+          description: Get User Data from API
+components:
+  schemas:
+    TokenList:
+      type: array
+      items:
+        type: string
+    TokenData:
+      type: object
+      properties:
+        symbol:
+          type: string
+        ticker:
+          type: string
+        price:
+          type: number
+      required:
+        - symbol
+        - ticker
+        - price
+    SwapData:
+      type: object
+      properties:
+        asset:
+          type: string
+        aveTxTkn:
+          type: number
+        aveTxRune:
+          type: number
+        aveSlipTkn:
+          type: number
+        aveSlipRune:
+          type: number
+        numTxTkn:
+          type: number
+        numTxRune:
+          type: number
+        aveFeeTkn:
+          type: number
+        aveFeeRune:
+          type: number
+      required:
+        - asset
+        - aveTxTkn
+        - aveTxRune
+        - aveSlipTkn
+        - aveSlipRune
+        - numTxTkn
+        - numTxRune
+        - aveFeeTkn
+        - aveFeeRune
+    StakerInfo:
+      type: object
+      properties:
+        address:
+          type: string
+        asset:
+          type: string
+        dateFirstStaked:
+          type: string
+        runeEarned:
+          type: number
+        runeStaked:
+          type: number
+        tokensEarned:
+          type: number
+        tokensStaked:
+          type: number
+        units:
+          type: number
+      required:
+        - address
+        - asset
+        - dateFirstStaked
+        - runeEarned
+        - runeStaked
+        - tokensEarned
+        - tokensStaked
+        - units
+    StakerInfoWithAsset:
+      type: array
+      items:
+        type: string
+    PoolData:
+      type: object
+      properties:
+        asset:
+          type: string
+        totalFeesTKN:
+          type: number
+        totalFeesRune:
+          type: number
+        vol24hr:
+          type: number
+        volAT:
+          type: number
+        depth:
+          type: number
+        poolUnits:
+          type: number
+        roiAT:
+          type: number
+        roi30:
+          type: number
+        roi12:
+          type: number
+        numStakers:
+          type: number
+        numStakeTx:
+          type: number
+        numSwaps:
+          type: number
+      required:
+        - asset
+        - totalFeesTKN
+        - totalFeesRune
+        - vol24hr
+        - volAT
+        - depth
+        - poolUnits
+        - roiAT
+        - roi30
+        - roi12
+        - numStakers
+        - numStakeTx
+        - numSwaps
+servers:
+  - url: http://127.0.0.1:8080
+  - url: https://127.0.0.1:8080
+tags:
+  - description: Public Bepswap Chain-Service's REST API
+    name: Chain-Service Public API
