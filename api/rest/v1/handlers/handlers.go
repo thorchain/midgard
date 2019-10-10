@@ -41,11 +41,11 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (h *Handlers) GetPoolData(ctx echo.Context) error {
+func (h *Handlers) GetPoolData(ctx echo.Context, params api.GetPoolDataParams) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
-func (h *Handlers) GetTokens(ctx echo.Context) error {
+func (h *Handlers) GetTokens(ctx echo.Context, params api.GetTokensParams) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
@@ -53,6 +53,9 @@ func (h *Handlers) GetUserData(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
 
+func (h *Handlers)  GetSwapData(ctx echo.Context, params api.GetSwapDataParams) error {
+  return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
+}
 func (h *Handlers) GetSwapTx(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNotImplemented, "Not Implemented")
 }
