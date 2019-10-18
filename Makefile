@@ -75,7 +75,7 @@ influxdb:
 
 # Open API Makefile targets
 openapi3validate:
-	oas-validate -v ${API_REST_SPEC}
+	./node_modules/.bin/oas-validate -v ${API_REST_SPEC}
 
 oapi-codegen-server: openapi3validate
 	@${GOBIN}/oapi-codegen --package=api --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
