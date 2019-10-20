@@ -75,9 +75,37 @@ type GetPoolDataParams struct {
 	Asset string `json:"asset"`
 }
 
+// GetStakerDataParams defines parameters for GetStakerData.
+type GetStakerDataParams struct {
+	Staker string  `json:"staker"`
+	Asset  *string `json:"asset,omitempty"`
+}
+
+// GetStakerTxParams defines parameters for GetStakerTx.
+type GetStakerTxParams struct {
+	Staker string  `json:"staker"`
+	Limit  *int    `json:"limit,omitempty"`
+	Offset *int    `json:"offset,omitempty"`
+	Asset  *string `json:"asset,omitempty"`
+}
+
 // GetSwapDataParams defines parameters for GetSwapData.
 type GetSwapDataParams struct {
 	Asset string `json:"asset"`
+}
+
+// GetSwapTxParams defines parameters for GetSwapTx.
+type GetSwapTxParams struct {
+	Asset  string `json:"asset"`
+	Sender string `json:"sender"`
+	Dest   string `json:"dest"`
+	Limit  *int   `json:"limit,omitempty"`
+	Offset *int   `json:"offset,omitempty"`
+}
+
+// GetTokenDataParams defines parameters for GetTokenData.
+type GetTokenDataParams struct {
+	Symbol string `json:"symbol"`
 }
 
 // GetTokensParams defines parameters for GetTokens.
@@ -85,34 +113,39 @@ type GetTokensParams struct {
 	Token *string `json:"token,omitempty"`
 }
 
+// GetTradeDataParams defines parameters for GetTradeData.
+type GetTradeDataParams struct {
+	Symbol string `json:"symbol"`
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// This swagger/openapi 3.0 generated documentation// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
 	// (GET /v1/graphql)
-	GraphqlPlaygroundGet(ctx echo.Context) error
+	GetGraphqlPlayground(ctx echo.Context) error
 	// (POST /v1/graphql/query)
-	GraphqlQueryPost(ctx echo.Context) error
+	PostGraphqlQuery(ctx echo.Context) error
 	// (GET /v1/health)
 	GetHealth(ctx echo.Context) error
 	// (GET /v1/poolData)
 	GetPoolData(ctx echo.Context, params GetPoolDataParams) error
 	// (GET /v1/stakerData)
-	GetStakerInfo(ctx echo.Context) error
+	GetStakerData(ctx echo.Context, params GetStakerDataParams) error
 	// (GET /v1/stakerTx)
-	GetStakerTx(ctx echo.Context) error
+	GetStakerTx(ctx echo.Context, params GetStakerTxParams) error
 	// JSON swagger/openapi 3.0 specification endpoint// (GET /v1/swagger.json)
 	GetSwagger(ctx echo.Context) error
 	// (GET /v1/swapData)
 	GetSwapData(ctx echo.Context, params GetSwapDataParams) error
 	// (GET /v1/swapTx)
-	GetSwapTx(ctx echo.Context) error
+	GetSwapTx(ctx echo.Context, params GetSwapTxParams) error
 	// (GET /v1/tokenData)
-	GetTokenData(ctx echo.Context) error
+	GetTokenData(ctx echo.Context, params GetTokenDataParams) error
 	// (GET /v1/tokens)
 	GetTokens(ctx echo.Context, params GetTokensParams) error
 	// (GET /v1/tradeData)
-	GetTradeData(ctx echo.Context) error
+	GetTradeData(ctx echo.Context, params GetTradeDataParams) error
 	// (GET /v1/userData)
 	GetUserData(ctx echo.Context) error
 }
@@ -131,21 +164,21 @@ func (w *ServerInterfaceWrapper) GetDocs(ctx echo.Context) error {
 	return err
 }
 
-// GraphqlPlaygroundGet converts echo context to params.
-func (w *ServerInterfaceWrapper) GraphqlPlaygroundGet(ctx echo.Context) error {
+// GetGraphqlPlayground converts echo context to params.
+func (w *ServerInterfaceWrapper) GetGraphqlPlayground(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GraphqlPlaygroundGet(ctx)
+	err = w.Handler.GetGraphqlPlayground(ctx)
 	return err
 }
 
-// GraphqlQueryPost converts echo context to params.
-func (w *ServerInterfaceWrapper) GraphqlQueryPost(ctx echo.Context) error {
+// PostGraphqlQuery converts echo context to params.
+func (w *ServerInterfaceWrapper) PostGraphqlQuery(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GraphqlQueryPost(ctx)
+	err = w.Handler.PostGraphqlQuery(ctx)
 	return err
 }
 
@@ -181,12 +214,36 @@ func (w *ServerInterfaceWrapper) GetPoolData(ctx echo.Context) error {
 	return err
 }
 
-// GetStakerInfo converts echo context to params.
-func (w *ServerInterfaceWrapper) GetStakerInfo(ctx echo.Context) error {
+// GetStakerData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakerData(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetStakerDataParams
+	// ------------- Required query parameter "staker" -------------
+	if paramValue := ctx.QueryParam("staker"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument staker is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "staker", ctx.QueryParams(), &params.Staker)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter staker: %s", err))
+	}
+
+	// ------------- Optional query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetStakerInfo(ctx)
+	err = w.Handler.GetStakerData(ctx, params)
 	return err
 }
 
@@ -194,8 +251,52 @@ func (w *ServerInterfaceWrapper) GetStakerInfo(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetStakerTx(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetStakerTxParams
+	// ------------- Required query parameter "staker" -------------
+	if paramValue := ctx.QueryParam("staker"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument staker is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "staker", ctx.QueryParams(), &params.Staker)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter staker: %s", err))
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// ------------- Optional query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetStakerTx(ctx)
+	err = w.Handler.GetStakerTx(ctx, params)
 	return err
 }
 
@@ -235,8 +336,66 @@ func (w *ServerInterfaceWrapper) GetSwapData(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetSwapTx(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSwapTxParams
+	// ------------- Required query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+	}
+
+	// ------------- Required query parameter "sender" -------------
+	if paramValue := ctx.QueryParam("sender"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument sender is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "sender", ctx.QueryParams(), &params.Sender)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter sender: %s", err))
+	}
+
+	// ------------- Required query parameter "dest" -------------
+	if paramValue := ctx.QueryParam("dest"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument dest is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "dest", ctx.QueryParams(), &params.Dest)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter dest: %s", err))
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetSwapTx(ctx)
+	err = w.Handler.GetSwapTx(ctx, params)
 	return err
 }
 
@@ -244,8 +403,22 @@ func (w *ServerInterfaceWrapper) GetSwapTx(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetTokenData(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTokenDataParams
+	// ------------- Required query parameter "symbol" -------------
+	if paramValue := ctx.QueryParam("symbol"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument symbol is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "symbol", ctx.QueryParams(), &params.Symbol)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter symbol: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetTokenData(ctx)
+	err = w.Handler.GetTokenData(ctx, params)
 	return err
 }
 
@@ -274,8 +447,22 @@ func (w *ServerInterfaceWrapper) GetTokens(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetTradeData(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTradeDataParams
+	// ------------- Required query parameter "symbol" -------------
+	if paramValue := ctx.QueryParam("symbol"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument symbol is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "symbol", ctx.QueryParams(), &params.Symbol)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter symbol: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetTradeData(ctx)
+	err = w.Handler.GetTradeData(ctx, params)
 	return err
 }
 
@@ -296,11 +483,11 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	}
 
 	router.GET("/v1/doc", wrapper.GetDocs)
-	router.GET("/v1/graphql", wrapper.GraphqlPlaygroundGet)
-	router.POST("/v1/graphql/query", wrapper.GraphqlQueryPost)
+	router.GET("/v1/graphql", wrapper.GetGraphqlPlayground)
+	router.POST("/v1/graphql/query", wrapper.PostGraphqlQuery)
 	router.GET("/v1/health", wrapper.GetHealth)
 	router.GET("/v1/poolData", wrapper.GetPoolData)
-	router.GET("/v1/stakerData", wrapper.GetStakerInfo)
+	router.GET("/v1/stakerData", wrapper.GetStakerData)
 	router.GET("/v1/stakerTx", wrapper.GetStakerTx)
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
 	router.GET("/v1/swapData", wrapper.GetSwapData)
@@ -315,25 +502,28 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AQAA//+iwmajVRgAAA==",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
@@ -359,4 +549,3 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
-

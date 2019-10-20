@@ -17,13 +17,13 @@ paths:
         - Documentation
   "/v1/graphql":
     get:
-      operationId: GraphqlPlaygroundGet
+      operationId: GetGraphqlPlayground
       responses:
         "200":
           description: GraphQL playground
   "/v1/graphql/query":
     post:
-      operationId: GraphqlQueryPost
+      operationId: PostGraphqlQuery
       responses:
         "200":
           description: GraphQL playground
@@ -39,7 +39,7 @@ paths:
       parameters:
         - in: query
           name: asset
-          description: Specify asset
+          description: Get Specify asset Pool Data
           required: true
           schema:
             type: string
@@ -52,7 +52,20 @@ paths:
                 "$ref": "#/components/schemas/PoolData"
   "/v1/stakerData":
     get:
-      operationId: GetStakerInfo
+      parameters:
+        - in: query
+          name: staker
+          description: staker address
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: asset
+          description: Specify asset
+          required: false
+          schema:
+            type: string
+      operationId: GetStakerData
       responses:
         "200":
           description: Get Staker info Data from API
@@ -65,6 +78,31 @@ paths:
   "/v1/stakerTx":
     get:
       operationId: GetStakerTx
+      parameters:
+        - in: query
+          name: staker
+          description: Staker address
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: limit results returned default 25
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          description: offset ... default to 0
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: asset
+          description: Specify asset
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: Get Staker transaction Data from API
@@ -97,11 +135,49 @@ paths:
   "/v1/swapTx":
     get:
       operationId: GetSwapTx
+      parameters:
+        - in: query
+          name: asset
+          description: asset
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: sender
+          description: sender address
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: dest
+          description: dest address
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: limit results returned. Default 25
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          description: Offset. Default to 0
+          required: false
+          schema:
+            type: integer
       responses:
         "200":
           description: Get Swap transaction Data from API
   "/v1/tokenData":
     get:
+      parameters:
+        - in: query
+          name: symbol
+          description: Specify symbol
+          required: true
+          schema:
+            type: string
       operationId: GetTokenData
       responses:
         "200":
@@ -127,6 +203,13 @@ paths:
                   - "$ref": "#/components/schemas/TokenData"
   "/v1/tradeData":
     get:
+      parameters:
+        - in: query
+          name: symbol
+          description: symbol
+          required: true
+          schema:
+            type: string
       operationId: GetTradeData
       responses:
         "200":
