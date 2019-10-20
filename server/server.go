@@ -1,4 +1,4 @@
-package echo
+package server
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/logger"
@@ -62,6 +63,7 @@ func New(cfgFile *string) (*Server, error) {
 
 	// Load config
 	cfg, err := config.LoadConfiguration(*cfgFile)
+	spew.Dump(cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to load chain service config")
 	}
@@ -106,8 +108,10 @@ func New(cfgFile *string) (*Server, error) {
 	echoEngine := echo.New()
 	echoEngine.Use(middleware.Recover())
 
+	logger := log.With().Str("module", "httpServer").Logger()
+
 	// Initialise handlers
-	handlers := handlers.New(store)
+	handlers := handlers.New(store, stateChainApi, logger, tokenService, binanceClient)
 
 	// Register handlers with API handlers
 	api.RegisterHandlers(echoEngine, handlers)
@@ -129,7 +133,7 @@ func New(cfgFile *string) (*Server, error) {
 		store:            store,
 		httpServer:       srv,
 		cfg:              *cfg,
-		logger:           log.With().Str("module", "httpServer").Logger(),
+		logger:           logger,
 		stateChainClient: stateChainApi,
 		tokenService:     tokenService,
 		binanceClient:    binanceClient,
@@ -406,20 +410,24 @@ func (s *Server) getStakerInfo(g *gin.Context) {
 func (s *Server) getTokens(g *gin.Context) {
 	token, ok := g.GetQuery("token")
 	if ok {
-		s.getAToken(g, token)
+		s.getAToken(g, token) // Get details for just one token
 		return
 	}
-	pools, err := s.stateChainClient.GetPools()
 
+	// Get details of all tokens in the pools.
+	pools, err := s.stateChainClient.GetPools()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get pools")
 		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	p := make([]string, len(pools))
+
 	for idx, item := range pools {
 		p[idx] = item.Ticker.String()
 	}
+
 	g.JSON(http.StatusOK, p)
 }
 

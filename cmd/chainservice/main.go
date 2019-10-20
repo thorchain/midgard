@@ -8,7 +8,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 
-	server "gitlab.com/thorchain/bepswap/chain-service/server/echo"
+	server "gitlab.com/thorchain/bepswap/chain-service/server"
 )
 
 func main() {
