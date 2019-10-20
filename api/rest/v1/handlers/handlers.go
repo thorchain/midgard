@@ -81,7 +81,6 @@ func (h *Handlers) GetPoolData(ctx echo.Context, params api.GetPoolDataParams) e
 
 func (h *Handlers) GetTokens(ctx echo.Context, params api.GetTokensParams) error {
 	if params.Token == nil {
-		// TODO Extracted for reused
 		pools, err := h.stateChainClient.GetPools()
 		if err != nil {
 			h.logger.Error().Err(err).Msg("fail to get pools")
@@ -96,7 +95,6 @@ func (h *Handlers) GetTokens(ctx echo.Context, params api.GetTokensParams) error
 		return ctx.JSON(http.StatusOK, p)
 	}
 
-	// a param was passed in.
 	pool, err := h.stateChainClient.GetPool(*params.Token)
 	if err != nil {
 		h.logger.Error().Err(err).Str("symbol", *params.Token).Msg("fail to get pool")
