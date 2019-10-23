@@ -7,7 +7,7 @@ import (
 
 	client "github.com/influxdata/influxdb1-client"
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/bepswap/common"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 )
 
 type SwapEvent struct {

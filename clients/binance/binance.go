@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/bepswap/common"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 )

@@ -9,7 +9,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/bepswap/common"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 )

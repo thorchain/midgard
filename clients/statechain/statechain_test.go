@@ -11,8 +11,8 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 
-	"gitlab.com/thorchain/bepswap/common"
-	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
+	sTypes "gitlab.com/thorchain/bepswap/thornode/x/swapservice/types"
 	. "gopkg.in/check.v1"
 )
 

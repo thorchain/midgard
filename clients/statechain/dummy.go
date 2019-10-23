@@ -1,7 +1,7 @@
 package statechain
 
 import (
-	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
+	sTypes "gitlab.com/thorchain/bepswap/thornode/x/swapservice/types"
 )
 
 type Dummy struct {
