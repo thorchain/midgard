@@ -3,7 +3,7 @@ package influxdb
 import (
 	"time"
 
-	"gitlab.com/thorchain/bepswap/common"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 	. "gopkg.in/check.v1"
 )
 
