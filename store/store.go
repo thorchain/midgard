@@ -1,7 +1,7 @@
 package store
 
 import (
-	"gitlab.com/thorchain/bepswap/common"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )

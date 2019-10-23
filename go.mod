@@ -11,6 +11,7 @@ require (
 	github.com/binance-chain/ledger-cosmos-go v0.9.9 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/btcsuite/btcd v0.0.0-20190926002857-ba530c4abb35 // indirect
+	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/btcsuite/goleveldb v1.0.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/coreos/bbolt v1.3.3 // indirect
@@ -18,7 +19,7 @@ require (
 	github.com/coreos/go-iptables v0.4.3 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
-	github.com/cosmos/cosmos-sdk v0.37.2
+	github.com/cosmos/cosmos-sdk v0.37.3
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepmap/oapi-codegen v1.3.0
@@ -30,7 +31,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20190930153522-6ce02741cba3 // indirect
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.11.3 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
@@ -43,7 +44,7 @@ require (
 	github.com/kr/pty v1.1.8 // indirect
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/miguelmota/go-coinmarketcap v0.1.6
+	github.com/miguelmota/go-coinmarketcap v0.1.6 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
@@ -65,8 +66,6 @@ require (
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vektah/gqlparser v1.1.2
 	github.com/ziflex/lecho/v2 v2.0.0
-	gitlab.com/thorchain/bepswap/common v1.0.0
-	gitlab.com/thorchain/bepswap/statechain v0.0.0-20191006024012-f2356437f55f
 	go.opencensus.io v0.22.1 // indirect
 	go.uber.org/multierr v1.2.0 // indirect
 	golang.org/x/arch v0.0.0-20190927153633-4e8777c89be4 // indirect

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/superoo7/go-gecko/v3/types"
-	"gitlab.com/thorchain/bepswap/common"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 )
 
 // CacheTokens used to cache the tokens locally in memory

@@ -16,8 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/bepswap/common"
-	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
+	sTypes "gitlab.com/thorchain/bepswap/thornode/x/swapservice/types"
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
