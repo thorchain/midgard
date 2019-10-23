@@ -1,15 +1,13 @@
 package statechain
 
-import (
-	sTypes "gitlab.com/thorchain/bepswap/thornode/x/swapservice/types"
-)
+import ()
 
 type Dummy struct {
 	StatechainAPI
-	Events []sTypes.Event
+	Events []Event
 	Err    error
 }
 
-func (dum Dummy) GetEvents(id int64) ([]sTypes.Event, error) {
+func (dum Dummy) GetEvents(id int64) ([]Event, error) {
 	return dum.Events, dum.Err
 }
