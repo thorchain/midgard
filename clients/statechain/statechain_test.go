@@ -11,8 +11,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 
-	"gitlab.com/thorchain/bepswap/common"
-	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 	. "gopkg.in/check.v1"
 )
 
@@ -24,7 +23,7 @@ var _ = Suite(&StatechainSuite{})
 
 func (s *StatechainSuite) TestStatechain(c *C) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		events := []sTypes.Event{
+		events := []Event{
 			{
 				ID:      common.Amount("1"),
 				Type:    "swap",

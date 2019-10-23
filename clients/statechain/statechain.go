@@ -16,8 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/bepswap/common"
-	sTypes "gitlab.com/thorchain/bepswap/statechain/x/swapservice/types"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/config"
@@ -29,7 +28,7 @@ type Binance interface {
 }
 
 type StatechainInterface interface {
-	GetEvents(id int64) ([]sTypes.Event, error)
+	GetEvents(id int64) ([]Event, error)
 }
 
 // StatechainAPI to talk to statechain
@@ -52,6 +51,44 @@ type Pool struct {
 	PoolAddress  common.BnbAddress `json:"pool_address"`  // bnb liquidity pool address
 	// Status              PoolStatus        `json:"status"`                 // status //TODO Cant find this used anywhere?
 	ExpiryInBlockHeight int `json:"expiry_in_block_height,string"` // means the pool address will be changed after these amount of blocks
+}
+
+type Event struct {
+	ID      common.Amount `json:"id"`
+	Type    string        `json:"type"`
+	InHash  common.TxID   `json:"in_hash"`
+	OutHash common.TxID   `json:"out_hash"`
+	// Should we have timestamps and addresses if they are available via the
+	// binance API?
+	// InStamp    time.Time         `json:"in_timestamp"`
+	// OutStamp   time.Time         `json:"out_timestamp"`
+	// InAddress  common.Address `json:"in_address"`
+	// OutAddress common.Address `json:"out_address"`
+	Pool  common.Ticker   `json:"pool"`
+	Event json.RawMessage `json:"event"`
+	// Status EventStatus     `json:"status"`
+}
+
+type EventSwap struct {
+	SourceCoin common.Coin `json:"source_coin"`
+	TargetCoin common.Coin `json:"target_coin"`
+	PriceSlip  sdk.Uint    `json:"price_slip"`
+	TradeSlip  sdk.Uint    `json:"trade_slip"`
+	PoolSlip   sdk.Uint    `json:"pool_slip"`
+	OutputSlip sdk.Uint    `json:"output_slip"`
+	Fee        sdk.Uint    `json:"fee"`
+}
+
+type EventStake struct {
+	RuneAmount  sdk.Uint `json:"rune_amount"`
+	TokenAmount sdk.Uint `json:"token_amount"`
+	StakeUnits  sdk.Uint `json:"stake_units"`
+}
+
+type EventUnstake struct {
+	RuneAmount  sdk.Int `json:"rune_amount"`
+	TokenAmount sdk.Int `json:"token_amount"`
+	StakeUnits  sdk.Int `json:"stake_units"`
 }
 
 // NewStatechainAPI create a new instance of StatechainAPI which can talk to statechain
@@ -129,7 +166,7 @@ func (sc *StatechainAPI) GetPool(ticker string) (*Pool, error) {
 	return &pool, nil
 }
 
-func (sc *StatechainAPI) getEvents(id int64) ([]sTypes.Event, error) {
+func (sc *StatechainAPI) getEvents(id int64) ([]Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", sc.baseUrl, id)
 	resp, err := sc.netClient.Get(uri)
 	if err != nil {
@@ -142,7 +179,7 @@ func (sc *StatechainAPI) getEvents(id int64) ([]sTypes.Event, error) {
 		}
 	}()
 
-	var events []sTypes.Event
+	var events []Event
 	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal events")
 	}
@@ -171,7 +208,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 
 		switch evt.Type {
 		case "swap":
-			var swap sTypes.EventSwap
+			var swap EventSwap
 			err := json.Unmarshal(evt.Event, &swap)
 			if err != nil {
 				return maxID, pts, errors.Wrap(err, "fail to unmarshal swap event")
@@ -209,7 +246,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 			).Point())
 
 		case "stake":
-			var stake sTypes.EventStake
+			var stake EventStake
 			err := json.Unmarshal(evt.Event, &stake)
 			if err != nil {
 				return maxID, pts, errors.Wrap(err, "fail to unmarshal stake event")
@@ -235,7 +272,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				tx.Timestamp,
 			).Point())
 		case "unstake":
-			var unstake sTypes.EventUnstake
+			var unstake EventUnstake
 			err := json.Unmarshal(evt.Event, &unstake)
 			if err != nil {
 				return maxID, pts, errors.Wrap(err, "fail to unmarshal unstake event")

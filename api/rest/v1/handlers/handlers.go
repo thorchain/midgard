@@ -7,13 +7,13 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
-	"gitlab.com/thorchain/bepswap/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
+	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/store"
