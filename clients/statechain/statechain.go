@@ -79,7 +79,7 @@ type EventStake struct {
 
 type EventUnstake struct {
 	RuneAmount  sdk.Int `json:"rune_amount"`
-	TokenAmount sdk.Int `json:"token_amount"`
+	AssetAmount sdk.Int `json:"asset_amount"`
 	StakeUnits  sdk.Int `json:"stake_units"`
 }
 
@@ -284,7 +284,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				evt.InHash,
 				evt.OutHash,
 				float64(unstake.RuneAmount.Int64()),
-				float64(unstake.TokenAmount.Int64()),
+				float64(unstake.AssetAmount.Int64()),
 				float64(unstake.StakeUnits.Int64()),
 				evt.Pool.Ticker,
 				addr,

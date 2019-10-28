@@ -29,22 +29,22 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 				Type:    "swap",
 				InHash:  "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA",
 				OutHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FB",
-				Pool:    common.Ticker("BNB"),
+				Pool: common.Asset{Ticker:"BNB"},
 				Event:   []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "2100000000" }, "target_coin": { "denom": "BNB", "amount": "1000000000" }, "trade_slip": "112000000", "price_slip": "115000000", "pool_slip": "222000000", "output_slip": "333000000", "fee": "3300000000" }`),
 			},
 			{
 				ID:     common.Amount("2"),
 				Type:   "stake",
 				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
-				Pool:   common.Ticker("BNB"),
-				Event:  []byte(`{ "rune_amount": "3100000000", "token_amount": "3500000000", "stake_units": "234000000" }`),
+				Pool: common.Asset{Ticker:"BNB"},
+				Event:  []byte(`{ "rune_amount": "3100000000", "asset_amount": "3500000000", "stake_units": "234000000" }`),
 			},
 			{
 				ID:     common.Amount("3"),
 				Type:   "unstake",
 				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
-				Pool:   common.Ticker("BNB"),
-				Event:  []byte(`{ "rune_amount": "3100000000", "token_amount": "3500000000", "stake_units": "234000000" }`),
+				Pool: common.Asset{Ticker:"BNB"},
+				Event:  []byte(`{ "rune_amount": "3100000000", "asset_amount": "3500000000", "stake_units": "234000000" }`),
 			},
 		}
 		buf, err := json.Marshal(events)
