@@ -14,5 +14,4 @@ type Store interface {
 	ListSwapEvents(to, from common.BnbAddress, ticker common.Ticker, limit, offset int) (events []influxdb.SwapEvent, err error)
 	GetSwapData(ticker common.Ticker) (data influxdb.SwapData, err error)
 	GetUsageData() (usage influxdb.UsageData, err error)
-
 }
