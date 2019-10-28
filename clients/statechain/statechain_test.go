@@ -29,7 +29,7 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 				Type:    "swap",
 				InHash:  "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA",
 				OutHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FB",
-				Pool: common.Asset{Ticker:"BNB"},
+				Pool: common.BNBAsset,
 				Event:   []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "2100000000" }, "target_coin": { "denom": "BNB", "amount": "1000000000" }, "trade_slip": "112000000", "price_slip": "115000000", "pool_slip": "222000000", "output_slip": "333000000", "fee": "3300000000" }`),
 			},
 			{
