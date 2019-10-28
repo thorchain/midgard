@@ -55,6 +55,11 @@ func initLog(level string, pretty bool) zerolog.Logger {
 	if pretty {
 		out = zerolog.ConsoleWriter{Out: os.Stdout}
 	}
+
+	if level == "debug" {
+		log.Logger = log.With().Caller().Logger()
+	}
+
 	zerolog.SetGlobalLevel(l)
 	return log.Output(out).With().Str("service", "chain-service").Logger()
 }
