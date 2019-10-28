@@ -8,14 +8,13 @@ import (
 	"sync"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/cenkalti/backoff"
-
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	client "github.com/influxdata/influxdb1-client"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
 	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
@@ -44,29 +43,23 @@ type StatechainAPI struct {
 }
 
 type Pool struct {
-	BalanceRune  sdk.Uint          `json:"balance_rune"`  // how many RUNE in the pool
-	BalanceToken sdk.Uint          `json:"balance_token"` // how many token in the pool
-	Ticker       common.Ticker     `json:"symbol"`        // what's the token's ticker
-	PoolUnits    sdk.Uint          `json:"pool_units"`    // total units of the pool
-	PoolAddress  common.BnbAddress `json:"pool_address"`  // bnb liquidity pool address
+	BalanceRune  sdk.Uint `json:"balance_rune"`  // how many RUNE in the pool
+	BalanceToken sdk.Uint `json:"balance_token"` // how many token in the pool
+	// Ticker       common.Ticker     `json:"symbol"`        // what's the token's ticker
+	Asset       common.Asset      `json:"asset"`
+	PoolUnits   sdk.Uint          `json:"pool_units"`   // total units of the pool
+	PoolAddress common.BnbAddress `json:"pool_address"` // bnb liquidity pool address
 	// Status              PoolStatus        `json:"status"`                 // status //TODO Cant find this used anywhere?
 	ExpiryInBlockHeight int `json:"expiry_in_block_height,string"` // means the pool address will be changed after these amount of blocks
 }
 
 type Event struct {
-	ID      common.Amount `json:"id"`
-	Type    string        `json:"type"`
-	InHash  common.TxID   `json:"in_hash"`
-	OutHash common.TxID   `json:"out_hash"`
-	// Should we have timestamps and addresses if they are available via the
-	// binance API?
-	// InStamp    time.Time         `json:"in_timestamp"`
-	// OutStamp   time.Time         `json:"out_timestamp"`
-	// InAddress  common.Address `json:"in_address"`
-	// OutAddress common.Address `json:"out_address"`
-	Pool  common.Ticker   `json:"pool"`
-	Event json.RawMessage `json:"event"`
-	// Status EventStatus     `json:"status"`
+	ID      common.Amount   `json:"id"`
+	Type    string          `json:"type"`
+	InHash  common.TxID     `json:"in_hash"`
+	OutHash common.TxID     `json:"out_hash"`
+	Pool    common.Asset    `json:"pool"`
+	Event   json.RawMessage `json:"event"`
 }
 
 type EventSwap struct {
@@ -81,13 +74,13 @@ type EventSwap struct {
 
 type EventStake struct {
 	RuneAmount  sdk.Uint `json:"rune_amount"`
-	TokenAmount sdk.Uint `json:"token_amount"`
+	AssetAmount sdk.Uint `json:"asset_amount"`
 	StakeUnits  sdk.Uint `json:"stake_units"`
 }
 
 type EventUnstake struct {
 	RuneAmount  sdk.Int `json:"rune_amount"`
-	TokenAmount sdk.Int `json:"token_amount"`
+	AssetAmount sdk.Int `json:"asset_amount"`
 	StakeUnits  sdk.Int `json:"stake_units"`
 }
 
@@ -168,6 +161,7 @@ func (sc *StatechainAPI) GetPool(ticker string) (*Pool, error) {
 
 func (sc *StatechainAPI) getEvents(id int64) ([]Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", sc.baseUrl, id)
+	sc.logger.Debug().Msg(uri)
 	resp, err := sc.netClient.Get(uri)
 	if err != nil {
 		return nil, err
@@ -239,7 +233,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				common.UintToFloat64(swap.PoolSlip),
 				common.UintToFloat64(swap.OutputSlip),
 				common.UintToFloat64(swap.Fee),
-				evt.Pool,
+				evt.Pool.Ticker,
 				common.BnbAddress(tx.FromAddress),
 				common.BnbAddress(tx.ToAddress),
 				tx.Timestamp,
@@ -260,14 +254,15 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 			if err != nil {
 				return maxID, pts, errors.Wrap(err, "fail to parse from address")
 			}
+
 			pts = append(pts, influxdb.NewStakeEvent(
 				int64(evt.ID.Float64()),
 				evt.InHash,
 				evt.OutHash,
 				common.UintToFloat64(stake.RuneAmount),
-				common.UintToFloat64(stake.TokenAmount),
+				common.UintToFloat64(stake.AssetAmount),
 				common.UintToFloat64(stake.StakeUnits),
-				evt.Pool,
+				evt.Pool.Ticker,
 				addr,
 				tx.Timestamp,
 			).Point())
@@ -290,9 +285,9 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				evt.InHash,
 				evt.OutHash,
 				float64(unstake.RuneAmount.Int64()),
-				float64(unstake.TokenAmount.Int64()),
+				float64(unstake.AssetAmount.Int64()),
 				float64(unstake.StakeUnits.Int64()),
-				evt.Pool,
+				evt.Pool.Ticker,
 				addr,
 				tx.Timestamp,
 			).Point())
@@ -342,6 +337,9 @@ func (sc *StatechainAPI) scan() {
 		currentPos = maxID + 1
 	}
 	for {
+		sc.logger.Debug().Msg("sleeping statechain scan")
+		// TODO possible use an experiential back off method
+		time.Sleep(time.Second * 2)
 		select {
 		case <-sc.stopchan:
 			return
@@ -364,8 +362,8 @@ func (sc *StatechainAPI) scan() {
 				continue //
 			}
 			currentPos = maxID + 1
-
 		}
+
 	}
 }
 

@@ -55,6 +55,11 @@ func initLog(level string, pretty bool) zerolog.Logger {
 	if pretty {
 		out = zerolog.ConsoleWriter{Out: os.Stdout}
 	}
+
+	if level == "debug" {
+		log.Logger = log.With().Caller().Logger()
+	}
+
 	zerolog.SetGlobalLevel(l)
 	return log.Output(out).With().Str("service", "chain-service").Logger()
 }
@@ -425,7 +430,7 @@ func (s *Server) getTokens(g *gin.Context) {
 	p := make([]string, len(pools))
 
 	for idx, item := range pools {
-		p[idx] = item.Ticker.String()
+		p[idx] = item.Asset.Ticker.String()
 	}
 
 	g.JSON(http.StatusOK, p)
