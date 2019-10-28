@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/99designs/gqlgen v0.10.1
+	github.com/DATA-DOG/godog v0.7.13
 	github.com/binance-chain/go-sdk v1.1.3
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/btcsuite/btcd v0.0.0-20190926002857-ba530c4abb35 // indirect

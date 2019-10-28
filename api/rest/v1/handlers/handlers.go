@@ -90,7 +90,7 @@ func (h *Handlers) GetTokens(ctx echo.Context, params api.GetTokensParams) error
 		p := make([]string, len(pools))
 
 		for idx, item := range pools {
-			p[idx] = item.Ticker.String()
+			p[idx] = item.Asset.Ticker.String()
 		}
 		return ctx.JSON(http.StatusOK, p)
 	}
