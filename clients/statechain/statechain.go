@@ -43,22 +43,23 @@ type StatechainAPI struct {
 }
 
 type Pool struct {
-	BalanceRune  sdk.Uint          `json:"balance_rune"`  // how many RUNE in the pool
-	BalanceToken sdk.Uint          `json:"balance_token"` // how many token in the pool
-	Ticker       common.Ticker     `json:"symbol"`        // what's the token's ticker
-	PoolUnits    sdk.Uint          `json:"pool_units"`    // total units of the pool
-	PoolAddress  common.BnbAddress `json:"pool_address"`  // bnb liquidity pool address
+	BalanceRune  sdk.Uint `json:"balance_rune"`  // how many RUNE in the pool
+	BalanceToken sdk.Uint `json:"balance_token"` // how many token in the pool
+	// Ticker       common.Ticker     `json:"symbol"`        // what's the token's ticker
+	Asset       common.Asset      `json:"asset"`
+	PoolUnits   sdk.Uint          `json:"pool_units"`   // total units of the pool
+	PoolAddress common.BnbAddress `json:"pool_address"` // bnb liquidity pool address
 	// Status              PoolStatus        `json:"status"`                 // status //TODO Cant find this used anywhere?
 	ExpiryInBlockHeight int `json:"expiry_in_block_height,string"` // means the pool address will be changed after these amount of blocks
 }
 
 type Event struct {
-	ID      common.Amount `json:"id"`
-	Type    string        `json:"type"`
-	InHash  common.TxID   `json:"in_hash"`
-	OutHash common.TxID   `json:"out_hash"`
+	ID      common.Amount   `json:"id"`
+	Type    string          `json:"type"`
+	InHash  common.TxID     `json:"in_hash"`
+	OutHash common.TxID     `json:"out_hash"`
 	Pool    common.Asset    `json:"pool"`
-	Event json.RawMessage `json:"event"`
+	Event   json.RawMessage `json:"event"`
 }
 
 type EventSwap struct {
@@ -338,7 +339,7 @@ func (sc *StatechainAPI) scan() {
 	for {
 		sc.logger.Debug().Msg("sleeping statechain scan")
 		// TODO possible use an experiential back off method
-		time.Sleep(time.Second*2)
+		time.Sleep(time.Second * 2)
 		select {
 		case <-sc.stopchan:
 			return

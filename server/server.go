@@ -430,7 +430,7 @@ func (s *Server) getTokens(g *gin.Context) {
 	p := make([]string, len(pools))
 
 	for idx, item := range pools {
-		p[idx] = item.Ticker.String()
+		p[idx] = item.Asset.Ticker.String()
 	}
 
 	g.JSON(http.StatusOK, p)
