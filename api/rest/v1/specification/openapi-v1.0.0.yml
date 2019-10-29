@@ -182,25 +182,28 @@ paths:
       responses:
         "200":
           description: Get Token Data from API
-  "/v1/tokens":
+  "/v1/assets":
     get:
+      description: Returns an array containing all the assets supported.
       parameters:
         - in: query
-          name: token
-          description: Specify token
+          name: asset
+          description: Specify asset
           required: false
           schema:
             type: string
-      operationId: GetTokens
+            example: BNB.TOMOB-1E1 or TOMOB-1E1
+      operationId: GetAssets
       responses:
         "200":
           description: Get Tokens from API
           content:
             application/json:
               schema:
-                oneOf:
-                  - "$ref": "#/components/schemas/TokenList"
-                  - "$ref": "#/components/schemas/TokenData"
+                type: array
+                items:
+                  type: object
+                  "$ref": "#/components/schemas/Asset"
   "/v1/tradeData":
     get:
       parameters:
@@ -222,6 +225,15 @@ paths:
           description: Get User Data from API
 components:
   schemas:
+    Asset:
+      type: object
+      properties:
+        chain:
+          type: string
+        symbol:
+          type: string
+        ticker:
+          type: string
     TokenList:
       type: array
       items:
