@@ -85,13 +85,20 @@ func (h *Handlers) GetAssets(ctx echo.Context, params api.GetAssetsParams) error
 		pools, err := h.stateChainClient.GetPools()
 		if err != nil {
 			h.logger.Error().Err(err).Msg("fail to get pools")
-			return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
+			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{
+				Error: err.Error(),
+			})
 		}
 
-		assets := make([]common.Asset, len(pools))
+		assets := api.AssetsResponse{}
 
-		for i, item := range pools {
-			assets[i] = item.Asset
+		for _, item := range pools {
+			a := api.Asset{
+				Chain:  item.Asset.Chain.StringP(),
+				Symbol: item.Asset.Symbol.StringP(),
+				Ticker: item.Asset.Ticker.StringP(),
+			}
+			assets = append(assets, a)
 		}
 
 		return ctx.JSON(http.StatusOK, assets)
@@ -101,20 +108,25 @@ func (h *Handlers) GetAssets(ctx echo.Context, params api.GetAssetsParams) error
 	asset, err := common.NewAsset(*params.Asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", *params.Asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, Err{"error": "invalid asset or format"})
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
 	}
 
 	pool, err := h.stateChainClient.GetPool(asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("asset", asset.String()).Msg("fail to get pool")
-		return echo.NewHTTPError(http.StatusBadRequest, Err{"error": "asset doesn't exist in pool"})
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
 	}
 
 	// This is used to return the results in an array format to keep consistent with the openapi specification
-	result := make([]common.Asset, 1)
-	result[0] = pool.Asset
+	res := api.AssetsResponse{}
+	a := api.Asset{
+		Chain:  pool.Asset.Chain.StringP(),
+		Symbol: pool.Asset.Symbol.StringP(),
+		Ticker: pool.Asset.Ticker.StringP(),
+	}
+	res = append(res, a)
 
-	return ctx.JSON(http.StatusOK, result)
+	return ctx.JSON(http.StatusOK, res)
 }
 
 func (h *Handlers) GetUserData(ctx echo.Context) error {
