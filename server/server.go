@@ -202,7 +202,6 @@ func (s *Server) registerEchoWithLogger() {
 func (s *Server) registerEndpoints() {
 	s.ginEngine.GET("/health", s.healthCheck)
 	s.ginEngine.GET("/poolData", s.getPool)
-	s.ginEngine.GET("/tokens", s.getTokens)
 	s.ginEngine.GET("/userData",
 		cache.CachePage(s.cacheStore, 10*time.Minute, s.getUserData),
 	)
@@ -254,28 +253,6 @@ func (s *Server) getTokenData(g *gin.Context) {
 		return
 	}
 	g.JSON(http.StatusOK, *td)
-}
-
-func (s *Server) getAToken(g *gin.Context, token string) {
-	if len(token) == 0 {
-		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
-		return
-	}
-	pool, err := s.stateChainClient.GetPool(token)
-	if nil != err {
-		s.logger.Error().Err(err).Str("symbol", token).Msg("fail to get pool")
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if nil == pool {
-		g.JSON(http.StatusBadRequest, gin.H{"error": "pool doesn't exist"})
-	}
-	tokenData, err := s.tokenService.GetToken(token, *pool)
-	if nil != err {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	g.JSON(http.StatusOK, tokenData)
-
 }
 
 func (s *Server) getUserData(g *gin.Context) {
@@ -410,30 +387,6 @@ func (s *Server) getStakerInfo(g *gin.Context) {
 
 	g.JSON(http.StatusOK, data)
 
-}
-
-func (s *Server) getTokens(g *gin.Context) {
-	token, ok := g.GetQuery("token")
-	if ok {
-		s.getAToken(g, token) // Get details for just one token
-		return
-	}
-
-	// Get details of all tokens in the pools.
-	pools, err := s.stateChainClient.GetPools()
-	if err != nil {
-		s.logger.Error().Err(err).Msg("fail to get pools")
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	p := make([]string, len(pools))
-
-	for idx, item := range pools {
-		p[idx] = item.Asset.Ticker.String()
-	}
-
-	g.JSON(http.StatusOK, p)
 }
 
 func (s *Server) getPool(g *gin.Context) {
