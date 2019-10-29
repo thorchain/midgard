@@ -3,6 +3,17 @@ Feature: get tokens
   As an API user
   I need to be able to request the tokens endpoint
 
+  Scenario: does not allow POST method requests
+    When I send "POST" request to "/v1/tokens"
+    Then the response code should be 405
+    And the response should match json:
+      """
+      {
+        "error:" "Method not allowed"
+      }
+      """
+
+
   Scenario: should get tokens array
     When I send "GET" request to "/v1/tokens"
     Then the response code should be 200
