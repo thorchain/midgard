@@ -15,6 +15,18 @@ import (
 	"strings"
 )
 
+// Asset defines model for Asset.
+type Asset struct {
+	Chain  *string `json:"chain,omitempty"`
+	Symbol *string `json:"symbol,omitempty"`
+	Ticker *string `json:"ticker,omitempty"`
+}
+
+// Error defines model for Error.
+type Error struct {
+	Error string `json:"error"`
+}
+
 // PoolData defines model for PoolData.
 type PoolData struct {
 	Asset         string  `json:"asset"`
@@ -60,15 +72,16 @@ type SwapData struct {
 	NumTxTkn    float32 `json:"numTxTkn"`
 }
 
-// TokenData defines model for TokenData.
-type TokenData struct {
-	Price  float32 `json:"price"`
-	Symbol string  `json:"symbol"`
-	Ticker string  `json:"ticker"`
-}
+// AssetsResponse defines model for AssetsResponse.
+type AssetsResponse []Asset
 
-// TokenList defines model for TokenList.
-type TokenList []string
+// GeneralErrorResponse defines model for GeneralErrorResponse.
+type GeneralErrorResponse Error
+
+// GetAssetsParams defines parameters for GetAssets.
+type GetAssetsParams struct {
+	Asset *string `json:"asset,omitempty"`
+}
 
 // GetPoolDataParams defines parameters for GetPoolData.
 type GetPoolDataParams struct {
@@ -108,11 +121,6 @@ type GetTokenDataParams struct {
 	Symbol string `json:"symbol"`
 }
 
-// GetTokensParams defines parameters for GetTokens.
-type GetTokensParams struct {
-	Token *string `json:"token,omitempty"`
-}
-
 // GetTradeDataParams defines parameters for GetTradeData.
 type GetTradeDataParams struct {
 	Symbol string `json:"symbol"`
@@ -120,6 +128,8 @@ type GetTradeDataParams struct {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// (GET /v1/assets)
+	GetAssets(ctx echo.Context, params GetAssetsParams) error
 	// This swagger/openapi 3.0 generated documentation// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
 	// (GET /v1/graphql)
@@ -142,8 +152,6 @@ type ServerInterface interface {
 	GetSwapTx(ctx echo.Context, params GetSwapTxParams) error
 	// (GET /v1/tokenData)
 	GetTokenData(ctx echo.Context, params GetTokenDataParams) error
-	// (GET /v1/tokens)
-	GetTokens(ctx echo.Context, params GetTokensParams) error
 	// (GET /v1/tradeData)
 	GetTradeData(ctx echo.Context, params GetTradeDataParams) error
 	// (GET /v1/userData)
@@ -153,6 +161,27 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// GetAssets converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAssets(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAssetsParams
+	// ------------- Optional query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetAssets(ctx, params)
+	return err
 }
 
 // GetDocs converts echo context to params.
@@ -422,27 +451,6 @@ func (w *ServerInterfaceWrapper) GetTokenData(ctx echo.Context) error {
 	return err
 }
 
-// GetTokens converts echo context to params.
-func (w *ServerInterfaceWrapper) GetTokens(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetTokensParams
-	// ------------- Optional query parameter "token" -------------
-	if paramValue := ctx.QueryParam("token"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "token", ctx.QueryParams(), &params.Token)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter token: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetTokens(ctx, params)
-	return err
-}
-
 // GetTradeData converts echo context to params.
 func (w *ServerInterfaceWrapper) GetTradeData(ctx echo.Context) error {
 	var err error
@@ -482,6 +490,7 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 		Handler: si,
 	}
 
+	router.GET("/v1/assets", wrapper.GetAssets)
 	router.GET("/v1/doc", wrapper.GetDocs)
 	router.GET("/v1/graphql", wrapper.GetGraphqlPlayground)
 	router.POST("/v1/graphql/query", wrapper.PostGraphqlQuery)
@@ -493,7 +502,6 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	router.GET("/v1/swapData", wrapper.GetSwapData)
 	router.GET("/v1/swapTx", wrapper.GetSwapTx)
 	router.GET("/v1/tokenData", wrapper.GetTokenData)
-	router.GET("/v1/tokens", wrapper.GetTokens)
 	router.GET("/v1/tradeData", wrapper.GetTradeData)
 	router.GET("/v1/userData", wrapper.GetUserData)
 
@@ -502,28 +510,31 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8xYX3PbNgz/Kjxtd3txZSfZbj0/rVvarluvTWv39tDzAyPBFhuJZEjKiS/n774DKVl/",
-	"QsrK0qZ70xkAfwB+IAD6LkpEIQUHbnQ0v4t0kkFB7eeFEPk5NRS/pRISlGFgJVRrMPhhdhKieaSNYnwT",
-	"7SdRCtJkLQkvi0tQKOFlsTD0Cpa3g2Klg+IbKv1CKUT+iTPjlyrBTk5DkrNZSPJi6ZUYYWj+CkB/LDkM",
-	"ayz/fudV2Ir89OdMhWReYPQJrkumII3mnysCelh95xqk+tyan3bK6mDrdNQJ61DSoa/FxmpSOyouv0Bi",
-	"MARn84avhadw0lSB1t7SGSgqauAVU9rYo1Ovjio5vKSKd8QtQksO96zbnF0B1wP2TmHghDJQf33iqgRM",
-	"DhT2g+uE0nG852bPqdqFYUr+YSZ7USeaGSj8XFQ/UKXozh5wQ+VDWwHdwiuA4DVx4uUVD0kXOZND1igf",
-	"MF/eDhkvb0OmvCwGTK3Ubxq4ogewtledALrRtjDazrQT1smtj+8lFoafL6lY4g9N74pLkfvLgSVXoDyi",
-	"XszVEQeDSQUX9PEt0w+qRARkVWdJBDc0seZQUJZH8yiFrf7NZEIlGWU8FqqaSTpRTBomeDSP/kDRswWo",
-	"LUuAXJSXOUvIi4s31muTw7DKFpR255zEs3j2TFB9hhhCAqeSRfPoDH/HyKnJbEjT7ck0FQl+btxVQT4o",
-	"uvMmjebRazDnIrGNGLQUXDuiTmd2NHWd1zd0swE1reDIWTwjWkJCNsDxTEhJimdhnnRZFFTtonm0zJgm",
-	"PtOOVVkAN9YtTAXdaGT0vPP7Cs/FeDaKyuw6H4rptVO5yOluo0TJ01EBWqsPb4lszPb7Hur0ugSM6y6S",
-	"QnvAL4Su0T9YzUcDZ0Bzt9aEov3TaYxCAkOcOnHKCRCxtvXVIMrW7hXCPOxnWGyKFmDs9vTZB7iQkLD1",
-	"jtiuRNCSVKYMVa6rPHFa2NtW9a7mbhtVwqRaDn19YOWPHO8ocOs+lTJniQ1g+kUL3iyb+PWjgnU0j36Y",
-	"NtvotFpFp4c4bXa6sdlZRjBbBPuCKlyhNonUdvQdS+Wi0TqSTHceaea4L39O6UEJnPSBOoyN5mlNc/1N",
-	"iRIc3q9tXoYoa+2AGNk41WY32a88VNsydtlHqm39krUSRe/quOS7Z8Yw33aXHWR78VRs56xgBvtBmRtN",
-	"FJgSdzySwpqWuSGnvwSwrd2oCmDcwMbtKX1wsV7jLYrj+ABoBJkFIJ32YzGftryDlWQU5ZomKAgXlJuc",
-	"cX0ZgkXl9EYNgawsKCeUp6SgScY4EAU0pZc53BvU2maqupEEeCoF46Y34v9avH9HQtuBx7qZ8Iu2QjPh",
-	"dWvjHwhYjumZ/43r7zlyDpF5+hDKSIq1Epg4N1Qe6T5O40jWvm627l1ADTw93tqs0uOAUtDmCAyqfIv+",
-	"GZPzJ2mg721LbNC+dvcc39WwNsf0NNN+IYbqtHlGjrzgh/eft5Zq4aOv+P24rafDweqjkeqxYdrzAlHW",
-	"sv/dSta8t49tZA3twT3M5cuba0VTOFpYB6Vj2/Z3Kyj0MFhQpT7+pPikDw+KcZBo4EHEMQ9qW+enVDmu",
-	"D8bI+XR6cvprPItn8cn8+ez5zBLbyLVHYXWY+30Pqn85fgeJ84t0/gL5SZOPLxfL6i+QKvvBP0n2q/2/",
-	"AQAA//+iwmajVRgAAA==",
+	"H4sIAAAAAAAC/8RYW2/bNhT+KwQ3YBvgynbSYYWflixp112SNHaxhyIPtHRssZFIlqScGIX/+0BSd4uS",
+	"2vTyZutcvnM/R/qIQ54KzoBphRcfsQQlOFNg/5wpBVrd5o/Mk5AzDUybn0SIhIZEU86m7xVn5pkKY0iJ",
+	"+UU1pFbHjxI2eIF/mFY4U8emplY/Pkyw3gvAC0ykJHt8OBwmOAIVSiqMdrxwhqAzR57gV8BAkuRSSi4/",
+	"y7o+o6zWLiMsAaWgFNkCNvRcpAyV+SEkFyA1dREMY0Itdu6h0pKyrfFB7dM1TzpJmob3IDtIVaT4+j2E",
+	"NnTO3CNgKB4fq5DwIaMSIrx4l7Pddei94Ty5IJocqyaFq0eGRyB0XKOwLF2DNBSWpUtN7mH12EuWykt+",
+	"IKKbKDhP3jKqu6mS0/mJj3I681HOVp0UzTVJXgKo24xBP8fq76tOhh1PTp7H0kfrBG4lzSWghdU2rkIq",
+	"9Bb5qYescLYIRxGwRkoa6atlo6tsnMxrtuEdhRNFEpTqLJ2eoiIaXlKptFUddfLIjMElkaxBriU0Y3Ak",
+	"Xc/ZPTDVI+8YejRknvprJy4PwKRMYdu5hisNw1tmtowqTOhPyX9Ux+WgKif08fxpTOMJNtn+1FFAdvAS",
+	"wNsmjry6Zz7qMqGiT9rQe8RXj33Cq0efKMvSHlFL7Rb1tGgJVreq4UDT2xpG3Zh6wBqxPc63sYTm7Wf2",
+	"IQltgiAlNMELHMFO/a5jLu1mCrjMB3d90f1hSM+WIHc0BHSTrRMaorOb16boqE6gn2UHUjk982AWzJ5x",
+	"ok4NBhfAiKB4gU/NczOGiI5tGU1386mNmP23dSXVtOkWdCaZQoQhW5fI+kYZZVtEkgTpGJBTgVQmBJca",
+	"ogBbVGmvgNcRXuBXoN1NY9ElSUHbnfOuDbcUENLNHhV5hEeSiqRV9CpLUyL3eIFXBTracJkSjR6ojq1N",
+	"Nszo5/Or818KmuZoDVvKLJMJGEkyE9Pzq/Ngdf3v9fmz+eW8eSI0kdzzOhTPdA3NEWqaa1ptdeAF/pCB",
+	"3JsaI6nt9dzPqoY3JFEwqd1M7UPibtI8Fk9mM99pVfJNWxflYYKfjxHrPPgOttZN7UQ8rBXOUcoveGg3",
+	"XYe1zayrB7LdgpzmpYpOgxlSAkK0tfgaIhQZXfb2q6WEKtQl2pDKUmDammXaiGxN1eGLxvO7wp+tJCL+",
+	"kPT59Mqx3CRkv5U8Y9EoB63Um3+QqMSqKOaoU1caZtZz1QF+w1WB/iYvoicCx0ASdzf6vP3TcYxCAo0c",
+	"O3LMISC+sbOpQhS149aHWR7AA6PCADbGBTKSKBcd12xaZp/Ta1/kfaf00/veZaKFzE4xY8UQqkAqe1sM",
+	"hXJZcQ0E0+lD1aHUFT/H9EkBnAwN+K87FEcnijO43ti49KWsdmQbz8axVsff4a4j1baMXfRNqm39oo3k",
+	"aat1XPDde1x/vu3LQv+W/VbZTmhKtZkHWaIVkvaWMGMZNiRLNDr51YNt5UZVAGUatu4QbIPzzcZ0URAE",
+	"JaDmaOaBdNxPxfy25e2tJC0JUyQ0BH9Buc0ZFM3gLSrHN2oJxFlqDkUWoZSEMWWAJJCIrBM4WtTKRirv",
+	"SAQsEpwy3Vrxfy2vr5DvOuiQrjb8ss5QbXhVe6XqcViMmZmfl+vvuXJKzzrmkKGhyNSKZ+M8EDEwfRzH",
+	"QNS+bLSOGlABi4ZHm2V6GlAESg/AGJavMT8DdPFNBui1HYkV2peenuOnmqnNMTPNfpsZ6u9VyTSywfP3",
+	"QU8tFcQnt/ix39ZSv7OSRDDobMk0dAF+NyeNhV4nMzV85r5V5ZE7DtIIdCCa1QNyV8Qnk4lZaVqLxXQ6",
+	"P/ktmAWzYL54MXsxs+dfRVcdDHflLmpbkH+1OQdhZipqfNL5SaHby+Uq/6STR9/70edwd/g/AAD//wbw",
+	"2lFIGgAA",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

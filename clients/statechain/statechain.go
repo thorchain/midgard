@@ -112,6 +112,7 @@ func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance,
 // GetPools from statechain
 func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", sc.baseUrl)
+	log.Debug().Str("poolUrl", poolUrl).Msg("url")
 
 	resp, err := sc.netClient.Get(poolUrl)
 	if nil != err {
@@ -133,12 +134,10 @@ func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 	return pools, nil
 }
 
-// GetPool with the given ticker
-func (sc *StatechainAPI) GetPool(ticker string) (*Pool, error) {
-	if len(ticker) == 0 {
-		return nil, errors.New("ticker is empty")
-	}
-	poolUrl := fmt.Sprintf("%s/pool/%s", sc.baseUrl, ticker)
+// GetPool with the given asset
+func (sc *StatechainAPI) GetPool(asset common.Asset) (*Pool, error) {
+	poolUrl := fmt.Sprintf("%s/pool/%s", sc.baseUrl, asset.String())
+	log.Debug().Str("poolUrl", poolUrl).Msg("poolUrl")
 	resp, err := sc.netClient.Get(poolUrl)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")

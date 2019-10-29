@@ -3,6 +3,8 @@ package common
 import (
 	"fmt"
 	"strings"
+
+	"github.com/openlyinc/pointy"
 )
 
 const (
@@ -36,6 +38,11 @@ func (c Chain) IsEmpty() bool {
 func (c Chain) String() string {
 	// uppercasing again just incase someon created a ticker via Chain("rune")
 	return strings.ToUpper(string(c))
+}
+
+// StringP returns a string pointer
+func (c Chain) StringP() *string {
+	return pointy.String(strings.ToUpper(string(c)))
 }
 
 func IsBNBChain(c Chain) bool {

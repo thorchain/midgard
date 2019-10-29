@@ -182,25 +182,29 @@ paths:
       responses:
         "200":
           description: Get Token Data from API
-  "/v1/tokens":
+  "/v1/assets":
     get:
+      description: Returns an array containing all the assets supported.
       parameters:
         - in: query
-          name: token
-          description: Specify token
+          name: asset
+          description: Specify asset
           required: false
           schema:
             type: string
-      operationId: GetTokens
+          examples:
+            asset:
+              value: BNB.TOMOB-1E1
+              summary: The asset format with the chain (BNB) format to begin with
+            symbol:
+              value: TOMOB-1E1
+              summary: The symbol format without the chain format
+      operationId: GetAssets
       responses:
+        "400":
+          $ref: '#/components/responses/GeneralErrorResponse'
         "200":
-          description: Get Tokens from API
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - "$ref": "#/components/schemas/TokenList"
-                  - "$ref": "#/components/schemas/TokenData"
+          $ref: '#/components/responses/AssetsResponse'
   "/v1/tradeData":
     get:
       parameters:
@@ -221,24 +225,38 @@ paths:
         "200":
           description: Get User Data from API
 components:
+  responses:
+    AssetsResponse:
+      description: Asset Array
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Asset'
+    GeneralErrorResponse:
+      description: Error message
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
-    TokenList:
-      type: array
-      items:
-        type: string
-    TokenData:
+    Error:
+      required:
+        - "error"
       type: object
       properties:
+        error:
+          type: string
+    Asset:
+      type: object
+      properties:
+        chain:
+          type: string
         symbol:
           type: string
         ticker:
           type: string
-        price:
-          type: number
-      required:
-        - symbol
-        - ticker
-        - price
     SwapData:
       type: object
       properties:

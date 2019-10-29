@@ -79,38 +79,54 @@ func (h *Handlers) GetPoolData(ctx echo.Context, params api.GetPoolDataParams) e
 	return ctx.JSON(http.StatusOK, pool)
 }
 
-func (h *Handlers) GetTokens(ctx echo.Context, params api.GetTokensParams) error {
-	if params.Token == nil {
+func (h *Handlers) GetAssets(ctx echo.Context, params api.GetAssetsParams) error {
+	// No asset passed in
+	if params.Asset == nil {
 		pools, err := h.stateChainClient.GetPools()
 		if err != nil {
 			h.logger.Error().Err(err).Msg("fail to get pools")
-			return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
+			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{
+				Error: err.Error(),
+			})
 		}
 
-		p := make([]string, len(pools))
+		assets := api.AssetsResponse{}
 
-		for idx, item := range pools {
-			p[idx] = item.Asset.Ticker.String()
+		for _, item := range pools {
+			a := api.Asset{
+				Chain:  item.Asset.Chain.StringP(),
+				Symbol: item.Asset.Symbol.StringP(),
+				Ticker: item.Asset.Ticker.StringP(),
+			}
+			assets = append(assets, a)
 		}
-		return ctx.JSON(http.StatusOK, p)
+
+		return ctx.JSON(http.StatusOK, assets)
 	}
 
-	pool, err := h.stateChainClient.GetPool(*params.Token)
+	// asset passed in
+	asset, err := common.NewAsset(*params.Asset)
 	if err != nil {
-		h.logger.Error().Err(err).Str("symbol", *params.Token).Msg("fail to get pool")
-		return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
+		h.logger.Error().Err(err).Str("params.Asset", *params.Asset).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
 	}
 
-	if pool == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, Err{"error": "pool doesn't exist"})
-	}
-
-	tokenData, err := h.tokenService.GetToken(*params.Token, *pool)
+	pool, err := h.stateChainClient.GetPool(asset)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
+		h.logger.Error().Err(err).Str("asset", asset.String()).Msg("fail to get pool")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
 	}
 
-	return ctx.JSON(http.StatusOK, tokenData)
+	// This is used to return the results in an array format to keep consistent with the openapi specification
+	res := api.AssetsResponse{}
+	a := api.Asset{
+		Chain:  pool.Asset.Chain.StringP(),
+		Symbol: pool.Asset.Symbol.StringP(),
+		Ticker: pool.Asset.Ticker.StringP(),
+	}
+	res = append(res, a)
+
+	return ctx.JSON(http.StatusOK, res)
 }
 
 func (h *Handlers) GetUserData(ctx echo.Context) error {
