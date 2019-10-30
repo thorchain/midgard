@@ -246,9 +246,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            items:
-              $ref: '#/components/schemas/AssetDetail'
+            $ref: '#/components/schemas/AssetDetail'
     AssetsResponse:
       description: Asset Array
       content:
@@ -276,6 +274,14 @@ components:
         DateCreated:
           type: string
           format: date
+        Logo:
+          type: string
+        priceRune:
+          type: number
+          format: double
+        priceUSD:
+          type: number
+          format: double
     Error:
       required:
         - "error"
