@@ -86,7 +86,7 @@ func (h *Handlers) GetAssets(ctx echo.Context, params api.GetAssetsParams) error
 		pools, err := h.stateChainClient.GetPools()
 		if err != nil {
 			h.logger.Error().Err(err).Msg("fail to get pools")
-			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{
+			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 				Error: err.Error(),
 			})
 		}
@@ -131,11 +131,21 @@ func (h *Handlers) GetAssets(ctx echo.Context, params api.GetAssetsParams) error
 }
 
 func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
-	h.tokenService.GetToken()
+	// h.tokenService.GetToken()
+	//
+	// h.tokenService.GetTokenDetail()
 
-	h.tokenService.GetTokenDetail()
+	res := api.AssetsDetailedResponse{
+		Asset:       nil,
+		DateCreated: nil,
+		Logo:        nil,
+		Name:        nil,
+		Ticker:      nil,
+		PriceRune:   nil,
+		PriceUSD:    nil,
+	}
 	spew.Dump(asset)
-	return nil
+	return ctx.JSON(http.StatusOK, res)
 }
 
 func (h *Handlers) GetUserData(ctx echo.Context) error {
