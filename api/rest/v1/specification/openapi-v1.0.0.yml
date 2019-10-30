@@ -33,6 +33,44 @@ paths:
       responses:
         "200":
           description: Get Health responce of API
+  "/v1/assets/{asset}":
+    get:
+      description: Detail information about a Specify asset
+      operationId: GetAssetInfo
+      parameters:
+        - in: path
+          name: asset
+          required: true
+          schema:
+            type: string
+      responses:
+        "400":
+          $ref: '#/components/responses/GeneralErrorResponse'
+        "200":
+          $ref: '#/components/responses/AssetsDetailedResponse'
+  "/v1/assets":
+    get:
+      description: Returns an array containing all the assets supported.
+      parameters:
+        - in: query
+          name: asset
+          description: Specify asset
+          required: false
+          schema:
+            type: string
+          examples:
+            asset:
+              value: BNB.TOMOB-1E1
+              summary: The asset format with the chain (BNB) format to begin with
+            symbol:
+              value: TOMOB-1E1
+              summary: The symbol format without the chain format
+      operationId: GetAssets
+      responses:
+        "400":
+          $ref: '#/components/responses/GeneralErrorResponse'
+        "200":
+          $ref: '#/components/responses/AssetsResponse'
   "/v1/poolData":
     get:
       operationId: GetPoolData
@@ -182,29 +220,6 @@ paths:
       responses:
         "200":
           description: Get Token Data from API
-  "/v1/assets":
-    get:
-      description: Returns an array containing all the assets supported.
-      parameters:
-        - in: query
-          name: asset
-          description: Specify asset
-          required: false
-          schema:
-            type: string
-          examples:
-            asset:
-              value: BNB.TOMOB-1E1
-              summary: The asset format with the chain (BNB) format to begin with
-            symbol:
-              value: TOMOB-1E1
-              summary: The symbol format without the chain format
-      operationId: GetAssets
-      responses:
-        "400":
-          $ref: '#/components/responses/GeneralErrorResponse'
-        "200":
-          $ref: '#/components/responses/AssetsResponse'
   "/v1/tradeData":
     get:
       parameters:
@@ -226,6 +241,14 @@ paths:
           description: Get User Data from API
 components:
   responses:
+    AssetsDetailedResponse:
+      description: Detailed Asset information
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/AssetDetail'
     AssetsResponse:
       description: Asset Array
       content:
@@ -241,6 +264,18 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   schemas:
+    AssetDetail:
+      type: object
+      properties:
+        Asset:
+          type: string
+        Ticker:
+          type: string
+        Name:
+          type: string
+        DateCreated:
+          type: string
+          format: date
     Error:
       required:
         - "error"

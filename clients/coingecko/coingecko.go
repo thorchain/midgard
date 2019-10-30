@@ -59,9 +59,9 @@ const limitCoins = 5000
 // We could write a tool to pull these data from the source , and then save it to our
 // database , to ensure we have high availability
 func (ts *TokenService) ensureCoinsListExist() error {
-	if nil == ts.cachedCGCoins {
+	if ts.cachedCGCoins == nil {
 		coinList, err := ts.cgClient.CoinsList()
-		if nil != err {
+		if err != nil {
 			return errors.Wrap(err, "fail to get coin list")
 		}
 		ts.coinLock.Lock()
