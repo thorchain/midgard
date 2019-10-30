@@ -43,6 +43,13 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            asset:
+              value: BNB.TOMOB-1E1
+              summary: The asset format with the chain (BNB) format to begin with
+            symbol:
+              value: TOMOB-1E1
+              summary: The symbol format without the chain format
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
