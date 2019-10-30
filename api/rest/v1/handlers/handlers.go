@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/handler"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -127,6 +128,14 @@ func (h *Handlers) GetAssets(ctx echo.Context, params api.GetAssetsParams) error
 	res = append(res, a)
 
 	return ctx.JSON(http.StatusOK, res)
+}
+
+func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
+	h.tokenService.GetToken()
+
+	h.tokenService.GetTokenDetail()
+	spew.Dump(asset)
+	return nil
 }
 
 func (h *Handlers) GetUserData(ctx echo.Context) error {
