@@ -272,51 +272,67 @@ components:
       properties:
         DAU:
           type: integer
+          format: int64
           description: Daily Active Users (unique bnb addresses interacting)
         MAU:
           type: integer
+          format: int64
           description: Monthly Active Users
         TotalUsers:
           type: integer
+          format: int64
           description: Total Unique Swappers & Stakers
         DailyTx:
           type: integer
+          format: int64
           description: Daily transactions (bnb tx)
         MonthlyTx:
           type: integer
+          format: int64
           description: Monthly transactions (bnb tx)
         TotalTx:
           type: integer
+          format: int64
           description: Total transactions (bnb tx)
         TotalVolume24hr:
           type: integer
+          format: int64
           description: Total (in RUNE Value) of all assets swapped in 24hrs
         TotalVolume:
           type: integer
+          format: int64
           description: Total (in RUNE Value) of all assets swapped since start.
         TotalStaked:
           type: integer
+          format: int64
           description: Total staked (in RUNE Value).
         TotalDepth:
           type: integer
+          format: int64
           description: Total Rune Balances
         TotalEarned:
           type: integer
+          format: int64
           description: Total earned (in RUNE Value).
         PoolCount:
           type: integer
+          format: int64
           description: Number of active pools
         TotalAssetBuys:
           type: integer
+          format: int64
           description: Total buying transactions (bnb tx)
         TotalAssetSells:
           type: integer
+          format: int64
           description: Total selling transactions (bnb tx)
         totalStakeTx:
           type: integer
+          format: int64
           description: Total staking transactions (bnb tx)
         totalWithdrawTx:
           type: integer
+          format: int64
           description: Total withdrawing transactions (bnb tx)
 
     StakersAddressData:
@@ -404,96 +420,127 @@ components:
           description: Price of Asset (in Rune).
         AssetStakedTotal:
           type: integer
+          format: int64
           description: Total Asset Staked
         RuneStakedTotal:
           type: integer
+          format: int64
           description: Total Rune Staked
         PoolStakedTotal:
           type: integer
+          format: int64
           description: Rune Value staked Total
         AssetDepth:
           type: integer
+          format: int64
           description: Total Current Asset Balance
         RuneDepth:
           type: integer
+          format: int64
           description: Total Current Rune Balance
         PoolDepth:
           type: integer
+          format: int64
           description: RuneDepth * 2
         PoolUnits:
           type: integer
+          format: int64
           description: Total poolUnits outstanding.
         SellVolume:
           type: integer
+          format: int64
           description: Total volume for ASSET>RUNE (in RUNE).
         BuyVolume:
           type: integer
+          format: int64
           description: Total volume for RUNE->ASSET (in ASSET)
         PoolVolume:
           type: integer
+          format: int64
           description: Two-way volume in all-time, in Rune
         PoolVolume24hr:
           type: integer
+          format: int64
           description: Two-way volume in 24hrs, in Rune
         SellTxAverage:
           type: integer
+          format: int64
           description: Average transaction size for ASSET>RUNE (in RUNE)
         BuyTxAverage:
           type: integer
+          format: int64
           description: Average transaction size for RUNE->ASSET (in ASSET)
         PoolTxAverage:
           type: integer
+          format: int64
           description: Average Pool transaction
         SellSlipAverage:
           type: integer
+          format: int64
           description: Average tradeSlip for ASSET->RUNE in %
         BuySlipAverage:
           type: integer
+          format: int64
           description: Average tradeSlip for RUNE->ASSET in %
         PoolSlipAverage:
           type: integer
+          format: int64
           description: Average Pool Slip
         SellFeeAverage:
           type: integer
+          format: int64
           description: Average fee size for ASSET->RUNE. (in RUNE).
         BuyFeeAverage:
           type: integer
+          format: int64
           description: Average fee size for RUNE->ASSET. (in ASSET)
         PoolFeeAverage:
           type: integer
+          format: int64
           description: Avergage Pool fee
         SellFeesTotal:
           type: integer
+          format: int64
           description: Total Fees (in Rune).
         BuyFeesTotal:
           type: integer
+          format: int64
           description: Total Fees (in Asset).
         PoolFeesTotal:
           type: integer
+          format: int64
           description: Total Fees
         SellAssetCount:
           type: integer
+          format: int64
           description: Number of ASSET->RUNE
         BuyAssetCount:
           type: integer
+          format: int64
           description: Number of  RUNE->ASSET.
         SwappingTxCount:
           type: integer
+          format: int64
           description: Number of swapping transactions in the pool. (buys + sells)
         SwappersCount:
           type: integer
+          format: int64
           description: Number of unique swappers interacting with pool
         StakeTxCount:
           type: integer
+          format: int64
           description: Number of staking transactions.
         WithdrawTxCount:
           type: integer
+          format: int64
           description: Number of Withdraw tx
         StakingTxCount:
           type: integer
+          format: int64
           description: Number of stakes + withdraw tx
         StakersCount:
           type: integer
+          format: int64
           description: Number of unique Stakers.
         AssetROI:
           type: number
