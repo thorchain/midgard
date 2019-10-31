@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -108,8 +109,8 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	res := api.AssetsDetailedResponse{
 		Asset:       helpers.ConvertAssetForAPI(pool.Asset),
 		DateCreated: &t,
-		Logo:        pointy.String("url location of logo"),
-		Name:        pointy.String("Asset Name"),
+		Logo:        pointy.String(fmt.Sprintf("%s://%s/blockchains/binance/assets/bnb/logo.png", ctx.Scheme(), ctx.Request().Host)),
+		Name:        pointy.String("COIN_NAME"),
 		PriceRune:   pointy.Float64(1.0),
 		PriceUSD:    pointy.Float64(2.0),
 	}
@@ -256,14 +257,34 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, asset string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	response := api.StakersResponse{}
-
+	response := api.StakersResponse{
+		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
+		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
+		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
+	}
 	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	response := api.StakersAddressDataResponse{}
+	ass0, _ := common.NewAsset("BNB")
+	ass1, _ := common.NewAsset("FSN-F1B")
+	ass2, _ := common.NewAsset("FTM-585")
+	ass3, _ := common.NewAsset("LOK-3C0")
+
+	response := api.StakersAddressDataResponse{
+		api.StakersAddressData{
+			StakeArray: &[]api.Asset{
+				*helpers.ConvertAssetForAPI(ass0),
+				*helpers.ConvertAssetForAPI(ass1),
+				*helpers.ConvertAssetForAPI(ass2),
+				*helpers.ConvertAssetForAPI(ass3),
+			},
+			TotalEarned: pointy.Int64(333),
+			TotalROI:    pointy.Int64(444),
+			TotalStaked: pointy.Int64(555),
+		},
+	}
 
 	return ctx.JSON(http.StatusOK, response)
 }

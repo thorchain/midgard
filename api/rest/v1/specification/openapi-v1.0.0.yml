@@ -389,10 +389,8 @@ components:
           format: 'date-time'
 
     Stakers:
-      type: object
-      properties:
-        Address:
-          type: string
+      type: string
+      description: staker address
 
 
     PoolDetail:
