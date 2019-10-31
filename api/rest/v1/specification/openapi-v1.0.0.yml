@@ -24,18 +24,6 @@ paths:
       summary: This swagger/openapi 3.0 generated documentation
       tags:
         - Documentation
-  "/v1/graphql":
-    get:
-      operationId: GetGraphqlPlayground
-      responses:
-        "200":
-          description: GraphQL playground
-  "/v1/graphql/query":
-    post:
-      operationId: PostGraphqlQuery
-      responses:
-        "200":
-          description: GraphQL playground
   "/v1/health":
     get:
       operationId: GetHealth
@@ -73,32 +61,12 @@ paths:
   "/v1/assets":
     get:
       description: Returns an array containing all the assets supported.
-      parameters:
-        - in: query
-          name: asset
-          description: Specify asset
-          required: false
-          schema:
-            type: string
-          examples:
-            asset:
-              value: BNB.TOMOB-1E1
-              summary: The asset format with the chain (BNB) format to begin with
-            symbol:
-              value: TOMOB-1E1
-              summary: The symbol format without the chain format
       operationId: GetAssets
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
           $ref: '#/components/responses/AssetsResponse'
-  "/v1/pools":
-    get:
-      operationId: GetPools
-      responses:
-        "200":
-          "$ref": "#/components/responses/PoolsResponse"
   "/v1/pools/{asset}":
     get:
       description: Returns an object containing all the pool data for that asset.
@@ -110,6 +78,13 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            asset:
+              value: BNB.TOMOB-1E1
+              summary: The asset format with the chain (BNB) format to begin with
+            symbol:
+              value: TOMOB-1E1
+              summary: The symbol format without the chain format
       responses:
         "200":
           $ref: '#/components/responses/PoolsDetailedResponse'
@@ -227,8 +202,6 @@ paths:
           description: Get Swap transaction Data from API
 components:
   responses:
-    PoolsResponse:
-      description: Returns an object containing all the pool data
 
     PoolsDetailedResponse:
       description: Returns an object containing all the pool data for that asset.
@@ -421,6 +394,7 @@ components:
         Address:
           type: string
 
+
     PoolDetail:
       type: object
       properties:
@@ -545,8 +519,6 @@ components:
       properties:
         Asset:
           $ref: '#/components/schemas/Asset'
-        Ticker:
-          type: string
         Name:
           type: string
         DateCreated:
