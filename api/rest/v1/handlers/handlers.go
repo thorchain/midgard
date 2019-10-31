@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	defaultLimit  int = 25
-	defaultOffset int = 0
+// defaultLimit  int = 25
+// defaultOffset int = 0
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
