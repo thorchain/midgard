@@ -113,6 +113,7 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/PoolsDetailedResponse'
+
   "/v1/stakers":
     get:
       description: Returns an array containing all the stakers.
@@ -120,8 +121,10 @@ paths:
       responses:
         "200":
           "$ref": "#/components/responses/StakersResponse"
-  "/v1/stakers/{address}/":
+
+  "/v1/stakers/{address}":
     get:
+      description: Returns an array containing all the pools the staker is staking.
       operationId: GetStakersAddressData
       parameters:
         - in: path
@@ -132,9 +135,11 @@ paths:
             type: string
       responses:
         "200":
-          description: Returns an array containing all the pools the staker address is staking.
+          $ref: '#/components/responses/StakersAddressDataResponse'
+
   "/v1/stakers/{address}/{asset}":
     get:
+      description: Returns an object containing stakers data for the asset of the stakers address
       operationId: GetStakersAddressAndAssetData
       parameters:
         - in: path
@@ -151,7 +156,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Returns an object containing stake data for the asset of the stakers address.
+          $ref: '#/components/responses/StakersAssetDataResponse'
   "/v1/stakerTx":
     get:
       operationId: GetStakerTx
@@ -224,18 +229,30 @@ components:
   responses:
     PoolsResponse:
       description: Returns an object containing all the pool data
+
     PoolsDetailedResponse:
       description: Returns an object containing all the pool data for that asset.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PoolDetail'
+
     BEPSwapResponse:
       description: Returns an object containing global BEPSwap data
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/BEPSwapData'
+
+    StakersAddressDataResponse:
+      description: Array containing all the pools the staker is staking.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/StakersAddressData'
+
     StakersResponse:
       description: Array containing all the stakers
       content:
@@ -244,12 +261,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Stakers'
+
+    StakersAssetDataResponse:
+      description: Returns an object containing stake data for that asset for that staker.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StakersAssetData'
+
     AssetsDetailedResponse:
       description: Detailed Asset information
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AssetDetail'
+
     AssetsResponse:
       description: Asset Array
       content:
@@ -258,6 +284,7 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Asset'
+
     GeneralErrorResponse:
       description: Error message
       content:
@@ -266,6 +293,7 @@ components:
             $ref: '#/components/schemas/Error'
 
   schemas:
+
     BEPSwapData:
       type: object
       properties:
@@ -317,17 +345,87 @@ components:
         totalWithdrawTx:
           type: integer
           description: Total withdrawing transactions (bnb tx)
+
+    StakersAddressData:
+      type: object
+      properties:
+        StakeArray:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+        TotalStaked:
+          type: integer
+          format: int64
+          description: poolStaked  across all pools.
+        TotalEarned:
+          type: integer
+          format: int64
+          description: Total value of earnings in RUNE across all pools.
+        TotalROI:
+          type: integer
+          format: int64
+          description: Average all all pool ROIs.
+
+    StakersAssetData:
+      type: object
+      properties:
+        Asset:
+          $ref: '#/components/schemas/Asset'
+        StakeUnits:
+          type: integer
+          format: int64
+          description: Represents ownership of a pool.
+        RuneStaked:
+          type: integer
+          format: int64
+          description: Amount of RUNE staked.
+        AssetStaked:
+          type: integer
+          format: int64
+          description: Amount of Tokens staked.
+        PoolStaked:
+          type: integer
+          format: int64
+          description: Rune Value staked.
+        RuneEarned:
+          type: integer
+          format: int64
+          description: Value of RUNE earned from the pool.
+        AssetEarned:
+          type: integer
+          format: int64
+          description: Value of /assets earned from the pool.
+        PoolEarned:
+          type: integer
+          format: int64
+          description: Total value of earnings in RUNE
+        RuneROI:
+          type: number
+          format: double
+          description: RuneEarned/runeStaked
+        AssetROI:
+          type: number
+          format: double
+          description: assetEarned/assetStaked
+        PoolROI:
+          type: number
+          format: double
+          description: (runeROI + assetROI)/2
+        DateFirstStaked:
+          type: string
+          format: 'date-time'
+
     Stakers:
       type: object
       properties:
         Address:
           type: string
+
     PoolDetail:
       type: object
       properties:
         Asset:
-          type: string
-          description: Identifier
+          $ref: '#/components/schemas/Asset'
         Price:
           type: number
           format: double
@@ -446,8 +544,7 @@ components:
       type: object
       properties:
         Asset:
-          type: string
-          description: Identifier
+          $ref: '#/components/schemas/Asset'
         Ticker:
           type: string
         Name:
@@ -463,6 +560,7 @@ components:
         priceUSD:
           type: number
           format: double
+
     Error:
       required:
         - "error"
@@ -470,6 +568,7 @@ components:
       properties:
         error:
           type: string
+
     Asset:
       type: object
       properties:
