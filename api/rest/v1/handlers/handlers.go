@@ -273,17 +273,15 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 	ass3, _ := common.NewAsset("LOK-3C0")
 
 	response := api.StakersAddressDataResponse{
-		api.StakersAddressData{
-			StakeArray: &[]api.Asset{
-				*helpers.ConvertAssetForAPI(ass0),
-				*helpers.ConvertAssetForAPI(ass1),
-				*helpers.ConvertAssetForAPI(ass2),
-				*helpers.ConvertAssetForAPI(ass3),
-			},
-			TotalEarned: pointy.Int64(333),
-			TotalROI:    pointy.Int64(444),
-			TotalStaked: pointy.Int64(555),
+		StakeArray: &[]api.Asset{
+			*helpers.ConvertAssetForAPI(ass0),
+			*helpers.ConvertAssetForAPI(ass1),
+			*helpers.ConvertAssetForAPI(ass2),
+			*helpers.ConvertAssetForAPI(ass3),
 		},
+		TotalEarned: pointy.Int64(333),
+		TotalROI:    pointy.Int64(444),
+		TotalStaked: pointy.Int64(555),
 	}
 
 	return ctx.JSON(http.StatusOK, response)

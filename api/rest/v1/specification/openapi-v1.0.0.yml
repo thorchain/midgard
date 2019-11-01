@@ -91,7 +91,7 @@ paths:
 
   "/v1/stakers":
     get:
-      description: Returns an array containing all the stakers.
+      description: Returns an array containing all the staker's addresses
       operationId: GetStakersData
       responses:
         "200":
@@ -222,9 +222,7 @@ components:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/StakersAddressData'
+            $ref: '#/components/schemas/StakersAddressData'
 
     StakersResponse:
       description: Array containing all the stakers
