@@ -59,7 +59,7 @@ type Event struct {
 	InHash  common.TxID     `json:"in_hash"`
 	OutHash common.TxID     `json:"out_hash"`
 	Pool    common.Asset    `json:"pool"`
-	Event   json.RawMessage `json:"event"`
+	Event   json.RawMessage `json:"event"` // Use due to different format depending on the event.Type
 }
 
 type EventSwap struct {
@@ -338,7 +338,7 @@ func (sc *StatechainAPI) scan() {
 	for {
 		sc.logger.Debug().Msg("sleeping statechain scan")
 		// TODO possible use an experiential back off method
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 1)
 		select {
 		case <-sc.stopchan:
 			return
