@@ -145,7 +145,7 @@ func (h *Handlers) GetSwapTx(ctx echo.Context, params api.GetSwapTxParams) error
 }
 
 // (GET /v1/stakerTx)
-func (h *Handlers) GetStakerTx(ctx echo.Context, params api.GetStakerTxParams) error {
+func (h *Handlers) GetStakerTx(ctx echo.Context, address string) error {
 	// addr, err := common.NewBnbAddress(params.Staker)
 	// if err != nil {
 	// 	return echo.NewHTTPError(http.StatusBadRequest, Err{"error": err.Error()})
@@ -179,7 +179,83 @@ func (h *Handlers) GetStakerTx(ctx echo.Context, params api.GetStakerTxParams) e
 	// 	return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
 	// }
 
-	return ctx.JSON(http.StatusOK, "data")
+	response := api.StakeTxDataResponse{
+		api.StakeTxData{
+			Date:   &time.Time{},
+			Height: nil,
+			Pool: &api.Asset{
+				Chain:  nil,
+				Symbol: nil,
+				Ticker: nil,
+			},
+			Receive: nil,
+			Send: &struct {
+				Coin *struct {
+					Amount *int64     `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				} `json:"Coin,omitempty"`
+				MEMO *string `json:"MEMO,omitempty"`
+				TxID *string `json:"TxID,omitempty"`
+			}{
+				Coin: &struct {
+					Amount *int64     `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				}{
+					Amount: nil,
+					Asset: &api.Asset{
+						Chain:  nil,
+						Symbol: nil,
+						Ticker: nil,
+					},
+				},
+				MEMO: nil,
+				TxID: nil,
+			},
+			Stake:    nil,
+			Status:   nil,
+			Type:     nil,
+			Withdraw: nil,
+		},
+
+		api.StakeTxData{
+			Date:   &time.Time{},
+			Height: nil,
+			Pool: &api.Asset{
+				Chain:  nil,
+				Symbol: nil,
+				Ticker: nil,
+			},
+			Receive: nil,
+			Send: &struct {
+				Coin *struct {
+					Amount *int64     `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				} `json:"Coin,omitempty"`
+				MEMO *string `json:"MEMO,omitempty"`
+				TxID *string `json:"TxID,omitempty"`
+			}{
+				Coin: &struct {
+					Amount *int64     `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				}{
+					Amount: nil,
+					Asset: &api.Asset{
+						Chain:  nil,
+						Symbol: nil,
+						Ticker: nil,
+					},
+				},
+				MEMO: nil,
+				TxID: nil,
+			},
+			Stake:    nil,
+			Status:   nil,
+			Type:     nil,
+			Withdraw: nil,
+		},
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/bepswap)
