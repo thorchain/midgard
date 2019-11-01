@@ -185,7 +185,6 @@ paths:
           description: Get Swap transaction Data from API
 components:
   responses:
-
     StakeTxDataResponse:
       description: Returns an object containing stake tx data for that staker
       content:
@@ -265,11 +264,41 @@ components:
         Status:
           type: string
           enum: [success, refund]
-        # TODO finish
         Send:
           type: object
           properties:
-            Coin:
+            Coins:
+              type: array
+              items:
+                type: object
+                properties:
+                  Asset:
+                    $ref: '#/components/schemas/Asset'
+                  Amount:
+                    type: integer
+                    format: int64
+            MEMO:
+              type: string
+            TxID:
+              type: string
+        Receive:
+          type: object
+          properties:
+            Coins:
+              type: array
+              items:
+                type: object
+                properties:
+                  Asset:
+                    $ref: '#/components/schemas/Asset'
+                  Amount:
+                    type: integer
+                    format: int64
+            MEMO:
+              type: string
+            TxID:
+              type: string
+            GAS:
               type: object
               properties:
                 Asset:
@@ -277,19 +306,31 @@ components:
                 Amount:
                   type: integer
                   format: int64
-            MEMO:
-              type: string
-            TxID:
-              type: string
-        Receive:
-          type: object
         Stake:
           type: object
+          properties:
+            StakeUnitsAdded:
+              type: integer
+              format: int64
+              description: Stake Units Added
         Withdraw:
           type: object
+          properties:
+            StakeUnitsSubtracted:
+              type: integer
+              format: int64
+              description: wBP * stakeUnits/poolUnits
+            WithdrawBP:
+              type: integer
+              format: int64
+              description: Withdraw Base Points
+            Asymmetry:
+              type: number
+              format: double
+              description: Percent Asymmetry
         Date:
           type: string
-          format: date
+          format: date-'date-time'
         Height:
           type: integer
           format: int64
