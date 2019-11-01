@@ -144,7 +144,7 @@ func (h *Handlers) GetSwapTx(ctx echo.Context, params api.GetSwapTxParams) error
 	return ctx.JSON(http.StatusOK, "data")
 }
 
-// (GET /v1/stakerTx)
+// (GET /v1/stakeTx/{address})
 func (h *Handlers) GetStakerTx(ctx echo.Context, address string) error {
 	// addr, err := common.NewBnbAddress(params.Staker)
 	// if err != nil {
@@ -181,23 +181,27 @@ func (h *Handlers) GetStakerTx(ctx echo.Context, address string) error {
 
 	response := api.StakeTxDataResponse{
 		api.StakeTxData{
-			Date:   &time.Time{},
+			Date:   nil,
 			Height: nil,
 			Pool: &api.Asset{
 				Chain:  nil,
 				Symbol: nil,
 				Ticker: nil,
 			},
-			Receive: nil,
-			Send: &struct {
-				Coin *struct {
+			Receive: &struct {
+				Coins *[]struct {
 					Amount *int64     `json:"Amount,omitempty"`
 					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Coin,omitempty"`
+				} `json:"Coins,omitempty"`
+				GAS *struct {
+					Amount *int64     `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				} `json:"GAS,omitempty"`
 				MEMO *string `json:"MEMO,omitempty"`
 				TxID *string `json:"TxID,omitempty"`
 			}{
-				Coin: &struct {
+				Coins: nil,
+				GAS: &struct {
 					Amount *int64     `json:"Amount,omitempty"`
 					Asset  *api.Asset `json:"Asset,omitempty"`
 				}{
@@ -211,47 +215,34 @@ func (h *Handlers) GetStakerTx(ctx echo.Context, address string) error {
 				MEMO: nil,
 				TxID: nil,
 			},
-			Stake:    nil,
-			Status:   nil,
-			Type:     nil,
-			Withdraw: nil,
-		},
-
-		api.StakeTxData{
-			Date:   &time.Time{},
-			Height: nil,
-			Pool: &api.Asset{
-				Chain:  nil,
-				Symbol: nil,
-				Ticker: nil,
-			},
-			Receive: nil,
 			Send: &struct {
-				Coin *struct {
+				Coins *[]struct {
 					Amount *int64     `json:"Amount,omitempty"`
 					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Coin,omitempty"`
+				} `json:"Coins,omitempty"`
 				MEMO *string `json:"MEMO,omitempty"`
 				TxID *string `json:"TxID,omitempty"`
 			}{
-				Coin: &struct {
-					Amount *int64     `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				}{
-					Amount: nil,
-					Asset: &api.Asset{
-						Chain:  nil,
-						Symbol: nil,
-						Ticker: nil,
-					},
-				},
-				MEMO: nil,
-				TxID: nil,
+				Coins: nil,
+				MEMO:  nil,
+				TxID:  nil,
 			},
-			Stake:    nil,
-			Status:   nil,
-			Type:     nil,
-			Withdraw: nil,
+			Stake: &struct {
+				StakeUnitsAdded *int64 `json:"StakeUnitsAdded,omitempty"`
+			}{
+				StakeUnitsAdded: nil,
+			},
+			Status: nil,
+			Type:   nil,
+			Withdraw: &struct {
+				Asymmetry            *float64 `json:"Asymmetry,omitempty"`
+				StakeUnitsSubtracted *int64   `json:"StakeUnitsSubtracted,omitempty"`
+				WithdrawBP           *int64   `json:"WithdrawBP,omitempty"`
+			}{
+				Asymmetry:            nil,
+				StakeUnitsSubtracted: nil,
+				WithdrawBP:           nil,
+			},
 		},
 	}
 

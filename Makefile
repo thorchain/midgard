@@ -93,3 +93,6 @@ run:
 
 up:
 	@docker-compose up --build
+
+clean:
+	@rm ${GOBIN}/chainservice

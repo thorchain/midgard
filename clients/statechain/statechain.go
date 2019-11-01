@@ -112,8 +112,7 @@ func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance,
 // GetPools from statechain
 func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", sc.baseUrl)
-	log.Debug().Str("poolUrl", poolUrl).Msg("url")
-
+	sc.logger.Debug().Msg(poolUrl)
 	resp, err := sc.netClient.Get(poolUrl)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")
@@ -137,7 +136,7 @@ func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 // GetPool with the given asset
 func (sc *StatechainAPI) GetPool(asset common.Asset) (*Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pool/%s", sc.baseUrl, asset.String())
-	log.Debug().Str("poolUrl", poolUrl).Msg("poolUrl")
+	sc.logger.Debug().Msg(poolUrl)
 	resp, err := sc.netClient.Get(poolUrl)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")
@@ -336,9 +335,9 @@ func (sc *StatechainAPI) scan() {
 		currentPos = maxID + 1
 	}
 	for {
-		sc.logger.Debug().Msg("sleeping statechain scan")
+		// sc.logger.Debug().Msg("sleeping statechain scan")
 		// TODO possible use an experiential back off method
-		time.Sleep(time.Second * 1)
+		// time.Sleep(time.Second * 1)
 		select {
 		case <-sc.stopchan:
 			return
