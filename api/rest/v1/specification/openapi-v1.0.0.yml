@@ -132,37 +132,20 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/StakersAssetDataResponse'
-  "/v1/stakerTx":
+  "/v1/stakeTx/{address}":
     get:
+      description: Returns an object containing stake tx data for that staker. Can be filtered further
       operationId: GetStakerTx
       parameters:
-        - in: query
-          name: staker
+        - in: path
+          name: address
           description: Staker address
           required: true
           schema:
             type: string
-        - in: query
-          name: limit
-          description: limit results returned default 25
-          required: false
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          description: offset ... default to 0
-          required: false
-          schema:
-            type: integer
-        - in: query
-          name: asset
-          description: Specify asset
-          required: false
-          schema:
-            type: string
       responses:
         "200":
-          description: Get Staker transaction Data from API
+          $ref: '#/components/responses/StakeTxDataResponse'
   "/v1/swapTx":
     get:
       operationId: GetSwapTx
@@ -203,6 +186,14 @@ paths:
 components:
   responses:
 
+    StakeTxDataResponse:
+      description: Returns an object containing stake tx data for that staker
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/StakeTxData'
     PoolsDetailedResponse:
       description: Returns an object containing all the pool data for that asset.
       content:
@@ -264,6 +255,45 @@ components:
             $ref: '#/components/schemas/Error'
 
   schemas:
+    StakeTxData:
+      properties:
+        Pool:
+          $ref: '#/components/schemas/Asset'
+        Type:
+          type: string
+          enum: [stake, withdraw]
+        Status:
+          type: string
+          enum: [success, refund]
+        # TODO finish
+        Send:
+          type: object
+          properties:
+            Coin:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: integer
+                  format: int64
+            MEMO:
+              type: string
+            TxID:
+              type: string
+        Receive:
+          type: object
+        Stake:
+          type: object
+        Withdraw:
+          type: object
+        Date:
+          type: string
+          format: date
+        Height:
+          type: integer
+          format: int64
+          description: Statechain blockheight
 
     BEPSwapData:
       type: object
