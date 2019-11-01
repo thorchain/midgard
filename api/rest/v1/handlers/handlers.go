@@ -289,24 +289,22 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 
 // (GET /v1/stakers/{address}/{asset})
 func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error {
-	response := api.StakersAssetDataResponse{
-		Asset: &api.Asset{
-			Chain:  nil,
-			Symbol: nil,
-			Ticker: nil,
-		},
-		AssetEarned:     nil,
-		AssetROI:        nil,
-		AssetStaked:     nil,
+	ass0, _ := common.NewAsset(asset)
+	var response = api.StakersAssetDataResponse{
+		Asset:           helpers.ConvertAssetForAPI(ass0),
+		AssetEarned:     pointy.Int64(111),
+		AssetROI:        pointy.Float64(222.222),
+		AssetStaked:     pointy.Int64(333),
 		DateFirstStaked: &time.Time{},
-		PoolEarned:      nil,
-		PoolROI:         nil,
-		PoolStaked:      nil,
-		RuneEarned:      nil,
-		RuneROI:         nil,
-		RuneStaked:      nil,
-		StakeUnits:      nil,
+		PoolEarned:      pointy.Int64(444),
+		PoolROI:         pointy.Float64(555.555),
+		PoolStaked:      pointy.Int64(666),
+		RuneEarned:      pointy.Int64(777),
+		RuneROI:         pointy.Float64(888.888),
+		RuneStaked:      pointy.Int64(999),
+		StakeUnits:      pointy.Int64(1111),
 	}
+
 	return ctx.JSON(http.StatusOK, response)
 }
 

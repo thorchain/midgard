@@ -125,7 +125,7 @@ paths:
             type: string
         - in: path
           name: asset
-          description: sep
+          description: Specify asset
           required: true
           schema:
             type: string
@@ -381,11 +381,11 @@ components:
         AssetEarned:
           type: integer
           format: int64
-          description: Value of /assets earned from the pool.
+          description: Value of assets earned from the pool. i.e stakeUnits/poolUnits * (assetDepth - assetsStakedTotal)
         PoolEarned:
           type: integer
           format: int64
-          description: Total value of earnings in RUNE
+          description: Total value of earnings in RUNE. i.e runeEarned + (assetsEarned * assetPrice)
         RuneROI:
           type: number
           format: double
