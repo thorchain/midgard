@@ -132,10 +132,11 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/StakersAssetDataResponse'
+
   "/v1/stakeTx/{address}":
     get:
-      description: Returns an object containing stake tx data for that staker. Can be filtered further
-      operationId: GetStakerTx
+      description: Returns an object containing stake tx data for the staker address
+      operationId: GetStakerTxForAddress
       parameters:
         - in: path
           name: address
@@ -146,45 +147,31 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/StakeTxDataResponse'
-  "/v1/swapTx":
+
+  "/v1/swapTx/{address}":
     get:
-      operationId: GetSwapTx
+      operationId: GetSwapTxForAddress
       parameters:
-        - in: query
-          name: asset
-          description: asset
+        - in: path
+          name: address
+          description: Swap Tx address
           required: true
           schema:
             type: string
-        - in: query
-          name: sender
-          description: sender address
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: dest
-          description: dest address
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: limit
-          description: limit results returned. Default 25
-          required: false
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          description: Offset. Default to 0
-          required: false
-          schema:
-            type: integer
       responses:
         "200":
-          description: Get Swap transaction Data from API
+          $ref: '#/components/responses/SwapTxDataResponse'
 components:
   responses:
+    SwapTxDataResponse:
+      description: Return an array of transaction events
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SwapTxData'
+
     StakeTxDataResponse:
       description: Returns an object containing stake tx data for that staker
       content:
@@ -254,6 +241,71 @@ components:
             $ref: '#/components/schemas/Error'
 
   schemas:
+    SwapTxData:
+      properties:
+        Pool:
+          $ref: '#/components/schemas/Asset'
+        Type:
+          type: string
+          enum: [sell, buy, double]
+        Status:
+          type: string
+          enum: [success, refund, priceCancelled]
+        From:
+          type: object
+          properties:
+            Address:
+              type: string
+            Coin:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: string
+            MEMO:
+              type: string
+            PriceTarget:
+              type: integer
+              format: int64
+            TxID:
+              type: string
+        To:
+          type: object
+          properties:
+            Address:
+              type: string
+            Coin:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: string
+            Fee:
+              type: integer
+              description: fees retained
+            Slip:
+              type: number
+              format: double
+              description: Swap slip
+            Gas:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: string
+            MEMO:
+              type: string
+            TxID:
+              type: string
+            Date:
+              type: string
+              format: 'date-time'
+            Height:
+              type: integer
+              format: int64
     StakeTxData:
       properties:
         Pool:
@@ -330,7 +382,7 @@ components:
               description: Percent Asymmetry
         Date:
           type: string
-          format: date-'date-time'
+          format: 'date-time'
         Height:
           type: integer
           format: int64
