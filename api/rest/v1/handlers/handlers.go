@@ -119,7 +119,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 }
 
 // (GET /v1/swapTx)
-func (h *Handlers) GetSwapTx(ctx echo.Context, params api.GetSwapTxParams) error {
+func (h *Handlers) GetSwapTxForAddress(ctx echo.Context, address string) error {
 	// to, _ := common.NewBnbAddress(params.Dest)
 	// from, _ := common.NewBnbAddress(params.Sender)
 	//
@@ -141,11 +141,96 @@ func (h *Handlers) GetSwapTx(ctx echo.Context, params api.GetSwapTxParams) error
 	// 	return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
 	// }
 
-	return ctx.JSON(http.StatusOK, "data")
+	response := api.SwapTxDataResponse{
+		api.SwapTxData{
+			From: &struct {
+				Address *string `json:"Address,omitempty"`
+				Coin    *struct {
+					Amount *string    `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				} `json:"Coin,omitempty"`
+				MEMO        *string `json:"MEMO,omitempty"`
+				PriceTarget *int64  `json:"PriceTarget,omitempty"`
+				TxID        *string `json:"TxID,omitempty"`
+			}{
+				Address: nil,
+				Coin: &struct {
+					Amount *string    `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				}{
+					Amount: nil,
+					Asset: &api.Asset{
+						Chain:  nil,
+						Symbol: nil,
+						Ticker: nil,
+					},
+				},
+				MEMO:        nil,
+				PriceTarget: nil,
+				TxID:        nil,
+			},
+			Pool: &api.Asset{
+				Chain:  nil,
+				Symbol: nil,
+				Ticker: nil,
+			},
+			Status: nil,
+			To: &struct {
+				Address *string `json:"Address,omitempty"`
+				Coin    *struct {
+					Amount *string    `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				} `json:"Coin,omitempty"`
+				Date *time.Time `json:"Date,omitempty"`
+				Fee  *int       `json:"Fee,omitempty"`
+				Gas  *struct {
+					Amount *string    `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				} `json:"Gas,omitempty"`
+				Height *int64   `json:"Height,omitempty"`
+				MEMO   *string  `json:"MEMO,omitempty"`
+				Slip   *float64 `json:"Slip,omitempty"`
+				TxID   *string  `json:"TxID,omitempty"`
+			}{
+				Address: nil,
+				Coin: &struct {
+					Amount *string    `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				}{
+					Amount: nil,
+					Asset: &api.Asset{
+						Chain:  nil,
+						Symbol: nil,
+						Ticker: nil,
+					},
+				},
+				Date: &time.Time{},
+				Fee:  nil,
+				Gas: &struct {
+					Amount *string    `json:"Amount,omitempty"`
+					Asset  *api.Asset `json:"Asset,omitempty"`
+				}{
+					Amount: nil,
+					Asset: &api.Asset{
+						Chain:  nil,
+						Symbol: nil,
+						Ticker: nil,
+					},
+				},
+				Height: nil,
+				MEMO:   nil,
+				Slip:   nil,
+				TxID:   nil,
+			},
+			Type: nil,
+		},
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/stakeTx/{address})
-func (h *Handlers) GetStakerTx(ctx echo.Context, address string) error {
+func (h *Handlers) GetStakerTxForAddress(ctx echo.Context, address string) error {
 	// addr, err := common.NewBnbAddress(params.Staker)
 	// if err != nil {
 	// 	return echo.NewHTTPError(http.StatusBadRequest, Err{"error": err.Error()})
@@ -181,7 +266,7 @@ func (h *Handlers) GetStakerTx(ctx echo.Context, address string) error {
 
 	response := api.StakeTxDataResponse{
 		api.StakeTxData{
-			Date:   nil,
+			Date:   &time.Time{},
 			Height: nil,
 			Pool: &api.Asset{
 				Chain:  nil,

@@ -101,9 +101,9 @@ type PoolDetail struct {
 
 // StakeTxData defines model for StakeTxData.
 type StakeTxData struct {
-	Date    *string `json:"Date,omitempty"`
-	Height  *int64  `json:"Height,omitempty"`
-	Pool    *Asset  `json:"Pool,omitempty"`
+	Date    *time.Time `json:"Date,omitempty"`
+	Height  *int64     `json:"Height,omitempty"`
+	Pool    *Asset     `json:"Pool,omitempty"`
 	Receive *struct {
 		Coins *[]struct {
 			Amount *int64 `json:"Amount,omitempty"`
@@ -163,6 +163,40 @@ type StakersAssetData struct {
 	StakeUnits      *int64     `json:"StakeUnits,omitempty"`
 }
 
+// SwapTxData defines model for SwapTxData.
+type SwapTxData struct {
+	From *struct {
+		Address *string `json:"Address,omitempty"`
+		Coin    *struct {
+			Amount *string `json:"Amount,omitempty"`
+			Asset  *Asset  `json:"Asset,omitempty"`
+		} `json:"Coin,omitempty"`
+		MEMO        *string `json:"MEMO,omitempty"`
+		PriceTarget *int64  `json:"PriceTarget,omitempty"`
+		TxID        *string `json:"TxID,omitempty"`
+	} `json:"From,omitempty"`
+	Pool   *Asset  `json:"Pool,omitempty"`
+	Status *string `json:"Status,omitempty"`
+	To     *struct {
+		Address *string `json:"Address,omitempty"`
+		Coin    *struct {
+			Amount *string `json:"Amount,omitempty"`
+			Asset  *Asset  `json:"Asset,omitempty"`
+		} `json:"Coin,omitempty"`
+		Date *time.Time `json:"Date,omitempty"`
+		Fee  *int       `json:"Fee,omitempty"`
+		Gas  *struct {
+			Amount *string `json:"Amount,omitempty"`
+			Asset  *Asset  `json:"Asset,omitempty"`
+		} `json:"Gas,omitempty"`
+		Height *int64   `json:"Height,omitempty"`
+		MEMO   *string  `json:"MEMO,omitempty"`
+		Slip   *float64 `json:"Slip,omitempty"`
+		TxID   *string  `json:"TxID,omitempty"`
+	} `json:"To,omitempty"`
+	Type *string `json:"Type,omitempty"`
+}
+
 // AssetsDetailedResponse defines model for AssetsDetailedResponse.
 type AssetsDetailedResponse AssetDetail
 
@@ -190,14 +224,8 @@ type StakersAssetDataResponse StakersAssetData
 // StakersResponse defines model for StakersResponse.
 type StakersResponse []Stakers
 
-// GetSwapTxParams defines parameters for GetSwapTx.
-type GetSwapTxParams struct {
-	Asset  string `json:"asset"`
-	Sender string `json:"sender"`
-	Dest   string `json:"dest"`
-	Limit  *int   `json:"limit,omitempty"`
-	Offset *int   `json:"offset,omitempty"`
-}
+// SwapTxDataResponse defines model for SwapTxDataResponse.
+type SwapTxDataResponse []SwapTxData
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -214,7 +242,7 @@ type ServerInterface interface {
 	// (GET /v1/pools/{asset})
 	GetPoolsData(ctx echo.Context, asset string) error
 	// (GET /v1/stakeTx/{address})
-	GetStakerTx(ctx echo.Context, address string) error
+	GetStakerTxForAddress(ctx echo.Context, address string) error
 	// (GET /v1/stakers)
 	GetStakersData(ctx echo.Context) error
 	// (GET /v1/stakers/{address})
@@ -223,8 +251,8 @@ type ServerInterface interface {
 	GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error
 	// JSON swagger/openapi 3.0 specification endpoint// (GET /v1/swagger.json)
 	GetSwagger(ctx echo.Context) error
-	// (GET /v1/swapTx)
-	GetSwapTx(ctx echo.Context, params GetSwapTxParams) error
+	// (GET /v1/swapTx/{address})
+	GetSwapTxForAddress(ctx echo.Context, address string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -300,8 +328,8 @@ func (w *ServerInterfaceWrapper) GetPoolsData(ctx echo.Context) error {
 	return err
 }
 
-// GetStakerTx converts echo context to params.
-func (w *ServerInterfaceWrapper) GetStakerTx(ctx echo.Context) error {
+// GetStakerTxForAddress converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakerTxForAddress(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "address" -------------
 	var address string
@@ -312,7 +340,7 @@ func (w *ServerInterfaceWrapper) GetStakerTx(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetStakerTx(ctx, address)
+	err = w.Handler.GetStakerTxForAddress(ctx, address)
 	return err
 }
 
@@ -374,70 +402,19 @@ func (w *ServerInterfaceWrapper) GetSwagger(ctx echo.Context) error {
 	return err
 }
 
-// GetSwapTx converts echo context to params.
-func (w *ServerInterfaceWrapper) GetSwapTx(ctx echo.Context) error {
+// GetSwapTxForAddress converts echo context to params.
+func (w *ServerInterfaceWrapper) GetSwapTxForAddress(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "address" -------------
+	var address string
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetSwapTxParams
-	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
+	err = runtime.BindStyledParameter("simple", false, "address", ctx.Param("address"), &address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
-	}
-
-	// ------------- Required query parameter "sender" -------------
-	if paramValue := ctx.QueryParam("sender"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument sender is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "sender", ctx.QueryParams(), &params.Sender)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter sender: %s", err))
-	}
-
-	// ------------- Required query parameter "dest" -------------
-	if paramValue := ctx.QueryParam("dest"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument dest is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "dest", ctx.QueryParams(), &params.Dest)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter dest: %s", err))
-	}
-
-	// ------------- Optional query parameter "limit" -------------
-	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
-	}
-
-	// ------------- Optional query parameter "offset" -------------
-	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetSwapTx(ctx, params)
+	err = w.Handler.GetSwapTxForAddress(ctx, address)
 	return err
 }
 
@@ -454,63 +431,64 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	router.GET("/v1/doc", wrapper.GetDocs)
 	router.GET("/v1/health", wrapper.GetHealth)
 	router.GET("/v1/pools/:asset", wrapper.GetPoolsData)
-	router.GET("/v1/stakeTx/:address", wrapper.GetStakerTx)
+	router.GET("/v1/stakeTx/:address", wrapper.GetStakerTxForAddress)
 	router.GET("/v1/stakers", wrapper.GetStakersData)
 	router.GET("/v1/stakers/:address", wrapper.GetStakersAddressData)
 	router.GET("/v1/stakers/:address/:asset", wrapper.GetStakersAddressAndAssetData)
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
-	router.GET("/v1/swapTx", wrapper.GetSwapTx)
+	router.GET("/v1/swapTx/:address", wrapper.GetSwapTxForAddress)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AP//Wrp88089AAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
