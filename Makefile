@@ -96,3 +96,6 @@ up:
 
 clean:
 	@rm ${GOBIN}/chainservice
+
+run_mocked_endpint:
+	go run tools/mockServer/main.go
