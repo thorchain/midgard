@@ -335,9 +335,9 @@ func (sc *StatechainAPI) scan() {
 		currentPos = maxID + 1
 	}
 	for {
-		// sc.logger.Debug().Msg("sleeping statechain scan")
 		// TODO possible use an experiential back off method
-		// time.Sleep(time.Second * 1)
+		sc.logger.Debug().Msg("sleeping statechain scan")
+		time.Sleep(time.Second * 1)
 		select {
 		case <-sc.stopchan:
 			return
