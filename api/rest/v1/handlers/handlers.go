@@ -105,12 +105,17 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	}
 
 	t := time.Now()
+	n, err := h.binanceClient.GetToken(pool.Asset)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("fail to get token data from binance")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+	}
 
 	res := api.AssetsDetailedResponse{
 		Asset:       helpers.ConvertAssetForAPI(pool.Asset),
 		DateCreated: &t,
 		Logo:        pointy.String(fmt.Sprintf("%s://%s/blockchains/binance/assets/bnb/logo.png", ctx.Scheme(), ctx.Request().Host)),
-		Name:        pointy.String("COIN_NAME"),
+		Name:        pointy.String(n.Name),
 		PriceRune:   pointy.Float64(1.0),
 		PriceUSD:    pointy.Float64(2.0),
 	}
