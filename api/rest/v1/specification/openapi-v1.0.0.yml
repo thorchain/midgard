@@ -1,58 +1,68 @@
 openapi: 3.0.0
 info:
+  title: BEPSwap Chain-Service Public API
+  version: 1.0.0-oas3
   contact:
     email: devs@thorchain.org
-  description: Chain-Service Public API
-  title: Chain-Service Public API
-  version: 1.0.0-oas3
+  description: The BEPSwap Chain-Service queries THORChain and Binance Chain and makes information about BEPSwap readily available for public users. The Chain Service parses transaction event data from THORChain and stores them in a time-series database to make time-dependent queries easy. The Chain Service does not hold critical information. To interact with BEPSwap, users should query THORChain directly.
 paths:
   "/v1/swagger.json":
     get:
       operationId: GetSwagger
+      summary: Get Swagger
+      description: Returns human and machine readable swagger/openapi specification.
       responses:
         "200":
-          description: human and machine readable swagger/openapi specification endpoint
-      summary: JSON swagger/openapi 3.0 specification endpoint
+          description: human and machine readable swagger/openapi specification
+      # summary: JSON swagger/openapi 3.0 specification endpoint
       tags:
         - Specification
   "/v1/doc":
     get:
       operationId: GetDocs
+      summary: Get Documents
+      description: Swagger/openapi 3.0 specification generated documents.
       responses:
         "200":
           description: swagger/openapi 3.0 spec generated docs
-      summary: This swagger/openapi 3.0 generated documentation
       tags:
         - Documentation
   "/v1/health":
     get:
       operationId: GetHealth
+      summary: Get Health
+      description: Returns an object containing the health response of the API.
       responses:
         "200":
-          description: Get Health responce of API
+          description: health response of the API.
   "/v1/bepswap":
     get:
       operationId: GetBEPSwapData
+      summary: Get BEPSwap Data
+      description: Returns an object containing global BEPSwap data for all pools and all transactions.
       responses:
         "200":
-          $ref: '#/components/responses/BEPSwapResponse'
+          $ref: '#/components/responses/BEPSwapResponse'      
   "/v1/assets/{asset}":
     get:
-      description: Detail information about a Specify asset
       operationId: GetAssetInfo
+      summary: Get Asset Information
+      description: Detailed information about a specific asset. Returns enough information to display a unique asset in various user interfaces, including latest price. The logo is sourced from an internal database. 
       parameters:
         - in: path
           name: asset
+          description: Unique asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          examples:
-            asset:
-              value: BNB.TOMOB-1E1
-              summary: The asset format with the chain (BNB) format to begin with
-            symbol:
-              value: TOMOB-1E1
-              summary: The symbol format without the chain format
+          example: BNB.TOMOB-1E1
+          # examples:
+          #   asset:
+          #     value: BNB.TOMOB-1E1
+          #     summary: The asset format with the chain (BNB) format to begin with
+          #   symbol:
+          #     value: TOMOB-1E1
+          #     summary: The symbol format without the chain format
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
@@ -60,8 +70,9 @@ paths:
           $ref: '#/components/responses/AssetsDetailedResponse'
   "/v1/assets":
     get:
-      description: Returns an array containing all the assets supported.
       operationId: GetAssets
+      summary: Get Assets
+      description: Returns an array containing all the assets supported on BEPSwap.
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
@@ -69,81 +80,91 @@ paths:
           $ref: '#/components/responses/AssetsResponse'
   "/v1/pools/{asset}":
     get:
-      description: Returns an object containing all the pool data for that asset.
       operationId: GetPoolsData
+      summary: Get Pools Data
+      description: Returns an object containing all the pool data for that asset. All assets on BEPSwap have associated pools. 
       parameters:
         - in: path
           name: asset
-          description: Specify asset
+          description: Unique asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          examples:
-            asset:
-              value: BNB.TOMOB-1E1
-              summary: The asset format with the chain (BNB) format to begin with
-            symbol:
-              value: TOMOB-1E1
-              summary: The symbol format without the chain format
+          example: BNB.TOMOB-1E1
+          # examples:
+          #   asset:
+          #     value: BNB.TOMOB-1E1
+          #     summary: The asset format with the chain (BNB) format to begin with
+          #   symbol:
+          #     value: TOMOB-1E1
+          #     summary: The symbol format without the chain format
       responses:
         "200":
           $ref: '#/components/responses/PoolsDetailedResponse'
 
   "/v1/stakers":
     get:
-      description: Returns an array containing all the staker's addresses
       operationId: GetStakersData
+      summary: Get Stakers
+      description: Returns an array containing the addresses for all stakers. Useful for leaderboards. 
       responses:
         "200":
           "$ref": "#/components/responses/StakersResponse"
 
   "/v1/stakers/{address}":
     get:
-      description: Returns an array containing all the pools the staker is staking.
       operationId: GetStakersAddressData
+      summary: Get Staker Data
+      description: Returns an array containing all the pools the staker is staking in.
       parameters:
         - in: path
           name: address
-          description: staker address
+          description: Unique staker address
           required: true
           schema:
             type: string
+          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
       responses:
         "200":
           $ref: '#/components/responses/StakersAddressDataResponse'
 
   "/v1/stakers/{address}/{asset}":
     get:
-      description: Returns an object containing stakers data for the asset of the stakers address
       operationId: GetStakersAddressAndAssetData
+      summary: Get Staker Pool Data
+      description: Returns an object containing staking data for the specified staker and pool.
       parameters:
         - in: path
           name: address
-          description: staker address
+          description: Unique staker address
           required: true
           schema:
             type: string
+          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
         - in: path
           name: asset
-          description: Specify asset
+          description: Unique asset
           required: true
           schema:
             type: string
+          example: 'BNB.TOMOB-1E1'
       responses:
         "200":
           $ref: '#/components/responses/StakersAssetDataResponse'
 
   "/v1/stakeTx/{address}":
     get:
-      description: Returns an object containing stake tx data for the staker address
       operationId: GetStakerTxForAddress
+      summary: Get Staking Transactions
+      description: Returns an object containing staking transaction data for the staker specified.
       parameters:
         - in: path
           name: address
-          description: Staker address
+          description: Unique staker address
           required: true
           schema:
             type: string
+          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
       responses:
         "200":
           $ref: '#/components/responses/StakeTxDataResponse'
@@ -151,20 +172,23 @@ paths:
   "/v1/swapTx/{address}":
     get:
       operationId: GetSwapTxForAddress
+      summary: Get Swapping Transactions
+      description: Returns an object containing swapping transaction data for the swapper specified.
       parameters:
         - in: path
           name: address
-          description: Swap Tx address
+          description: Unique swapper address
           required: true
           schema:
             type: string
+            example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
       responses:
         "200":
           $ref: '#/components/responses/SwapTxDataResponse'
 components:
   responses:
     SwapTxDataResponse:
-      description: Return an array of transaction events
+      description: array of swapping transaction events
       content:
         application/json:
           schema:
@@ -173,7 +197,7 @@ components:
               $ref: '#/components/schemas/SwapTxData'
 
     StakeTxDataResponse:
-      description: Returns an object containing stake tx data for that staker
+      description: array of staking transaction events
       content:
         application/json:
           schema:
@@ -181,28 +205,28 @@ components:
             items:
               $ref: '#/components/schemas/StakeTxData'
     PoolsDetailedResponse:
-      description: Returns an object containing all the pool data for that asset.
+      description: object containing pool data for that asset
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/PoolDetail'
 
     BEPSwapResponse:
-      description: Returns an object containing global BEPSwap data
+      description: object containing global BEPSwap data
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/BEPSwapData'
 
     StakersAddressDataResponse:
-      description: Array containing all the pools the staker is staking.
+      description: array of all the pools the staker is staking in
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/StakersAddressData'
 
     StakersResponse:
-      description: Array containing all the stakers
+      description: array of all the stakers
       content:
         application/json:
           schema:
@@ -211,21 +235,21 @@ components:
               $ref: '#/components/schemas/Stakers'
 
     StakersAssetDataResponse:
-      description: Returns an object containing stake data for that asset for that staker.
+      description: object containing staking data for a specific staker and asset
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/StakersAssetData'
 
     AssetsDetailedResponse:
-      description: Detailed Asset information
+      description: object containing detailed asset information
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AssetDetail'
 
     AssetsResponse:
-      description: Asset Array
+      description: array of assets
       content:
         application/json:
           schema:
@@ -234,7 +258,7 @@ components:
               $ref: '#/components/schemas/Asset'
 
     GeneralErrorResponse:
-      description: Error message
+      description: error message
       content:
         application/json:
           schema:
@@ -719,6 +743,6 @@ components:
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
-tags:
-  - description: Public Chain-Service's REST API
-    name: Chain-Service Public API
+# tags:
+#   - description: Public Chain-Service's REST API
+#     name: Chain-Service Public API
