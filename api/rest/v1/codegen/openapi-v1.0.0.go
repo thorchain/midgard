@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Asset defines model for Asset.
@@ -22,140 +23,236 @@ type Asset struct {
 	Ticker *string `json:"ticker,omitempty"`
 }
 
+// AssetDetail defines model for AssetDetail.
+type AssetDetail struct {
+	Asset       *Asset     `json:"Asset,omitempty"`
+	DateCreated *time.Time `json:"DateCreated,omitempty"`
+	Logo        *string    `json:"Logo,omitempty"`
+	Name        *string    `json:"Name,omitempty"`
+	PriceRune   *float64   `json:"priceRune,omitempty"`
+	PriceUSD    *float64   `json:"priceUSD,omitempty"`
+}
+
+// BEPSwapData defines model for BEPSwapData.
+type BEPSwapData struct {
+	DAU             *int64 `json:"DAU,omitempty"`
+	DailyTx         *int64 `json:"DailyTx,omitempty"`
+	MAU             *int64 `json:"MAU,omitempty"`
+	MonthlyTx       *int64 `json:"MonthlyTx,omitempty"`
+	PoolCount       *int64 `json:"PoolCount,omitempty"`
+	TotalAssetBuys  *int64 `json:"TotalAssetBuys,omitempty"`
+	TotalAssetSells *int64 `json:"TotalAssetSells,omitempty"`
+	TotalDepth      *int64 `json:"TotalDepth,omitempty"`
+	TotalEarned     *int64 `json:"TotalEarned,omitempty"`
+	TotalStaked     *int64 `json:"TotalStaked,omitempty"`
+	TotalTx         *int64 `json:"TotalTx,omitempty"`
+	TotalUsers      *int64 `json:"TotalUsers,omitempty"`
+	TotalVolume     *int64 `json:"TotalVolume,omitempty"`
+	TotalVolume24hr *int64 `json:"TotalVolume24hr,omitempty"`
+	TotalStakeTx    *int64 `json:"totalStakeTx,omitempty"`
+	TotalWithdrawTx *int64 `json:"totalWithdrawTx,omitempty"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	Error string `json:"error"`
 }
 
-// PoolData defines model for PoolData.
-type PoolData struct {
-	Asset         string  `json:"asset"`
-	Depth         float32 `json:"depth"`
-	NumStakeTx    float32 `json:"numStakeTx"`
-	NumStakers    float32 `json:"numStakers"`
-	NumSwaps      float32 `json:"numSwaps"`
-	PoolUnits     float32 `json:"poolUnits"`
-	Roi12         float32 `json:"roi12"`
-	Roi30         float32 `json:"roi30"`
-	RoiAT         float32 `json:"roiAT"`
-	TotalFeesRune float32 `json:"totalFeesRune"`
-	TotalFeesTKN  float32 `json:"totalFeesTKN"`
-	Vol24hr       float32 `json:"vol24hr"`
-	VolAT         float32 `json:"volAT"`
+// PoolDetail defines model for PoolDetail.
+type PoolDetail struct {
+	Asset            *Asset   `json:"Asset,omitempty"`
+	AssetDepth       *int64   `json:"AssetDepth,omitempty"`
+	AssetROI         *float64 `json:"AssetROI,omitempty"`
+	AssetStakedTotal *int64   `json:"AssetStakedTotal,omitempty"`
+	BuyAssetCount    *int64   `json:"BuyAssetCount,omitempty"`
+	BuyFeeAverage    *int64   `json:"BuyFeeAverage,omitempty"`
+	BuyFeesTotal     *int64   `json:"BuyFeesTotal,omitempty"`
+	BuySlipAverage   *int64   `json:"BuySlipAverage,omitempty"`
+	BuyTxAverage     *int64   `json:"BuyTxAverage,omitempty"`
+	BuyVolume        *int64   `json:"BuyVolume,omitempty"`
+	PoolDepth        *int64   `json:"PoolDepth,omitempty"`
+	PoolFeeAverage   *int64   `json:"PoolFeeAverage,omitempty"`
+	PoolFeesTotal    *int64   `json:"PoolFeesTotal,omitempty"`
+	PoolROI          *float64 `json:"PoolROI,omitempty"`
+	PoolROI12        *float64 `json:"PoolROI12,omitempty"`
+	PoolSlipAverage  *int64   `json:"PoolSlipAverage,omitempty"`
+	PoolStakedTotal  *int64   `json:"PoolStakedTotal,omitempty"`
+	PoolTxAverage    *int64   `json:"PoolTxAverage,omitempty"`
+	PoolUnits        *int64   `json:"PoolUnits,omitempty"`
+	PoolVolume       *int64   `json:"PoolVolume,omitempty"`
+	PoolVolume24hr   *int64   `json:"PoolVolume24hr,omitempty"`
+	Price            *float64 `json:"Price,omitempty"`
+	RuneDepth        *int64   `json:"RuneDepth,omitempty"`
+	RuneROI          *float64 `json:"RuneROI,omitempty"`
+	RuneStakedTotal  *int64   `json:"RuneStakedTotal,omitempty"`
+	SellAssetCount   *int64   `json:"SellAssetCount,omitempty"`
+	SellFeeAverage   *int64   `json:"SellFeeAverage,omitempty"`
+	SellFeesTotal    *int64   `json:"SellFeesTotal,omitempty"`
+	SellSlipAverage  *int64   `json:"SellSlipAverage,omitempty"`
+	SellTxAverage    *int64   `json:"SellTxAverage,omitempty"`
+	SellVolume       *int64   `json:"SellVolume,omitempty"`
+	StakeTxCount     *int64   `json:"StakeTxCount,omitempty"`
+	StakersCount     *int64   `json:"StakersCount,omitempty"`
+	StakingTxCount   *int64   `json:"StakingTxCount,omitempty"`
+	SwappersCount    *int64   `json:"SwappersCount,omitempty"`
+	SwappingTxCount  *int64   `json:"SwappingTxCount,omitempty"`
+	WithdrawTxCount  *int64   `json:"WithdrawTxCount,omitempty"`
 }
 
-// StakerInfo defines model for StakerInfo.
-type StakerInfo struct {
-	Address         string  `json:"address"`
-	Asset           string  `json:"asset"`
-	DateFirstStaked string  `json:"dateFirstStaked"`
-	RuneEarned      float32 `json:"runeEarned"`
-	RuneStaked      float32 `json:"runeStaked"`
-	TokensEarned    float32 `json:"tokensEarned"`
-	TokensStaked    float32 `json:"tokensStaked"`
-	Units           float32 `json:"units"`
+// StakeTxData defines model for StakeTxData.
+type StakeTxData struct {
+	Date    *time.Time `json:"Date,omitempty"`
+	Height  *int64     `json:"Height,omitempty"`
+	Pool    *Asset     `json:"Pool,omitempty"`
+	Receive *struct {
+		Coins *[]struct {
+			Amount *int64 `json:"Amount,omitempty"`
+			Asset  *Asset `json:"Asset,omitempty"`
+		} `json:"Coins,omitempty"`
+		GAS *struct {
+			Amount *int64 `json:"Amount,omitempty"`
+			Asset  *Asset `json:"Asset,omitempty"`
+		} `json:"GAS,omitempty"`
+		MEMO *string `json:"MEMO,omitempty"`
+		TxID *string `json:"TxID,omitempty"`
+	} `json:"Receive,omitempty"`
+	Send *struct {
+		Coins *[]struct {
+			Amount *int64 `json:"Amount,omitempty"`
+			Asset  *Asset `json:"Asset,omitempty"`
+		} `json:"Coins,omitempty"`
+		MEMO *string `json:"MEMO,omitempty"`
+		TxID *string `json:"TxID,omitempty"`
+	} `json:"Send,omitempty"`
+	Stake *struct {
+		StakeUnitsAdded *int64 `json:"StakeUnitsAdded,omitempty"`
+	} `json:"Stake,omitempty"`
+	Status   *string `json:"Status,omitempty"`
+	Type     *string `json:"Type,omitempty"`
+	Withdraw *struct {
+		Asymmetry            *float64 `json:"Asymmetry,omitempty"`
+		StakeUnitsSubtracted *int64   `json:"StakeUnitsSubtracted,omitempty"`
+		WithdrawBP           *int64   `json:"WithdrawBP,omitempty"`
+	} `json:"Withdraw,omitempty"`
 }
 
-// StakerInfoWithAsset defines model for StakerInfoWithAsset.
-type StakerInfoWithAsset []string
+// Stakers defines model for Stakers.
+type Stakers string
 
-// SwapData defines model for SwapData.
-type SwapData struct {
-	Asset       string  `json:"asset"`
-	AveFeeRune  float32 `json:"aveFeeRune"`
-	AveFeeTkn   float32 `json:"aveFeeTkn"`
-	AveSlipRune float32 `json:"aveSlipRune"`
-	AveSlipTkn  float32 `json:"aveSlipTkn"`
-	AveTxRune   float32 `json:"aveTxRune"`
-	AveTxTkn    float32 `json:"aveTxTkn"`
-	NumTxRune   float32 `json:"numTxRune"`
-	NumTxTkn    float32 `json:"numTxTkn"`
+// StakersAddressData defines model for StakersAddressData.
+type StakersAddressData struct {
+	StakeArray  *[]Asset `json:"StakeArray,omitempty"`
+	TotalEarned *int64   `json:"TotalEarned,omitempty"`
+	TotalROI    *int64   `json:"TotalROI,omitempty"`
+	TotalStaked *int64   `json:"TotalStaked,omitempty"`
 }
+
+// StakersAssetData defines model for StakersAssetData.
+type StakersAssetData struct {
+	Asset           *Asset     `json:"Asset,omitempty"`
+	AssetEarned     *int64     `json:"AssetEarned,omitempty"`
+	AssetROI        *float64   `json:"AssetROI,omitempty"`
+	AssetStaked     *int64     `json:"AssetStaked,omitempty"`
+	DateFirstStaked *time.Time `json:"DateFirstStaked,omitempty"`
+	PoolEarned      *int64     `json:"PoolEarned,omitempty"`
+	PoolROI         *float64   `json:"PoolROI,omitempty"`
+	PoolStaked      *int64     `json:"PoolStaked,omitempty"`
+	RuneEarned      *int64     `json:"RuneEarned,omitempty"`
+	RuneROI         *float64   `json:"RuneROI,omitempty"`
+	RuneStaked      *int64     `json:"RuneStaked,omitempty"`
+	StakeUnits      *int64     `json:"StakeUnits,omitempty"`
+}
+
+// SwapTxData defines model for SwapTxData.
+type SwapTxData struct {
+	From *struct {
+		Address *string `json:"Address,omitempty"`
+		Coin    *struct {
+			Amount *string `json:"Amount,omitempty"`
+			Asset  *Asset  `json:"Asset,omitempty"`
+		} `json:"Coin,omitempty"`
+		MEMO        *string `json:"MEMO,omitempty"`
+		PriceTarget *int64  `json:"PriceTarget,omitempty"`
+		TxID        *string `json:"TxID,omitempty"`
+	} `json:"From,omitempty"`
+	Pool   *Asset  `json:"Pool,omitempty"`
+	Status *string `json:"Status,omitempty"`
+	To     *struct {
+		Address *string `json:"Address,omitempty"`
+		Coin    *struct {
+			Amount *string `json:"Amount,omitempty"`
+			Asset  *Asset  `json:"Asset,omitempty"`
+		} `json:"Coin,omitempty"`
+		Date *time.Time `json:"Date,omitempty"`
+		Fee  *int       `json:"Fee,omitempty"`
+		Gas  *struct {
+			Amount *string `json:"Amount,omitempty"`
+			Asset  *Asset  `json:"Asset,omitempty"`
+		} `json:"Gas,omitempty"`
+		Height *int64   `json:"Height,omitempty"`
+		MEMO   *string  `json:"MEMO,omitempty"`
+		Slip   *float64 `json:"Slip,omitempty"`
+		TxID   *string  `json:"TxID,omitempty"`
+	} `json:"To,omitempty"`
+	Type *string `json:"Type,omitempty"`
+}
+
+// AssetsDetailedResponse defines model for AssetsDetailedResponse.
+type AssetsDetailedResponse AssetDetail
 
 // AssetsResponse defines model for AssetsResponse.
 type AssetsResponse []Asset
 
+// BEPSwapResponse defines model for BEPSwapResponse.
+type BEPSwapResponse BEPSwapData
+
 // GeneralErrorResponse defines model for GeneralErrorResponse.
 type GeneralErrorResponse Error
 
-// GetAssetsParams defines parameters for GetAssets.
-type GetAssetsParams struct {
-	Asset *string `json:"asset,omitempty"`
-}
+// PoolsDetailedResponse defines model for PoolsDetailedResponse.
+type PoolsDetailedResponse PoolDetail
 
-// GetPoolDataParams defines parameters for GetPoolData.
-type GetPoolDataParams struct {
-	Asset string `json:"asset"`
-}
+// StakeTxDataResponse defines model for StakeTxDataResponse.
+type StakeTxDataResponse []StakeTxData
 
-// GetStakerDataParams defines parameters for GetStakerData.
-type GetStakerDataParams struct {
-	Staker string  `json:"staker"`
-	Asset  *string `json:"asset,omitempty"`
-}
+// StakersAddressDataResponse defines model for StakersAddressDataResponse.
+type StakersAddressDataResponse StakersAddressData
 
-// GetStakerTxParams defines parameters for GetStakerTx.
-type GetStakerTxParams struct {
-	Staker string  `json:"staker"`
-	Limit  *int    `json:"limit,omitempty"`
-	Offset *int    `json:"offset,omitempty"`
-	Asset  *string `json:"asset,omitempty"`
-}
+// StakersAssetDataResponse defines model for StakersAssetDataResponse.
+type StakersAssetDataResponse StakersAssetData
 
-// GetSwapDataParams defines parameters for GetSwapData.
-type GetSwapDataParams struct {
-	Asset string `json:"asset"`
-}
+// StakersResponse defines model for StakersResponse.
+type StakersResponse []Stakers
 
-// GetSwapTxParams defines parameters for GetSwapTx.
-type GetSwapTxParams struct {
-	Asset  string `json:"asset"`
-	Sender string `json:"sender"`
-	Dest   string `json:"dest"`
-	Limit  *int   `json:"limit,omitempty"`
-	Offset *int   `json:"offset,omitempty"`
-}
-
-// GetTokenDataParams defines parameters for GetTokenData.
-type GetTokenDataParams struct {
-	Symbol string `json:"symbol"`
-}
-
-// GetTradeDataParams defines parameters for GetTradeData.
-type GetTradeDataParams struct {
-	Symbol string `json:"symbol"`
-}
+// SwapTxDataResponse defines model for SwapTxDataResponse.
+type SwapTxDataResponse []SwapTxData
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// (GET /v1/assets)
-	GetAssets(ctx echo.Context, params GetAssetsParams) error
+	GetAssets(ctx echo.Context) error
+	// (GET /v1/assets/{asset})
+	GetAssetInfo(ctx echo.Context, asset string) error
+	// (GET /v1/bepswap)
+	GetBEPSwapData(ctx echo.Context) error
 	// This swagger/openapi 3.0 generated documentation// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
-	// (GET /v1/graphql)
-	GetGraphqlPlayground(ctx echo.Context) error
-	// (POST /v1/graphql/query)
-	PostGraphqlQuery(ctx echo.Context) error
 	// (GET /v1/health)
 	GetHealth(ctx echo.Context) error
-	// (GET /v1/poolData)
-	GetPoolData(ctx echo.Context, params GetPoolDataParams) error
-	// (GET /v1/stakerData)
-	GetStakerData(ctx echo.Context, params GetStakerDataParams) error
-	// (GET /v1/stakerTx)
-	GetStakerTx(ctx echo.Context, params GetStakerTxParams) error
+	// (GET /v1/pools/{asset})
+	GetPoolsData(ctx echo.Context, asset string) error
+	// (GET /v1/stakeTx/{address})
+	GetStakerTxForAddress(ctx echo.Context, address string) error
+	// (GET /v1/stakers)
+	GetStakersData(ctx echo.Context) error
+	// (GET /v1/stakers/{address})
+	GetStakersAddressData(ctx echo.Context, address string) error
+	// (GET /v1/stakers/{address}/{asset})
+	GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error
 	// JSON swagger/openapi 3.0 specification endpoint// (GET /v1/swagger.json)
 	GetSwagger(ctx echo.Context) error
-	// (GET /v1/swapData)
-	GetSwapData(ctx echo.Context, params GetSwapDataParams) error
-	// (GET /v1/swapTx)
-	GetSwapTx(ctx echo.Context, params GetSwapTxParams) error
-	// (GET /v1/tokenData)
-	GetTokenData(ctx echo.Context, params GetTokenDataParams) error
-	// (GET /v1/tradeData)
-	GetTradeData(ctx echo.Context, params GetTradeDataParams) error
-	// (GET /v1/userData)
-	GetUserData(ctx echo.Context) error
+	// (GET /v1/swapTx/{address})
+	GetSwapTxForAddress(ctx echo.Context, address string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -167,20 +264,33 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) GetAssets(ctx echo.Context) error {
 	var err error
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetAssetsParams
-	// ------------- Optional query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetAssets(ctx)
+	return err
+}
 
-	}
+// GetAssetInfo converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAssetInfo(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "asset" -------------
+	var asset string
 
-	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
+	err = runtime.BindStyledParameter("simple", false, "asset", ctx.Param("asset"), &asset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetAssets(ctx, params)
+	err = w.Handler.GetAssetInfo(ctx, asset)
+	return err
+}
+
+// GetBEPSwapData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetBEPSwapData(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetBEPSwapData(ctx)
 	return err
 }
 
@@ -193,24 +303,6 @@ func (w *ServerInterfaceWrapper) GetDocs(ctx echo.Context) error {
 	return err
 }
 
-// GetGraphqlPlayground converts echo context to params.
-func (w *ServerInterfaceWrapper) GetGraphqlPlayground(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetGraphqlPlayground(ctx)
-	return err
-}
-
-// PostGraphqlQuery converts echo context to params.
-func (w *ServerInterfaceWrapper) PostGraphqlQuery(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.PostGraphqlQuery(ctx)
-	return err
-}
-
 // GetHealth converts echo context to params.
 func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 	var err error
@@ -220,112 +312,84 @@ func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 	return err
 }
 
-// GetPoolData converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPoolData(ctx echo.Context) error {
+// GetPoolsData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPoolsData(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "asset" -------------
+	var asset string
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetPoolDataParams
-	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
+	err = runtime.BindStyledParameter("simple", false, "asset", ctx.Param("asset"), &asset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPoolData(ctx, params)
+	err = w.Handler.GetPoolsData(ctx, asset)
 	return err
 }
 
-// GetStakerData converts echo context to params.
-func (w *ServerInterfaceWrapper) GetStakerData(ctx echo.Context) error {
+// GetStakerTxForAddress converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakerTxForAddress(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "address" -------------
+	var address string
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetStakerDataParams
-	// ------------- Required query parameter "staker" -------------
-	if paramValue := ctx.QueryParam("staker"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument staker is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "staker", ctx.QueryParams(), &params.Staker)
+	err = runtime.BindStyledParameter("simple", false, "address", ctx.Param("address"), &address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter staker: %s", err))
-	}
-
-	// ------------- Optional query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetStakerData(ctx, params)
+	err = w.Handler.GetStakerTxForAddress(ctx, address)
 	return err
 }
 
-// GetStakerTx converts echo context to params.
-func (w *ServerInterfaceWrapper) GetStakerTx(ctx echo.Context) error {
+// GetStakersData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakersData(ctx echo.Context) error {
 	var err error
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetStakerTxParams
-	// ------------- Required query parameter "staker" -------------
-	if paramValue := ctx.QueryParam("staker"); paramValue != "" {
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetStakersData(ctx)
+	return err
+}
 
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument staker is required, but not found"))
-	}
+// GetStakersAddressData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakersAddressData(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "address" -------------
+	var address string
 
-	err = runtime.BindQueryParameter("form", true, true, "staker", ctx.QueryParams(), &params.Staker)
+	err = runtime.BindStyledParameter("simple", false, "address", ctx.Param("address"), &address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter staker: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
 	}
 
-	// ------------- Optional query parameter "limit" -------------
-	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetStakersAddressData(ctx, address)
+	return err
+}
 
-	}
+// GetStakersAddressAndAssetData converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStakersAddressAndAssetData(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "address" -------------
+	var address string
 
-	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	err = runtime.BindStyledParameter("simple", false, "address", ctx.Param("address"), &address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
 	}
 
-	// ------------- Optional query parameter "offset" -------------
-	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
+	// ------------- Path parameter "asset" -------------
+	var asset string
 
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
-	}
-
-	// ------------- Optional query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
+	err = runtime.BindStyledParameter("simple", false, "asset", ctx.Param("asset"), &asset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetStakerTx(ctx, params)
+	err = w.Handler.GetStakersAddressAndAssetData(ctx, address, asset)
 	return err
 }
 
@@ -338,148 +402,19 @@ func (w *ServerInterfaceWrapper) GetSwagger(ctx echo.Context) error {
 	return err
 }
 
-// GetSwapData converts echo context to params.
-func (w *ServerInterfaceWrapper) GetSwapData(ctx echo.Context) error {
+// GetSwapTxForAddress converts echo context to params.
+func (w *ServerInterfaceWrapper) GetSwapTxForAddress(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "address" -------------
+	var address string
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetSwapDataParams
-	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
+	err = runtime.BindStyledParameter("simple", false, "address", ctx.Param("address"), &address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetSwapData(ctx, params)
-	return err
-}
-
-// GetSwapTx converts echo context to params.
-func (w *ServerInterfaceWrapper) GetSwapTx(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetSwapTxParams
-	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
-	}
-
-	// ------------- Required query parameter "sender" -------------
-	if paramValue := ctx.QueryParam("sender"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument sender is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "sender", ctx.QueryParams(), &params.Sender)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter sender: %s", err))
-	}
-
-	// ------------- Required query parameter "dest" -------------
-	if paramValue := ctx.QueryParam("dest"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument dest is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "dest", ctx.QueryParams(), &params.Dest)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter dest: %s", err))
-	}
-
-	// ------------- Optional query parameter "limit" -------------
-	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
-	}
-
-	// ------------- Optional query parameter "offset" -------------
-	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetSwapTx(ctx, params)
-	return err
-}
-
-// GetTokenData converts echo context to params.
-func (w *ServerInterfaceWrapper) GetTokenData(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetTokenDataParams
-	// ------------- Required query parameter "symbol" -------------
-	if paramValue := ctx.QueryParam("symbol"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument symbol is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "symbol", ctx.QueryParams(), &params.Symbol)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter symbol: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetTokenData(ctx, params)
-	return err
-}
-
-// GetTradeData converts echo context to params.
-func (w *ServerInterfaceWrapper) GetTradeData(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetTradeDataParams
-	// ------------- Required query parameter "symbol" -------------
-	if paramValue := ctx.QueryParam("symbol"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument symbol is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "symbol", ctx.QueryParams(), &params.Symbol)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter symbol: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetTradeData(ctx, params)
-	return err
-}
-
-// GetUserData converts echo context to params.
-func (w *ServerInterfaceWrapper) GetUserData(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetUserData(ctx)
+	err = w.Handler.GetSwapTxForAddress(ctx, address)
 	return err
 }
 
@@ -491,50 +426,69 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	}
 
 	router.GET("/v1/assets", wrapper.GetAssets)
+	router.GET("/v1/assets/:asset", wrapper.GetAssetInfo)
+	router.GET("/v1/bepswap", wrapper.GetBEPSwapData)
 	router.GET("/v1/doc", wrapper.GetDocs)
-	router.GET("/v1/graphql", wrapper.GetGraphqlPlayground)
-	router.POST("/v1/graphql/query", wrapper.PostGraphqlQuery)
 	router.GET("/v1/health", wrapper.GetHealth)
-	router.GET("/v1/poolData", wrapper.GetPoolData)
-	router.GET("/v1/stakerData", wrapper.GetStakerData)
-	router.GET("/v1/stakerTx", wrapper.GetStakerTx)
+	router.GET("/v1/pools/:asset", wrapper.GetPoolsData)
+	router.GET("/v1/stakeTx/:address", wrapper.GetStakerTxForAddress)
+	router.GET("/v1/stakers", wrapper.GetStakersData)
+	router.GET("/v1/stakers/:address", wrapper.GetStakersAddressData)
+	router.GET("/v1/stakers/:address/:asset", wrapper.GetStakersAddressAndAssetData)
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
-	router.GET("/v1/swapData", wrapper.GetSwapData)
-	router.GET("/v1/swapTx", wrapper.GetSwapTx)
-	router.GET("/v1/tokenData", wrapper.GetTokenData)
-	router.GET("/v1/tradeData", wrapper.GetTradeData)
-	router.GET("/v1/userData", wrapper.GetUserData)
+	router.GET("/v1/swapTx/:address", wrapper.GetSwapTxForAddress)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"2lFIGgAA",
+	"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",
+	"AP//Wrp88089AAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

@@ -19,6 +19,7 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/google/go-cmp v0.3.1 // indirect
+	github.com/gorilla/mux v1.7.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/labstack/echo/v4 v4.1.11

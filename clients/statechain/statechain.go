@@ -59,7 +59,7 @@ type Event struct {
 	InHash  common.TxID     `json:"in_hash"`
 	OutHash common.TxID     `json:"out_hash"`
 	Pool    common.Asset    `json:"pool"`
-	Event   json.RawMessage `json:"event"`
+	Event   json.RawMessage `json:"event"` // Use due to different format depending on the event.Type
 }
 
 type EventSwap struct {
@@ -112,8 +112,7 @@ func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance,
 // GetPools from statechain
 func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", sc.baseUrl)
-	log.Debug().Str("poolUrl", poolUrl).Msg("url")
-
+	sc.logger.Debug().Msg(poolUrl)
 	resp, err := sc.netClient.Get(poolUrl)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")
@@ -137,7 +136,7 @@ func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 // GetPool with the given asset
 func (sc *StatechainAPI) GetPool(asset common.Asset) (*Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pool/%s", sc.baseUrl, asset.String())
-	log.Debug().Str("poolUrl", poolUrl).Msg("poolUrl")
+	sc.logger.Debug().Msg(poolUrl)
 	resp, err := sc.netClient.Get(poolUrl)
 	if nil != err {
 		return nil, errors.Wrap(err, "fail to get pools from statechain")
@@ -336,9 +335,9 @@ func (sc *StatechainAPI) scan() {
 		currentPos = maxID + 1
 	}
 	for {
-		sc.logger.Debug().Msg("sleeping statechain scan")
 		// TODO possible use an experiential back off method
-		time.Sleep(time.Second * 2)
+		sc.logger.Debug().Msg("sleeping statechain scan")
+		time.Sleep(time.Second * 1)
 		select {
 		case <-sc.stopchan:
 			return

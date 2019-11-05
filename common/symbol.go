@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/openlyinc/pointy"
 )
 
 const (
@@ -42,11 +40,6 @@ func (s Symbol) IsEmpty() bool {
 func (s Symbol) String() string {
 	// uppercasing again just in case someone created a ticker via Chain("rune")
 	return strings.ToUpper(string(s))
-}
-
-// StringP returns a string pointer
-func (s Symbol) StringP() *string {
-	return pointy.String(strings.ToUpper(string(s)))
 }
 
 func IsBNBSymbol(s Symbol) bool {
