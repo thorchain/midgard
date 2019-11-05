@@ -6,106 +6,6 @@ info:
   title: Chain-Service Public API
   version: 1.0.0-oas3
 paths:
-  "/v1/doc":
-    get:
-      operationId: GetDocs
-      responses:
-        "200":
-          description: swagger/openapi 3.0 spec generated docs
-      summary: This swagger/openapi 3.0 generated documentation
-      tags:
-        - Documentation
-  "/v1/graphql":
-    get:
-      operationId: GetGraphqlPlayground
-      responses:
-        "200":
-          description: GraphQL playground
-  "/v1/graphql/query":
-    post:
-      operationId: PostGraphqlQuery
-      responses:
-        "200":
-          description: GraphQL playground
-  "/v1/health":
-    get:
-      operationId: GetHealth
-      responses:
-        "200":
-          description: Get Health responce of API
-  "/v1/poolData":
-    get:
-      operationId: GetPoolData
-      parameters:
-        - in: query
-          name: asset
-          description: Get Specify asset Pool Data
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Asset pool information
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/PoolData"
-  "/v1/stakerData":
-    get:
-      parameters:
-        - in: query
-          name: staker
-          description: staker address
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: asset
-          description: Specify asset
-          required: false
-          schema:
-            type: string
-      operationId: GetStakerData
-      responses:
-        "200":
-          description: Get Staker info Data from API
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - "$ref": "#/components/schemas/StakerInfo"
-                  - "$ref": "#/components/schemas/StakerInfoWithAsset"
-  "/v1/stakerTx":
-    get:
-      operationId: GetStakerTx
-      parameters:
-        - in: query
-          name: staker
-          description: Staker address
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: limit
-          description: limit results returned default 25
-          required: false
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          description: offset ... default to 0
-          required: false
-          schema:
-            type: integer
-        - in: query
-          name: asset
-          description: Specify asset
-          required: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Get Staker transaction Data from API
   "/v1/swagger.json":
     get:
       operationId: GetSwagger
@@ -115,81 +15,35 @@ paths:
       summary: JSON swagger/openapi 3.0 specification endpoint
       tags:
         - Specification
-  "/v1/swapData":
+  "/v1/doc":
     get:
-      operationId: GetSwapData
-      parameters:
-        - in: query
-          name: asset
-          description: Specify asset
-          required: true
-          schema:
-            type: string
+      operationId: GetDocs
       responses:
         "200":
-          description: Swap data information
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/SwapData"
-  "/v1/swapTx":
+          description: swagger/openapi 3.0 spec generated docs
+      summary: This swagger/openapi 3.0 generated documentation
+      tags:
+        - Documentation
+  "/v1/health":
     get:
-      operationId: GetSwapTx
-      parameters:
-        - in: query
-          name: asset
-          description: asset
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: sender
-          description: sender address
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: dest
-          description: dest address
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: limit
-          description: limit results returned. Default 25
-          required: false
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          description: Offset. Default to 0
-          required: false
-          schema:
-            type: integer
+      operationId: GetHealth
       responses:
         "200":
-          description: Get Swap transaction Data from API
-  "/v1/tokenData":
+          description: Get Health responce of API
+  "/v1/bepswap":
     get:
-      parameters:
-        - in: query
-          name: symbol
-          description: Specify symbol
-          required: true
-          schema:
-            type: string
-      operationId: GetTokenData
+      operationId: GetBEPSwapData
       responses:
         "200":
-          description: Get Token Data from API
-  "/v1/assets":
+          $ref: '#/components/responses/BEPSwapResponse'
+  "/v1/assets/{asset}":
     get:
-      description: Returns an array containing all the assets supported.
+      description: Detail information about a Specify asset
+      operationId: GetAssetInfo
       parameters:
-        - in: query
+        - in: path
           name: asset
-          description: Specify asset
-          required: false
+          required: true
           schema:
             type: string
           examples:
@@ -199,33 +53,177 @@ paths:
             symbol:
               value: TOMOB-1E1
               summary: The symbol format without the chain format
+      responses:
+        "400":
+          $ref: '#/components/responses/GeneralErrorResponse'
+        "200":
+          $ref: '#/components/responses/AssetsDetailedResponse'
+  "/v1/assets":
+    get:
+      description: Returns an array containing all the assets supported.
       operationId: GetAssets
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
           $ref: '#/components/responses/AssetsResponse'
-  "/v1/tradeData":
+  "/v1/pools/{asset}":
     get:
+      description: Returns an object containing all the pool data for that asset.
+      operationId: GetPoolsData
       parameters:
-        - in: query
-          name: symbol
-          description: symbol
+        - in: path
+          name: asset
+          description: Specify asset
           required: true
           schema:
             type: string
-      operationId: GetTradeData
+          examples:
+            asset:
+              value: BNB.TOMOB-1E1
+              summary: The asset format with the chain (BNB) format to begin with
+            symbol:
+              value: TOMOB-1E1
+              summary: The symbol format without the chain format
       responses:
         "200":
-          description: Get Trade Data from API
-  "/v1/userData":
+          $ref: '#/components/responses/PoolsDetailedResponse'
+
+  "/v1/stakers":
     get:
-      operationId: GetUserData
+      description: Returns an array containing all the staker's addresses
+      operationId: GetStakersData
       responses:
         "200":
-          description: Get User Data from API
+          "$ref": "#/components/responses/StakersResponse"
+
+  "/v1/stakers/{address}":
+    get:
+      description: Returns an array containing all the pools the staker is staking.
+      operationId: GetStakersAddressData
+      parameters:
+        - in: path
+          name: address
+          description: staker address
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/StakersAddressDataResponse'
+
+  "/v1/stakers/{address}/{asset}":
+    get:
+      description: Returns an object containing stakers data for the asset of the stakers address
+      operationId: GetStakersAddressAndAssetData
+      parameters:
+        - in: path
+          name: address
+          description: staker address
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: asset
+          description: Specify asset
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/StakersAssetDataResponse'
+
+  "/v1/stakeTx/{address}":
+    get:
+      description: Returns an object containing stake tx data for the staker address
+      operationId: GetStakerTxForAddress
+      parameters:
+        - in: path
+          name: address
+          description: Staker address
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/StakeTxDataResponse'
+
+  "/v1/swapTx/{address}":
+    get:
+      operationId: GetSwapTxForAddress
+      parameters:
+        - in: path
+          name: address
+          description: Swap Tx address
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/SwapTxDataResponse'
 components:
   responses:
+    SwapTxDataResponse:
+      description: Return an array of transaction events
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SwapTxData'
+
+    StakeTxDataResponse:
+      description: Returns an object containing stake tx data for that staker
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/StakeTxData'
+    PoolsDetailedResponse:
+      description: Returns an object containing all the pool data for that asset.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PoolDetail'
+
+    BEPSwapResponse:
+      description: Returns an object containing global BEPSwap data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BEPSwapData'
+
+    StakersAddressDataResponse:
+      description: Array containing all the pools the staker is staking.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StakersAddressData'
+
+    StakersResponse:
+      description: Array containing all the stakers
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Stakers'
+
+    StakersAssetDataResponse:
+      description: Returns an object containing stake data for that asset for that staker.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StakersAssetData'
+
+    AssetsDetailedResponse:
+      description: Detailed Asset information
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AssetDetail'
+
     AssetsResponse:
       description: Asset Array
       content:
@@ -234,13 +232,473 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Asset'
+
     GeneralErrorResponse:
       description: Error message
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+
   schemas:
+    SwapTxData:
+      properties:
+        Pool:
+          $ref: '#/components/schemas/Asset'
+        Type:
+          type: string
+          enum: [sell, buy, double]
+        Status:
+          type: string
+          enum: [success, refund, priceCancelled]
+        From:
+          type: object
+          properties:
+            Address:
+              type: string
+            Coin:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: string
+            MEMO:
+              type: string
+            PriceTarget:
+              type: integer
+              format: int64
+            TxID:
+              type: string
+        To:
+          type: object
+          properties:
+            Address:
+              type: string
+            Coin:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: string
+            Fee:
+              type: integer
+              description: fees retained
+            Slip:
+              type: number
+              format: double
+              description: Swap slip
+            Gas:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: string
+            MEMO:
+              type: string
+            TxID:
+              type: string
+            Date:
+              type: string
+              format: 'date-time'
+            Height:
+              type: integer
+              format: int64
+    StakeTxData:
+      properties:
+        Pool:
+          $ref: '#/components/schemas/Asset'
+        Type:
+          type: string
+          enum: [stake, withdraw]
+        Status:
+          type: string
+          enum: [success, refund]
+        Send:
+          type: object
+          properties:
+            Coins:
+              type: array
+              items:
+                type: object
+                properties:
+                  Asset:
+                    $ref: '#/components/schemas/Asset'
+                  Amount:
+                    type: integer
+                    format: int64
+            MEMO:
+              type: string
+            TxID:
+              type: string
+        Receive:
+          type: object
+          properties:
+            Coins:
+              type: array
+              items:
+                type: object
+                properties:
+                  Asset:
+                    $ref: '#/components/schemas/Asset'
+                  Amount:
+                    type: integer
+                    format: int64
+            MEMO:
+              type: string
+            TxID:
+              type: string
+            GAS:
+              type: object
+              properties:
+                Asset:
+                  $ref: '#/components/schemas/Asset'
+                Amount:
+                  type: integer
+                  format: int64
+        Stake:
+          type: object
+          properties:
+            StakeUnitsAdded:
+              type: integer
+              format: int64
+              description: Stake Units Added
+        Withdraw:
+          type: object
+          properties:
+            StakeUnitsSubtracted:
+              type: integer
+              format: int64
+              description: wBP * stakeUnits/poolUnits
+            WithdrawBP:
+              type: integer
+              format: int64
+              description: Withdraw Base Points
+            Asymmetry:
+              type: number
+              format: double
+              description: Percent Asymmetry
+        Date:
+          type: string
+          format: 'date-time'
+        Height:
+          type: integer
+          format: int64
+          description: Statechain blockheight
+
+    BEPSwapData:
+      type: object
+      properties:
+        DAU:
+          type: integer
+          format: int64
+          description: Daily Active Users (unique bnb addresses interacting)
+        MAU:
+          type: integer
+          format: int64
+          description: Monthly Active Users
+        TotalUsers:
+          type: integer
+          format: int64
+          description: Total Unique Swappers & Stakers
+        DailyTx:
+          type: integer
+          format: int64
+          description: Daily transactions (bnb tx)
+        MonthlyTx:
+          type: integer
+          format: int64
+          description: Monthly transactions (bnb tx)
+        TotalTx:
+          type: integer
+          format: int64
+          description: Total transactions (bnb tx)
+        TotalVolume24hr:
+          type: integer
+          format: int64
+          description: Total (in RUNE Value) of all assets swapped in 24hrs
+        TotalVolume:
+          type: integer
+          format: int64
+          description: Total (in RUNE Value) of all assets swapped since start.
+        TotalStaked:
+          type: integer
+          format: int64
+          description: Total staked (in RUNE Value).
+        TotalDepth:
+          type: integer
+          format: int64
+          description: Total Rune Balances
+        TotalEarned:
+          type: integer
+          format: int64
+          description: Total earned (in RUNE Value).
+        PoolCount:
+          type: integer
+          format: int64
+          description: Number of active pools
+        TotalAssetBuys:
+          type: integer
+          format: int64
+          description: Total buying transactions (bnb tx)
+        TotalAssetSells:
+          type: integer
+          format: int64
+          description: Total selling transactions (bnb tx)
+        totalStakeTx:
+          type: integer
+          format: int64
+          description: Total staking transactions (bnb tx)
+        totalWithdrawTx:
+          type: integer
+          format: int64
+          description: Total withdrawing transactions (bnb tx)
+
+    StakersAddressData:
+      type: object
+      properties:
+        StakeArray:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+        TotalStaked:
+          type: integer
+          format: int64
+          description: poolStaked  across all pools.
+        TotalEarned:
+          type: integer
+          format: int64
+          description: Total value of earnings in RUNE across all pools.
+        TotalROI:
+          type: integer
+          format: int64
+          description: Average all all pool ROIs.
+
+    StakersAssetData:
+      type: object
+      properties:
+        Asset:
+          $ref: '#/components/schemas/Asset'
+        StakeUnits:
+          type: integer
+          format: int64
+          description: Represents ownership of a pool.
+        RuneStaked:
+          type: integer
+          format: int64
+          description: Amount of RUNE staked.
+        AssetStaked:
+          type: integer
+          format: int64
+          description: Amount of Tokens staked.
+        PoolStaked:
+          type: integer
+          format: int64
+          description: Rune Value staked.
+        RuneEarned:
+          type: integer
+          format: int64
+          description: Value of RUNE earned from the pool.
+        AssetEarned:
+          type: integer
+          format: int64
+          description: Value of assets earned from the pool. i.e stakeUnits/poolUnits * (assetDepth - assetsStakedTotal)
+        PoolEarned:
+          type: integer
+          format: int64
+          description: Total value of earnings in RUNE. i.e runeEarned + (assetsEarned * assetPrice)
+        RuneROI:
+          type: number
+          format: double
+          description: RuneEarned/runeStaked
+        AssetROI:
+          type: number
+          format: double
+          description: assetEarned/assetStaked
+        PoolROI:
+          type: number
+          format: double
+          description: (runeROI + assetROI)/2
+        DateFirstStaked:
+          type: string
+          format: 'date-time'
+
+    Stakers:
+      type: string
+      description: staker address
+
+
+    PoolDetail:
+      type: object
+      properties:
+        Asset:
+          $ref: '#/components/schemas/Asset'
+        Price:
+          type: number
+          format: double
+          description: Price of Asset (in Rune).
+        AssetStakedTotal:
+          type: integer
+          format: int64
+          description: Total Asset Staked
+        RuneStakedTotal:
+          type: integer
+          format: int64
+          description: Total Rune Staked
+        PoolStakedTotal:
+          type: integer
+          format: int64
+          description: Rune Value staked Total
+        AssetDepth:
+          type: integer
+          format: int64
+          description: Total Current Asset Balance
+        RuneDepth:
+          type: integer
+          format: int64
+          description: Total Current Rune Balance
+        PoolDepth:
+          type: integer
+          format: int64
+          description: RuneDepth * 2
+        PoolUnits:
+          type: integer
+          format: int64
+          description: Total poolUnits outstanding.
+        SellVolume:
+          type: integer
+          format: int64
+          description: Total volume for ASSET>RUNE (in RUNE).
+        BuyVolume:
+          type: integer
+          format: int64
+          description: Total volume for RUNE->ASSET (in ASSET)
+        PoolVolume:
+          type: integer
+          format: int64
+          description: Two-way volume in all-time, in Rune
+        PoolVolume24hr:
+          type: integer
+          format: int64
+          description: Two-way volume in 24hrs, in Rune
+        SellTxAverage:
+          type: integer
+          format: int64
+          description: Average transaction size for ASSET>RUNE (in RUNE)
+        BuyTxAverage:
+          type: integer
+          format: int64
+          description: Average transaction size for RUNE->ASSET (in ASSET)
+        PoolTxAverage:
+          type: integer
+          format: int64
+          description: Average Pool transaction
+        SellSlipAverage:
+          type: integer
+          format: int64
+          description: Average tradeSlip for ASSET->RUNE in %
+        BuySlipAverage:
+          type: integer
+          format: int64
+          description: Average tradeSlip for RUNE->ASSET in %
+        PoolSlipAverage:
+          type: integer
+          format: int64
+          description: Average Pool Slip
+        SellFeeAverage:
+          type: integer
+          format: int64
+          description: Average fee size for ASSET->RUNE. (in RUNE).
+        BuyFeeAverage:
+          type: integer
+          format: int64
+          description: Average fee size for RUNE->ASSET. (in ASSET)
+        PoolFeeAverage:
+          type: integer
+          format: int64
+          description: Avergage Pool fee
+        SellFeesTotal:
+          type: integer
+          format: int64
+          description: Total Fees (in Rune).
+        BuyFeesTotal:
+          type: integer
+          format: int64
+          description: Total Fees (in Asset).
+        PoolFeesTotal:
+          type: integer
+          format: int64
+          description: Total Fees
+        SellAssetCount:
+          type: integer
+          format: int64
+          description: Number of ASSET->RUNE
+        BuyAssetCount:
+          type: integer
+          format: int64
+          description: Number of  RUNE->ASSET.
+        SwappingTxCount:
+          type: integer
+          format: int64
+          description: Number of swapping transactions in the pool. (buys + sells)
+        SwappersCount:
+          type: integer
+          format: int64
+          description: Number of unique swappers interacting with pool
+        StakeTxCount:
+          type: integer
+          format: int64
+          description: Number of staking transactions.
+        WithdrawTxCount:
+          type: integer
+          format: int64
+          description: Number of Withdraw tx
+        StakingTxCount:
+          type: integer
+          format: int64
+          description: Number of stakes + withdraw tx
+        StakersCount:
+          type: integer
+          format: int64
+          description: Number of unique Stakers.
+        AssetROI:
+          type: number
+          format: double
+          description: Asset Return on investment
+        RuneROI:
+          type: number
+          format: double
+          description: Asset Return on investment
+        PoolROI:
+          type: number
+          format: double
+          description: Pool ROI
+        PoolROI12:
+          type: number
+          format: double
+          description: Pool ROI for 12 months
+
+    AssetDetail:
+      type: object
+      properties:
+        Asset:
+          $ref: '#/components/schemas/Asset'
+        Name:
+          type: string
+        DateCreated:
+          type: string
+          format: date
+        Logo:
+          type: string
+        priceRune:
+          type: number
+          format: double
+        priceUSD:
+          type: number
+          format: double
+
     Error:
       required:
         - "error"
@@ -248,6 +706,7 @@ components:
       properties:
         error:
           type: string
+
     Asset:
       type: object
       properties:
@@ -257,115 +716,9 @@ components:
           type: string
         ticker:
           type: string
-    SwapData:
-      type: object
-      properties:
-        asset:
-          type: string
-        aveTxTkn:
-          type: number
-        aveTxRune:
-          type: number
-        aveSlipTkn:
-          type: number
-        aveSlipRune:
-          type: number
-        numTxTkn:
-          type: number
-        numTxRune:
-          type: number
-        aveFeeTkn:
-          type: number
-        aveFeeRune:
-          type: number
-      required:
-        - asset
-        - aveTxTkn
-        - aveTxRune
-        - aveSlipTkn
-        - aveSlipRune
-        - numTxTkn
-        - numTxRune
-        - aveFeeTkn
-        - aveFeeRune
-    StakerInfo:
-      type: object
-      properties:
-        address:
-          type: string
-        asset:
-          type: string
-        dateFirstStaked:
-          type: string
-        runeEarned:
-          type: number
-        runeStaked:
-          type: number
-        tokensEarned:
-          type: number
-        tokensStaked:
-          type: number
-        units:
-          type: number
-      required:
-        - address
-        - asset
-        - dateFirstStaked
-        - runeEarned
-        - runeStaked
-        - tokensEarned
-        - tokensStaked
-        - units
-    StakerInfoWithAsset:
-      type: array
-      items:
-        type: string
-    PoolData:
-      type: object
-      properties:
-        asset:
-          type: string
-        totalFeesTKN:
-          type: number
-        totalFeesRune:
-          type: number
-        vol24hr:
-          type: number
-        volAT:
-          type: number
-        depth:
-          type: number
-        poolUnits:
-          type: number
-        roiAT:
-          type: number
-        roi30:
-          type: number
-        roi12:
-          type: number
-        numStakers:
-          type: number
-        numStakeTx:
-          type: number
-        numSwaps:
-          type: number
-      required:
-        - asset
-        - totalFeesTKN
-        - totalFeesRune
-        - vol24hr
-        - volAT
-        - depth
-        - poolUnits
-        - roiAT
-        - roi30
-        - roi12
-        - numStakers
-        - numStakeTx
-        - numSwaps
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
 tags:
-  - description: Public Bepswap Chain-Service's REST API
+  - description: Public Chain-Service's REST API
     name: Chain-Service Public API
