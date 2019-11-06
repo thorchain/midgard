@@ -36,7 +36,7 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	}
 
 	if len(resp) == 0 || len(resp[0].Series) == 0 || len(resp[0].Series[0].Values) == 0 {
-		return noPool, fmt.Errorf("Pool does not exist")
+		return noPool, fmt.Errorf("Asset does not exist")
 	}
 
 	pool := Pool{

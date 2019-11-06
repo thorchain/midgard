@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
 	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	"gitlab.com/thorchain/bepswap/chain-service/config"
@@ -26,6 +27,7 @@ import (
 
 var (
 	marketsPerPage = 1000
+	tokensPerPage  = 1000
 )
 
 type Binance interface {
@@ -39,6 +41,8 @@ type BinanceClient struct {
 	httpClient    *http.Client
 	marketsLock   *sync.Mutex
 	cachedMarkets *CachedMarkets
+	tokensLock    *sync.Mutex
+	cachedTokens  *CachedTokens
 }
 
 // NewBinanceClient create a new instance of BinanceClient
@@ -60,7 +64,26 @@ func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 		},
 		marketsLock:   &sync.Mutex{},
 		cachedMarkets: nil,
+		tokensLock:    &sync.Mutex{},
+		cachedTokens:  nil,
 	}, nil
+}
+
+func (bc *BinanceClient) ensureTokensDataAvailable() error {
+	if bc.cachedTokens == nil {
+		if err := bc.getAllTokens(); nil != err {
+			return errors.Wrap(err, "fail to get all tokens data from binance")
+		}
+		return nil
+	}
+	d := time.Since(bc.cachedTokens.LastUpdated)
+	if d > bc.cfg.TokensCacheDuration {
+		if err := bc.getAllTokens(); nil != err {
+			return errors.Wrap(err, "fail to get all markets data from binance")
+		}
+		return nil
+	}
+	return nil
 }
 
 // ensureMarketsDataAvailable is going to ensure all the markets data are available and fresh
@@ -69,12 +92,38 @@ func (bc *BinanceClient) ensureMarketsDataAvailable() error {
 		if err := bc.getAllMarkets(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
 		}
+		return nil
 	}
 	d := time.Since(bc.cachedMarkets.LastUpdated)
 	if d > bc.cfg.MarketsCacheDuration {
 		if err := bc.getAllMarkets(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
 		}
+		return nil
+	}
+	return nil
+}
+
+// getAllTokens will call getTokens recursively to get all the tokens data
+func (bc *BinanceClient) getAllTokens() error {
+	offset := 0
+	var tokens []Token
+	for {
+		result, err := bc.getTokens(offset)
+		if err != nil {
+			return errors.Wrap(err, "fail to get markets from binance")
+		}
+		tokens = append(tokens, result...)
+		if len(result) < tokensPerPage { // we finished here
+			break
+		}
+		offset += len(result)
+	}
+	bc.tokensLock.Lock()
+	defer bc.tokensLock.Unlock()
+	bc.cachedTokens = &CachedTokens{
+		Tokens:      tokens,
+		LastUpdated: time.Now(),
 	}
 	return nil
 }
@@ -85,7 +134,7 @@ func (bc *BinanceClient) getAllMarkets() error {
 	var markets []Market
 	for {
 		result, err := bc.getMarkets(offset)
-		if nil != err {
+		if err != nil {
 			return errors.Wrap(err, "fail to get markets from binance")
 		}
 		markets = append(markets, result...)
@@ -100,12 +149,39 @@ func (bc *BinanceClient) getAllMarkets() error {
 		Markets:     markets,
 		LastUpdated: time.Now(),
 	}
+
 	return nil
+}
+
+func (bc *BinanceClient) getTokens(offset int) ([]Token, error) {
+	requestUrl := bc.getBinanceApiUrl("/api/v1/tokens", fmt.Sprintf("limit=%d&offset=%d", tokensPerPage, offset))
+	bc.logger.Debug().Msg(requestUrl)
+	resp, err := bc.httpClient.Get(requestUrl)
+	if nil != err {
+		return nil, errors.Wrapf(err, "fail to send get request to %s", requestUrl)
+	}
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			bc.logger.Error().Err(err).Msg("fail to close response body")
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("unexpected status code %d from %s", resp.StatusCode, requestUrl)
+	}
+
+	var tokens []Token
+	if err := json.NewDecoder(resp.Body).Decode(&tokens); nil != err {
+		return nil, errors.Wrap(err, "fail to unmarshal market")
+	}
+	return tokens, nil
 }
 
 // getMarkets from binance chain
 func (bc *BinanceClient) getMarkets(offset int) ([]Market, error) {
 	requestUrl := bc.getBinanceApiUrl("/api/v1/markets", fmt.Sprintf("limit=%d&offset=%d", marketsPerPage, offset))
+	bc.logger.Debug().Msg(requestUrl)
+
 	resp, err := bc.httpClient.Get(requestUrl)
 	if nil != err {
 		return nil, errors.Wrapf(err, "fail to send get request to %s", requestUrl)
@@ -145,6 +221,26 @@ func (bc *BinanceClient) getDepth(symbol string) (*SourceMarketDepth, error) {
 		return nil, errors.Wrap(err, "fail to unmarshal result")
 	}
 	return &smd, nil
+}
+
+func (bc *BinanceClient) GetToken(asset common.Asset) (*Token, error) {
+	if asset.IsEmpty() {
+		return nil, errors.New("empty asset")
+	}
+
+	if err := bc.ensureTokensDataAvailable(); nil != err {
+		bc.logger.Error().Err(err).Msg("fail to get token data from binance")
+		return nil, err
+	}
+
+	var t Token
+	for _, item := range bc.cachedTokens.Tokens {
+		if strings.EqualFold(item.Symbol, asset.Symbol.String()) {
+			t = item
+			break
+		}
+	}
+	return &t, nil
 }
 
 // GetMarketData for chain service

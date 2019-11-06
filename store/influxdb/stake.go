@@ -17,12 +17,12 @@ type StakeEvent struct {
 	RuneAmount  float64
 	TokenAmount float64
 	Units       float64
-	Pool        common.Ticker
+	Asset       common.Asset
 	Address     common.BnbAddress
 	Timestamp   time.Time
 }
 
-func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units float64, pool common.Ticker, addr common.BnbAddress, ts time.Time) StakeEvent {
+func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units float64, asset common.Asset, addr common.BnbAddress, ts time.Time) StakeEvent {
 	return StakeEvent{
 		ID:          id,
 		InHash:      inhash,
@@ -30,7 +30,7 @@ func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units floa
 		RuneAmount:  rAmt,
 		TokenAmount: tAmt,
 		Units:       units,
-		Pool:        pool,
+		Asset:       asset,
 		Address:     addr,
 		Timestamp:   ts,
 	}
@@ -49,7 +49,7 @@ func (evt StakeEvent) Point() client.Point {
 		Measurement: "stakes",
 		Tags: map[string]string{
 			"ID":       fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			"pool":     evt.Pool.String(),
+			"pool":     evt.Asset.String(),
 			"address":  evt.Address.String(),
 			"in_hash":  evt.InHash.String(),
 			"out_hash": evt.OutHash.String(),
@@ -96,7 +96,7 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 		series := resp[0].Series[0]
 		for _, vals := range resp[0].Series[0].Values {
 			var inhash, outhash common.TxID
-			var pool common.Ticker
+			var asset common.Asset
 			var addr common.BnbAddress
 			id, _ := getIntValue(series.Columns, vals, "ID")
 			temp, _ := getStringValue(series.Columns, vals, "in_hash")
@@ -114,8 +114,9 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 			if err != nil {
 				return
 			}
-			temp, _ = getStringValue(series.Columns, vals, "pool")
-			pool, err = common.NewTicker(temp)
+			temp, _ = getStringValue(series.Columns, vals, "asset")
+			// asset, err = common.NewTicker(temp)
+			asset, err = common.NewAsset(temp)
 			if err != nil {
 				return
 			}
@@ -124,7 +125,7 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 			units, _ := getFloatValue(series.Columns, vals, "units")
 			ts, _ := getTimeValue(series.Columns, vals, "time")
 			event := NewStakeEvent(
-				id, inhash, outhash, rAmt, tAmt, units, pool, addr, ts,
+				id, inhash, outhash, rAmt, tAmt, units, asset, addr, ts,
 			)
 			events = append(events, event)
 		}

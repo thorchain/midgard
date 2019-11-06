@@ -9,6 +9,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func poolMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
+	log.Println("poolMockedEndpoint Hit!")
+
+	vars := mux.Vars(request)
+	asset := vars["asset"]
+	path := fmt.Sprintf("./test/mocks/thorNode/pool/%s.json", asset)
+
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("Error: %v", err.Error())
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(writer, string(content))
+}
+
 func poolsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("poolsMockedEndpoint Hit!")
 
@@ -48,6 +64,7 @@ func main() {
 
 	router.HandleFunc("/swapservice/events/{id}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/swapservice/pools", poolsMockedEndpoint).Methods("GET")
+	router.HandleFunc("/swapservice/pool/{asset}", poolMockedEndpoint).Methods("GET")
 
 	// setup server
 	srv := &http.Server{

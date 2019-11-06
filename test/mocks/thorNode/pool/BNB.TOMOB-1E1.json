@@ -1,0 +1,13 @@
+{
+  "balance_rune": "100000000000",
+  "balance_asset": "3500000000",
+  "asset": {
+    "chain": "BNB",
+    "symbol": "TOMOB-1E1",
+    "ticker": "TOMOB"
+  },
+  "pool_units": "51750000000",
+  "pool_address": "tbnb1hzwfk6t3sqjfuzlr0ur9lj920gs37gg92gtay9",
+  "status": "Enabled",
+  "expiry_in_block_height": "24580"
+}
