@@ -19,6 +19,7 @@ type Configuration struct {
 	Influx          InfluxDBConfiguration   `json:"influx" mapstructure:"influx"`
 	Statechain      StateChainConfiguration `json:"statechain" mapstructure:"statechain"`
 	Binance         BinanceConfiguration    `json:"binance" mapstructure:"binance"`
+	IsTestNet       bool                    `json:"is_testnet" mapstructure:"is_testnet"`
 }
 
 // InfluxDBConfiguration config for Influxdb
@@ -46,6 +47,7 @@ type BinanceConfiguration struct {
 	Scheme               string        `json:"scheme" mapstructure:"scheme"`
 	RequestTimeout       time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 	MarketsCacheDuration time.Duration `json:"markets_cache_duration" mapstructure:"markets_cache_duration"`
+	TokensCacheDuration  time.Duration `json:"tokens_cache_duration" mapstructure:"tokens_cache_duration"`
 	FullNodeHost         string        `json:"full_node_host" mapstructure:"full_node_host"`
 	FullNodeScheme       string        `json:"full_node_scheme" mapstructure:"full_node_scheme"`
 	IsTestNet            bool          `json:"is_testnet" mapstructure:"is_testnet"`
@@ -56,7 +58,7 @@ type CoingeckoConfiguration struct {
 	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 }
 
-func applyDefaultObserverConfig() {
+func applyDefaultConfig() {
 	viper.SetDefault("listen_port", 8080)
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
@@ -69,12 +71,13 @@ func applyDefaultObserverConfig() {
 	viper.SetDefault("binance.scheme", "https")
 	viper.SetDefault("binance.request_timeout", "30s")
 	viper.SetDefault("binance.markets_cache_duration", "24h")
+	viper.SetDefault("binance.tokens_cache_duration", "24h")
 	viper.SetDefault("binance.full_node_scheme", "http")
 	viper.SetDefault("binance.is_testnet", "true")
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
-	applyDefaultObserverConfig()
+	applyDefaultConfig()
 	var cfg Configuration
 	viper.SetConfigName(strings.TrimRight(path.Base(file), ".json"))
 	viper.AddConfigPath(".")

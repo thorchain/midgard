@@ -40,7 +40,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(stake.RuneAmount, Equals, 12.3)
 	c.Check(stake.TokenAmount, Equals, 14.4)
 	c.Check(stake.Units, Equals, 5.1)
-	c.Check(stake.Pool.String(), Equals, "BNB")
+	c.Check(stake.Asset.String(), Equals, "BNB")
 	c.Check(stake.Address.String(), Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 
 	err = clc.AddEvent(stake)
@@ -87,7 +87,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(evt.RuneAmount, Equals, 12.3)
 	c.Check(evt.TokenAmount, Equals, 14.4)
 	c.Check(evt.Units, Equals, 5.1)
-	c.Check(evt.Pool.String(), Equals, "LOKI")
+	c.Check(evt.Asset.String(), Equals, "LOKI")
 	c.Check(evt.Address.String(), Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	c.Check(evt.Timestamp.UnixNano(), Equals, now.UnixNano())
 
@@ -101,7 +101,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(evt.RuneAmount, Equals, 12.3)
 	c.Check(evt.TokenAmount, Equals, 14.4)
 	c.Check(evt.Units, Equals, 5.1)
-	c.Check(evt.Pool.String(), Equals, "BNB")
+	c.Check(evt.Asset.String(), Equals, "BNB")
 	c.Check(evt.Address.String(), Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	c.Check(evt.Timestamp.UnixNano(), Equals, now.UnixNano())
 	evt = events[1]
@@ -111,7 +111,7 @@ func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	c.Check(evt.RuneAmount, Equals, 12.3)
 	c.Check(evt.TokenAmount, Equals, 14.4)
 	c.Check(evt.Units, Equals, 5.1)
-	c.Check(evt.Pool.String(), Equals, "LOKI")
+	c.Check(evt.Asset.String(), Equals, "LOKI")
 	c.Check(evt.Address.String(), Equals, "bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	c.Check(evt.Timestamp.UnixNano(), Equals, now.UnixNano())
 

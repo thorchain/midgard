@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/99designs/gqlgen/handler"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -15,6 +13,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
+	"gitlab.com/thorchain/bepswap/chain-service/clients/logo"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
 	"gitlab.com/thorchain/bepswap/chain-service/common"
 
@@ -36,16 +35,18 @@ type Handlers struct {
 	logger           zerolog.Logger
 	tokenService     *coingecko.TokenService
 	binanceClient    *binance.BinanceClient
+	logoClient       *logo.LogoClient
 }
 
 // New creates a new service interface with the Datastore of your choise
-func New(store store.Store, stateChainClient *statechain.StatechainAPI, logger zerolog.Logger, tokenService *coingecko.TokenService, binanceClient *binance.BinanceClient) *Handlers {
+func New(store store.Store, stateChainClient *statechain.StatechainAPI, logger zerolog.Logger, tokenService *coingecko.TokenService, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:            store,
 		stateChainClient: stateChainClient,
 		logger:           logger,
 		tokenService:     tokenService,
 		binanceClient:    binanceClient,
+		logoClient:       logoClient,
 	}
 }
 
@@ -104,17 +105,21 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
 	}
 
-	t := time.Now()
+	tokenData, err := h.binanceClient.GetToken(pool.Asset)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("fail to get token data from binance")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+	}
 
 	res := api.AssetsDetailedResponse{
 		Asset:       helpers.ConvertAssetForAPI(pool.Asset),
-		DateCreated: &t,
-		Logo:        pointy.String(fmt.Sprintf("%s://%s/blockchains/binance/assets/bnb/logo.png", ctx.Scheme(), ctx.Request().Host)),
-		Name:        pointy.String("COIN_NAME"),
-		PriceRune:   pointy.Float64(1.0),
-		PriceUSD:    pointy.Float64(2.0),
+		// DateCreated: &t, // TODO Pending
+		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
+		Name:        pointy.String(tokenData.Name),
+		// PriceRune:   pointy.Float64(-1), // TODO Pending
+		// PriceUSD:    pointy.Float64(-1), // TODO Pending
 	}
-	spew.Dump(asset)
+
 	return ctx.JSON(http.StatusOK, res)
 }
 
@@ -141,9 +146,7 @@ func (h *Handlers) GetSwapTxForAddress(ctx echo.Context, address string) error {
 	// 	return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
 	// }
 
-	response := api.SwapTxDataResponse{
-
-	}
+	response := api.SwapTxDataResponse{}
 
 	return ctx.JSON(http.StatusOK, response)
 }
@@ -183,9 +186,7 @@ func (h *Handlers) GetStakerTxForAddress(ctx echo.Context, address string) error
 	// 	return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
 	// }
 
-	response := api.StakeTxDataResponse{
-
-	}
+	response := api.StakeTxDataResponse{}
 
 	return ctx.JSON(http.StatusOK, response)
 }

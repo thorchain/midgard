@@ -260,7 +260,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				common.UintToFloat64(stake.RuneAmount),
 				common.UintToFloat64(stake.AssetAmount),
 				common.UintToFloat64(stake.StakeUnits),
-				evt.Pool.Ticker,
+				evt.Pool,
 				addr,
 				tx.Timestamp,
 			).Point())
@@ -285,7 +285,7 @@ func (sc *StatechainAPI) GetPoints(id int64) (int64, []client.Point, error) {
 				float64(unstake.RuneAmount.Int64()),
 				float64(unstake.AssetAmount.Int64()),
 				float64(unstake.StakeUnits.Int64()),
-				evt.Pool.Ticker,
+				evt.Pool,
 				addr,
 				tx.Timestamp,
 			).Point())
@@ -344,7 +344,7 @@ func (sc *StatechainAPI) scan() {
 		default:
 			sc.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
 			maxID, points, err := sc.GetPoints(currentPos)
-			if nil != err {
+			if err != nil {
 				sc.logger.Error().Err(err).Msg("fail to get points from statechain")
 				continue // we will retry a bit later
 			}
