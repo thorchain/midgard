@@ -12,10 +12,10 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/logo"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
+
 	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
-	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/store"
@@ -33,18 +33,16 @@ type Handlers struct {
 	store            store.Store
 	stateChainClient *statechain.StatechainAPI
 	logger           zerolog.Logger
-	tokenService     *coingecko.TokenService
 	binanceClient    *binance.BinanceClient
 	logoClient       *logo.LogoClient
 }
 
 // New creates a new service interface with the Datastore of your choise
-func New(store store.Store, stateChainClient *statechain.StatechainAPI, logger zerolog.Logger, tokenService *coingecko.TokenService, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
+func New(store store.Store, stateChainClient *statechain.StatechainAPI, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:            store,
 		stateChainClient: stateChainClient,
 		logger:           logger,
-		tokenService:     tokenService,
 		binanceClient:    binanceClient,
 		logoClient:       logoClient,
 	}
@@ -93,7 +91,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
 
 	// asset passed in
-	ass, err := common.NewAsset(asset)
+	ass, err := models.NewAsset(asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
@@ -112,10 +110,10 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	}
 
 	res := api.AssetsDetailedResponse{
-		Asset:       helpers.ConvertAssetForAPI(pool.Asset),
+		Asset: helpers.ConvertAssetForAPI(pool.Asset),
 		// DateCreated: &t, // TODO Pending
-		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
-		Name:        pointy.String(tokenData.Name),
+		Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
+		Name: pointy.String(tokenData.Name),
 		// PriceRune:   pointy.Float64(-1), // TODO Pending
 		// PriceUSD:    pointy.Float64(-1), // TODO Pending
 	}
@@ -216,11 +214,21 @@ func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
 }
 
 // (GET /v1/pools/{asset})
-func (h *Handlers) GetPoolsData(ctx echo.Context, asset string) error {
-	ass0, _ := common.NewAsset(asset)
+func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
+	asset, err := models.NewAsset(ass)
+	if err != nil {
+		h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	}
+
+	// pool, err := h.store.GetPool(asset)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Str("params.Asset", asset.String()).Msg("ERROR")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "EREREER "})
+	// }
 
 	response := api.PoolsDetailedResponse{
-		Asset:            helpers.ConvertAssetForAPI(ass0),
+		Asset:            helpers.ConvertAssetForAPI(asset),
 		AssetDepth:       pointy.Int64(11),
 		AssetROI:         pointy.Float64(22.22),
 		AssetStakedTotal: pointy.Int64(33),
@@ -274,10 +282,10 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	ass0, _ := common.NewAsset("BNB")
-	ass1, _ := common.NewAsset("FSN-F1B")
-	ass2, _ := common.NewAsset("FTM-585")
-	ass3, _ := common.NewAsset("LOK-3C0")
+	ass0, _ := models.NewAsset("BNB")
+	ass1, _ := models.NewAsset("FSN-F1B")
+	ass2, _ := models.NewAsset("FTM-585")
+	ass3, _ := models.NewAsset("LOK-3C0")
 
 	response := api.StakersAddressDataResponse{
 		StakeArray: &[]api.Asset{
@@ -296,7 +304,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 
 // (GET /v1/stakers/{address}/{asset})
 func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error {
-	ass0, _ := common.NewAsset(asset)
+	ass0, _ := models.NewAsset(asset)
 	var response = api.StakersAssetDataResponse{
 		Asset:           helpers.ConvertAssetForAPI(ass0),
 		AssetEarned:     pointy.Int64(111),

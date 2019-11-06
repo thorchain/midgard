@@ -1,7 +1,7 @@
 package binance
 
 import (
-	"gitlab.com/thorchain/bepswap/chain-service/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type Dummy struct {

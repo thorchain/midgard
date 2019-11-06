@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 )
 
 const precision = "n"

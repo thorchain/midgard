@@ -13,6 +13,18 @@ config:
 	@echo GOBIN: ${GOBIN}
 	@echo GOPATH: ${GOPATH}
 
+.PHONY: tools
+install-uml-tools:
+	go get -u github.com/kazukousen/gouml/cmd/gouml # uml tool
+	go get -u github.com/yogendra/plantuml-go # uml to svg tool
+
+generate-uml:
+	mkdir -p ./doc/uml
+	gouml i . -o ./doc/uml/classes.puml
+	plantuml-go -f svg -o output ./doc/uml/classes.puml
+
+
+
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen

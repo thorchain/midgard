@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/thorchain/bepswap/chain-service/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type Pool struct {
@@ -25,6 +25,10 @@ type Pool struct {
 }
 
 type Pools []Pool
+
+// func (in Client) GetPool1(asset common.Asset) (Pool, error) {
+//
+// }
 
 func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	var noPool Pool

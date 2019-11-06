@@ -6,13 +6,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gin-contrib/cache"
-	"github.com/gin-contrib/cache/persistence"
-	"github.com/gin-contrib/logger"
+
+
 	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -20,31 +17,33 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v2"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/logo"
-	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
 	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
-	"gitlab.com/thorchain/bepswap/chain-service/config"
-	"gitlab.com/thorchain/bepswap/chain-service/store"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
+
+	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
+
+
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )
 
 // Server
 type Server struct {
-	cfg              config.Configuration
-	logger           zerolog.Logger
-	echoEngine       *echo.Echo
-	ginEngine        *gin.Engine
-	httpServer       *http.Server
-	store            store.Store
+	cfg        config.Configuration
+	logger     zerolog.Logger
+	echoEngine *echo.Echo
+	// ginEngine        *gin.Engine
+	httpServer *http.Server
+	// store            store.Store
 	stateChainClient *statechain.StatechainAPI
-	tokenService     *coingecko.TokenService
-	binanceClient    *binance.BinanceClient
-	cacheStore       persistence.CacheStore
+
+	// binanceClient    *binance.BinanceClient
+	// cacheStore       persistence.CacheStore
 }
 
 func initLog(level string, pretty bool) zerolog.Logger {
@@ -92,19 +91,27 @@ func New(cfgFile *string) (*Server, error) {
 	logoClient := logo.NewLogoClient(cfg)
 
 	// Setup stateChain API scanner
-	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient, store)
+	stateChainApi, err := statechain.NewStatechainAPI(cfg.ThorChain, binanceClient, store)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
 
-	// Setup up token Service API client
-	tokenService, err := coingecko.NewTokenService(cfg.Binance, store)
+	// store2, err := influx.New()
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "fail to create influxdb")
+	// }
+
+	store3, err := timescale.New()
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to create token service")
+		return nil, errors.Wrap(err, "fail to create timescale")
 	}
 
+	thorChainAPI, err := thorChain.New(cfg.ThorChain, store3)
+
+	spew.Dump(thorChainAPI)
+
 	// Setup Cache store
-	cacheStore := persistence.NewInMemoryStore(10 * time.Minute)
+	// cacheStore := persistence.NewInMemoryStore(10 * time.Minute)
 
 	// Setup gin
 	gin.SetMode(gin.ReleaseMode)
@@ -119,13 +126,12 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(store, stateChainApi, logger, tokenService, binanceClient, logoClient)
+	handlers := handlers.New(store, stateChainApi, logger, binanceClient, logoClient)
 
 	// Register handlers with API handlers
 	api.RegisterHandlers(echoEngine, handlers)
 
 	mux := http.NewServeMux()
-	mux.Handle("/", ginEngine)
 	mux.Handle("/v1/", echoEngine)
 
 	srv := &http.Server{
@@ -136,16 +142,15 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	return &Server{
-		echoEngine:       echoEngine,
-		ginEngine:        ginEngine,
-		store:            store,
-		httpServer:       srv,
-		cfg:              *cfg,
-		logger:           logger,
+		echoEngine: echoEngine,
+		// ginEngine:        ginEngine,
+		// store:            store,
+		httpServer: srv,
+		cfg:        *cfg,
+		logger:     logger,
 		stateChainClient: stateChainApi,
-		tokenService:     tokenService,
-		binanceClient:    binanceClient,
-		cacheStore:       cacheStore,
+		// binanceClient:    binanceClient,
+		// cacheStore:       cacheStore,
 	}, nil
 }
 
@@ -166,16 +171,14 @@ func (s *Server) Start() error {
 	s.logger.Info().Msgf("start http httpServer, listen on port:%d", s.cfg.ListenPort)
 
 	s.registerEchoWithLogger()
-	s.registerGinWithLogger()
-	s.registerEndpoints()
 
 	// Serve HTTP
 	go func() {
+		// TODO Make echo only
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			s.logger.Error().Err(err).Msg("fail to start server")
 		}
 	}()
-
 	return s.stateChainClient.StartScan()
 }
 
@@ -192,226 +195,8 @@ func (s *Server) Log() *zerolog.Logger {
 	return &s.logger
 }
 
-// ----------------------------------- Echo -----------------------------------------------
 func (s *Server) registerEchoWithLogger() {
 	l := lecho.New(s.logger)
 	s.echoEngine.Use(lecho.Middleware(lecho.Config{Logger: l}))
 	s.echoEngine.Use(middleware.RequestID())
-}
-
-// ----------------------------------- GIN -----------------------------------------------
-
-// register all your endpoint here
-func (s *Server) registerEndpoints() {
-	s.ginEngine.GET("/health", s.healthCheck)
-	s.ginEngine.GET("/poolData", s.getPool)
-	s.ginEngine.GET("/userData",
-		cache.CachePage(s.cacheStore, 10*time.Minute, s.getUserData),
-	)
-	s.ginEngine.GET("/swapTx", s.getSwapTx)
-	s.ginEngine.GET("/swapData", s.getSwapData)
-	s.ginEngine.GET("/stakerTx", s.getStakerTx)
-	s.ginEngine.GET("/stakerData", s.getStakerInfo)
-	s.ginEngine.GET("/tokenData", s.getTokenData)
-	s.ginEngine.GET("/tradeData", s.getTradeData)
-
-	// redirect to docs .
-	s.ginEngine.GET("/", func(ctx *gin.Context) {
-		http.Redirect(ctx.Writer, ctx.Request, "http://"+ctx.Request.Host+"/v1/doc", http.StatusTemporaryRedirect)
-	})
-}
-
-func (s *Server) registerGinWithLogger() {
-	// connect log with gin
-	s.ginEngine.Use(logger.SetLogger(logger.Config{
-		Logger: &s.logger,
-		UTC:    true,
-	}))
-}
-
-func (s *Server) getTradeData(g *gin.Context) {
-	symbol, ok := g.GetQuery("symbol")
-	if !ok {
-		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid symbol"})
-	}
-	md, err := s.binanceClient.GetMarketData(symbol)
-	if nil != err {
-		s.logger.Error().Err(err).Msg("fail to get market data")
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	g.JSON(http.StatusOK, *md)
-}
-
-func (s *Server) getTokenData(g *gin.Context) {
-	token, ok := g.GetQuery("symbol")
-	if !ok {
-		g.JSON(http.StatusBadRequest, gin.H{"error": "invalid symbol"})
-		return
-	}
-	td, err := s.tokenService.GetTokenDetail(token)
-	if nil != err {
-		s.logger.Error().Err(err).Str("symbol", token).Msg("fail to get token detail")
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	g.JSON(http.StatusOK, *td)
-}
-
-func (s *Server) getUserData(g *gin.Context) {
-	data, err := s.store.GetUsageData()
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	g.JSON(http.StatusOK, data)
-}
-
-func (s *Server) getSwapData(g *gin.Context) {
-	asset, err := common.NewTicker(g.Query("asset"))
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	data, err := s.store.GetSwapData(asset)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	g.JSON(http.StatusOK, data)
-}
-
-func (s *Server) getSwapTx(g *gin.Context) {
-	to, _ := common.NewBnbAddress(g.Query("dest"))
-	from, _ := common.NewBnbAddress(g.Query("sender"))
-
-	limit, err := strconv.Atoi(g.DefaultQuery("limit", "25"))
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	offset, err := strconv.Atoi(g.DefaultQuery("offset", "0"))
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	asset, err := common.NewTicker(g.Query("asset"))
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	data, err := s.store.ListSwapEvents(to, from, asset, limit, offset)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	g.JSON(http.StatusOK, data)
-}
-
-func (s *Server) getStakerTx(g *gin.Context) {
-	staker := g.Query("staker")
-	addr, err := common.NewBnbAddress(staker)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	limit, err := strconv.Atoi(g.DefaultQuery("limit", "25"))
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	offset, err := strconv.Atoi(g.DefaultQuery("offset", "0"))
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	asset := g.Query("asset")
-	if len(asset) == 0 {
-		data, err := s.store.ListStakeEvents(addr, "", limit, offset)
-		if err != nil {
-			g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		g.JSON(http.StatusOK, data)
-		return
-	}
-
-	ticker, err := common.NewTicker(asset)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	data, err := s.store.ListStakeEvents(addr, ticker, limit, offset)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	g.JSON(http.StatusOK, data)
-}
-
-func (s *Server) getStakerInfo(g *gin.Context) {
-	staker := g.Query("staker")
-	addr, err := common.NewBnbAddress(staker)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	asset := g.Query("asset")
-	if len(asset) == 0 {
-		data, err := s.store.ListStakerPools(addr)
-		if err != nil {
-			g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		g.JSON(http.StatusOK, data)
-		return
-	}
-
-	ticker, err := common.NewTicker(asset)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	data, err := s.store.GetStakerDataForPool(ticker, addr)
-	if err != nil {
-		g.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	g.JSON(http.StatusOK, data)
-
-}
-
-func (s *Server) getPool(g *gin.Context) {
-	asset := g.Query("asset")
-	ticker, err := common.NewTicker(asset)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	pool, err := s.store.GetPool(ticker)
-	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	g.JSON(http.StatusOK, pool)
-}
-
-func (s *Server) healthCheck(g *gin.Context) {
-	_, err := g.Writer.Write([]byte("OK"))
-	if nil != err {
-		s.logger.Error().Err(err).Msg("fail to write to client")
-	}
 }

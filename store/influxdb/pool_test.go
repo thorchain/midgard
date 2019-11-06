@@ -1,10 +1,10 @@
 package influxdb
 
 import (
+	. "gopkg.in/check.v1"
 	"time"
 
-	"gitlab.com/thorchain/bepswap/chain-service/common"
-	. "gopkg.in/check.v1"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type PoolSuite struct{}

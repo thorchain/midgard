@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 
-	"gitlab.com/thorchain/bepswap/chain-service/common"
 	. "gopkg.in/check.v1"
 )
 
@@ -29,21 +29,21 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 				Type:    "swap",
 				InHash:  "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FA",
 				OutHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB371F042FB",
-				Pool: common.BNBAsset,
+				Pool:    common.BNBAsset,
 				Event:   []byte(`{ "source_coin": { "denom": "RUNE-B1A", "amount": "2100000000" }, "target_coin": { "denom": "BNB", "amount": "1000000000" }, "trade_slip": "112000000", "price_slip": "115000000", "pool_slip": "222000000", "output_slip": "333000000", "fee": "3300000000" }`),
 			},
 			{
 				ID:     common.Amount("2"),
 				Type:   "stake",
 				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
-				Pool: common.Asset{Ticker:"BNB"},
+				Pool:   common.Asset{Ticker: "BNB"},
 				Event:  []byte(`{ "rune_amount": "3100000000", "asset_amount": "3500000000", "stake_units": "234000000" }`),
 			},
 			{
 				ID:     common.Amount("3"),
 				Type:   "unstake",
 				InHash: "ED92EB231E176EF54CCF6C34E83E44BA971192E75D55C86953BF0FB3",
-				Pool: common.Asset{Ticker:"BNB"},
+				Pool:   common.Asset{Ticker: "BNB"},
 				Event:  []byte(`{ "rune_amount": "3100000000", "asset_amount": "3500000000", "stake_units": "234000000" }`),
 			},
 		}
@@ -67,7 +67,7 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 	// create the client , but we don't actually use it
 	client := &influxdb.Client{}
 
-	stateChainApi, err := NewStatechainAPI(config.StateChainConfiguration{
+	stateChainApi, err := NewStatechainAPI(config.ThorChainConfiguration{
 		Scheme:      "http",
 		Host:        srv.Listener.Addr().String(),
 		ReadTimeout: time.Second,

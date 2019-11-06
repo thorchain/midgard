@@ -9,9 +9,8 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/bepswap/chain-service/common"
-
-	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
