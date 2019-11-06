@@ -20,6 +20,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v2"
+	"gitlab.com/thorchain/bepswap/chain-service/clients/logo"
 	"gitlab.com/thorchain/bepswap/chain-service/common"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
@@ -88,6 +89,8 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
+	logoClient := logo.NewLogoClient(cfg)
+
 	// Setup stateChain API scanner
 	stateChainApi, err := statechain.NewStatechainAPI(cfg.Statechain, binanceClient, store)
 	if err != nil {
@@ -116,7 +119,7 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(store, stateChainApi, logger, tokenService, binanceClient)
+	handlers := handlers.New(store, stateChainApi, logger, tokenService, binanceClient, logoClient)
 
 	// Register handlers with API handlers
 	api.RegisterHandlers(echoEngine, handlers)

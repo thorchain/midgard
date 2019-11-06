@@ -19,6 +19,7 @@ type Configuration struct {
 	Influx          InfluxDBConfiguration   `json:"influx" mapstructure:"influx"`
 	Statechain      StateChainConfiguration `json:"statechain" mapstructure:"statechain"`
 	Binance         BinanceConfiguration    `json:"binance" mapstructure:"binance"`
+	IsTestNet       bool                    `json:"is_testnet" mapstructure:"is_testnet"`
 }
 
 // InfluxDBConfiguration config for Influxdb
@@ -57,7 +58,7 @@ type CoingeckoConfiguration struct {
 	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 }
 
-func applyDefaultObserverConfig() {
+func applyDefaultConfig() {
 	viper.SetDefault("listen_port", 8080)
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
@@ -76,7 +77,7 @@ func applyDefaultObserverConfig() {
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
-	applyDefaultObserverConfig()
+	applyDefaultConfig()
 	var cfg Configuration
 	viper.SetConfigName(strings.TrimRight(path.Base(file), ".json"))
 	viper.AddConfigPath(".")
