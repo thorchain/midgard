@@ -41,7 +41,6 @@ require (
 	github.com/ziflex/lecho/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc // indirect
 	golang.org/x/net v0.0.0-20191007182048-72f939374954 // indirect
-	google.golang.org/appengine v1.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
