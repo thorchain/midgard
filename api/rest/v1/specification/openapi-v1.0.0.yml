@@ -240,7 +240,7 @@ components:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Asset'
+              $ref: '#/components/schemas/asset'
 
     GeneralErrorResponse:
       description: error message
@@ -252,15 +252,15 @@ components:
   schemas:
     SwapTxData:
       properties:
-        Pool:
-          $ref: '#/components/schemas/Asset'
-        Type:
+        pool:
+          $ref: '#/components/schemas/asset'
+        type:
           type: string
           enum: [sell, buy, double]
-        Status:
+        status:
           type: string
           enum: [success, refund, priceCancelled]
-        From:
+        from:
           type: object
           properties:
             Address:
@@ -268,64 +268,64 @@ components:
             Coin:
               type: object
               properties:
-                Asset:
-                  $ref: '#/components/schemas/Asset'
-                Amount:
+                asset:
+                  $ref: '#/components/schemas/asset'
+                amount:
                   type: string
-            MEMO:
+            memo:
               type: string
-            PriceTarget:
+            priceTarget:
               type: integer
               format: int64
-            TxID:
+            txID:
               type: string
-        To:
+        to:
           type: object
           properties:
-            Address:
+            address:
               type: string
-            Coin:
+            coin:
               type: object
               properties:
-                Asset:
-                  $ref: '#/components/schemas/Asset'
-                Amount:
+                asset:
+                  $ref: '#/components/schemas/asset'
+                amount:
                   type: string
-            Fee:
+            fee:
               type: integer
-              description: fees retained
-            Slip:
+              description: Fees retained
+            slip:
               type: number
               format: double
               description: Swap slip
-            Gas:
+            gas:
               type: object
               properties:
-                Asset:
-                  $ref: '#/components/schemas/Asset'
-                Amount:
+                asset:
+                  $ref: '#/components/schemas/asset'
+                amount:
                   type: string
-            MEMO:
+            memo:
               type: string
-            TxID:
+            txID:
               type: string
-            Date:
+            date:
               type: string
               format: 'date-time'
-            Height:
+            height:
               type: integer
               format: int64
     StakeTxData:
       properties:
-        Pool:
-          $ref: '#/components/schemas/Asset'
-        Type:
+        pool:
+          $ref: '#/components/schemas/asset'
+        type:
           type: string
           enum: [stake, withdraw]
-        Status:
+        status:
           type: string
           enum: [success, refund]
-        Send:
+        send:
           type: object
           properties:
             Coins:
@@ -333,373 +333,373 @@ components:
               items:
                 type: object
                 properties:
-                  Asset:
-                    $ref: '#/components/schemas/Asset'
-                  Amount:
+                  asset:
+                    $ref: '#/components/schemas/asset'
+                  amount:
                     type: integer
                     format: int64
-            MEMO:
+            memo:
               type: string
-            TxID:
+            txID:
               type: string
-        Receive:
+        receive:
           type: object
           properties:
-            Coins:
+            coins:
               type: array
               items:
                 type: object
                 properties:
-                  Asset:
-                    $ref: '#/components/schemas/Asset'
-                  Amount:
+                  asset:
+                    $ref: '#/components/schemas/asset'
+                  amount:
                     type: integer
                     format: int64
-            MEMO:
+            memo:
               type: string
-            TxID:
+            txID:
               type: string
-            GAS:
+            gas:
               type: object
               properties:
-                Asset:
-                  $ref: '#/components/schemas/Asset'
-                Amount:
+                asset:
+                  $ref: '#/components/schemas/asset'
+                amount:
                   type: integer
                   format: int64
-        Stake:
+        stake:
           type: object
           properties:
-            StakeUnitsAdded:
+            stakeUnitsAdded:
               type: integer
               format: int64
-              description: Stake Units Added
-        Withdraw:
+              description: Stake units added
+        withdraw:
           type: object
           properties:
-            StakeUnitsSubtracted:
+            stakeUnitsSubtracted:
               type: integer
               format: int64
-              description: wBP * stakeUnits/poolUnits
-            WithdrawBP:
+              description: Stake units subtracted (reduces pool ownership)
+            withdrawBasisPoints:
               type: integer
               format: int64
-              description: Withdraw Base Points
-            Asymmetry:
+              description: Withdraw basis points (10000 = 100%)
+            asymmetry:
               type: number
               format: double
-              description: Percent Asymmetry
-        Date:
+              description: Asymmetry (-1.0 (Rune-biased) 0 (default) 1.0 (asset-biased))
+        date:
           type: string
           format: 'date-time'
-        Height:
+        height:
           type: integer
           format: int64
-          description: Statechain blockheight
+          description: THORChain blockheight
 
     BEPSwapData:
       type: object
       properties:
-        DAU:
+        dailyActiveUsers:
           type: integer
           format: int64
-          description: Daily Active Users (unique bnb addresses interacting)
-        MAU:
+          description: Daily active users (unique addresses interacting)
+        monthlyActiveUsers:
           type: integer
           format: int64
-          description: Monthly Active Users
-        TotalUsers:
+          description: Monthly active users
+        totalUsers:
           type: integer
           format: int64
-          description: Total Unique Swappers & Stakers
-        DailyTx:
+          description: Total unique swappers & stakers
+        dailyTx:
           type: integer
           format: int64
-          description: Daily transactions (bnb tx)
-        MonthlyTx:
+          description: Daily transactions
+        monthlyTx:
           type: integer
           format: int64
-          description: Monthly transactions (bnb tx)
-        TotalTx:
+          description: Monthly transactions
+        totalTx:
           type: integer
           format: int64
-          description: Total transactions (bnb tx)
-        TotalVolume24hr:
+          description: Total transactions
+        totalVolume24hr:
           type: integer
           format: int64
           description: Total (in RUNE Value) of all assets swapped in 24hrs
-        TotalVolume:
+        totalVolume:
           type: integer
           format: int64
           description: Total (in RUNE Value) of all assets swapped since start.
-        TotalStaked:
+        totalStaked:
           type: integer
           format: int64
           description: Total staked (in RUNE Value).
-        TotalDepth:
+        totalDepth:
           type: integer
           format: int64
-          description: Total Rune Balances
-        TotalEarned:
+          description: Total RUNE balances
+        totalEarned:
           type: integer
           format: int64
           description: Total earned (in RUNE Value).
-        PoolCount:
+        poolCount:
           type: integer
           format: int64
           description: Number of active pools
-        TotalAssetBuys:
+        totalAssetBuys:
           type: integer
           format: int64
-          description: Total buying transactions (bnb tx)
-        TotalAssetSells:
+          description: Total buying transactions
+        totalAssetSells:
           type: integer
           format: int64
-          description: Total selling transactions (bnb tx)
+          description: Total selling transactions
         totalStakeTx:
           type: integer
           format: int64
-          description: Total staking transactions (bnb tx)
+          description: Total staking transactions
         totalWithdrawTx:
           type: integer
           format: int64
-          description: Total withdrawing transactions (bnb tx)
+          description: Total withdrawing transactions
 
     StakersAddressData:
       type: object
       properties:
-        StakeArray:
+        stakeArray:
           type: array
           items:
-            $ref: '#/components/schemas/Asset'
-        TotalStaked:
+            $ref: '#/components/schemas/asset'
+        totalStaked:
           type: integer
           format: int64
-          description: poolStaked  across all pools.
-        TotalEarned:
+          description: Total staked (in RUNE) across all pools.
+        totalEarned:
           type: integer
           format: int64
-          description: Total value of earnings in RUNE across all pools.
-        TotalROI:
+          description: Total value of earnings (in RUNE) across all pools.
+        totalROI:
           type: integer
           format: int64
-          description: Average all all pool ROIs.
+          description: Average of all pool ROIs.
 
     StakersAssetData:
       type: object
       properties:
-        Asset:
-          $ref: '#/components/schemas/Asset'
-        StakeUnits:
+        asset:
+          $ref: '#/components/schemas/asset'
+        stakeUnits:
           type: integer
           format: int64
           description: Represents ownership of a pool.
-        RuneStaked:
+        runeStaked:
           type: integer
           format: int64
           description: Amount of RUNE staked.
-        AssetStaked:
+        assetStaked:
           type: integer
           format: int64
-          description: Amount of Tokens staked.
-        PoolStaked:
+          description: Amount of Assets staked.
+        poolStaked:
           type: integer
           format: int64
-          description: Rune Value staked.
-        RuneEarned:
+          description: RUNE value staked.
+        runeEarned:
           type: integer
           format: int64
           description: Value of RUNE earned from the pool.
-        AssetEarned:
+        assetEarned:
           type: integer
           format: int64
-          description: Value of assets earned from the pool. i.e stakeUnits/poolUnits * (assetDepth - assetsStakedTotal)
-        PoolEarned:
+          description: Value of Assets earned from the pool. 
+        poolEarned:
           type: integer
           format: int64
-          description: Total value of earnings in RUNE. i.e runeEarned + (assetsEarned * assetPrice)
-        RuneROI:
+          description: Total value of earnings (in RUNE). 
+        runeROI:
           type: number
           format: double
-          description: RuneEarned/runeStaked
-        AssetROI:
+          description: ROI of the Rune side.
+        assetROI:
           type: number
           format: double
-          description: assetEarned/assetStaked
-        PoolROI:
+          description: ROI of the Asset side
+        poolROI:
           type: number
           format: double
-          description: (runeROI + assetROI)/2
-        DateFirstStaked:
+          description: Average ROI (in RUNE) of both sides
+        dateFirstStaked:
           type: string
           format: 'date-time'
 
     Stakers:
       type: string
-      description: staker address
+      description: Staker address
 
 
     PoolDetail:
       type: object
       properties:
-        Asset:
-          $ref: '#/components/schemas/Asset'
-        Price:
+        asset:
+          $ref: '#/components/schemas/asset'
+        price:
           type: number
           format: double
-          description: Price of Asset (in Rune).
-        AssetStakedTotal:
+          description: Price of Asset (in RUNE).
+        assetStakedTotal:
           type: integer
           format: int64
-          description: Total Asset Staked
-        RuneStakedTotal:
+          description: Total Asset staked
+        runeStakedTotal:
           type: integer
           format: int64
-          description: Total Rune Staked
-        PoolStakedTotal:
+          description: Total RUNE staked
+        poolStakedTotal:
           type: integer
           format: int64
-          description: Rune Value staked Total
-        AssetDepth:
+          description: Rune value staked Total
+        assetDepth:
           type: integer
           format: int64
-          description: Total Current Asset Balance
-        RuneDepth:
+          description: Total current Asset balance
+        runeDepth:
           type: integer
           format: int64
-          description: Total Current Rune Balance
-        PoolDepth:
+          description: Total current Rune balance
+        poolDepth:
           type: integer
           format: int64
-          description: RuneDepth * 2
-        PoolUnits:
+          description: Total depth of both sides (in RUNE)
+        poolUnits:
           type: integer
           format: int64
-          description: Total poolUnits outstanding.
-        SellVolume:
+          description: Total pool units outstanding
+        sellVolume:
           type: integer
           format: int64
-          description: Total volume for ASSET>RUNE (in RUNE).
-        BuyVolume:
+          description: Total Asset sell volume (ASSET>RUNE) (in RUNE).
+        buyVolume:
           type: integer
           format: int64
-          description: Total volume for RUNE->ASSET (in ASSET)
-        PoolVolume:
+          description: Total Asset buy volume (RUNE->ASSET) (in Asset)
+        poolVolume:
           type: integer
           format: int64
-          description: Two-way volume in all-time, in Rune
-        PoolVolume24hr:
+          description: Two-way volume of all-time (in RUNE)
+        poolVolume24hr:
           type: integer
           format: int64
-          description: Two-way volume in 24hrs, in Rune
-        SellTxAverage:
+          description: Two-way volume in 24hrs (in RUNE)
+        sellTxAverage:
           type: integer
           format: int64
-          description: Average transaction size for ASSET>RUNE (in RUNE)
-        BuyTxAverage:
+          description: Average Asset sell transaction size (ASSET>RUNE) (in RUNE)
+        buyTxAverage:
           type: integer
           format: int64
-          description: Average transaction size for RUNE->ASSET (in ASSET)
-        PoolTxAverage:
+          description: Average Asset buy transaction size for (RUNE->ASSET) (in ASSET)
+        poolTxAverage:
           type: integer
           format: int64
-          description: Average Pool transaction
-        SellSlipAverage:
+          description: Average pool transaction
+        sellSlipAverage:
           type: integer
           format: int64
-          description: Average tradeSlip for ASSET->RUNE in %
-        BuySlipAverage:
+          description: Average trade slip for ASSET->RUNE in %
+        buySlipAverage:
           type: integer
           format: int64
-          description: Average tradeSlip for RUNE->ASSET in %
-        PoolSlipAverage:
+          description: Average trade slip for RUNE->ASSET in %
+        poolSlipAverage:
           type: integer
           format: int64
-          description: Average Pool Slip
-        SellFeeAverage:
+          description: Average pool slip
+        sellFeeAverage:
           type: integer
           format: int64
-          description: Average fee size for ASSET->RUNE. (in RUNE).
-        BuyFeeAverage:
+          description: Average buy Asset fee size for ASSET->RUNE (in RUNE)
+        buyFeeAverage:
           type: integer
           format: int64
-          description: Average fee size for RUNE->ASSET. (in ASSET)
-        PoolFeeAverage:
+          description: Average sell Asset fee size for RUNE->ASSET (in ASSET)
+        poolFeeAverage:
           type: integer
           format: int64
-          description: Avergage Pool fee
-        SellFeesTotal:
+          description: Average pool fee
+        sellFeesTotal:
           type: integer
           format: int64
-          description: Total Fees (in Rune).
-        BuyFeesTotal:
+          description: Total fees (in RUNE)
+        buyFeesTotal:
           type: integer
           format: int64
-          description: Total Fees (in Asset).
-        PoolFeesTotal:
+          description: Total fees (in Asset)
+        poolFeesTotal:
           type: integer
           format: int64
-          description: Total Fees
-        SellAssetCount:
+          description: Total fees
+        sellAssetCount:
           type: integer
           format: int64
-          description: Number of ASSET->RUNE
-        BuyAssetCount:
+          description: Number of ASSET->RUNE transactions
+        buyAssetCount:
           type: integer
           format: int64
-          description: Number of  RUNE->ASSET.
-        SwappingTxCount:
+          description: Number of RUNE->ASSET transactions
+        swappingTxCount:
           type: integer
           format: int64
-          description: Number of swapping transactions in the pool. (buys + sells)
-        SwappersCount:
+          description: Number of swapping transactions in the pool (buys and sells)
+        swappersCount:
           type: integer
           format: int64
           description: Number of unique swappers interacting with pool
-        StakeTxCount:
+        stakeTxCount:
           type: integer
           format: int64
-          description: Number of staking transactions.
-        WithdrawTxCount:
+          description: Number of stake transactions
+        withdrawTxCount:
           type: integer
           format: int64
-          description: Number of Withdraw tx
-        StakingTxCount:
+          description: Number of withdraw transactions
+        stakingTxCount:
           type: integer
           format: int64
-          description: Number of stakes + withdraw tx
-        StakersCount:
+          description: Number of stake & withdraw transactions
+        stakersCount:
           type: integer
           format: int64
-          description: Number of unique Stakers.
-        AssetROI:
+          description: Number of unique stakers
+        assetROI:
           type: number
           format: double
-          description: Asset Return on investment
-        RuneROI:
+          description: Asset return on investment
+        runeROI:
           type: number
           format: double
-          description: Asset Return on investment
-        PoolROI:
+          description: RUNE return on investment
+        poolROI:
           type: number
           format: double
-          description: Pool ROI
-        PoolROI12:
+          description: Pool ROI (average of RUNE and Asset ROI)
+        poolROI12:
           type: number
           format: double
-          description: Pool ROI for 12 months
+          description: Pool ROI over 12 months
 
     AssetDetail:
       type: object
       properties:
-        Asset:
-          $ref: '#/components/schemas/Asset'
-        Name:
+        asset:
+          $ref: '#/components/schemas/asset'
+        name:
           type: string
-        DateCreated:
+        dateCreated:
           type: string
           format: date
-        Logo:
+        logo:
           type: string
         priceRune:
           type: number
@@ -716,7 +716,7 @@ components:
         error:
           type: string
 
-    Asset:
+    asset:
       type: object
       properties:
         chain:
