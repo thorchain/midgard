@@ -142,88 +142,7 @@ func (h *Handlers) GetSwapTxForAddress(ctx echo.Context, address string) error {
 	// }
 
 	response := api.SwapTxDataResponse{
-		api.SwapTxData{
-			From: &struct {
-				Address *string `json:"Address,omitempty"`
-				Coin    *struct {
-					Amount *string    `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Coin,omitempty"`
-				MEMO        *string `json:"MEMO,omitempty"`
-				PriceTarget *int64  `json:"PriceTarget,omitempty"`
-				TxID        *string `json:"TxID,omitempty"`
-			}{
-				Address: nil,
-				Coin: &struct {
-					Amount *string    `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				}{
-					Amount: nil,
-					Asset: &api.Asset{
-						Chain:  nil,
-						Symbol: nil,
-						Ticker: nil,
-					},
-				},
-				MEMO:        nil,
-				PriceTarget: nil,
-				TxID:        nil,
-			},
-			Pool: &api.Asset{
-				Chain:  nil,
-				Symbol: nil,
-				Ticker: nil,
-			},
-			Status: nil,
-			To: &struct {
-				Address *string `json:"Address,omitempty"`
-				Coin    *struct {
-					Amount *string    `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Coin,omitempty"`
-				Date *time.Time `json:"Date,omitempty"`
-				Fee  *int       `json:"Fee,omitempty"`
-				Gas  *struct {
-					Amount *string    `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Gas,omitempty"`
-				Height *int64   `json:"Height,omitempty"`
-				MEMO   *string  `json:"MEMO,omitempty"`
-				Slip   *float64 `json:"Slip,omitempty"`
-				TxID   *string  `json:"TxID,omitempty"`
-			}{
-				Address: nil,
-				Coin: &struct {
-					Amount *string    `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				}{
-					Amount: nil,
-					Asset: &api.Asset{
-						Chain:  nil,
-						Symbol: nil,
-						Ticker: nil,
-					},
-				},
-				Date: &time.Time{},
-				Fee:  nil,
-				Gas: &struct {
-					Amount *string    `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				}{
-					Amount: nil,
-					Asset: &api.Asset{
-						Chain:  nil,
-						Symbol: nil,
-						Ticker: nil,
-					},
-				},
-				Height: nil,
-				MEMO:   nil,
-				Slip:   nil,
-				TxID:   nil,
-			},
-			Type: nil,
-		},
+
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -265,70 +184,7 @@ func (h *Handlers) GetStakerTxForAddress(ctx echo.Context, address string) error
 	// }
 
 	response := api.StakeTxDataResponse{
-		api.StakeTxData{
-			Date:   &time.Time{},
-			Height: nil,
-			Pool: &api.Asset{
-				Chain:  nil,
-				Symbol: nil,
-				Ticker: nil,
-			},
-			Receive: &struct {
-				Coins *[]struct {
-					Amount *int64     `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Coins,omitempty"`
-				GAS *struct {
-					Amount *int64     `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"GAS,omitempty"`
-				MEMO *string `json:"MEMO,omitempty"`
-				TxID *string `json:"TxID,omitempty"`
-			}{
-				Coins: nil,
-				GAS: &struct {
-					Amount *int64     `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				}{
-					Amount: nil,
-					Asset: &api.Asset{
-						Chain:  nil,
-						Symbol: nil,
-						Ticker: nil,
-					},
-				},
-				MEMO: nil,
-				TxID: nil,
-			},
-			Send: &struct {
-				Coins *[]struct {
-					Amount *int64     `json:"Amount,omitempty"`
-					Asset  *api.Asset `json:"Asset,omitempty"`
-				} `json:"Coins,omitempty"`
-				MEMO *string `json:"MEMO,omitempty"`
-				TxID *string `json:"TxID,omitempty"`
-			}{
-				Coins: nil,
-				MEMO:  nil,
-				TxID:  nil,
-			},
-			Stake: &struct {
-				StakeUnitsAdded *int64 `json:"StakeUnitsAdded,omitempty"`
-			}{
-				StakeUnitsAdded: nil,
-			},
-			Status: nil,
-			Type:   nil,
-			Withdraw: &struct {
-				Asymmetry            *float64 `json:"Asymmetry,omitempty"`
-				StakeUnitsSubtracted *int64   `json:"StakeUnitsSubtracted,omitempty"`
-				WithdrawBP           *int64   `json:"WithdrawBP,omitempty"`
-			}{
-				Asymmetry:            nil,
-				StakeUnitsSubtracted: nil,
-				WithdrawBP:           nil,
-			},
-		},
+
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -337,22 +193,22 @@ func (h *Handlers) GetStakerTxForAddress(ctx echo.Context, address string) error
 // (GET /v1/bepswap)
 func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
 	response := api.BEPSwapResponse{
-		DAU:             nil,
-		DailyTx:         nil,
-		MAU:             nil,
-		MonthlyTx:       nil,
-		PoolCount:       nil,
-		TotalAssetBuys:  nil,
-		TotalAssetSells: nil,
-		TotalDepth:      nil,
-		TotalEarned:     nil,
-		TotalStaked:     nil,
-		TotalTx:         nil,
-		TotalUsers:      nil,
-		TotalVolume:     nil,
-		TotalVolume24hr: nil,
-		TotalStakeTx:    nil,
-		TotalWithdrawTx: nil,
+		DailyActiveUsers:   nil,
+		DailyTx:            nil,
+		MonthlyActiveUsers: nil,
+		MonthlyTx:          nil,
+		PoolCount:          nil,
+		TotalAssetBuys:     nil,
+		TotalAssetSells:    nil,
+		TotalDepth:         nil,
+		TotalEarned:        nil,
+		TotalStakeTx:       nil,
+		TotalStaked:        nil,
+		TotalTx:            nil,
+		TotalUsers:         nil,
+		TotalVolume:        nil,
+		TotalVolume24hr:    nil,
+		TotalWithdrawTx:    nil,
 	}
 
 	return ctx.JSON(http.StatusOK, response)
