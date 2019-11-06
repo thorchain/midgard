@@ -70,6 +70,7 @@ func applyDefaultObserverConfig() {
 	viper.SetDefault("binance.scheme", "https")
 	viper.SetDefault("binance.request_timeout", "30s")
 	viper.SetDefault("binance.markets_cache_duration", "24h")
+	viper.SetDefault("binance.tokens_cache_duration", "24h")
 	viper.SetDefault("binance.full_node_scheme", "http")
 	viper.SetDefault("binance.is_testnet", "true")
 }

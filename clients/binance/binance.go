@@ -74,12 +74,14 @@ func (bc *BinanceClient) ensureTokensDataAvailable() error {
 		if err := bc.getAllTokens(); nil != err {
 			return errors.Wrap(err, "fail to get all tokens data from binance")
 		}
+		return nil
 	}
 	d := time.Since(bc.cachedTokens.LastUpdated)
 	if d > bc.cfg.TokensCacheDuration {
-		if err := bc.getAllMarkets(); nil != err {
+		if err := bc.getAllTokens(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
 		}
+		return nil
 	}
 	return nil
 }
@@ -90,12 +92,14 @@ func (bc *BinanceClient) ensureMarketsDataAvailable() error {
 		if err := bc.getAllMarkets(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
 		}
+		return nil
 	}
 	d := time.Since(bc.cachedMarkets.LastUpdated)
 	if d > bc.cfg.MarketsCacheDuration {
 		if err := bc.getAllMarkets(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
 		}
+		return nil
 	}
 	return nil
 }
