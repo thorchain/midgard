@@ -544,6 +544,9 @@ components:
       properties:
         asset:
           $ref: '#/components/schemas/asset'
+        statue:
+          type: string
+          enum: [bootstrapped, enabled, disabled]
         price:
           type: number
           format: double

@@ -15,10 +15,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/common"
-
 	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
 )
 
@@ -33,7 +33,7 @@ type StatechainInterface interface {
 // StatechainAPI to talk to statechain
 type StatechainAPI struct {
 	logger        zerolog.Logger
-	cfg           config.StateChainConfiguration
+	cfg           config.ThorChainConfiguration
 	baseUrl       string
 	binanceClient Binance
 	netClient     *http.Client
@@ -43,14 +43,13 @@ type StatechainAPI struct {
 }
 
 type Pool struct {
-	BalanceRune  sdk.Uint `json:"balance_rune"`  // how many RUNE in the pool
-	BalanceToken sdk.Uint `json:"balance_token"` // how many token in the pool
-	// Ticker       common.Ticker     `json:"symbol"`        // what's the token's ticker
-	Asset       common.Asset      `json:"asset"`
-	PoolUnits   sdk.Uint          `json:"pool_units"`   // total units of the pool
-	PoolAddress common.BnbAddress `json:"pool_address"` // bnb liquidity pool address
-	// Status              PoolStatus        `json:"status"`                 // status //TODO Cant find this used anywhere?
-	ExpiryInBlockHeight int `json:"expiry_in_block_height,string"` // means the pool address will be changed after these amount of blocks
+	BalanceRune         sdk.Uint          `json:"balance_rune"`  // how many RUNE in the pool
+	BalanceToken        sdk.Uint          `json:"balance_token"` // how many token in the pool
+	Asset               models.Asset      `json:"asset"`
+	PoolUnits           sdk.Uint          `json:"pool_units"`                    // total units of the pool
+	PoolAddress         common.BnbAddress `json:"pool_address"`                  // bnb liquidity pool address
+	Status              string            `json:"status"`                        // status
+	ExpiryInBlockHeight int               `json:"expiry_in_block_height,string"` // means the pool address will be changed after these amount of blocks
 }
 
 type Event struct {
@@ -58,7 +57,7 @@ type Event struct {
 	Type    string          `json:"type"`
 	InHash  common.TxID     `json:"in_hash"`
 	OutHash common.TxID     `json:"out_hash"`
-	Pool    common.Asset    `json:"pool"`
+	Pool    models.Asset    `json:"pool"`
 	Event   json.RawMessage `json:"event"` // Use due to different format depending on the event.Type
 }
 
@@ -85,7 +84,7 @@ type EventUnstake struct {
 }
 
 // NewStatechainAPI create a new instance of StatechainAPI which can talk to statechain
-func NewStatechainAPI(cfg config.StateChainConfiguration, binanceClient Binance, store *influxdb.Client) (*StatechainAPI, error) {
+func NewStatechainAPI(cfg config.ThorChainConfiguration, binanceClient Binance, store *influxdb.Client) (*StatechainAPI, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("statechain host is empty")
 	}
@@ -134,7 +133,7 @@ func (sc *StatechainAPI) GetPools() ([]Pool, error) {
 }
 
 // GetPool with the given asset
-func (sc *StatechainAPI) GetPool(asset common.Asset) (*Pool, error) {
+func (sc *StatechainAPI) GetPool(asset models.Asset) (*Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pool/%s", sc.baseUrl, asset.String())
 	sc.logger.Debug().Msg(poolUrl)
 	resp, err := sc.netClient.Get(poolUrl)

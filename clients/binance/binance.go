@@ -17,9 +17,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/common"
-
-	"gitlab.com/thorchain/bepswap/chain-service/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 // Creating this binance client because the official go-sdk doesn't support
@@ -223,7 +223,7 @@ func (bc *BinanceClient) getDepth(symbol string) (*SourceMarketDepth, error) {
 	return &smd, nil
 }
 
-func (bc *BinanceClient) GetToken(asset common.Asset) (*Token, error) {
+func (bc *BinanceClient) GetToken(asset models.Asset) (*Token, error) {
 	if asset.IsEmpty() {
 		return nil, errors.New("empty asset")
 	}

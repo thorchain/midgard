@@ -9,7 +9,7 @@
     "resample": "10m",
     "resample_for": "1d"
   },
-  "statechain": {
+  "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
     "enable_scan": true,

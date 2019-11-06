@@ -1,9 +1,11 @@
-package common
+package models
 
 import (
 	"fmt"
 	"os"
 	"strings"
+
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 var (
@@ -13,9 +15,9 @@ var (
 )
 
 type Asset struct {
-	Chain  Chain  `json:"chain"`
-	Symbol Symbol `json:"symbol"`
-	Ticker Ticker `json:"ticker"`
+	Chain  common.Chain  `json:"chain"`
+	Symbol common.Symbol `json:"symbol"`
+	Ticker common.Ticker `json:"ticker"`
 }
 
 func NewAsset(input string) (Asset, error) {
@@ -25,23 +27,23 @@ func NewAsset(input string) (Asset, error) {
 	parts := strings.Split(input, ".")
 	var sym string
 	if len(parts) == 1 {
-		asset.Chain = BNBChain
+		asset.Chain = common.BNBChain
 		sym = parts[0]
 	} else {
-		asset.Chain, err = NewChain(parts[0])
+		asset.Chain, err = common.NewChain(parts[0])
 		if err != nil {
 			return Asset{}, err
 		}
 		sym = parts[1]
 	}
 
-	asset.Symbol, err = NewSymbol(sym)
+	asset.Symbol, err = common.NewSymbol(sym)
 	if err != nil {
 		return Asset{}, err
 	}
 
 	parts = strings.Split(sym, "-")
-	asset.Ticker, err = NewTicker(parts[0])
+	asset.Ticker, err = common.NewTicker(parts[0])
 	if err != nil {
 		return Asset{}, err
 	}

@@ -12,14 +12,14 @@ import (
 
 // Configuration  for chain service
 type Configuration struct {
-	ListenPort      int                     `json:"listen_port" mapstructure:"listen_port"`
-	ShutdownTimeout time.Duration           `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
-	ReadTimeout     time.Duration           `json:"read_timeout" mapstructure:"read_timeout"`
-	WriteTimeout    time.Duration           `json:"write_timeout" mapstructure:"write_timeout"`
-	Influx          InfluxDBConfiguration   `json:"influx" mapstructure:"influx"`
-	Statechain      StateChainConfiguration `json:"statechain" mapstructure:"statechain"`
-	Binance         BinanceConfiguration    `json:"binance" mapstructure:"binance"`
-	IsTestNet       bool                    `json:"is_testnet" mapstructure:"is_testnet"`
+	ListenPort      int                    `json:"listen_port" mapstructure:"listen_port"`
+	ShutdownTimeout time.Duration          `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
+	ReadTimeout     time.Duration          `json:"read_timeout" mapstructure:"read_timeout"`
+	WriteTimeout    time.Duration          `json:"write_timeout" mapstructure:"write_timeout"`
+	Influx          InfluxDBConfiguration  `json:"influx" mapstructure:"influx"`
+	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
+	Binance         BinanceConfiguration   `json:"binance" mapstructure:"binance"`
+	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
 }
 
 // InfluxDBConfiguration config for Influxdb
@@ -33,7 +33,7 @@ type InfluxDBConfiguration struct {
 	ResampleFor  string `json:"resample_for" mapstructure:"resample_for"`
 }
 
-type StateChainConfiguration struct {
+type ThorChainConfiguration struct {
 	Scheme          string        `json:"scheme" mapstructure:"scheme"`
 	Host            string        `json:"host" mapstructure:"host"`
 	ReadTimeout     time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
@@ -54,9 +54,9 @@ type BinanceConfiguration struct {
 }
 
 // CoingeckoConfiguration settings for Coingecko
-type CoingeckoConfiguration struct {
-	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
-}
+// type CoingeckoConfiguration struct {
+// 	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
+// }
 
 func applyDefaultConfig() {
 	viper.SetDefault("listen_port", 8080)
