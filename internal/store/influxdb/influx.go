@@ -1,4 +1,4 @@
-package timescale
+package influxdb
 
 import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
@@ -6,10 +6,10 @@ import (
 )
 
 type DB struct {
-	cfg config.TimeScaleConfiguration
+	cfg config.InfluxDBConfiguration
 }
 
-func New(cfg config.TimeScaleConfiguration) (*DB, error) {
+func New(cfg config.InfluxDBConfiguration) (*DB, error) {
 	return &DB{
 		cfg:cfg,
 	}, nil

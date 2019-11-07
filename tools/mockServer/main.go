@@ -19,6 +19,8 @@ func poolMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
+		fmt.Fprintf(writer, err.Error())
+		return
 	}
 
 	writer.Header().Set("Content-Type", "application/json")
@@ -49,7 +51,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	content, err := ioutil.ReadFile("./test/mocks/thorNode/seed_events.json")
+	content, err := ioutil.ReadFile("./test/mocks/thorNode/events.json")
 	if err != nil {
 		log.Fatal(err)
 	}

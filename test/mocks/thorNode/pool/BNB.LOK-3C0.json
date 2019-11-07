@@ -1,13 +1,13 @@
 {
-  "balance_rune": "100000000000",
-  "balance_asset": "10000000000",
+  "balance_rune": "0",
+  "balance_asset": "0",
   "asset": {
     "chain": "BNB",
     "symbol": "LOK-3C0",
     "ticker": "LOK"
   },
-  "pool_units": "55000000000",
-  "pool_address": "tbnb1hzwfk6t3sqjfuzlr0ur9lj920gs37gg92gtay9",
-  "status": "Enabled",
-  "expiry_in_block_height": "24587"
+  "pool_units": "0",
+  "pool_address": "tbnb1txnl9dj990rclmt2p6k4zymg6mwsyctrkxkfds",
+  "status": "Bootstrap",
+  "expiry_in_block_height": "28512"
 }
