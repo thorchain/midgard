@@ -82,6 +82,8 @@ influx_stack:
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
 
+timescale:
+	@docker-compose run --rm -p 5432:5432 --no-deps timescale
 
 # -------------------------------------------- API Targets ------------------------------------
 

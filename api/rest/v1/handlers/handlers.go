@@ -11,14 +11,13 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
+	binance2 "gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
-
-	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/store"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,21 +29,21 @@ const (
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store            store.Store
-	stateChainClient *statechain.StatechainAPI
-	logger           zerolog.Logger
-	binanceClient    *binance.BinanceClient
-	logoClient       *logo.LogoClient
+	store           store.TimeSeries
+	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
+	logger          zerolog.Logger
+	binanceClient   *binance2.API // TODO Move out of handler (Handler should only talk to the DB)
+	logoClient      *logo.LogoClient
 }
 
-// New creates a new service interface with the Datastore of your choise
-func New(store store.Store, stateChainClient *statechain.StatechainAPI, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
+// NewAPIClient creates a new service interface with the Datastore of your choise
+func New(store store.TimeSeries, stateChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance2.API, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
-		store:            store,
-		stateChainClient: stateChainClient,
-		logger:           logger,
-		binanceClient:    binanceClient,
-		logoClient:       logoClient,
+		store:           store,
+		thorChainClient: stateChainClient,
+		logger:          logger,
+		binanceClient:   binanceClient,
+		logoClient:      logoClient,
 	}
 }
 
@@ -68,7 +67,7 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
 
-	pools, err := h.stateChainClient.GetPools()
+	pools, err := h.thorChainClient.GetPools()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("fail to get pools")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
@@ -97,7 +96,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
 	}
 
-	pool, err := h.stateChainClient.GetPool(ass)
+	pool, err := h.thorChainClient.GetPool(ass)
 	if err != nil {
 		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})

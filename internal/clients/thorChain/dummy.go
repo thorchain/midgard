@@ -1,9 +1,9 @@
-package statechain
+package thorChain
 
 import ()
 
 type Dummy struct {
-	StatechainAPI
+	API
 	Events []Event
 	Err    error
 }

@@ -9,6 +9,12 @@
     "resample": "10m",
     "resample_for": "1d"
   },
+  "timescale": {
+    "host": "localhost",
+    "user_name": "admin",
+    "password": "password",
+    "database": "db0"
+  },
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",

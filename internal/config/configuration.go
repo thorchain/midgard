@@ -17,9 +17,19 @@ type Configuration struct {
 	ReadTimeout     time.Duration          `json:"read_timeout" mapstructure:"read_timeout"`
 	WriteTimeout    time.Duration          `json:"write_timeout" mapstructure:"write_timeout"`
 	Influx          InfluxDBConfiguration  `json:"influx" mapstructure:"influx"`
+	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	Binance         BinanceConfiguration   `json:"binance" mapstructure:"binance"`
 	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
+}
+
+// TimeScaleConfiguration for config for timescale
+type TimeScaleConfiguration struct {
+	Host     string `json:"host" mapstructure:"host"`
+	Port     int    `json:"port" mapstructure:"port"`
+	UserName string `json:"user_name" mapstructure:"user_name"`
+	Password string `json:"password" mapstructure:"password"`
+	Database string `json:"database" mapstructure:"database"`
 }
 
 // InfluxDBConfiguration config for Influxdb

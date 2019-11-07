@@ -1,4 +1,4 @@
-package statechain
+package thorChain
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
+	binance2 "gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
@@ -56,8 +56,8 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 
 	defer srv.Close()
 	now := time.Now()
-	b := &binance.Dummy{
-		Detail: binance.TxDetail{
+	b := &binance2.Dummy{
+		Detail: binance2.TxDetail{
 			Timestamp:   now,
 			ToAddress:   "tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl",
 			FromAddress: "tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt",
@@ -67,7 +67,7 @@ func (s *StatechainSuite) TestStatechain(c *C) {
 	// create the client , but we don't actually use it
 	client := &influxdb.Client{}
 
-	stateChainApi, err := NewStatechainAPI(config.ThorChainConfiguration{
+	stateChainApi, err := NewAPIClient(config.ThorChainConfiguration{
 		Scheme:      "http",
 		Host:        srv.Listener.Addr().String(),
 		ReadTimeout: time.Second,

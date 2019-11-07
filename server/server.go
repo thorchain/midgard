@@ -9,7 +9,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
-
 	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -20,16 +19,13 @@ import (
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
-
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
-
-
-	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 )
 
 // Server
@@ -37,13 +33,8 @@ type Server struct {
 	cfg        config.Configuration
 	logger     zerolog.Logger
 	echoEngine *echo.Echo
-	// ginEngine        *gin.Engine
 	httpServer *http.Server
-	// store            store.Store
-	stateChainClient *statechain.StatechainAPI
-
-	// binanceClient    *binance.BinanceClient
-	// cacheStore       persistence.CacheStore
+	thorChainClient *thorChain.API
 }
 
 func initLog(level string, pretty bool) zerolog.Logger {
@@ -76,48 +67,34 @@ func New(cfgFile *string) (*Server, error) {
 	// TODO update configuration with logger level and pretty settings
 	log := initLog("debug", false)
 
+	logoClient := logo.NewLogoClient(cfg)
+
 	// Setup influxdb
-	store, err := influxdb.NewClient(cfg.Influx)
+	influx, err := influxdb.New(cfg.Influx)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create influxdb")
 	}
 
+	// timescale, err := timescale.NewAPIClient(cfg.TimeScale)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "fail to create timescale")
+	// }
+
 	// Setup binance client
-	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
+	binanceClient, err := binance.NewAPIClient(cfg.Binance)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	logoClient := logo.NewLogoClient(cfg)
+	// Setup all clients in map
+	blockChainClients := make(map[common.Chain]blockchains.Clients)
+	blockChainClients[common.BNBChain] = binanceClient
 
 	// Setup stateChain API scanner
-	stateChainApi, err := statechain.NewStatechainAPI(cfg.ThorChain, binanceClient, store)
+	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, blockChainClients, influx)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
-
-	// store2, err := influx.New()
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "fail to create influxdb")
-	// }
-
-	store3, err := timescale.New()
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to create timescale")
-	}
-
-	thorChainAPI, err := thorChain.New(cfg.ThorChain, store3)
-
-	spew.Dump(thorChainAPI)
-
-	// Setup Cache store
-	// cacheStore := persistence.NewInMemoryStore(10 * time.Minute)
-
-	// Setup gin
-	gin.SetMode(gin.ReleaseMode)
-	ginEngine := gin.New()
-	ginEngine.Use(gin.Recovery())
-	ginEngine.Use(CORS())
 
 	// Setup echo
 	echoEngine := echo.New()
@@ -126,11 +103,12 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(store, stateChainApi, logger, binanceClient, logoClient)
+	handlers := handlers.New(influx, thorChainApi, logger, binanceClient, logoClient)
 
 	// Register handlers with API handlers
 	api.RegisterHandlers(echoEngine, handlers)
 
+	// TODO Remove this for a pure echo setup
 	mux := http.NewServeMux()
 	mux.Handle("/v1/", echoEngine)
 
@@ -143,14 +121,10 @@ func New(cfgFile *string) (*Server, error) {
 
 	return &Server{
 		echoEngine: echoEngine,
-		// ginEngine:        ginEngine,
-		// store:            store,
-		httpServer: srv,
-		cfg:        *cfg,
-		logger:     logger,
-		stateChainClient: stateChainApi,
-		// binanceClient:    binanceClient,
-		// cacheStore:       cacheStore,
+		httpServer:      srv,
+		cfg:             *cfg,
+		logger:          logger,
+		thorChainClient: thorChainApi,
 	}, nil
 }
 
@@ -179,11 +153,11 @@ func (s *Server) Start() error {
 			s.logger.Error().Err(err).Msg("fail to start server")
 		}
 	}()
-	return s.stateChainClient.StartScan()
+	return s.thorChainClient.StartScan()
 }
 
 func (s *Server) Stop() error {
-	if err := s.stateChainClient.StopScan(); nil != err {
+	if err := s.thorChainClient.StopScan(); nil != err {
 		s.logger.Error().Err(err).Msg("fail to stop statechain scan")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
