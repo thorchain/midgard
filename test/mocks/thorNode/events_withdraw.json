@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "type": "withdraw",
+    "txArray": [{"txId" : "24F5D0CF0DC1B1F1E3DA0DEC19E13252072F8E1F1CFB2839937C9DE38378E57C", "chain" : "BNB"}, {"txId" : "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998", "chain" : "BNB"}] ,
+    "event": {
+      "stake_units_subtracted": "1342175000"
+    },
+    "status": "Success"
+  }
+]

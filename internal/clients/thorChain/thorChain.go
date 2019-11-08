@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
 
 	"sync"
@@ -28,7 +29,7 @@ type API struct {
 	baseUrl           string
 	netClient         *http.Client
 	wg                *sync.WaitGroup
-	store            store.TimeSeries
+	store             store.TimeSeries
 	BlockChainClients map[common.Chain]blockchains.Clients
 	stopChan          chan struct{}
 }
@@ -38,7 +39,10 @@ func NewAPIClient(cfg config.ThorChainConfiguration, blockChainClients map[commo
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("statechain host is empty")
 	}
-	if nil == store {
+	if blockChainClients == nil {
+		return nil, errors.New("blockChainClients is nil")
+	}
+	if store == nil {
 		return nil, errors.New("store is nil")
 	}
 	return &API{
@@ -47,7 +51,7 @@ func NewAPIClient(cfg config.ThorChainConfiguration, blockChainClients map[commo
 		netClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
-		store:            store,
+		store:             store,
 		baseUrl:           fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
 		stopChan:          make(chan struct{}),
 		wg:                &sync.WaitGroup{},
@@ -124,10 +128,13 @@ func (api *API) getEvents(id int64) ([]Event, error) {
 	return events, nil
 }
 
-func (api *API) processEvents(id int64) (int64, error) {
+type processedEvent struct {
+}
+
+func (api *API) processEvents(id int64) (int64, []processedEvent, error) {
 	events, err := api.getEvents(id)
 	if err != nil {
-		return id, errors.Wrap(err, "fail to get events")
+		return id, []processedEvent{}, errors.Wrap(err, "fail to get events")
 	}
 
 	// sort events lowest ID first. Ensures we don't process an event out of order
@@ -139,30 +146,32 @@ func (api *API) processEvents(id int64) (int64, error) {
 	for _, evt := range events {
 		if maxID < evt.ID {
 			maxID = evt.ID
+			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		}
 		switch evt.Type {
-		// case "swap":
-		// 	_, err := api.processSwapEvent(evt)
-		// 	if err != nil {
-		// 		return 0, err
-		// 	}
+		case "swap":
+			log.Printf("swap event")
+			_, err := api.processSwapEvent(evt)
+			if err != nil {
+				return maxID,[]processedEvent{}, err
+			}
 		case "stake":
+			log.Printf("stake event")
 			_, err := api.processStakeEvent(evt)
 			if err != nil {
-				return 0, err
+				return maxID,[]processedEvent{}, err
 			}
-		// case "withdraw":
-		// 	_, err := api.processWithdrawEvent(evt)
-		// 	if err != nil {
-		// 		return 0, err
-		// 	}
+		case "withdraw":
+			log.Printf("withdraw event")
+			_, err := api.processWithdrawEvent(evt)
+			if err != nil {
+				return maxID,[]processedEvent{}, err
+			}
 		}
 	}
-	return 0, nil
+	return maxID,[]processedEvent{}, nil
 }
 
-type processedEvent struct {
-}
 
 func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
 	var stake StakeEvent
@@ -179,21 +188,26 @@ func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
 	chain := event.TxArray[0].Chain
 
 	// Extract Tx data
-	txDetail, err := api.BlockChainClients[chain].GetTx(event.TxArray[0].TxID)
+	txDetail, err := api.BlockChainClients[chain].GetTxDetail(event.TxArray[0].TxID)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to get tx from chain: "+ chain.String())
+		return nil, errors.Wrap(err, "fail to get tx from chain: "+chain.String())
 	}
 
-	addr, err := common.NewBnbAddress(txDetail.FromAddress)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to parse from address")
-	}
-
-	spew.Dump(addr)
-
-
+	spew.Dump(txDetail)
 
 	// Build new object
+
+	// event_id
+	// stake_address
+	// in_Hash
+	// MEMO
+	// stakes.pool
+	// stakes.rune
+	// stakes.token
+	// stakes.type
+	// stakes.units
+
+	// stakeEvent := influxdb.NewStakeEvent(event.ID, event.TxArray[0].TxID,nil,)
 
 	// return
 
@@ -346,7 +360,6 @@ func (api *API) StartScan() error {
 	return nil
 }
 
-
 func (api *API) getMaxID() (int64, error) {
 	stakeID, err := api.store.GetMaxIDStakes()
 	if err != nil {
@@ -373,11 +386,10 @@ func (api *API) scan() {
 	if nil != err {
 		api.logger.Error().Err(err).Msg("fail to get currentPos from data store")
 	} else {
-		api.logger.Info().Int64("previous pos", maxID).Msg("find previous max id")
+		api.logger.Info().Int64("previous pos", maxID).Msg("find previous maxID")
 		currentPos = maxID + 1
 	}
 	for {
-		// TODO possible use an experiential back off method
 		api.logger.Debug().Msg("sleeping statechain scan")
 		time.Sleep(time.Second * 1)
 		select {
@@ -385,30 +397,30 @@ func (api *API) scan() {
 			return
 		default:
 			api.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
-			// maxID, events, err := api.GetPoints(currentPos)
-			maxID, err := api.processEvents(currentPos)
+			maxID, events, err := api.processEvents(currentPos)
 			if err != nil {
 				api.logger.Error().Err(err).Msg("fail to get events from statechain")
 				continue // we will retry a bit later
 			}
-			// if len(events) == 0 { // nothing in it
-			// 	select {
-			// 	case <-api.stopChan:
-			// 	case <-time.After(api.cfg.NoEventsBackoff):
-			// 	}
-			// 	continue
-			// }
-			// if err := api.writeToStoreWithRetry(events); nil != err {
-			// 	api.logger.Error().Err(err).Msg("fail to write events to data store")
-			// 	continue //
-			// }
+			os.Exit(111)
+			if len(events) == 0 { // nothing in it
+				select {
+				case <-api.stopChan:
+				case <-time.After(api.cfg.NoEventsBackoff):
+					api.logger.Debug().Str("NoEventsBackoff", api.cfg.NoEventsBackoff.String()).Msg("Finished executing NoEventsBackoff")
+				}
+				continue
+			}
+			if err := api.writeToStoreWithRetry(events); nil != err {
+				api.logger.Error().Err(err).Msg("fail to write events to data store")
+				continue //
+			}
 			currentPos = maxID + 1
 		}
-
 	}
 }
 
-func (api *API) writeToStoreWithRetry() error {
+func (api *API) writeToStoreWithRetry(events []processedEvent) error {
 	return nil
 }
 

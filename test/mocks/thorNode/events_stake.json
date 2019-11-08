@@ -1,0 +1,11 @@
+[
+  {
+    "id": "2",
+    "type": "stake",
+    "txArray": [{"txId" : "54FCD8B5D3049DF6D7193CB38D4C617620AFAFEAD68DFA0C28DD148F775ECB48", "chain" : "BNB"}] ,
+    "event": {
+      "stake_units_added": "25025000000"
+    },
+    "status": "Success"
+  }
+]
