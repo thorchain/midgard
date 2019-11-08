@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -14,12 +13,10 @@ import (
 	"github.com/binance-chain/go-sdk/common/types"
 	bmsg "github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
@@ -324,9 +321,42 @@ func (bc *API) getBlockUrl(height string) string {
 	return uri.String()
 }
 
+func (bc *API) GetTxDetail(txID common.TxID) (TxDetail, error) {
+	noTx := TxDetail{}
+	requestUrl := bc.getTxDetailUrl(txID)
+	bc.logger.Debug().Msg(requestUrl)
+	resp, err := bc.httpClient.Get(requestUrl)
+	if err != nil {
+		return noTx, errors.Wrap(err, "fail to get tx from binance full node")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return noTx, errors.Errorf("unexpected status code %d", resp.StatusCode)
+	}
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			bc.logger.Error().Err(err).Msg("fail to close response body")
+		}
+	}()
+
+	var fnr FullNodeTxResp
+	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
+		return noTx, errors.Wrap(err, "fail to decode response body")
+	}
+	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
+	if nil != err {
+		return noTx, errors.Wrap(err, "fail to base64 decode tx")
+	}
+	var t tx.StdTx
+	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
+		return noTx, errors.Wrap(err, "fail to unmarshal tx")
+	}
+
+	return noTx, nil
+}
+
 // GetTxEx given the txID , we get the tx detail from binance full node
-func (bc *API) GetTx(txID common.TxID) (blockchains.TxDetail, error) {
-	noTx := blockchains.TxDetail{}
+func (bc *API) GetTx(txID common.TxID) (TxDetail, error) {
+	noTx := TxDetail{}
 	if txID.IsEmpty() {
 		return noTx, errors.New("txID is empty")
 	}
@@ -370,8 +400,6 @@ func (bc *API) GetTx(txID common.TxID) (blockchains.TxDetail, error) {
 		default:
 		}
 	}
-	spew.Dump(txID)
-	os.Exit(111)
 	return noTx, nil
 }
 
@@ -394,8 +422,8 @@ func (bc *API) getTimeFromBlock(height string) (time.Time, error) {
 	return br.Result.Block.Header.Time, nil
 }
 
-func (bc *API) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) blockchains.TxDetail {
-	td := blockchains.TxDetail{
+func (bc *API) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
+	td := TxDetail{
 		TxHash:      hash,
 		ToAddress:   "",
 		FromAddress: "",

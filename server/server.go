@@ -103,7 +103,7 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(influx, thorChainApi, logger, binanceClient, logoClient)
+	handlers := handlers.New(influx, thorChainApi, logger, logoClient)
 
 	// Register handlers with API handlers
 	api.RegisterHandlers(echoEngine, handlers)

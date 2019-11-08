@@ -1,0 +1,13 @@
+[
+  {
+    "id": "1",
+    "type": "swap",
+    "txArray": [{"txId" : "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998", "chain" : "BNB"}, {"txId" : "D41A7B8132DB9A7D67C26D9462C4E87C9C9B8006F2C31F727FD9FA93AD12C2E2", "chain" : "BNB"}] ,
+    "event": {
+      "emission": "124958593",
+      "swap_fee": "7463556",
+      "trade_slip": "0.12302394"
+    },
+    "status": "Success"
+  }
+]

@@ -1,16 +1,15 @@
 package binance
 
 import (
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type Dummy struct {
 	Binance
-	Detail blockchains.TxDetail
+	Detail TxDetail
 	Err    error
 }
 
-func (dum Dummy) GetTx(txID common.TxID) (blockchains.TxDetail, error) {
+func (dum Dummy) GetTx(txID common.TxID) (TxDetail, error) {
 	return dum.Detail, dum.Err
 }

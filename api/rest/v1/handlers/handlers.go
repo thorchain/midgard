@@ -11,7 +11,6 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
-	binance2 "gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
@@ -32,17 +31,17 @@ type Handlers struct {
 	store           store.TimeSeries
 	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
-	binanceClient   *binance2.API // TODO Move out of handler (Handler should only talk to the DB)
+	// binanceClient   *binance2.API // TODO Move out of handler (Handler should only talk to the DB)
 	logoClient      *logo.LogoClient
 }
 
 // NewAPIClient creates a new service interface with the Datastore of your choise
-func New(store store.TimeSeries, stateChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance2.API, logoClient *logo.LogoClient) *Handlers {
+func New(store store.TimeSeries, thorChainClient *thorChain.API, logger zerolog.Logger, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
-		thorChainClient: stateChainClient,
+		thorChainClient: thorChainClient,
 		logger:          logger,
-		binanceClient:   binanceClient,
+		// binanceClient:   binanceClient,
 		logoClient:      logoClient,
 	}
 }
@@ -87,37 +86,38 @@ func (h *Handlers) GetAssets(ctx echo.Context) error {
 
 // (GET /v1/assets/{asset})
 func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
-	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
+	// TODO Fix issue with Binance client being required here!!!!!
+	// h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
+	//
+	// // asset passed in
+	// ass, err := models.NewAsset(asset)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	// }
+	//
+	// pool, err := h.thorChainClient.GetPool(ass)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
+	// }
+	//
+	// tokenData, err := h.binanceClient.GetToken(pool.Asset)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Msg("fail to get token data from binance")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+	// }
+	//
+	// res := api.AssetsDetailedResponse{
+	// 	Asset: helpers.ConvertAssetForAPI(pool.Asset),
+	// 	// DateCreated: &t, // TODO Pending
+	// 	Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
+	// 	Name: pointy.String(tokenData.Name),
+	// 	// PriceRune:   pointy.Float64(-1), // TODO Pending
+	// 	// PriceUSD:    pointy.Float64(-1), // TODO Pending
+	// }
 
-	// asset passed in
-	ass, err := models.NewAsset(asset)
-	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
-	}
-
-	pool, err := h.thorChainClient.GetPool(ass)
-	if err != nil {
-		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
-	}
-
-	tokenData, err := h.binanceClient.GetToken(pool.Asset)
-	if err != nil {
-		h.logger.Error().Err(err).Msg("fail to get token data from binance")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
-	}
-
-	res := api.AssetsDetailedResponse{
-		Asset: helpers.ConvertAssetForAPI(pool.Asset),
-		// DateCreated: &t, // TODO Pending
-		Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
-		Name: pointy.String(tokenData.Name),
-		// PriceRune:   pointy.Float64(-1), // TODO Pending
-		// PriceUSD:    pointy.Float64(-1), // TODO Pending
-	}
-
-	return ctx.JSON(http.StatusOK, res)
+	return ctx.JSON(http.StatusOK, "res")
 }
 
 // (GET /v1/swapTx)
