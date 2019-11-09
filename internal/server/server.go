@@ -30,10 +30,10 @@ import (
 
 // Server
 type Server struct {
-	cfg        config.Configuration
-	logger     zerolog.Logger
-	echoEngine *echo.Echo
-	httpServer *http.Server
+	cfg             config.Configuration
+	logger          zerolog.Logger
+	echoEngine      *echo.Echo
+	httpServer      *http.Server
 	thorChainClient *thorChain.API
 }
 
@@ -120,7 +120,7 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	return &Server{
-		echoEngine: echoEngine,
+		echoEngine:      echoEngine,
 		httpServer:      srv,
 		cfg:             *cfg,
 		logger:          logger,
