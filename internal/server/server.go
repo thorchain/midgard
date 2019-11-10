@@ -19,13 +19,13 @@ import (
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
+
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 )
 
 // Server
@@ -70,15 +70,10 @@ func New(cfgFile *string) (*Server, error) {
 	logoClient := logo.NewLogoClient(cfg)
 
 	// Setup influxdb
-	influx, err := influxdb.New(cfg.Influx)
+	influx, err := influxdb.NewClient(cfg.Influx)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create influxdb")
 	}
-
-	// timescale, err := timescale.NewAPIClient(cfg.TimeScale)
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "fail to create timescale")
-	// }
 
 	// Setup binance client
 	binanceClient, err := binance.NewAPIClient(cfg.Binance)
@@ -86,12 +81,8 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	// Setup all clients in map
-	blockChainClients := make(map[common.Chain]blockchains.Clients)
-	blockChainClients[common.BNBChain] = binanceClient
-
-	// Setup stateChain API scanner
-	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, blockChainClients, influx)
+	// Setup stateChain Client scanner
+	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, influx, binanceClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
 	}
@@ -103,9 +94,9 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(influx, thorChainApi, logger, logoClient)
+	handlers := handlers.New(influx, thorChainApi, logger, binanceClient, logoClient)
 
-	// Register handlers with API handlers
+	// Register handlers with Client handlers
 	api.RegisterHandlers(echoEngine, handlers)
 
 	// TODO Remove this for a pure echo setup

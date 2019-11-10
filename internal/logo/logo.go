@@ -7,8 +7,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 const (
@@ -47,7 +47,7 @@ func NewLogoClient(cfg *config.Configuration) *LogoClient {
 	}
 }
 
-func (lc *LogoClient) buildUrl(asset models.Asset) string {
+func (lc *LogoClient) buildUrl(asset common.Asset) string {
 	chain := blockchains[asset.Chain.String()]
 
 	if lc.cfg.IsTestNet == true {
@@ -65,7 +65,7 @@ func (lc *LogoClient) buildUrl(asset models.Asset) string {
 }
 
 // GetLogoUrl returns a constructed Logo url from our naming of an asset and chain to then match that of the trust wallets asset repo.
-func (lc *LogoClient) GetLogoUrl(asset models.Asset) string {
+func (lc *LogoClient) GetLogoUrl(asset common.Asset) string {
 	logoUrl := lc.buildUrl(asset)
 	lc.logger.Debug().Msg(logoUrl)
 	return logoUrl

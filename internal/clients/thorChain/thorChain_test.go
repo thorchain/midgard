@@ -10,7 +10,7 @@ import (
 	binance2 "gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/store/influxdb"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 
 	. "gopkg.in/check.v1"
 )

@@ -19,7 +19,6 @@ import (
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 // Creating this binance client because the official go-sdk doesn't support
@@ -34,8 +33,8 @@ type Binance interface {
 	GetTx(txID common.TxID) (time.Time, error)
 }
 
-// API is a client design to talk to binance using their api endpoint
-type API struct {
+// Client is a client design to talk to binance using their api endpoint
+type Client struct {
 	logger        zerolog.Logger
 	cfg           config.BinanceConfiguration
 	httpClient    *http.Client
@@ -45,8 +44,8 @@ type API struct {
 	cachedTokens  *CachedTokens
 }
 
-// NewAPIClient create a new instance of API
-func NewAPIClient(cfg config.BinanceConfiguration) (*API, error) {
+// NewAPIClient create a new instance of Client
+func NewAPIClient(cfg config.BinanceConfiguration) (*Client, error) {
 	if len(cfg.DEXHost) == 0 {
 		return nil, errors.New("DEXHost is empty")
 	}
@@ -56,7 +55,7 @@ func NewAPIClient(cfg config.BinanceConfiguration) (*API, error) {
 	if cfg.IsTestNet {
 		types.Network = types.TestNetwork
 	}
-	return &API{
+	return &Client{
 		logger: log.With().Str("module", "binance-client").Logger(),
 		cfg:    cfg,
 		httpClient: &http.Client{
@@ -69,7 +68,7 @@ func NewAPIClient(cfg config.BinanceConfiguration) (*API, error) {
 	}, nil
 }
 
-func (bc *API) ensureTokensDataAvailable() error {
+func (bc *Client) ensureTokensDataAvailable() error {
 	if bc.cachedTokens == nil {
 		if err := bc.getAllTokens(); nil != err {
 			return errors.Wrap(err, "fail to get all tokens data from binance")
@@ -87,7 +86,7 @@ func (bc *API) ensureTokensDataAvailable() error {
 }
 
 // ensureMarketsDataAvailable is going to ensure all the markets data are available and fresh
-func (bc *API) ensureMarketsDataAvailable() error {
+func (bc *Client) ensureMarketsDataAvailable() error {
 	if bc.cachedMarkets == nil {
 		if err := bc.getAllMarkets(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
@@ -105,7 +104,7 @@ func (bc *API) ensureMarketsDataAvailable() error {
 }
 
 // getAllTokens will call getTokens recursively to get all the tokens data
-func (bc *API) getAllTokens() error {
+func (bc *Client) getAllTokens() error {
 	offset := 0
 	var tokens []Token
 	for {
@@ -129,7 +128,7 @@ func (bc *API) getAllTokens() error {
 }
 
 // getAllMarkets will call getMarkets recursively to get all the market data,
-func (bc *API) getAllMarkets() error {
+func (bc *Client) getAllMarkets() error {
 	offset := 0
 	var markets []Market
 	for {
@@ -153,7 +152,7 @@ func (bc *API) getAllMarkets() error {
 	return nil
 }
 
-func (bc *API) getTokens(offset int) ([]Token, error) {
+func (bc *Client) getTokens(offset int) ([]Token, error) {
 	requestUrl := bc.getBinanceApiUrl("/api/v1/tokens", fmt.Sprintf("limit=%d&offset=%d", tokensPerPage, offset))
 	bc.logger.Debug().Msg(requestUrl)
 	resp, err := bc.httpClient.Get(requestUrl)
@@ -178,7 +177,7 @@ func (bc *API) getTokens(offset int) ([]Token, error) {
 }
 
 // getMarkets from binance chain
-func (bc *API) getMarkets(offset int) ([]Market, error) {
+func (bc *Client) getMarkets(offset int) ([]Market, error) {
 	requestUrl := bc.getBinanceApiUrl("/api/v1/markets", fmt.Sprintf("limit=%d&offset=%d", marketsPerPage, offset))
 	bc.logger.Debug().Msg(requestUrl)
 
@@ -202,7 +201,7 @@ func (bc *API) getMarkets(offset int) ([]Market, error) {
 	return markets, nil
 }
 
-func (bc *API) getDepth(symbol string) (*SourceMarketDepth, error) {
+func (bc *Client) getDepth(symbol string) (*SourceMarketDepth, error) {
 	if len(symbol) == 0 {
 		return nil, errors.New("empty symbol")
 	}
@@ -223,7 +222,7 @@ func (bc *API) getDepth(symbol string) (*SourceMarketDepth, error) {
 	return &smd, nil
 }
 
-func (bc *API) GetToken(asset models.Asset) (*Token, error) {
+func (bc *Client) GetToken(asset common.Asset) (*Token, error) {
 	if asset.IsEmpty() {
 		return nil, errors.New("empty asset")
 	}
@@ -244,7 +243,7 @@ func (bc *API) GetToken(asset models.Asset) (*Token, error) {
 }
 
 // GetMarketData for chain service
-func (bc *API) GetMarketData(symbol string) (*MarketData, error) {
+func (bc *Client) GetMarketData(symbol string) (*MarketData, error) {
 	if len(symbol) == 0 {
 		return nil, errors.New("empty symbol")
 	}
@@ -286,8 +285,7 @@ func (bc *API) GetMarketData(symbol string) (*MarketData, error) {
 	return &md, nil
 }
 
-
-func (bc *API) getBinanceApiUrl(rawPath, rawQuery string) string {
+func (bc *Client) getBinanceApiUrl(rawPath, rawQuery string) string {
 	u := url.URL{
 		Scheme:   bc.cfg.Scheme,
 		Host:     bc.cfg.DEXHost,
@@ -297,7 +295,7 @@ func (bc *API) getBinanceApiUrl(rawPath, rawQuery string) string {
 	return u.String()
 }
 
-func (bc *API) getTxDetailUrl(hash common.TxID) string {
+func (bc *Client) getTxDetailUrl(hash common.TxID) string {
 	uri := url.URL{
 		Scheme: bc.cfg.FullNodeScheme,
 		Host:   bc.cfg.FullNodeHost,
@@ -309,7 +307,7 @@ func (bc *API) getTxDetailUrl(hash common.TxID) string {
 	uri.RawQuery = q.Encode()
 	return uri.String()
 }
-func (bc *API) getBlockUrl(height string) string {
+func (bc *Client) getBlockUrl(height string) string {
 	uri := url.URL{
 		Scheme: bc.cfg.FullNodeScheme,
 		Host:   bc.cfg.FullNodeHost,
@@ -321,7 +319,7 @@ func (bc *API) getBlockUrl(height string) string {
 	return uri.String()
 }
 
-func (bc *API) GetTxDetail(txID common.TxID) (TxDetail, error) {
+func (bc *Client) GetTxDetail(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
 	requestUrl := bc.getTxDetailUrl(txID)
 	bc.logger.Debug().Msg(requestUrl)
@@ -355,7 +353,7 @@ func (bc *API) GetTxDetail(txID common.TxID) (TxDetail, error) {
 }
 
 // GetTxEx given the txID , we get the tx detail from binance full node
-func (bc *API) GetTx(txID common.TxID) (TxDetail, error) {
+func (bc *Client) GetTx(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
 	if txID.IsEmpty() {
 		return noTx, errors.New("txID is empty")
@@ -403,7 +401,7 @@ func (bc *API) GetTx(txID common.TxID) (TxDetail, error) {
 	return noTx, nil
 }
 
-func (bc *API) getTimeFromBlock(height string) (time.Time, error) {
+func (bc *Client) getTimeFromBlock(height string) (time.Time, error) {
 	t := time.Time{}
 	requestUrl := bc.getBlockUrl(height)
 	resp, err := bc.httpClient.Get(requestUrl)
@@ -422,7 +420,7 @@ func (bc *API) getTimeFromBlock(height string) (time.Time, error) {
 	return br.Result.Block.Header.Time, nil
 }
 
-func (bc *API) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
+func (bc *Client) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
 	td := TxDetail{
 		TxHash:      hash,
 		ToAddress:   "",

@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 type StakeEvent struct {
@@ -19,12 +18,12 @@ type StakeEvent struct {
 	RuneAmount  float64
 	TokenAmount float64
 	Units       float64
-	Asset       models.Asset
+	Asset       common.Asset
 	Address     common.BnbAddress
 	Timestamp   time.Time
 }
 
-func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units float64, asset models.Asset, addr common.BnbAddress, ts time.Time) StakeEvent {
+func NewStakeEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, units float64, asset common.Asset, addr common.BnbAddress, ts time.Time) StakeEvent {
 	return StakeEvent{
 		ID:          id,
 		InHash:      inhash,
@@ -98,7 +97,7 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 		series := resp[0].Series[0]
 		for _, vals := range resp[0].Series[0].Values {
 			var inhash, outhash common.TxID
-			var asset models.Asset
+			var asset common.Asset
 			var addr common.BnbAddress
 			id, _ := getIntValue(series.Columns, vals, "ID")
 			temp, _ := getStringValue(series.Columns, vals, "in_hash")
@@ -118,7 +117,7 @@ func (in Client) ListStakeEvents(address common.BnbAddress, ticker common.Ticker
 			}
 			temp, _ = getStringValue(series.Columns, vals, "asset")
 			// asset, err = common.NewTicker(temp)
-			asset, err = models.NewAsset(temp)
+			asset, err = common.NewAsset(temp)
 			if err != nil {
 				return
 			}
