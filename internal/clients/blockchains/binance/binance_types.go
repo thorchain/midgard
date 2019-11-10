@@ -53,3 +53,10 @@ type SourceMarketDepth struct {
 	Asks   [][]string `json:"asks"`
 	Height int64      `json:"height"`
 }
+
+type TxDetail struct {
+	TxHash      string    `json:"txHash"`
+	ToAddress   string    `json:"toAddr"`
+	FromAddress string    `json:"fromAddr"`
+	Timestamp   time.Time `json:"timeStamp"`
+}

@@ -13,6 +13,7 @@ import (
 	"github.com/binance-chain/go-sdk/common/types"
 	bmsg "github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -319,6 +320,13 @@ func (bc *Client) getBlockUrl(height string) string {
 	return uri.String()
 }
 
+type TxDetails struct {
+	TxHash      string    `json:"txHash"`
+	ToAddress   string    `json:"toAddr"`
+	FromAddress string    `json:"fromAddr"`
+	Timestamp   time.Time `json:"timeStamp"`
+}
+
 func (bc *Client) GetTxDetail(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
 	requestUrl := bc.getTxDetailUrl(txID)
@@ -340,6 +348,8 @@ func (bc *Client) GetTxDetail(txID common.TxID) (TxDetail, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
 		return noTx, errors.Wrap(err, "fail to decode response body")
 	}
+
+	spew.Dump(fnr)
 	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
 	if nil != err {
 		return noTx, errors.Wrap(err, "fail to base64 decode tx")
@@ -348,6 +358,7 @@ func (bc *Client) GetTxDetail(txID common.TxID) (TxDetail, error) {
 	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
 		return noTx, errors.Wrap(err, "fail to unmarshal tx")
 	}
+	spew.Dump(t)
 
 	return noTx, nil
 }
