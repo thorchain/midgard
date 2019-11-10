@@ -11,10 +11,11 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 
@@ -28,20 +29,20 @@ const (
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           store.TimeSeries
+	store           *influxdb.Client
 	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
-	// binanceClient   *binance2.API // TODO Move out of handler (Handler should only talk to the DB)
+	binanceClient   *binance.Client // TODO Move out of handler (Handler should only talk to the DB)
 	logoClient      *logo.LogoClient
 }
 
 // NewAPIClient creates a new service interface with the Datastore of your choise
-func New(store store.TimeSeries, thorChainClient *thorChain.API, logger zerolog.Logger, logoClient *logo.LogoClient) *Handlers {
+func New(store *influxdb.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.Client, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
 		logger:          logger,
-		// binanceClient:   binanceClient,
+		binanceClient:   binanceClient,
 		logoClient:      logoClient,
 	}
 }
@@ -214,7 +215,7 @@ func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
 
 // (GET /v1/pools/{asset})
 func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
-	asset, err := models.NewAsset(ass)
+	asset, err := common.NewAsset(ass)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
@@ -281,10 +282,10 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	ass0, _ := models.NewAsset("BNB")
-	ass1, _ := models.NewAsset("FSN-F1B")
-	ass2, _ := models.NewAsset("FTM-585")
-	ass3, _ := models.NewAsset("LOK-3C0")
+	ass0, _ := common.NewAsset("BNB")
+	ass1, _ := common.NewAsset("FSN-F1B")
+	ass2, _ := common.NewAsset("FTM-585")
+	ass3, _ := common.NewAsset("LOK-3C0")
 
 	response := api.StakersAddressDataResponse{
 		StakeArray: &[]api.Asset{
@@ -303,7 +304,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 
 // (GET /v1/stakers/{address}/{asset})
 func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error {
-	ass0, _ := models.NewAsset(asset)
+	ass0, _ := common.NewAsset(asset)
 	var response = api.StakersAssetDataResponse{
 		Asset:           helpers.ConvertAssetForAPI(ass0),
 		AssetEarned:     pointy.Int64(111),

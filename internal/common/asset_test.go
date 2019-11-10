@@ -1,9 +1,7 @@
-package models
+package common
 
 import (
 	. "gopkg.in/check.v1"
-
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type AssetSuite struct{}
@@ -18,9 +16,9 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "BNB.RUNE-A1F")
 
-	c.Check(asset.Chain.Equals(common.Chain("BNB")), Equals, true)
-	c.Check(asset.Symbol.Equals(common.Symbol("RUNE-A1F")), Equals, true)
-	c.Check(asset.Ticker.Equals(common.Ticker("RUNE")), Equals, true)
+	c.Check(asset.Chain.Equals(Chain("BNB")), Equals, true)
+	c.Check(asset.Symbol.Equals(Symbol("RUNE-A1F")), Equals, true)
+	c.Check(asset.Ticker.Equals(Ticker("RUNE")), Equals, true)
 
 	// parse without chain
 	asset, err = NewAsset("rune-a1f")
@@ -30,7 +28,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	// ETH test
 	asset, err = NewAsset("eth.knc")
 	c.Assert(err, IsNil)
-	c.Check(asset.Chain.Equals(common.Chain("ETH")), Equals, true)
-	c.Check(asset.Symbol.Equals(common.Symbol("KNC")), Equals, true)
-	c.Check(asset.Ticker.Equals(common.Ticker("KNC")), Equals, true)
+	c.Check(asset.Chain.Equals(Chain("ETH")), Equals, true)
+	c.Check(asset.Symbol.Equals(Symbol("KNC")), Equals, true)
+	c.Check(asset.Ticker.Equals(Ticker("KNC")), Equals, true)
 }

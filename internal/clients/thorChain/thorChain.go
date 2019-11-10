@@ -10,40 +10,32 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 )
 
 // API to talk to statechain
 type API struct {
-	logger            zerolog.Logger
-	cfg               config.ThorChainConfiguration
-	baseUrl           string
-	netClient         *http.Client
-	wg                *sync.WaitGroup
-	store             store.TimeSeries
-	BlockChainClients map[common.Chain]blockchains.Clients
-	stopChan          chan struct{}
+	logger        zerolog.Logger
+	cfg           config.ThorChainConfiguration
+	baseUrl       string
+	netClient     *http.Client
+	wg            *sync.WaitGroup
+	stopChan      chan struct{}
+	store         *influxdb.Client
+	binanceClient *binance.Client
 }
 
 // NewAPIClient create a new instance of API which can talk to thorChain
-func NewAPIClient(cfg config.ThorChainConfiguration, blockChainClients map[common.Chain]blockchains.Clients, store store.TimeSeries) (*API, error) {
+func NewAPIClient(cfg config.ThorChainConfiguration, store *influxdb.Client, binanceClient *binance.Client) (*API, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("statechain host is empty")
-	}
-	if blockChainClients == nil {
-		return nil, errors.New("blockChainClients is nil")
-	}
-	if store == nil {
-		return nil, errors.New("store is nil")
 	}
 	return &API{
 		cfg:    cfg,
@@ -51,11 +43,11 @@ func NewAPIClient(cfg config.ThorChainConfiguration, blockChainClients map[commo
 		netClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
-		store:             store,
-		baseUrl:           fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
-		stopChan:          make(chan struct{}),
-		wg:                &sync.WaitGroup{},
-		BlockChainClients: blockChainClients,
+		baseUrl:       fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
+		stopChan:      make(chan struct{}),
+		wg:            &sync.WaitGroup{},
+		store:         store,
+		binanceClient: binanceClient,
 	}, nil
 }
 
@@ -84,7 +76,7 @@ func (api *API) GetPools() ([]Pool, error) {
 }
 
 // GetPool with the given asset
-func (api *API) GetPool(asset models.Asset) (*Pool, error) {
+func (api *API) GetPool(asset common.Asset) (*Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pool/%s", api.baseUrl, asset.String())
 	api.logger.Debug().Msg(poolUrl)
 	resp, err := api.netClient.Get(poolUrl)
@@ -153,25 +145,24 @@ func (api *API) processEvents(id int64) (int64, []processedEvent, error) {
 			log.Printf("swap event")
 			_, err := api.processSwapEvent(evt)
 			if err != nil {
-				return maxID,[]processedEvent{}, err
+				return maxID, []processedEvent{}, err
 			}
 		case "stake":
 			log.Printf("stake event")
 			_, err := api.processStakeEvent(evt)
 			if err != nil {
-				return maxID,[]processedEvent{}, err
+				return maxID, []processedEvent{}, err
 			}
 		case "withdraw":
 			log.Printf("withdraw event")
 			_, err := api.processWithdrawEvent(evt)
 			if err != nil {
-				return maxID,[]processedEvent{}, err
+				return maxID, []processedEvent{}, err
 			}
 		}
 	}
-	return maxID,[]processedEvent{}, nil
+	return maxID, []processedEvent{}, nil
 }
-
 
 func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
 	var stake StakeEvent
@@ -185,15 +176,15 @@ func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
 	}
 
 	// Check chain
-	chain := event.TxArray[0].Chain
+	// chain := event.TxArray[0].Chain
 
 	// Extract Tx data
-	txDetail, err := api.BlockChainClients[chain].GetTxDetail(event.TxArray[0].TxID)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to get tx from chain: "+chain.String())
-	}
-
-	spew.Dump(txDetail)
+	// txDetail, err := api.BlockChainClients[chain].GetTxDetail(event.TxArray[0].TxID)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "fail to get tx from chain: "+chain.String())
+	// }
+	//
+	// spew.Dump(txDetail)
 
 	// Build new object
 
