@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -177,7 +178,7 @@ func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
 
 	// Check chain
 	// chain := event.TxArray[0].Chain
-
+	//
 	// Extract Tx data
 	// txDetail, err := api.BlockChainClients[chain].GetTxDetail(event.TxArray[0].TxID)
 	// if err != nil {
@@ -186,8 +187,14 @@ func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
 	//
 	// spew.Dump(txDetail)
 
-	// Build new object
+	tx, err := api.binanceClient.GetTxDetail(event.TxArray[0].TxID)
+	if err != nil {
+		return &processedEvent{}, errors.Wrap(err, "fail to get tx from binance")
+	}
 
+	spew.Dump(tx)
+
+	// Build new object
 	// event_id
 	// stake_address
 	// in_Hash
