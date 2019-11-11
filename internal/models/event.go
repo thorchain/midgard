@@ -51,7 +51,8 @@ func (e Event) Point() client.Point {
 	return client.Point{
 		Measurement: "events",
 		Tags:        map[string]string{
-			"ID": fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			"id": fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			"status": e.Status,
 			"type": e.Type,
 			"in_hash": e.InHash.String(),
 			"out_hash": e.OutHash.String(),
@@ -63,6 +64,7 @@ func (e Event) Point() client.Point {
 		Time:        time.Time{}, // TODO
 		Fields:      map[string]interface{}{
 			"ID": e.ID,
+			"Height": e.Height,
 		},
 		Precision:   "",
 		Raw:         "",

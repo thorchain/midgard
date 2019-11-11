@@ -36,12 +36,10 @@ func NewSwapEvent (pool common.Asset, priceTarget, tradeSlip, fee int64,  id int
 func (evt EventSwap) Point() client.Point {
 	p := evt.Event.Point()
 	p.Tags["Pool"] = evt.Pool.String()
-	p.Fields = map[string]interface{}{
-		"PriceTarget": evt.PriceTarget,
-		"TradeSlip": evt.TradeSlip,
-		"Fee": evt.Fee,
-	}
-	return evt.Event.Point()
+	p.Fields["price_target"] = evt.PriceTarget
+	p.Fields["trade_slip"] = evt.TradeSlip
+	p.Fields["fee"] = evt.Fee
+	return p
 }
 
 
