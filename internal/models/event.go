@@ -68,5 +68,6 @@ func (e event) point() client.Point {
 			"from_coins": e.FromCoins.Stringify(),
 			"gas":        e.Gas.Stringify(),
 		},
+		Precision: "n",
 	}
 }
