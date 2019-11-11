@@ -81,10 +81,10 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	// Setup stateChain BinanceClient scanner
+	// Setup thorchain BinanceClient scanner
 	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, influx, binanceClient)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to create statechain api instance")
+		return nil, errors.Wrap(err, "fail to create thorchain api instance")
 	}
 
 	// Setup echo
@@ -149,7 +149,7 @@ func (s *Server) Start() error {
 
 func (s *Server) Stop() error {
 	if err := s.thorChainClient.StopScan(); nil != err {
-		s.logger.Error().Err(err).Msg("fail to stop statechain scan")
+		s.logger.Error().Err(err).Msg("fail to stop thorchain scan")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
 	defer cancel()
