@@ -31,6 +31,7 @@ func NewStakeEvent(pool common.Asset, stakeUnits int64, id int64, status string,
 
 func (evt EventStake) Point() client.Point {
 	p := evt.Event.Point()
+	p.Measurement = "stakes"
 	p.Tags["Pool"] = evt.Pool.String()
 	p.Fields["stake_units"] = evt.StakeUnits
 	return p
