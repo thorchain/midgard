@@ -14,7 +14,7 @@ type EventSwap struct {
 	Fee         int64
 }
 
-func NewSwapEvent (pool common.Asset, priceTarget, tradeSlip, fee int64,  id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address) EventSwap {
+func NewSwapEvent (pool common.Asset, priceTarget, tradeSlip, fee int64,  id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address, toCoins, fromCoins, gas common.Coins) EventSwap {
 	return EventSwap{
 		Pool: pool,
 		PriceTarget: priceTarget,
@@ -29,7 +29,11 @@ func NewSwapEvent (pool common.Asset, priceTarget, tradeSlip, fee int64,  id int
 			inMemo,
 			outMemo,
 			fromAddr,
-			toAddr),
+			toAddr,
+			toCoins,
+			fromCoins,
+			gas,
+		),
 	}
 }
 

@@ -51,7 +51,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	content, err := ioutil.ReadFile("./test/mocks/thorNode/events.json")
+	content, err := ioutil.ReadFile("./test/mocks/thorNode/events_stake.json")
 	if err != nil {
 		log.Fatal(err)
 	}

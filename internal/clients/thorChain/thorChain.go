@@ -185,6 +185,9 @@ func (api *API) processSwapEvent(evt Event, pts []client.Point) ([]client.Point,
 		evt.OutMemo,
 		evt.FromAddress,
 		evt.ToAddress,
+		evt.ToCoins,
+		evt.FromCoins,
+		evt.Gas,
 	).Point()
 
 	pts = append(pts, p)
@@ -212,6 +215,9 @@ func (api *API) processStakingEvent(evt Event, pts []client.Point) ([]client.Poi
 		evt.OutMemo,
 		evt.FromAddress,
 		evt.ToAddress,
+		evt.ToCoins,
+		evt.FromCoins,
+		evt.Gas,
 	).Point()
 
 	pts = append(pts, p)
@@ -241,6 +247,9 @@ func (api *API) processUnstakeEvent(evt Event, pts []client.Point) ([]client.Poi
 		evt.OutMemo,
 		evt.FromAddress,
 		evt.ToAddress,
+		evt.ToCoins,
+		evt.FromCoins,
+		evt.Gas,
 	).Point()
 
 	pts = append(pts, p)

@@ -12,7 +12,7 @@ type EventStake struct {
 	StakeUnits int64
 }
 
-func NewStakeEvent(pool common.Asset, stakeUnits int64, id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address) EventStake {
+func NewStakeEvent(pool common.Asset, stakeUnits int64, id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address,toCoins, fromCoins, gas common.Coins) EventStake {
 	return EventStake{
 		Pool: pool,
 		StakeUnits: stakeUnits,
@@ -25,7 +25,11 @@ func NewStakeEvent(pool common.Asset, stakeUnits int64, id int64, status string,
 			inMemo,
 			outMemo,
 			fromAddr,
-			toAddr),
+			toAddr,
+			toCoins,
+			fromCoins,
+			gas,
+		),
 	}
 }
 

@@ -14,7 +14,7 @@ type EventUnstake struct {
 	Asymmetry   float64      `json:"asymmetry"`    // -1.0 <==> 1.0
 }
 
-func NewUnstakeEvent (pool common.Asset, stakeUnits, basisPoints int64, asymmetry float64, id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address) EventUnstake {
+func NewUnstakeEvent (pool common.Asset, stakeUnits, basisPoints int64, asymmetry float64, id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address, toCoins, fromCoins, gas common.Coins) EventUnstake {
 	return EventUnstake{
 		Pool: pool,
 		StakeUnits:stakeUnits,
@@ -29,7 +29,11 @@ func NewUnstakeEvent (pool common.Asset, stakeUnits, basisPoints int64, asymmetr
 			inMemo,
 			outMemo,
 			fromAddr,
-			toAddr),
+			toAddr,
+			toCoins,
+			fromCoins,
+			gas,
+			),
 	}
 }
 

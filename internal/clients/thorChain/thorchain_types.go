@@ -18,9 +18,9 @@ type Event struct {
 	OutMemo     string          `json:"out_memo"`
 	FromAddress common.Address  `json:"from_address"`
 	ToAddress   common.Address  `json:"to_address"`
-	FromCoins   common.Coins    `json:"from_coins"`
 	ToCoins     common.Coins    `json:"to_coins"`
-	Gas         common.Coin     `json:"gas"`
+	FromCoins   common.Coins    `json:"from_coins"`
+	Gas         common.Coins     `json:"gas"`
 	Event       json.RawMessage `json:"event"`
 	Timestamp   time.Time
 }
