@@ -32,12 +32,12 @@ type Handlers struct {
 	store           *influxdb.Client
 	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
-	binanceClient   *binance.Client // TODO Move out of handler (Handler should only talk to the DB)
+	binanceClient   *binance.BinanceClient // TODO Move out of handler (Handler should only talk to the DB)
 	logoClient      *logo.LogoClient
 }
 
-// NewAPIClient creates a new service interface with the Datastore of your choise
-func New(store *influxdb.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.Client, logoClient *logo.LogoClient) *Handlers {
+// NewBinanceClient creates a new service interface with the Datastore of your choise
+func New(store *influxdb.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,

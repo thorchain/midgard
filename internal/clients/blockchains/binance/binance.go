@@ -13,7 +13,6 @@ import (
 	"github.com/binance-chain/go-sdk/common/types"
 	bmsg "github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -34,8 +33,8 @@ type Binance interface {
 	GetTx(txID common.TxID) (time.Time, error)
 }
 
-// Client is a client design to talk to binance using their api endpoint
-type Client struct {
+// BinanceClient is a client design to talk to binance using their api endpoint
+type BinanceClient struct {
 	logger        zerolog.Logger
 	cfg           config.BinanceConfiguration
 	httpClient    *http.Client
@@ -45,8 +44,8 @@ type Client struct {
 	cachedTokens  *CachedTokens
 }
 
-// NewAPIClient create a new instance of Client
-func NewAPIClient(cfg config.BinanceConfiguration) (*Client, error) {
+// NewBinanceClient create a new instance of BinanceClient
+func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 	if len(cfg.DEXHost) == 0 {
 		return nil, errors.New("DEXHost is empty")
 	}
@@ -56,7 +55,7 @@ func NewAPIClient(cfg config.BinanceConfiguration) (*Client, error) {
 	if cfg.IsTestNet {
 		types.Network = types.TestNetwork
 	}
-	return &Client{
+	return &BinanceClient{
 		logger: log.With().Str("module", "binance-client").Logger(),
 		cfg:    cfg,
 		httpClient: &http.Client{
@@ -69,7 +68,7 @@ func NewAPIClient(cfg config.BinanceConfiguration) (*Client, error) {
 	}, nil
 }
 
-func (bc *Client) ensureTokensDataAvailable() error {
+func (bc *BinanceClient) ensureTokensDataAvailable() error {
 	if bc.cachedTokens == nil {
 		if err := bc.getAllTokens(); nil != err {
 			return errors.Wrap(err, "fail to get all tokens data from binance")
@@ -87,7 +86,7 @@ func (bc *Client) ensureTokensDataAvailable() error {
 }
 
 // ensureMarketsDataAvailable is going to ensure all the markets data are available and fresh
-func (bc *Client) ensureMarketsDataAvailable() error {
+func (bc *BinanceClient) ensureMarketsDataAvailable() error {
 	if bc.cachedMarkets == nil {
 		if err := bc.getAllMarkets(); nil != err {
 			return errors.Wrap(err, "fail to get all markets data from binance")
@@ -105,7 +104,7 @@ func (bc *Client) ensureMarketsDataAvailable() error {
 }
 
 // getAllTokens will call getTokens recursively to get all the tokens data
-func (bc *Client) getAllTokens() error {
+func (bc *BinanceClient) getAllTokens() error {
 	offset := 0
 	var tokens []Token
 	for {
@@ -129,7 +128,7 @@ func (bc *Client) getAllTokens() error {
 }
 
 // getAllMarkets will call getMarkets recursively to get all the market data,
-func (bc *Client) getAllMarkets() error {
+func (bc *BinanceClient) getAllMarkets() error {
 	offset := 0
 	var markets []Market
 	for {
@@ -153,7 +152,7 @@ func (bc *Client) getAllMarkets() error {
 	return nil
 }
 
-func (bc *Client) getTokens(offset int) ([]Token, error) {
+func (bc *BinanceClient) getTokens(offset int) ([]Token, error) {
 	requestUrl := bc.getBinanceApiUrl("/api/v1/tokens", fmt.Sprintf("limit=%d&offset=%d", tokensPerPage, offset))
 	bc.logger.Debug().Msg(requestUrl)
 	resp, err := bc.httpClient.Get(requestUrl)
@@ -178,7 +177,7 @@ func (bc *Client) getTokens(offset int) ([]Token, error) {
 }
 
 // getMarkets from binance chain
-func (bc *Client) getMarkets(offset int) ([]Market, error) {
+func (bc *BinanceClient) getMarkets(offset int) ([]Market, error) {
 	requestUrl := bc.getBinanceApiUrl("/api/v1/markets", fmt.Sprintf("limit=%d&offset=%d", marketsPerPage, offset))
 	bc.logger.Debug().Msg(requestUrl)
 
@@ -202,7 +201,7 @@ func (bc *Client) getMarkets(offset int) ([]Market, error) {
 	return markets, nil
 }
 
-func (bc *Client) getDepth(symbol string) (*SourceMarketDepth, error) {
+func (bc *BinanceClient) getDepth(symbol string) (*SourceMarketDepth, error) {
 	if len(symbol) == 0 {
 		return nil, errors.New("empty symbol")
 	}
@@ -223,7 +222,7 @@ func (bc *Client) getDepth(symbol string) (*SourceMarketDepth, error) {
 	return &smd, nil
 }
 
-func (bc *Client) GetToken(asset common.Asset) (*Token, error) {
+func (bc *BinanceClient) GetToken(asset common.Asset) (*Token, error) {
 	if asset.IsEmpty() {
 		return nil, errors.New("empty asset")
 	}
@@ -244,7 +243,7 @@ func (bc *Client) GetToken(asset common.Asset) (*Token, error) {
 }
 
 // GetMarketData for chain service
-func (bc *Client) GetMarketData(symbol string) (*MarketData, error) {
+func (bc *BinanceClient) GetMarketData(symbol string) (*MarketData, error) {
 	if len(symbol) == 0 {
 		return nil, errors.New("empty symbol")
 	}
@@ -286,7 +285,7 @@ func (bc *Client) GetMarketData(symbol string) (*MarketData, error) {
 	return &md, nil
 }
 
-func (bc *Client) getBinanceApiUrl(rawPath, rawQuery string) string {
+func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 	u := url.URL{
 		Scheme:   bc.cfg.Scheme,
 		Host:     bc.cfg.DEXHost,
@@ -296,7 +295,7 @@ func (bc *Client) getBinanceApiUrl(rawPath, rawQuery string) string {
 	return u.String()
 }
 
-func (bc *Client) getTxDetailUrl(hash common.TxID) string {
+func (bc *BinanceClient) getTxDetailUrl(hash common.TxID) string {
 	uri := url.URL{
 		Scheme: bc.cfg.FullNodeScheme,
 		Host:   bc.cfg.FullNodeHost,
@@ -308,7 +307,7 @@ func (bc *Client) getTxDetailUrl(hash common.TxID) string {
 	uri.RawQuery = q.Encode()
 	return uri.String()
 }
-func (bc *Client) getBlockUrl(height string) string {
+func (bc *BinanceClient) getBlockUrl(height string) string {
 	uri := url.URL{
 		Scheme: bc.cfg.FullNodeScheme,
 		Host:   bc.cfg.FullNodeHost,
@@ -320,51 +319,8 @@ func (bc *Client) getBlockUrl(height string) string {
 	return uri.String()
 }
 
-type TxDetails struct {
-	TxHash      string    `json:"txHash"`
-	ToAddress   string    `json:"toAddr"`
-	FromAddress string    `json:"fromAddr"`
-	Timestamp   time.Time `json:"timeStamp"`
-}
-
-func (bc *Client) GetTxDetail(txID common.TxID) (TxDetail, error) {
-	noTx := TxDetail{}
-	requestUrl := bc.getTxDetailUrl(txID)
-	bc.logger.Debug().Msg(requestUrl)
-	resp, err := bc.httpClient.Get(requestUrl)
-	if err != nil {
-		return noTx, errors.Wrap(err, "fail to get tx from binance full node")
-	}
-	if resp.StatusCode != http.StatusOK {
-		return noTx, errors.Errorf("unexpected status code %d", resp.StatusCode)
-	}
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			bc.logger.Error().Err(err).Msg("fail to close response body")
-		}
-	}()
-
-	var fnr FullNodeTxResp
-	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
-		return noTx, errors.Wrap(err, "fail to decode response body")
-	}
-
-	spew.Dump(fnr)
-	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
-	if nil != err {
-		return noTx, errors.Wrap(err, "fail to base64 decode tx")
-	}
-	var t tx.StdTx
-	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
-		return noTx, errors.Wrap(err, "fail to unmarshal tx")
-	}
-	spew.Dump(t)
-
-	return noTx, nil
-}
-
 // GetTxEx given the txID , we get the tx detail from binance full node
-func (bc *Client) GetTx(txID common.TxID) (TxDetail, error) {
+func (bc *BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
 	noTx := TxDetail{}
 	if txID.IsEmpty() {
 		return noTx, errors.New("txID is empty")
@@ -412,7 +368,7 @@ func (bc *Client) GetTx(txID common.TxID) (TxDetail, error) {
 	return noTx, nil
 }
 
-func (bc *Client) getTimeFromBlock(height string) (time.Time, error) {
+func (bc *BinanceClient) getTimeFromBlock(height string) (time.Time, error) {
 	t := time.Time{}
 	requestUrl := bc.getBlockUrl(height)
 	resp, err := bc.httpClient.Get(requestUrl)
@@ -431,7 +387,7 @@ func (bc *Client) getTimeFromBlock(height string) (time.Time, error) {
 	return br.Result.Block.Header.Time, nil
 }
 
-func (bc *Client) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
+func (bc *BinanceClient) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
 	td := TxDetail{
 		TxHash:      hash,
 		ToAddress:   "",

@@ -83,9 +83,6 @@ influx_stack:
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
 
-timescale:
-	@docker-compose run --rm -p 5432:5432 --no-deps timescale
-
 # -------------------------------------------- API Targets ------------------------------------
 
 # Open API Makefile targets
@@ -114,13 +111,3 @@ clean:
 
 run_mocked_endpint:
 	go run tools/mockServer/main.go
-
-# postgres
-create-database:
-	psql -h localhost -U postgres -W -c "create database midgard;"
-
-migration-up:
-	migrate -database ${POSTGRESQL_URL} -path db/migrations up
-
-migration-down:
-	migrate -database ${POSTGRESQL_URL} -path db/migrations down
