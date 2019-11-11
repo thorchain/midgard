@@ -11,14 +11,13 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/coingecko"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/logo"
-	"gitlab.com/thorchain/bepswap/chain-service/clients/statechain"
-	"gitlab.com/thorchain/bepswap/chain-service/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/store"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,23 +29,21 @@ const (
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store            store.Store
-	stateChainClient *statechain.StatechainAPI
-	logger           zerolog.Logger
-	tokenService     *coingecko.TokenService
-	binanceClient    *binance.BinanceClient
-	logoClient       *logo.LogoClient
+	store           *influxdb.Client
+	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
+	logger          zerolog.Logger
+	binanceClient   *binance.BinanceClient // TODO Move out of handler (Handler should only talk to the DB)
+	logoClient      *logo.LogoClient
 }
 
-// New creates a new service interface with the Datastore of your choise
-func New(store store.Store, stateChainClient *statechain.StatechainAPI, logger zerolog.Logger, tokenService *coingecko.TokenService, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
+// NewBinanceClient creates a new service interface with the Datastore of your choise
+func New(store *influxdb.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
-		store:            store,
-		stateChainClient: stateChainClient,
-		logger:           logger,
-		tokenService:     tokenService,
-		binanceClient:    binanceClient,
-		logoClient:       logoClient,
+		store:           store,
+		thorChainClient: thorChainClient,
+		logger:          logger,
+		binanceClient:   binanceClient,
+		logoClient:      logoClient,
 	}
 }
 
@@ -70,7 +67,7 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
 
-	pools, err := h.stateChainClient.GetPools()
+	pools, err := h.thorChainClient.GetPools()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("fail to get pools")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
@@ -90,6 +87,7 @@ func (h *Handlers) GetAssets(ctx echo.Context) error {
 
 // (GET /v1/assets/{asset})
 func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
+	// TODO Fix issue with Binance client being required here!!!!!
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
 
 	// asset passed in
@@ -99,7 +97,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
 	}
 
-	pool, err := h.stateChainClient.GetPool(ass)
+	pool, err := h.thorChainClient.GetPool(ass)
 	if err != nil {
 		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
@@ -112,10 +110,10 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	}
 
 	res := api.AssetsDetailedResponse{
-		Asset:       helpers.ConvertAssetForAPI(pool.Asset),
+		Asset: helpers.ConvertAssetForAPI(pool.Asset),
 		// DateCreated: &t, // TODO Pending
-		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
-		Name:        pointy.String(tokenData.Name),
+		Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
+		Name: pointy.String(tokenData.Name),
 		// PriceRune:   pointy.Float64(-1), // TODO Pending
 		// PriceUSD:    pointy.Float64(-1), // TODO Pending
 	}
@@ -216,11 +214,21 @@ func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
 }
 
 // (GET /v1/pools/{asset})
-func (h *Handlers) GetPoolsData(ctx echo.Context, asset string) error {
-	ass0, _ := common.NewAsset(asset)
+func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
+	asset, err := common.NewAsset(ass)
+	if err != nil {
+		h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	}
+
+	// pool, err := h.store.GetPool(asset)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Str("params.Asset", asset.String()).Msg("ERROR")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "EREREER "})
+	// }
 
 	response := api.PoolsDetailedResponse{
-		Asset:            helpers.ConvertAssetForAPI(ass0),
+		Asset:            helpers.ConvertAssetForAPI(asset),
 		AssetDepth:       pointy.Int64(11),
 		AssetROI:         pointy.Float64(22.22),
 		AssetStakedTotal: pointy.Int64(33),

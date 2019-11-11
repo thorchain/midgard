@@ -13,6 +13,8 @@ config:
 	@echo GOBIN: ${GOBIN}
 	@echo GOPATH: ${GOPATH}
 
+.PHONY: tools
+
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
@@ -70,7 +72,6 @@ influx_stack:
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
 
-
 # -------------------------------------------- API Targets ------------------------------------
 
 # Open API Makefile targets
@@ -98,4 +99,4 @@ clean:
 	@rm ${GOBIN}/chainservice
 
 run_mocked_endpint:
-	go run tools/mockServer/main.go
+	go run tools/mockServer/mockServer.go

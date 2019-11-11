@@ -4,7 +4,7 @@ import (
 	"github.com/openlyinc/pointy"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 func ConvertAssetForAPI(asset common.Asset) *api.Asset {
