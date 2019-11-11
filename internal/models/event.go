@@ -49,26 +49,26 @@ func NewEvent(id int64, status string, height int64, event_type string, inHash, 
 func (e Event) Point() client.Point {
 	return client.Point{
 		Measurement: "events",
-		Tags:        map[string]string{
-			"id": fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			"status": e.Status,
-			"type": e.Type,
-			"in_hash": e.InHash.String(),
-			"out_hash": e.OutHash.String(),
-			"in_memo": e.InMemo,
-			"out_memo": e.OutMemo,
+		Tags: map[string]string{
+			"id":           fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			"status":       e.Status,
+			"type":         e.Type,
+			"in_hash":      e.InHash.String(),
+			"out_hash":     e.OutHash.String(),
+			"in_memo":      e.InMemo,
+			"out_memo":     e.OutMemo,
 			"from_address": e.FromAddress.String(),
-			"to_address": e.ToAddress.String(),
+			"to_address":   e.ToAddress.String(),
 		},
-		Time:        time.Time{}, // TODO
-		Fields:      map[string]interface{}{
-			"ID": e.ID,
-			"Height": e.Height,
-			"to_.coins": e.ToCoins.Stringify(),
+		Time: time.Time{}, // TODO
+		Fields: map[string]interface{}{
+			"ID":         e.ID,
+			"Height":     e.Height,
+			"to_coins":   e.ToCoins.Stringify(),
 			"from_coins": e.FromCoins.Stringify(),
-			"gas": e.Gas.Stringify(),
+			"gas":        e.Gas.Stringify(),
 		},
-		Precision:   "",
-		Raw:         "",
+		Precision: "",
+		Raw:       "",
 	}
 }
