@@ -88,37 +88,37 @@ func (h *Handlers) GetAssets(ctx echo.Context) error {
 // (GET /v1/assets/{asset})
 func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	// TODO Fix issue with Binance client being required here!!!!!
-	// h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
-	//
-	// // asset passed in
-	// ass, err := models.NewAsset(asset)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
-	// }
-	//
-	// pool, err := h.thorChainClient.GetPool(ass)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
-	// }
-	//
-	// tokenData, err := h.binanceClient.GetToken(pool.Asset)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Msg("fail to get token data from binance")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
-	// }
-	//
-	// res := api.AssetsDetailedResponse{
-	// 	Asset: helpers.ConvertAssetForAPI(pool.Asset),
-	// 	// DateCreated: &t, // TODO Pending
-	// 	Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
-	// 	Name: pointy.String(tokenData.Name),
-	// 	// PriceRune:   pointy.Float64(-1), // TODO Pending
-	// 	// PriceUSD:    pointy.Float64(-1), // TODO Pending
-	// }
+	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
 
-	return ctx.JSON(http.StatusOK, "res")
+	// asset passed in
+	ass, err := common.NewAsset(asset)
+	if err != nil {
+		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	}
+
+	pool, err := h.thorChainClient.GetPool(ass)
+	if err != nil {
+		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
+	}
+
+	tokenData, err := h.binanceClient.GetToken(pool.Asset)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("fail to get token data from binance")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+	}
+
+	res := api.AssetsDetailedResponse{
+		Asset: helpers.ConvertAssetForAPI(pool.Asset),
+		// DateCreated: &t, // TODO Pending
+		Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
+		Name: pointy.String(tokenData.Name),
+		// PriceRune:   pointy.Float64(-1), // TODO Pending
+		// PriceUSD:    pointy.Float64(-1), // TODO Pending
+	}
+
+	return ctx.JSON(http.StatusOK, res)
 }
 
 // (GET /v1/swapTx)
