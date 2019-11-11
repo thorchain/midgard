@@ -1,4 +1,5 @@
 package thorChain
+
 //
 // import (
 // 	"encoding/json"
@@ -17,11 +18,11 @@ package thorChain
 //
 // func TestPackage(t *testing.T) { TestingT(t) }
 //
-// type StatechainSuite struct{}
+// type thorchainSuite struct{}
 //
-// var _ = Suite(&StatechainSuite{})
+// var _ = Suite(&thorchainSuite{})
 //
-// func (s *StatechainSuite) TestStatechain(c *C) {
+// func (s *thorchainSuite) Testthorchain(c *C) {
 // 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 // 		events := []Event{
 // 			{
@@ -67,15 +68,15 @@ package thorChain
 // 	// create the client , but we don't actually use it
 // 	client := &influxdb.Client{}
 //
-// 	stateChainApi, err := NewAPIClient(config.ThorChainConfiguration{
+// 	thorchainApi, err := NewAPIClient(config.ThorChainConfiguration{
 // 		Scheme:      "http",
 // 		Host:        srv.Listener.Addr().String(),
 // 		ReadTimeout: time.Second,
 // 	}, b, client)
 // 	c.Assert(err, IsNil)
-// 	c.Assert(stateChainApi, NotNil)
+// 	c.Assert(thorchainApi, NotNil)
 //
-// 	id, pts, err := stateChainApi.GetPoints(0)
+// 	id, pts, err := thorchainApi.GetPoints(0)
 // 	c.Assert(err, IsNil)
 // 	c.Assert(pts, HasLen, 3)
 // 	c.Check(id, Equals, int64(3))

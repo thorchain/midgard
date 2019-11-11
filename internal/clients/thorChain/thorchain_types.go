@@ -10,7 +10,7 @@ import (
 type Event struct {
 	ID          int64           `json:"id,string"`
 	Status      string          `json:"status"`
-	Height      int64           `json:"height"` // height of the statechain
+	Height      int64           `json:"height"` // height of the thorchain
 	Type        string          `json:"type"`
 	InHash      common.TxID     `json:"in_hash"`
 	OutHash     common.TxID     `json:"out_hash"`
@@ -20,7 +20,7 @@ type Event struct {
 	ToAddress   common.Address  `json:"to_address"`
 	ToCoins     common.Coins    `json:"to_coins"`
 	FromCoins   common.Coins    `json:"from_coins"`
-	Gas         common.Coins     `json:"gas"`
+	Gas         common.Coins    `json:"gas"`
 	Event       json.RawMessage `json:"event"`
 	Timestamp   time.Time
 }
