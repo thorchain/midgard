@@ -4,10 +4,10 @@ import ()
 
 // type Dummy struct {
 // 	API
-// 	Events []Event
+// 	Events []event
 // 	Err    error
 // }
 //
-// func (dum Dummy) GetEvents(id int64) ([]Event, error) {
+// func (dum Dummy) GetEvents(id int64) ([]event, error) {
 // 	return dum.Events, dum.Err
 // }

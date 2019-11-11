@@ -7,10 +7,11 @@ import (
 
 	client "github.com/influxdata/influxdb1-client"
 
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
-type Event struct {
+type event struct {
 	ID          int64
 	Status      string
 	Height      int64
@@ -28,27 +29,26 @@ type Event struct {
 	Timestamp   time.Time
 }
 
-func NewEvent(id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address, toCoins, fromCoins, gas common.Coins) Event {
-	return Event{
-		ID:          id,
-		Status:      status,
-		Height:      height,
-		Type:        event_type,
-		InHash:      inHash,
-		OutHash:     outHash,
-		InMemo:      inMemo,
-		OutMemo:     outMemo,
-		FromAddress: fromAddr,
-		ToAddress:   toAddr,
-		FromCoins:   fromCoins,
-		ToCoins:     toCoins,
-		Gas:         gas,
+func newEvent(e types.Event) event {
+	return event{
+		ID:          e.ID,
+		Status:      e.Status,
+		Height:      e.Height,
+		Type:        e.Type,
+		InHash:      e.InHash,
+		OutHash:     e.OutHash,
+		InMemo:      e.InMemo,
+		OutMemo:     e.OutMemo,
+		FromAddress: e.FromAddress,
+		ToAddress:   e.ToAddress,
+		FromCoins:   e.FromCoins,
+		ToCoins:     e.ToCoins,
+		Gas:         e.Gas,
 	}
 }
 
-func (e Event) Point() client.Point {
+func (e event) point() client.Point {
 	return client.Point{
-		Measurement: "events",
 		Tags: map[string]string{
 			"id":           fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
 			"status":       e.Status,
@@ -68,7 +68,5 @@ func (e Event) Point() client.Point {
 			"from_coins": e.FromCoins.Stringify(),
 			"gas":        e.Gas.Stringify(),
 		},
-		Precision: "",
-		Raw:       "",
 	}
 }

@@ -3,42 +3,30 @@ package models
 import (
 	client "github.com/influxdata/influxdb1-client"
 
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type EventSwap struct {
-	Event
+	event
 	Pool        common.Asset
 	PriceTarget int64
 	TradeSlip   int64
 	Fee         int64
 }
 
-func NewSwapEvent (pool common.Asset, priceTarget, tradeSlip, fee int64,  id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address, toCoins, fromCoins, gas common.Coins) EventSwap {
+func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 	return EventSwap{
-		Pool: pool,
-		PriceTarget: priceTarget,
-		TradeSlip:   tradeSlip,
-		Fee:         fee,
-		Event: NewEvent(id,
-			status,
-			height,
-			event_type,
-			inHash,
-			outHash,
-			inMemo,
-			outMemo,
-			fromAddr,
-			toAddr,
-			toCoins,
-			fromCoins,
-			gas,
-		),
+		Pool:        swap.Pool,
+		PriceTarget: swap.PriceTarget,
+		TradeSlip:   swap.TradeSlip,
+		Fee:         swap.Fee,
+		event:       newEvent(event),
 	}
 }
 
 func (evt EventSwap) Point() client.Point {
-	p := evt.Event.Point()
+	p := evt.event.point()
 	p.Measurement = "swaps"
 	p.Tags["Pool"] = evt.Pool.String()
 	p.Fields["price_target"] = evt.PriceTarget
@@ -46,6 +34,3 @@ func (evt EventSwap) Point() client.Point {
 	p.Fields["fee"] = evt.Fee
 	return p
 }
-
-
-
