@@ -14,8 +14,8 @@ var _ = Suite(&SwapEventSuite{})
 
 func (s *SwapEventSuite) TestSwapEvent(c *C) {
 	clc := NewTestClient(c)
-	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
-	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
+	from := common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	to := common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
 	inHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD218")
 	c.Assert(err, IsNil)
 	outHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD21V")

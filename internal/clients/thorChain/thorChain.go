@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"sort"
 
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/cenkalti/backoff"
+	client "github.com/influxdata/influxdb1-client"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -18,6 +18,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 )
 
@@ -53,7 +54,7 @@ func NewAPIClient(cfg config.ThorChainConfiguration, store *influxdb.Client, bin
 }
 
 // GetPools from statechain
-func (api *API) GetPools() ([]Pool, error) {
+func (api *API) GetPools() ([]models.Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", api.baseUrl)
 	api.logger.Debug().Msg(poolUrl)
 	resp, err := api.netClient.Get(poolUrl)
@@ -69,7 +70,7 @@ func (api *API) GetPools() ([]Pool, error) {
 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
 	}
 	decoder := json.NewDecoder(resp.Body)
-	var pools []Pool
+	var pools []models.Pool
 	if err := decoder.Decode(&pools); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal pools")
 	}
@@ -77,7 +78,7 @@ func (api *API) GetPools() ([]Pool, error) {
 }
 
 // GetPool with the given asset
-func (api *API) GetPool(asset common.Asset) (*Pool, error) {
+func (api *API) GetPool(asset common.Asset) (*models.Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pool/%s", api.baseUrl, asset.String())
 	api.logger.Debug().Msg(poolUrl)
 	resp, err := api.netClient.Get(poolUrl)
@@ -93,7 +94,7 @@ func (api *API) GetPool(asset common.Asset) (*Pool, error) {
 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
 	}
 	decoder := json.NewDecoder(resp.Body)
-	var pool Pool
+	var pool models.Pool
 	if err := decoder.Decode(&pool); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal pool")
 	}
@@ -121,13 +122,10 @@ func (api *API) getEvents(id int64) ([]Event, error) {
 	return events, nil
 }
 
-type processedEvent struct {
-}
-
-func (api *API) processEvents(id int64) (int64, []processedEvent, error) {
+func (api *API) processEvents(id int64) (int64, []client.Point, error) {
 	events, err := api.getEvents(id)
 	if err != nil {
-		return id, []processedEvent{}, errors.Wrap(err, "fail to get events")
+		return id, nil, errors.Wrap(err, "fail to get events")
 	}
 
 	// sort events lowest ID first. Ensures we don't process an event out of order
@@ -136,6 +134,7 @@ func (api *API) processEvents(id int64) (int64, []processedEvent, error) {
 	})
 
 	maxID := id
+	pts := make([]client.Point, 0)
 	for _, evt := range events {
 		if maxID < evt.ID {
 			maxID = evt.ID
@@ -143,210 +142,107 @@ func (api *API) processEvents(id int64) (int64, []processedEvent, error) {
 		}
 		switch evt.Type {
 		case "swap":
-			log.Printf("swap event")
-			_, err := api.processSwapEvent(evt)
+			pts, err = api.processSwapEvent(evt, pts)
 			if err != nil {
-				return maxID, []processedEvent{}, err
+				return maxID, pts, err
 			}
 		case "stake":
-			log.Printf("stake event")
-			_, err := api.processStakeEvent(evt)
+			pts, err = api.processStakingEvent(evt, pts)
 			if err != nil {
-				return maxID, []processedEvent{}, err
+				return maxID, pts, err
 			}
-		case "withdraw":
-			log.Printf("withdraw event")
-			_, err := api.processWithdrawEvent(evt)
+		case "Unstake":
+			pts, err := api.processUnstakeEvent(evt, pts)
 			if err != nil {
-				return maxID, []processedEvent{}, err
+				return maxID, pts, err
 			}
 		}
 	}
-	return maxID, []processedEvent{}, nil
+	return maxID, pts, nil
 }
 
-func (api *API) processStakeEvent(event Event) (*processedEvent, error) {
-	var stake StakeEvent
-	err := json.Unmarshal(event.Event, &stake)
+func (api *API) processSwapEvent(evt Event, pts []client.Point) ([]client.Point, error) {
+	log.Printf("stake event")
+	var swap EventSwap
+	err := json.Unmarshal(evt.Event, &swap)
+	if err != nil {
+		return nil, errors.Wrap(err, "fail to unmarshal swap event")
+	}
+
+	p := models.NewSwapEvent(
+		swap.Pool,
+		swap.PriceTarget,
+		swap.TradeSlip,
+		swap.Fee,
+		evt.ID,
+		evt.Status,
+		evt.Height,
+		evt.Type,
+		evt.InHash,
+		evt.OutHash,
+		evt.InMemo,
+		evt.OutMemo,
+		evt.FromAddress,
+		evt.ToAddress,
+	).Point()
+
+	pts = append(pts, p)
+	return pts, nil
+}
+
+func (api *API) processStakingEvent(evt Event, pts []client.Point) ([]client.Point, error) {
+	log.Printf("stake event")
+	var stake EventStake
+	err := json.Unmarshal(evt.Event, &stake)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to unmarshal stake event")
 	}
 
-	if len(event.TxArray) != 1 {
-		return nil, errors.Wrap(err, "incorrect number of TxArray items for a Stake event.")
-	}
+	p := models.NewStakeEvent(
+		stake.Pool,
+		stake.StakeUnits,
+		evt.ID,
+		evt.Status,
+		evt.Height,
+		evt.Type,
+		evt.InHash,
+		evt.OutHash,
+		evt.InMemo,
+		evt.OutMemo,
+		evt.FromAddress,
+		evt.ToAddress,
+	).Point()
 
-	// Check chain
-	// chain := event.TxArray[0].Chain
-	//
-	// Extract Tx data
-	// txDetail, err := api.BlockChainClients[chain].GetTxDetail(event.TxArray[0].TxID)
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "fail to get tx from chain: "+chain.String())
-	// }
-	//
-	// spew.Dump(txDetail)
-
-	tx, err := api.binanceClient.GetTxDetail(event.TxArray[0].TxID)
-	if err != nil {
-		return &processedEvent{}, errors.Wrap(err, "fail to get tx from binance")
-	}
-
-	spew.Dump(tx)
-
-	// Build new object
-	// event_id
-	// stake_address
-	// in_Hash
-	// MEMO
-	// stakes.pool
-	// stakes.rune
-	// stakes.token
-	// stakes.type
-	// stakes.units
-
-	// stakeEvent := influxdb.NewStakeEvent(event.ID, event.TxArray[0].TxID,nil,)
-
-	// return
-
-	return &processedEvent{}, nil
+	pts = append(pts, p)
+	return pts, nil
 }
 
-func (api *API) processSwapEvent(event Event) (*processedEvent, error) {
-	var swap SwapEvent
-	err := json.Unmarshal(event.Event, &swap)
+func (api *API) processUnstakeEvent(evt Event, pts []client.Point) ([]client.Point, error) {
+	log.Printf("Unstake event")
+	var unstake EventUnstake
+	err := json.Unmarshal(evt.Event, &unstake)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to unmarshal swap event")
+		return nil, errors.Wrap(err, "fail to unmarshal unstake event")
 	}
-	return &processedEvent{}, nil
-}
 
-func (api *API) processWithdrawEvent(event Event) (*processedEvent, error) {
-	var withdraw WithdrawEvent
-	err := json.Unmarshal(event.Event, &withdraw)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to unmarshal swap event")
-	}
-	return &processedEvent{}, nil
-}
+	p := models.NewUnstakeEvent(
+		unstake.Pool,
+		unstake.StakeUnits,
+		evt.ID,
+		evt.Status,
+		evt.Height,
+		evt.Type,
+		evt.InHash,
+		evt.OutHash,
+		evt.InMemo,
+		evt.OutMemo,
+		evt.FromAddress,
+		evt.ToAddress,
+	).Point()
 
-// GetPoints from statechain and local db
-// func (sc *API) GetPoints(id int64) (int64, []client.Point, error) {
-//
-// 	events, err := sc.getEvents(id)
-// 	if err != nil {
-// 		return id, nil, errors.Wrap(err, "fail to get events")
-// 	}
-//
-// 	// sort events lowest ID first. Ensures we don't process an event out of order
-// 	sort.Slice(events[:], func(i, j int) bool {
-// 		return events[i].ID.Float64() < events[j].ID.Float64()
-// 	})
-//
-// 	maxID := id
-// 	pts := make([]client.Point, 0)
-// 	for _, evt := range events {
-// 		if maxID < int64(evt.ID.Float64()) {
-// 			maxID = int64(evt.ID.Float64())
-// 		}
-//
-// 		switch evt.Type {
-// 		case "swap":
-// 			var swap EventSwap
-// 			err := json.Unmarshal(evt.Event, &swap)
-// 			if err != nil {
-// 				return maxID, pts, errors.Wrap(err, "fail to unmarshal swap event")
-// 			}
-//
-// 			tx, err := sc.binanceClient.GetTx(evt.InHash)
-// 			if err != nil {
-// 				return maxID, pts, errors.Wrap(err, "fail to get tx from binance")
-// 			}
-//
-// 			var rAmt float64
-// 			var tAmt float64
-// 			if common.IsRune(swap.SourceCoin.Denom) {
-// 				rAmt = common.UintToFloat64(swap.SourceCoin.Amount)
-// 				tAmt = common.UintToFloat64(swap.TargetCoin.Amount) * -1
-// 			} else {
-// 				rAmt = common.UintToFloat64(swap.TargetCoin.Amount) * -1
-// 				tAmt = common.UintToFloat64(swap.SourceCoin.Amount)
-// 			}
-//
-// 			pts = append(pts, influxdb.NewSwapEvent(
-// 				int64(evt.ID.Float64()),
-// 				evt.InHash,
-// 				evt.OutHash,
-// 				rAmt,
-// 				tAmt,
-// 				common.UintToFloat64(swap.PriceSlip),
-// 				common.UintToFloat64(swap.TradeSlip),
-// 				common.UintToFloat64(swap.PoolSlip),
-// 				common.UintToFloat64(swap.OutputSlip),
-// 				common.UintToFloat64(swap.Fee),
-// 				evt.Pool.Ticker,
-// 				common.BnbAddress(tx.FromAddress),
-// 				common.BnbAddress(tx.ToAddress),
-// 				tx.Timestamp,
-// 			).Point())
-//
-// 		case "stake":
-// 			var stake EventStake
-// 			err := json.Unmarshal(evt.Event, &stake)
-// 			if err != nil {
-// 				return maxID, pts, errors.Wrap(err, "fail to unmarshal stake event")
-// 			}
-// 			tx, err := sc.binanceClient.GetTx(evt.InHash)
-// 			if err != nil {
-// 				return maxID, pts, err
-// 			}
-//
-// 			addr, err := common.NewBnbAddress(tx.FromAddress)
-// 			if err != nil {
-// 				return maxID, pts, errors.Wrap(err, "fail to parse from address")
-// 			}
-//
-// 			pts = append(pts, influxdb.NewStakeEvent(
-// 				int64(evt.ID.Float64()),
-// 				evt.InHash,
-// 				evt.OutHash,
-// 				common.UintToFloat64(stake.RuneAmount),
-// 				common.UintToFloat64(stake.AssetAmount),
-// 				common.UintToFloat64(stake.StakeUnits),
-// 				evt.Pool,
-// 				addr,
-// 				tx.Timestamp,
-// 			).Point())
-// 		case "unstake":
-// 			var unstake EventUnstake
-// 			err := json.Unmarshal(evt.Event, &unstake)
-// 			if err != nil {
-// 				return maxID, pts, errors.Wrap(err, "fail to unmarshal unstake event")
-// 			}
-// 			tx, err := sc.binanceClient.GetTx(evt.InHash)
-// 			if err != nil {
-// 				return maxID, pts, err
-// 			}
-// 			addr, err := common.NewBnbAddress(tx.ToAddress)
-// 			if err != nil {
-// 				return maxID, pts, errors.Wrap(err, "fail to parse unstake address")
-// 			}
-// 			pts = append(pts, influxdb.NewStakeEvent(
-// 				int64(evt.ID.Float64()),
-// 				evt.InHash,
-// 				evt.OutHash,
-// 				float64(unstake.RuneAmount.Int64()),
-// 				float64(unstake.AssetAmount.Int64()),
-// 				float64(unstake.StakeUnits.Int64()),
-// 				evt.Pool,
-// 				addr,
-// 				tx.Timestamp,
-// 			).Point())
-// 		}
-// 	}
-//
-// 	return maxID, pts, nil
-// }
+	pts = append(pts, p)
+	return pts, nil
+}
 
 // StartScan start to scan
 func (api *API) StartScan() error {
@@ -400,7 +296,6 @@ func (api *API) scan() {
 				api.logger.Error().Err(err).Msg("fail to get events from statechain")
 				continue // we will retry a bit later
 			}
-			os.Exit(111)
 			if len(events) == 0 { // nothing in it
 				select {
 				case <-api.stopChan:
@@ -409,7 +304,7 @@ func (api *API) scan() {
 				}
 				continue
 			}
-			if err := api.writeToStoreWithRetry(events); nil != err {
+			if err := api.writePtsToStoreWithRetry(events); nil != err {
 				api.logger.Error().Err(err).Msg("fail to write events to data store")
 				continue //
 			}
@@ -418,31 +313,27 @@ func (api *API) scan() {
 	}
 }
 
-func (api *API) writeToStoreWithRetry(events []processedEvent) error {
-	return nil
+func (api *API) writePtsToStoreWithRetry(points []client.Point) error {
+	bf := backoff.NewExponentialBackOff()
+	try := 1
+	for {
+		err := api.store.Writes(points)
+		if nil == err {
+			return nil
+		}
+		api.logger.Error().Err(err).Msgf("fail to write points to store, try %d", try)
+		b := bf.NextBackOff()
+		if b == backoff.Stop {
+			return errors.New("fail to write points to store after maximum retry")
+		}
+		select {
+		case <-api.stopChan:
+			return err
+		case <-time.After(b):
+		}
+		try++
+	}
 }
-
-// func (api *API) writePtsToStoreWithRetry(points []client.Point) error {
-// 	bf := backoff.NewExponentialBackOff()
-// 	try := 1
-// 	for {
-// 		err := api.store.Writes(points)
-// 		if nil == err {
-// 			return nil
-// 		}
-// 		api.logger.Error().Err(err).Msgf("fail to write points to store, try %d", try)
-// 		b := bf.NextBackOff()
-// 		if b == backoff.Stop {
-// 			return errors.NewAPIClient("fail to write points to store after maximum retry")
-// 		}
-// 		select {
-// 		case <-api.stopChan:
-// 			return err
-// 		case <-time.After(b):
-// 		}
-// 		try++
-// 	}
-// }
 
 func (api *API) StopScan() error {
 	api.logger.Info().Msg("stop scan request received")
