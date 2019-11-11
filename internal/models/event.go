@@ -23,12 +23,12 @@ type Event struct {
 	ToAddress   common.Address
 	FromCoins   common.Coins
 	ToCoins     common.Coins
-	Gas         common.Coin
+	Gas         common.Coins
 	Event       json.RawMessage
 	Timestamp   time.Time
 }
 
-func NewEvent(id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address) Event {
+func NewEvent(id int64, status string, height int64, event_type string, inHash, outHash common.TxID, inMemo, outMemo string, fromAddr, toAddr common.Address, toCoins, fromCoins, gas common.Coins) Event {
 	return Event{
 		ID:          id,
 		Status:      status,
@@ -40,12 +40,11 @@ func NewEvent(id int64, status string, height int64, event_type string, inHash, 
 		OutMemo:     outMemo,
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
-		FromCoins:   nil,
-		ToCoins:     nil,
-		Gas:         common.Coin{},
+		FromCoins:   fromCoins,
+		ToCoins:     toCoins,
+		Gas:         gas,
 	}
 }
-
 
 func (e Event) Point() client.Point {
 	return client.Point{
@@ -65,6 +64,9 @@ func (e Event) Point() client.Point {
 		Fields:      map[string]interface{}{
 			"ID": e.ID,
 			"Height": e.Height,
+			"to_.coins": e.ToCoins.Stringify(),
+			"from_coins": e.FromCoins.Stringify(),
+			"gas": e.Gas.Stringify(),
 		},
 		Precision:   "",
 		Raw:         "",

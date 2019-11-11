@@ -28,7 +28,7 @@
       }
     ],
     "to_coins":[],
-    "gas":
+    "gas": [
       {
         "asset": {
           "chain":"BNB",
@@ -37,6 +37,15 @@
         },
         "amount": "500"
       },
+      {
+        "asset": {
+          "chain":"BTC",
+          "symbol": "BTC",
+          "ticker": "BTC"
+        },
+        "amount": "500"
+      }
+    ],
     "event": {
       "pool":{
         "chain": "BNB",
