@@ -23,7 +23,7 @@ RUN cat ./cmd/chainservice/config.json | jq \
   --arg CHAIN_HOST "$CHAIN_HOST" \
   --arg INFLUX_HOST "$INFLUX_HOST" \
   '.influx["host"] = $INFLUX_HOST | \
-  .statechain["host"] = $CHAIN_HOST' > /etc/chainservice/config.json
+  .thorchain["host"] = $CHAIN_HOST' > /etc/chainservice/config.json
 RUN cat /etc/chainservice/config.json
 
 ENTRYPOINT ["dumb-init"]

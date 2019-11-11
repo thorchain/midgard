@@ -4,9 +4,7 @@ go 1.13
 
 require (
 	github.com/99designs/gqlgen v0.10.1
-	github.com/DATA-DOG/godog v0.7.13
 	github.com/binance-chain/go-sdk v1.1.3
-	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/btcsuite/btcd v0.0.0-20190926002857-ba530c4abb35 // indirect
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/cenkalti/backoff v2.2.1+incompatible
@@ -14,8 +12,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepmap/oapi-codegen v1.3.0
 	github.com/getkin/kin-openapi v0.2.0
-	github.com/gin-contrib/cache v1.1.0
-	github.com/gin-contrib/logger v0.0.1
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/google/go-cmp v0.3.1 // indirect
@@ -33,7 +29,6 @@ require (
 	github.com/rs/zerolog v1.15.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
-	github.com/superoo7/go-gecko v0.0.0-20190607060444-a448b0c99969
 	github.com/tendermint/go-amino v0.15.1 // indirect
 	github.com/ugorji/go v1.1.7 // indirect
 	github.com/valyala/fasttemplate v1.1.0 // indirect
@@ -44,7 +39,6 @@ require (
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
-	gopkg.in/h2non/gock.v1 v1.0.15 // indirect
 )
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "3",
+    "type": "swap",
+    "Height": 1,
+    "in_hash": "19071E6A596384DAAE07ECF24417C75456C540FB2622ACB9FDA1104E00B5ECD3",
+    "out_hash": "02E5E0BCF57DF99B91B882171BD057078299697C4A6FC146D704259F3B08BC8E",
+    "in_memo": "SWAP:BNB.BNB",
+    "out_memo": "",
+    "from_address": "tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5",
+    "to_address": "tbnb1txnl9dj990rclmt2p6k4zymg6mwsyctrkxkfds",
+    "from_coins": [
+      {
+        "asset": {
+          "chain":"BNB",
+          "symbol": "BNB",
+          "ticker": "BNB"
+        },
+        "amount": "50000000"
+      },
+      {
+        "asset": {
+          "chain":"BNB",
+          "symbol": "RUNE-A1F",
+          "ticker": "RUNE"
+        },
+        "amount": "5000000000"
+      }
+    ],
+    "to_coins":[],
+    "gas":
+      {
+        "asset": {
+          "chain":"BNB",
+          "symbol": "BNB",
+          "ticker": "BNB"
+        },
+        "amount": "500"
+      },
+    "event": {
+      "pool":{
+        "chain": "BNB",
+        "symbol": "BNB",
+        "ticker": "BNB"
+      },
+      "price_target": "33",
+      "trade_slip": "111",
+      "fee": "22"
+    },
+    "status": "Success"
+  }
+]
