@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 
 	"sync"
 	"time"
@@ -140,7 +141,7 @@ func (api *API) processEvents(id int64) (int64, []client.Point, error) {
 			maxID = evt.ID
 			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		}
-		switch evt.Type {
+		switch strings.ToLower(evt.Type) {
 		case "swap":
 			pts, err = api.processSwapEvent(evt, pts)
 			if err != nil {
@@ -151,8 +152,8 @@ func (api *API) processEvents(id int64) (int64, []client.Point, error) {
 			if err != nil {
 				return maxID, pts, err
 			}
-		case "Unstake":
-			pts, err := api.processUnstakeEvent(evt, pts)
+		case "unstake":
+			pts, err = api.processUnstakeEvent(evt, pts)
 			if err != nil {
 				return maxID, pts, err
 			}
@@ -228,6 +229,8 @@ func (api *API) processUnstakeEvent(evt Event, pts []client.Point) ([]client.Poi
 	p := models.NewUnstakeEvent(
 		unstake.Pool,
 		unstake.StakeUnits,
+		unstake.BasisPoints,
+		unstake.Asymmetry,
 		evt.ID,
 		evt.Status,
 		evt.Height,

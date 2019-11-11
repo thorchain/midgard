@@ -41,4 +41,5 @@ type EventUnstake struct {
 	Pool        common.Asset `json:"pool"`
 	StakeUnits  int64        `json:"stake_units,string"`
 	BasisPoints int64        `json:"basis_points,string"` // 1 ==> 10,0000
+	Asymmetry   float64      `json:"asymmetry,string"`    // -1.0 <==> 1.0
 }
