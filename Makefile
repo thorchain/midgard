@@ -14,17 +14,6 @@ config:
 	@echo GOPATH: ${GOPATH}
 
 .PHONY: tools
-install-uml-tools:
-	# go get -u github.com/kazukousen/gouml/cmd/gouml # uml tool
-	# go get -u github.com/yogendra/plantuml-go # uml to svg tool
-	go get -tags 'postgres' -u github.com/golang-migrate/migrate/cmd/migrate
-
-generate-uml:
-	mkdir -p ./doc/uml
-	gouml i . -o ./doc/uml/classes.puml
-	plantuml-go -f svg -o output ./doc/uml/classes.puml
-
-
 
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
