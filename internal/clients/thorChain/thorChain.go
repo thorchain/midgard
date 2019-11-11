@@ -163,7 +163,7 @@ func (api *API) processEvents(id int64) (int64, []client.Point, error) {
 }
 
 func (api *API) processSwapEvent(evt Event, pts []client.Point) ([]client.Point, error) {
-	log.Printf("stake event")
+	log.Printf("swap event")
 	var swap EventSwap
 	err := json.Unmarshal(evt.Event, &swap)
 	if err != nil {
