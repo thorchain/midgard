@@ -341,7 +341,7 @@ func (s *BinanceSuite) TestGetTxEx(c *C) {
 	})
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	bc, err := NewAPIClient(config.BinanceConfiguration{
+	bc, err := NewBinanceClient(config.BinanceConfiguration{
 		DEXHost:              srv.Listener.Addr().String(),
 		Scheme:               "http",
 		RequestTimeout:       time.Second,
@@ -366,7 +366,7 @@ func (s *BinanceSuite) TestGetTxErrorConditions(c *C) {
 	testFunc := func(h http.HandlerFunc, txID common.TxID, expectedTxDetail TxDetail, errorChecker Checker) {
 		srv := httptest.NewServer(h)
 		defer srv.Close()
-		bc, err := NewAPIClient(config.BinanceConfiguration{
+		bc, err := NewBinanceClient(config.BinanceConfiguration{
 			DEXHost:              srv.Listener.Addr().String(),
 			Scheme:               "http",
 			RequestTimeout:       time.Second,
@@ -444,7 +444,7 @@ func (BinanceSuite) TestGetMarketData(c *C) {
 	testFunc := func(h http.HandlerFunc, symbol string, marketDataChecker Checker, errorChecker Checker) {
 		srv := httptest.NewServer(h)
 		defer srv.Close()
-		bc, err := NewAPIClient(config.BinanceConfiguration{
+		bc, err := NewBinanceClient(config.BinanceConfiguration{
 			DEXHost:              srv.Listener.Addr().String(),
 			Scheme:               "http",
 			RequestTimeout:       time.Second,

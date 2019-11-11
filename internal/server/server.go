@@ -76,12 +76,12 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	// Setup binance client
-	binanceClient, err := binance.NewAPIClient(cfg.Binance)
+	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	// Setup stateChain Client scanner
+	// Setup stateChain BinanceClient scanner
 	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, influx, binanceClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create statechain api instance")
@@ -96,7 +96,7 @@ func New(cfgFile *string) (*Server, error) {
 	// Initialise handlers
 	handlers := handlers.New(influx, thorChainApi, logger, binanceClient, logoClient)
 
-	// Register handlers with Client handlers
+	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, handlers)
 
 	// TODO Remove this for a pure echo setup
