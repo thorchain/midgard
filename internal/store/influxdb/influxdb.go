@@ -15,7 +15,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 )
 
-const precision = "n"
+// const precision = "n"
 
 type InfluxDB interface {
 	AddEvent(evt ToPoint) error
@@ -153,28 +153,28 @@ func (in *Client) AddEvent(evt ToPoint) error {
 }
 
 // helper func to get tag
-func getTimeValue(cols []string, vals []interface{}, key string) (time.Time, bool) {
-	for i, col := range cols {
-		if col == key {
-			f, err := time.Parse(time.RFC3339, vals[i].(string))
-			return f, err == nil
-		}
-	}
-
-	return time.Time{}, false
-}
+// func getTimeValue(cols []string, vals []interface{}, key string) (time.Time, bool) {
+// 	for i, col := range cols {
+// 		if col == key {
+// 			f, err := time.Parse(time.RFC3339, vals[i].(string))
+// 			return f, err == nil
+// 		}
+// 	}
+//
+// 	return time.Time{}, false
+// }
 
 // helper func to get tag
-func getStringValue(cols []string, vals []interface{}, key string) (string, bool) {
-	for i, col := range cols {
-		if col == key {
-			f, ok := vals[i].(string)
-			return f, ok
-		}
-	}
-
-	return "", false
-}
+// func getStringValue(cols []string, vals []interface{}, key string) (string, bool) {
+// 	for i, col := range cols {
+// 		if col == key {
+// 			f, ok := vals[i].(string)
+// 			return f, ok
+// 		}
+// 	}
+//
+// 	return "", false
+// }
 
 // helper func to get values from query
 func getFloatValue(cols []string, vals []interface{}, key string) (float64, bool) {
