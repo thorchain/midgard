@@ -15,7 +15,7 @@ var _ = Suite(&StakeEventSuite{})
 func (s *StakeEventSuite) TestStakeEvent(c *C) {
 	clc := NewTestClient(c)
 	ticker := common.Ticker("BNB")
-	addr := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	addr := common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
 	now := time.Now()
 	inHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD218")
 	c.Assert(err, IsNil)

@@ -2,34 +2,55 @@ package common
 
 import (
 	"fmt"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"strings"
 )
 
 type Coin struct {
-	Chain  Chain    `json:"chain"`
-	Denom  Ticker   `json:"denom"`
-	Amount sdk.Uint `json:"amount"`
+	Asset  Asset    `json:"asset"`
+	Amount int64 `json:"amount,string"`
 }
+
+var NoCoin = Coin{}
 
 type Coins []Coin
 
 // NewCoin return a new instance of Coin
-func NewCoin(chain Chain, denom Ticker, amount sdk.Uint) Coin {
+func NewCoin(asset Asset, amount int64) Coin {
 	return Coin{
-		Chain:  chain,
-		Denom:  denom,
+		Asset:  asset,
 		Amount: amount,
 	}
 }
 
-func (c Coin) Valid() error {
-	if c.Chain.IsEmpty() {
-		return fmt.Errorf("Chain cannot be empty")
+func (c Coin) IsEmpty() bool {
+	if c.Asset.IsEmpty() {
+		return true
 	}
-	if c.Denom.IsEmpty() {
+	if c.Amount == 0 {
+		return true
+	}
+	return false
+}
+
+func (c Coin) IsValid() error {
+	if c.Asset.IsEmpty() {
 		return fmt.Errorf("Denom cannot be empty")
+	}
+	if c.Amount == 0 {
+		return fmt.Errorf("Amount cannot be zero")
 	}
 
 	return nil
+}
+
+func (c Coin) String() string {
+	return fmt.Sprintf("%s%v", c.Asset.String(), c.Amount)
+}
+
+func (cs Coins) String() string {
+	coins := make([]string, len(cs))
+	for i, c := range cs {
+		coins[i] = c.String()
+	}
+	return strings.Join(coins, ", ")
 }

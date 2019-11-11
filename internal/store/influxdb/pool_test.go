@@ -15,8 +15,8 @@ var _ = Suite(&PoolSuite{})
 func (s *PoolSuite) TestGetPool(c *C) {
 	clc := NewTestClient(c)
 	now := time.Now()
-	from := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
-	to := common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
+	from := common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6")
+	to := common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnL")
 	inHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD218")
 	c.Assert(err, IsNil)
 	outHash, err := common.NewTxID("A1C7D97D5DB51FFDBC3FE29FFF6ADAA2DAF112D2CEAADA0902822333A59BD21V")
@@ -30,7 +30,7 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		14.4,
 		5.1,
 		common.Ticker("BNB"),
-		common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
+		common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
 		now,
 	)
 
@@ -45,7 +45,7 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		87.3835,
 		12,
 		common.Ticker("TCAN-014"),
-		common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
+		common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
 		now,
 	)
 	err = clc.AddEvent(stake)
@@ -59,7 +59,7 @@ func (s *PoolSuite) TestGetPool(c *C) {
 		5,
 		30,
 		common.Ticker("TCAN-014"),
-		common.BnbAddress("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnA"),
+		common.Address("bnbblejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpnA"),
 		now,
 	)
 	err = clc.AddEvent(stake)
