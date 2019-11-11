@@ -17,13 +17,14 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
 )
 
-// API to talk to statechain
+// API to talk to thorchain
 type API struct {
 	logger        zerolog.Logger
 	cfg           config.ThorChainConfiguration
@@ -38,11 +39,11 @@ type API struct {
 // NewBinanceClient create a new instance of API which can talk to thorChain
 func NewAPIClient(cfg config.ThorChainConfiguration, store *influxdb.Client, binanceClient *binance.BinanceClient) (*API, error) {
 	if len(cfg.Host) == 0 {
-		return nil, errors.New("statechain host is empty")
+		return nil, errors.New("thorchain host is empty")
 	}
 	return &API{
 		cfg:    cfg,
-		logger: log.With().Str("module", "statechain").Logger(),
+		logger: log.With().Str("module", "thorchain").Logger(),
 		netClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
@@ -54,13 +55,13 @@ func NewAPIClient(cfg config.ThorChainConfiguration, store *influxdb.Client, bin
 	}, nil
 }
 
-// GetPools from statechain
+// GetPools from thorchain
 func (api *API) GetPools() ([]models.Pool, error) {
 	poolUrl := fmt.Sprintf("%s/pools", api.baseUrl)
 	api.logger.Debug().Msg(poolUrl)
 	resp, err := api.netClient.Get(poolUrl)
 	if nil != err {
-		return nil, errors.Wrap(err, "fail to get pools from statechain")
+		return nil, errors.Wrap(err, "fail to get pools from thorchain")
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
@@ -84,7 +85,7 @@ func (api *API) GetPool(asset common.Asset) (*models.Pool, error) {
 	api.logger.Debug().Msg(poolUrl)
 	resp, err := api.netClient.Get(poolUrl)
 	if nil != err {
-		return nil, errors.Wrap(err, "fail to get pools from statechain")
+		return nil, errors.Wrap(err, "fail to get pools from thorchain")
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
@@ -102,7 +103,7 @@ func (api *API) GetPool(asset common.Asset) (*models.Pool, error) {
 	return &pool, nil
 }
 
-func (api *API) getEvents(id int64) ([]Event, error) {
+func (api *API) getEvents(id int64) ([]types.Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", api.baseUrl, id)
 	api.logger.Debug().Msg(uri)
 	resp, err := api.netClient.Get(uri)
@@ -116,7 +117,7 @@ func (api *API) getEvents(id int64) ([]Event, error) {
 		}
 	}()
 
-	var events []Event
+	var events []types.Event
 	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
 		return nil, errors.Wrap(err, "fail to unmarshal events")
 	}
@@ -162,96 +163,35 @@ func (api *API) processEvents(id int64) (int64, []client.Point, error) {
 	return maxID, pts, nil
 }
 
-func (api *API) processSwapEvent(evt Event, pts []client.Point) ([]client.Point, error) {
-	log.Printf("swap event")
-	var swap EventSwap
+func (api *API) processSwapEvent(evt types.Event, pts []client.Point) ([]client.Point, error) {
+	var swap types.EventSwap
 	err := json.Unmarshal(evt.Event, &swap)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to unmarshal swap event")
 	}
-
-	p := models.NewSwapEvent(
-		swap.Pool,
-		swap.PriceTarget,
-		swap.TradeSlip,
-		swap.Fee,
-		evt.ID,
-		evt.Status,
-		evt.Height,
-		evt.Type,
-		evt.InHash,
-		evt.OutHash,
-		evt.InMemo,
-		evt.OutMemo,
-		evt.FromAddress,
-		evt.ToAddress,
-		evt.ToCoins,
-		evt.FromCoins,
-		evt.Gas,
-	).Point()
-
+	p := models.NewSwapEvent(swap, evt).Point()
 	pts = append(pts, p)
 	return pts, nil
 }
 
-func (api *API) processStakingEvent(evt Event, pts []client.Point) ([]client.Point, error) {
-	log.Printf("stake event")
-	var stake EventStake
+func (api *API) processStakingEvent(evt types.Event, pts []client.Point) ([]client.Point, error) {
+	var stake types.EventStake
 	err := json.Unmarshal(evt.Event, &stake)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to unmarshal stake event")
 	}
-
-	p := models.NewStakeEvent(
-		stake.Pool,
-		stake.StakeUnits,
-		evt.ID,
-		evt.Status,
-		evt.Height,
-		evt.Type,
-		evt.InHash,
-		evt.OutHash,
-		evt.InMemo,
-		evt.OutMemo,
-		evt.FromAddress,
-		evt.ToAddress,
-		evt.ToCoins,
-		evt.FromCoins,
-		evt.Gas,
-	).Point()
-
+	p := models.NewStakeEvent(stake, evt).Point()
 	pts = append(pts, p)
 	return pts, nil
 }
 
-func (api *API) processUnstakeEvent(evt Event, pts []client.Point) ([]client.Point, error) {
-	log.Printf("Unstake event")
-	var unstake EventUnstake
+func (api *API) processUnstakeEvent(evt types.Event, pts []client.Point) ([]client.Point, error) {
+	var unstake types.EventUnstake
 	err := json.Unmarshal(evt.Event, &unstake)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to unmarshal unstake event")
 	}
-
-	p := models.NewUnstakeEvent(
-		unstake.Pool,
-		unstake.StakeUnits,
-		unstake.BasisPoints,
-		unstake.Asymmetry,
-		evt.ID,
-		evt.Status,
-		evt.Height,
-		evt.Type,
-		evt.InHash,
-		evt.OutHash,
-		evt.InMemo,
-		evt.OutMemo,
-		evt.FromAddress,
-		evt.ToAddress,
-		evt.ToCoins,
-		evt.FromCoins,
-		evt.Gas,
-	).Point()
-
+	p := models.NewUnstakeEvent(unstake, evt).Point()
 	pts = append(pts, p)
 	return pts, nil
 }
@@ -283,10 +223,11 @@ func (api *API) getMaxID() (int64, error) {
 	return swapID, nil
 
 }
+
 func (api *API) scan() {
 	defer api.wg.Done()
-	api.logger.Info().Msg("start statechain event scanning")
-	defer api.logger.Info().Msg("statechain event scanning stopped")
+	api.logger.Info().Msg("start thorchain event scanning")
+	defer api.logger.Info().Msg("thorchain event scanning stopped")
 	currentPos := int64(1) // we start from 1
 	maxID, err := api.getMaxID()
 	if nil != err {
@@ -296,7 +237,7 @@ func (api *API) scan() {
 		currentPos = maxID + 1
 	}
 	for {
-		api.logger.Debug().Msg("sleeping statechain scan")
+		api.logger.Debug().Msg("sleeping thorchain scan")
 		time.Sleep(time.Second * 1)
 		select {
 		case <-api.stopChan:
@@ -305,7 +246,7 @@ func (api *API) scan() {
 			api.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
 			maxID, events, err := api.processEvents(currentPos)
 			if err != nil {
-				api.logger.Error().Err(err).Msg("fail to get events from statechain")
+				api.logger.Error().Err(err).Msg("fail to get events from thorchain")
 				continue // we will retry a bit later
 			}
 			if len(events) == 0 { // nothing in it

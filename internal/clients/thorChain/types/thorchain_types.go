@@ -1,4 +1,4 @@
-package thorChain
+package types
 
 import (
 	"encoding/json"
