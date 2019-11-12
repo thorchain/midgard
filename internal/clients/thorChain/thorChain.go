@@ -18,7 +18,6 @@ import (
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
@@ -56,52 +55,52 @@ func NewAPIClient(cfg config.ThorChainConfiguration, store *influxdb.Client, bin
 }
 
 // GetPools from thorchain
-func (api *API) GetPools() ([]models.Pool, error) {
-	poolUrl := fmt.Sprintf("%s/pools", api.baseUrl)
-	api.logger.Debug().Msg(poolUrl)
-	resp, err := api.netClient.Get(poolUrl)
-	if nil != err {
-		return nil, errors.Wrap(err, "fail to get pools from thorchain")
-	}
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("fail to close response body")
-		}
-	}()
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
-	}
-	decoder := json.NewDecoder(resp.Body)
-	var pools []models.Pool
-	if err := decoder.Decode(&pools); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal pools")
-	}
-	return pools, nil
-}
+// func (api *API) GetPools() ([]models.Pool, error) {
+// 	poolUrl := fmt.Sprintf("%s/pools", api.baseUrl)
+// 	api.logger.Debug().Msg(poolUrl)
+// 	resp, err := api.netClient.Get(poolUrl)
+// 	if nil != err {
+// 		return nil, errors.Wrap(err, "fail to get pools from thorchain")
+// 	}
+// 	defer func() {
+// 		if err := resp.Body.Close(); nil != err {
+// 			api.logger.Error().Err(err).Msg("fail to close response body")
+// 		}
+// 	}()
+// 	if resp.StatusCode != http.StatusOK {
+// 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
+// 	}
+// 	decoder := json.NewDecoder(resp.Body)
+// 	var pools []models.Pool
+// 	if err := decoder.Decode(&pools); nil != err {
+// 		return nil, errors.Wrap(err, "fail to unmarshal pools")
+// 	}
+// 	return pools, nil
+// }
 
 // GetPool with the given asset
-func (api *API) GetPool(asset common.Asset) (*models.Pool, error) {
-	poolUrl := fmt.Sprintf("%s/pool/%s", api.baseUrl, asset.String())
-	api.logger.Debug().Msg(poolUrl)
-	resp, err := api.netClient.Get(poolUrl)
-	if nil != err {
-		return nil, errors.Wrap(err, "fail to get pools from thorchain")
-	}
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("fail to close response body")
-		}
-	}()
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
-	}
-	decoder := json.NewDecoder(resp.Body)
-	var pool models.Pool
-	if err := decoder.Decode(&pool); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal pool")
-	}
-	return &pool, nil
-}
+// func (api *API) GetPool(asset common.Asset) (*models.Pool, error) {
+// 	poolUrl := fmt.Sprintf("%s/pool/%s", api.baseUrl, asset.String())
+// 	api.logger.Debug().Msg(poolUrl)
+// 	resp, err := api.netClient.Get(poolUrl)
+// 	if nil != err {
+// 		return nil, errors.Wrap(err, "fail to get pools from thorchain")
+// 	}
+// 	defer func() {
+// 		if err := resp.Body.Close(); nil != err {
+// 			api.logger.Error().Err(err).Msg("fail to close response body")
+// 		}
+// 	}()
+// 	if resp.StatusCode != http.StatusOK {
+// 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
+// 	}
+// 	decoder := json.NewDecoder(resp.Body)
+// 	var pool models.Pool
+// 	if err := decoder.Decode(&pool); nil != err {
+// 		return nil, errors.Wrap(err, "fail to unmarshal pool")
+// 	}
+// 	return &pool, nil
+// }
 
 func (api *API) getEvents(id int64) ([]types.Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", api.baseUrl, id)
@@ -206,30 +205,12 @@ func (api *API) StartScan() error {
 	return nil
 }
 
-func (api *API) getMaxID() (int64, error) {
-	stakeID, err := api.store.GetMaxIDStakes()
-	if err != nil {
-		return 0, errors.Wrap(err, "fail to get max stakes id from store")
-	}
-
-	swapID, err := api.store.GetMaxIDSwaps()
-	if err != nil {
-		return 0, errors.Wrap(err, "fail to get max swap id from store")
-	}
-
-	if stakeID > swapID {
-		return stakeID, nil
-	}
-	return swapID, nil
-
-}
-
 func (api *API) scan() {
 	defer api.wg.Done()
 	api.logger.Info().Msg("start thorchain event scanning")
 	defer api.logger.Info().Msg("thorchain event scanning stopped")
 	currentPos := int64(1) // we start from 1
-	maxID, err := api.getMaxID()
+	maxID, err := api.store.GetMaxID()
 	if nil != err {
 		api.logger.Error().Err(err).Msg("fail to get currentPos from data store")
 	} else {

@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
 	client "github.com/influxdata/influxdb1-client"
 	"github.com/pkg/errors"
@@ -97,7 +96,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 		// END
 		// `,
 		`
-		CREATE CONTINUOUS QUERY "cq_staker_addresses" ON "db0" 
+		CREATE CONTINUOUS QUERY "cq_staker_addresses" ON "db0"
 		RESAMPLE EVERY %s FOR %s
 		BEGIN
 			SELECT
@@ -122,7 +121,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 	for _, cq := range queries {
 		query := fmt.Sprintf(cq, resampleRate, resampleFor)
 		// fmt.Printf("Continuous Query: %s\n", query)
-		res, err := in.Query(query)
+		_, err := in.Query(query)
 		if err != nil {
 			return err
 		}

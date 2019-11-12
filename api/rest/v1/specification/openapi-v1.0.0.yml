@@ -91,7 +91,7 @@ paths:
     get:
       operationId: GetStakersData
       summary: Get Stakers
-      description: Returns an array containing the addresses for all stakers. Useful for leaderboards. 
+      description: Returns an array containing the addresses for all stakers.
       responses:
         "200":
           "$ref": "#/components/responses/StakersResponse"
@@ -537,7 +537,7 @@ components:
     Stakers:
       type: string
       description: Staker address
-
+      example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
 
     PoolDetail:
       type: object
