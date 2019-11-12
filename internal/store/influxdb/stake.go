@@ -1,49 +1,37 @@
 package influxdb
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
 
-//
-// import (
-// 	"fmt"
-// 	"time"
-//
-// 	"github.com/pkg/errors"
-//
-// 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
-// )
-//
-//
-//
-//
-// // func (evt StakeEvent) Point() client.Point {
-// // 	// save which direction we are staking. Saving as an tag is a faster query
-// // 	// because tags are index, and fields are not.
-// // 	var eType string
-// // 	if evt.Units > 0 {
-// // 		eType = "staking"
-// // 	} else {
-// // 		eType = "unstaking"
-// // 	}
-// // 	return client.Point{
-// // 		Measurement: "stakes",
-// // 		Tags: map[string]string{
-// // 			"ID":       fmt.Sprintf("%d", evt.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-// // 			"pool":     evt.Asset.String(),
-// // 			"address":  evt.Address.String(),
-// // 			"in_hash":  evt.InHash.String(),
-// // 			"out_hash": evt.OutHash.String(),
-// // 			"type":     eType,
-// // 		},
-// // 		Fields: map[string]interface{}{
-// // 			"ID":    evt.ID,
-// // 			"rune":  evt.RuneAmount,
-// // 			"token": evt.TokenAmount,
-// // 			"units": evt.Units,
-// // 		},
-// // 		Time:      evt.Timestamp,
-// // 		Precision: precision,
-// // 	}
-// // }
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+)
+
+// GET chainservice/stakers
+// Returns an array containing all the stakers.
+func (in Client) GetStakerAddresses() []common.Address {
+	addresses := []common.Address{}
+	query := "select * from staker_addresses"
+
+	// Find the number of stakers
+	resp, err := in.Query(query)
+	if err != nil {
+		return nil
+	}
+
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		for _, vals := range series.Values {
+			temp, _ := getStringValue(series.Columns, vals, "from_address")
+			a, err := common.NewAddress(temp)
+			if err != nil {
+
+			}
+			addresses = append(addresses, a)
+		}
+	}
+	return addresses
+}
+
 //
 // // func (in Client) ListStakeEvents(address common.Address, ticker common.Ticker, limit, offset int) (events []StakeEvent, err error) {
 // //

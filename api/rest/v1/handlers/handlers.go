@@ -272,10 +272,10 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	response := api.StakersResponse{
-		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
-		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
-		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
+	addresses := h.store.GetStakerAddresses()
+	response := api.StakersResponse{}
+	for _,addr := range addresses {
+		response = append(response, api.Stakers(addr.String()))
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
