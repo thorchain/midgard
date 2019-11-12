@@ -60,13 +60,19 @@ func (e event) point() client.Point {
 			"from_address": e.FromAddress.String(),
 			"to_address":   e.ToAddress.String(),
 		},
-		Time: time.Time{}, // TODO
+		Time: time.Now(), // TODO
 		Fields: map[string]interface{}{
 			"ID":         e.ID,
 			"Height":     e.Height,
 			"to_coins":   e.ToCoins.Stringify(),
 			"from_coins": e.FromCoins.Stringify(),
 			"gas":        e.Gas.Stringify(),
+			"in_hash":      e.InHash.String(),
+			"out_hash":     e.OutHash.String(),
+			"in_memo":      e.InMemo,
+			"out_memo":     e.OutMemo,
+			"from_address": e.FromAddress.String(),
+			"to_address":   e.ToAddress.String(),
 		},
 		Precision: "n",
 	}
