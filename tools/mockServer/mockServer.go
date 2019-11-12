@@ -64,6 +64,7 @@ func main() {
 	addr := "127.0.0.1:8081"
 	router := mux.NewRouter()
 
+	// TODO update url
 	router.HandleFunc("/swapservice/events/{id}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/swapservice/pools", poolsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/swapservice/pool/{asset}", poolMockedEndpoint).Methods("GET")
