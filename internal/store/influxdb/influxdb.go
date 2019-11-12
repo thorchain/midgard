@@ -165,16 +165,16 @@ func (in *Client) AddEvent(evt ToPoint) error {
 }
 
 // helper func to get tag
-func getTimeValue(cols []string, vals []interface{}, key string) (time.Time, bool) {
-	for i, col := range cols {
-		if col == key {
-			f, err := time.Parse(time.RFC3339, vals[i].(string))
-			return f, err == nil
-		}
-	}
-
-	return time.Time{}, false
-}
+// func getTimeValue(cols []string, vals []interface{}, key string) (time.Time, bool) {
+// 	for i, col := range cols {
+// 		if col == key {
+// 			f, err := time.Parse(time.RFC3339, vals[i].(string))
+// 			return f, err == nil
+// 		}
+// 	}
+//
+// 	return time.Time{}, false
+// }
 
 // helper func to get tag
 func getStringValue(cols []string, vals []interface{}, key string) (string, bool) {
