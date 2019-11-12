@@ -2,27 +2,19 @@ package types
 
 import (
 	"encoding/json"
-	"time"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
 type Event struct {
-	ID          int64           `json:"id,string"`
-	Status      string          `json:"status"`
-	Height      int64           `json:"height"` // height of the thorchain
-	Type        string          `json:"type"`
-	InHash      common.TxID     `json:"in_hash"`
-	OutHash     common.TxID     `json:"out_hash"`
-	InMemo      string          `json:"in_memo"`
-	OutMemo     string          `json:"out_memo"`
-	FromAddress common.Address  `json:"from_address"`
-	ToAddress   common.Address  `json:"to_address"`
-	ToCoins     common.Coins    `json:"to_coins"`
-	FromCoins   common.Coins    `json:"from_coins"`
-	Gas         common.Coins    `json:"gas"`
-	Event       json.RawMessage `json:"event"`
-	Timestamp   time.Time
+	ID     int64     `json:"id,string"`
+	Status string    `json:"status"`
+	Height int64     `json:"height"`
+	Type   string    `json:"type"`
+	InTx   common.Tx `json:"in_tx"`
+	OutTx  common.Tx `json:"out_tx"`
+	Gas   common.Coins    `json:"gas"`
+	Event json.RawMessage `json:"event"`
 }
 
 type EventStake struct {

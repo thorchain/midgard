@@ -6,7 +6,7 @@
     "user_name": "admin",
     "password": "password",
     "database": "db0",
-    "resample": "10m",
+    "resample": "1m",
     "resample_for": "1d"
   },
   "thorchain": {
