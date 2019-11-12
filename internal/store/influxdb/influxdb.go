@@ -79,31 +79,43 @@ func NewClient(cfg config.InfluxDBConfiguration) (*Client, error) {
 
 func (in *Client) Init(resampleRate, resampleFor string) error {
 	queries := []string{
+		// TODO Review is needed later
+		// `
+		// CREATE CONTINUOUS QUERY "cq_usage_1" ON "db0"
+		// 	RESAMPLE EVERY %s FOR %s
+		// BEGIN
+		// 	SELECT
+		// 		COUNT(token) AS total_token_tx,
+		// 		ABS(SUM(token)) AS token_sum,
+		// 		ABS(SUM(token_fee)) as token_fee_sum,
+		// 		COUNT(rune) AS total_rune_tx,
+		// 		ABS(SUM(rune)) AS rune_sum,
+		// 		ABS(SUM(rune_fee)) as rune_fee_sum
+		// 	INTO "db0"."autogen"."swaps_usage"
+		// 	FROM "swaps" GROUP BY time(1d),target,pool,from_address
+		// END
+		// `,
 		`
-		CREATE CONTINUOUS QUERY "cq_usage_1" ON "db0" 
-			RESAMPLE EVERY %s FOR %s
-		BEGIN 
-			SELECT 
-				COUNT(token) AS total_token_tx,
-				ABS(SUM(token)) AS token_sum,
-				ABS(SUM(token_fee)) as token_fee_sum,
-				COUNT(rune) AS total_rune_tx,
-				ABS(SUM(rune)) AS rune_sum,
-				ABS(SUM(rune_fee)) as rune_fee_sum
-			INTO "db0"."autogen"."swaps_usage" 
-			FROM "swaps" GROUP BY time(1d),target,pool,from_address
+		CREATE CONTINUOUS QUERY "cq_staker_addresses" ON "db0"
+		RESAMPLE EVERY %s FOR %s
+		BEGIN
+			SELECT
+				SUM(stake_units) as stake_units
+			INTO "db0"."autogen"."staker_addresses"
+			FROM "stakes" GROUP BY time(1h), from_address
 		END
-		`,
-		`
-		CREATE CONTINUOUS QUERY "cq_usage_2" ON "db0" 
-			RESAMPLE EVERY %s FOR %s
-		BEGIN 
-			SELECT 
-				SUM(rune) as rune_total
-			INTO "db0"."autogen"."stakes_usage" 
-			FROM "stakes" GROUP BY time(1d)
-		END
-		`,
+	`,
+		// TODO Review is needed later
+		// `
+		// CREATE CONTINUOUS QUERY "cq_usage_2" ON "db0"
+		// 	RESAMPLE EVERY %s FOR %s
+		// BEGIN
+		// 	SELECT
+		// 		SUM(rune) as rune_total
+		// 	INTO "db0"."autogen"."stakes_usage"
+		// 	FROM "stakes" GROUP BY time(1d)
+		// END
+		// `,
 	}
 
 	for _, cq := range queries {
@@ -165,16 +177,16 @@ func (in *Client) AddEvent(evt ToPoint) error {
 // }
 
 // helper func to get tag
-// func getStringValue(cols []string, vals []interface{}, key string) (string, bool) {
-// 	for i, col := range cols {
-// 		if col == key {
-// 			f, ok := vals[i].(string)
-// 			return f, ok
-// 		}
-// 	}
-//
-// 	return "", false
-// }
+func getStringValue(cols []string, vals []interface{}, key string) (string, bool) {
+	for i, col := range cols {
+		if col == key {
+			f, ok := vals[i].(string)
+			return f, ok
+		}
+	}
+
+	return "", false
+}
 
 // helper func to get values from query
 func getFloatValue(cols []string, vals []interface{}, key string) (float64, bool) {

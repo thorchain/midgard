@@ -67,58 +67,57 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
 
-	pools, err := h.thorChainClient.GetPools()
-	if err != nil {
-		h.logger.Error().Err(err).Msg("fail to get pools")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
-			Error: err.Error(),
-		})
-	}
+	// pools, err := h.thorChainClient.GetPools()
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Msg("fail to get pools")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+	// 		Error: err.Error(),
+	// 	})
+	// }
+	//
+	// assets := api.AssetsResponse{}
+	//
+	// for _, item := range pools {
+	// 	a := *helpers.ConvertAssetForAPI(item.Asset)
+	// 	assets = append(assets, a)
+	// }
 
-	assets := api.AssetsResponse{}
-
-	for _, item := range pools {
-		a := *helpers.ConvertAssetForAPI(item.Asset)
-		assets = append(assets, a)
-	}
-
-	return ctx.JSON(http.StatusOK, assets)
+	return ctx.JSON(http.StatusOK, "assets")
 }
 
 // (GET /v1/assets/{asset})
 func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
-	// TODO Fix issue with Binance client being required here!!!!!
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
 
 	// asset passed in
-	ass, err := common.NewAsset(asset)
-	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
-	}
+	// ass, err := common.NewAsset(asset)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	// }
 
-	pool, err := h.thorChainClient.GetPool(ass)
-	if err != nil {
-		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
-	}
+	// pool, err := h.thorChainClient.GetPool(ass)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
+	// }
 
-	tokenData, err := h.binanceClient.GetToken(pool.Asset)
-	if err != nil {
-		h.logger.Error().Err(err).Msg("fail to get token data from binance")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
-	}
+	// tokenData, err := h.binanceClient.GetToken(pool.Asset)
+	// if err != nil {
+	// 	h.logger.Error().Err(err).Msg("fail to get token data from binance")
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+	// }
+	//
+	// res := api.AssetsDetailedResponse{
+	// 	Asset: helpers.ConvertAssetForAPI(pool.Asset),
+	// 	// DateCreated: &t, // TODO Pending
+	// 	Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
+	// 	Name: pointy.String(tokenData.Name),
+	// 	// PriceRune:   pointy.Float64(-1), // TODO Pending
+	// 	// PriceUSD:    pointy.Float64(-1), // TODO Pending
+	// }
 
-	res := api.AssetsDetailedResponse{
-		Asset: helpers.ConvertAssetForAPI(pool.Asset),
-		// DateCreated: &t, // TODO Pending
-		Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
-		Name: pointy.String(tokenData.Name),
-		// PriceRune:   pointy.Float64(-1), // TODO Pending
-		// PriceUSD:    pointy.Float64(-1), // TODO Pending
-	}
-
-	return ctx.JSON(http.StatusOK, res)
+	return ctx.JSON(http.StatusOK, "res")
 }
 
 // (GET /v1/swapTx)
@@ -272,10 +271,10 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	response := api.StakersResponse{
-		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
-		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
-		"tbnb15r82hgf2e7649zhl4dsqgwc5tj64wf2jztrwd5",
+	addresses := h.store.GetStakerAddresses()
+	response := api.StakersResponse{}
+	for _,addr := range addresses {
+		response = append(response, api.Stakers(addr.String()))
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
