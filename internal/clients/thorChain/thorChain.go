@@ -163,6 +163,7 @@ func (api *API) processEvents(id int64) (int64, []client.Point, error) {
 }
 
 func (api *API) processSwapEvent(evt types.Event, pts []client.Point) ([]client.Point, error) {
+	api.logger.Debug().Msg("processSwapEvent")
 	var swap types.EventSwap
 	err := json.Unmarshal(evt.Event, &swap)
 	if err != nil {
@@ -174,6 +175,7 @@ func (api *API) processSwapEvent(evt types.Event, pts []client.Point) ([]client.
 }
 
 func (api *API) processStakingEvent(evt types.Event, pts []client.Point) ([]client.Point, error) {
+	api.logger.Debug().Msg("processStakingEvent")
 	var stake types.EventStake
 	err := json.Unmarshal(evt.Event, &stake)
 	if err != nil {
@@ -185,6 +187,7 @@ func (api *API) processStakingEvent(evt types.Event, pts []client.Point) ([]clie
 }
 
 func (api *API) processUnstakeEvent(evt types.Event, pts []client.Point) ([]client.Point, error) {
+	api.logger.Debug().Msg("processUnstakeEvent")
 	var unstake types.EventUnstake
 	err := json.Unmarshal(evt.Event, &unstake)
 	if err != nil {
