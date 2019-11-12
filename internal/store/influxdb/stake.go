@@ -32,6 +32,28 @@ func (in Client) GetStakerAddresses() []common.Address {
 	return addresses
 }
 
+type StakerAddressDetails struct {
+	StakerArray []common.Asset
+	TotalStaked int64
+	TotalEarned int64
+	TotalROI    int64
+}
+
+func (in Client) GetStakerAddressDetails(address common.Address) StakerAddressDetails {
+	return StakerAddressDetails{
+		StakerArray: []common.Asset{
+			{
+				Chain:  "BNB",
+				Symbol: "BNB",
+				Ticker: "BNB",
+			},
+		},
+		TotalStaked: 1,
+		TotalEarned: 2,
+		TotalROI:    3,
+	}
+}
+
 //
 // // func (in Client) ListStakeEvents(address common.Address, ticker common.Ticker, limit, offset int) (events []StakeEvent, err error) {
 // //
