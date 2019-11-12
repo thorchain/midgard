@@ -281,21 +281,25 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	ass0, _ := common.NewAsset("BNB")
-	ass1, _ := common.NewAsset("FSN-F1B")
-	ass2, _ := common.NewAsset("FTM-585")
-	ass3, _ := common.NewAsset("LOK-3C0")
+	addr, err := common.NewAddress(address)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
+	details := h.store.GetStakerAddressDetails(addr)
+	assets := make([]api.Asset, len(details.StakerArray))
+
+	for _,ass := range details.StakerArray {
+		assets = append(assets, *helpers.ConvertAssetForAPI(ass))
+	}
 
 	response := api.StakersAddressDataResponse{
-		StakeArray: &[]api.Asset{
-			*helpers.ConvertAssetForAPI(ass0),
-			*helpers.ConvertAssetForAPI(ass1),
-			*helpers.ConvertAssetForAPI(ass2),
-			*helpers.ConvertAssetForAPI(ass3),
-		},
-		TotalEarned: pointy.Int64(333),
-		TotalROI:    pointy.Int64(444),
-		TotalStaked: pointy.Int64(555),
+		StakeArray: &assets,
+		TotalEarned: pointy.Int64(details.TotalEarned),
+		TotalROI:    pointy.Int64(details.TotalROI),
+		TotalStaked: pointy.Int64(details.TotalStaked),
 	}
 
 	return ctx.JSON(http.StatusOK, response)
