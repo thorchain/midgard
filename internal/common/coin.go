@@ -63,3 +63,13 @@ func (cs Coins) Stringify() string {
 	}
 	return strings.Join(coins, ", ")
 }
+
+func (cs Coins) IsValid() error {
+	for _, coin := range cs {
+		if err := coin.IsValid(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
