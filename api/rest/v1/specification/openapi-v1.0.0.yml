@@ -34,6 +34,22 @@ paths:
       responses:
         "200":
           description: health response of the API.
+  "/v1/tx/{address}":
+    get:
+      operationId: GetTxDetails
+      summary: Get transaction
+      description: Returns an object containing the health response of the API.
+      parameters:
+        - in: path
+          name: address
+          description: An address
+          required: true
+          schema:
+            type: string
+          example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
+      responses:
+        "200":
+          $ref: '#/components/responses/TxDetailedResponse'       
   "/v1/bepswap":
     get:
       operationId: GetBEPSwapData
@@ -136,59 +152,9 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/StakersAssetDataResponse'
-
-  "/v1/stakeTx/{address}":
-    get:
-      operationId: GetStakerTxForAddress
-      summary: Get Staking Transactions
-      description: Returns an object containing staking transaction data for the staker specified.
-      parameters:
-        - in: path
-          name: address
-          description: Unique staker address
-          required: true
-          schema:
-            type: string
-          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
-      responses:
-        "200":
-          $ref: '#/components/responses/StakeTxDataResponse'
-
-  "/v1/swapTx/{address}":
-    get:
-      operationId: GetSwapTxForAddress
-      summary: Get Swapping Transactions
-      description: Returns an object containing swapping transaction data for the swapper specified.
-      parameters:
-        - in: path
-          name: address
-          description: Unique swapper address
-          required: true
-          schema:
-            type: string
-            example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
-      responses:
-        "200":
-          $ref: '#/components/responses/SwapTxDataResponse'
+  
 components:
   responses:
-    SwapTxDataResponse:
-      description: array of swapping transaction events
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/SwapTxData'
-
-    StakeTxDataResponse:
-      description: array of staking transaction events
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/StakeTxData'
     PoolsDetailedResponse:
       description: object containing pool data for that asset
       content:
@@ -202,6 +168,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/BEPSwapData'
+    TxDetailedResponse:
+      description: Returns an array of transaction events
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TxDetails'        
 
     StakersAddressDataResponse:
       description: array of all the pools the staker is staking in
@@ -250,153 +224,82 @@ components:
             $ref: '#/components/schemas/Error'
 
   schemas:
-    SwapTxData:
+    TxDetails:
       properties:
         pool:
           $ref: '#/components/schemas/asset'
         type:
           type: string
-          enum: [sell, buy, double]
+          enum: [sell, buy, crossPool, stake, withdraw]
         status:
           type: string
-          enum: [success, refund, priceCancelled]
-        from:
+          enum: [success, refund, priceCancelled] 
+        in:
           type: object
           properties:
-            Address:
-              type: string
-            Coin:
-              type: object
-              properties:
-                asset:
-                  $ref: '#/components/schemas/asset'
-                amount:
-                  type: string
-            memo:
-              type: string
-            priceTarget:
-              type: integer
-              format: int64
-            txID:
-              type: string
-        to:
-          type: object
-          properties:
-            address:
-              type: string
-            coin:
-              type: object
-              properties:
-                asset:
-                  $ref: '#/components/schemas/asset'
-                amount:
-                  type: string
-            fee:
-              type: integer
-              description: Fees retained
-            slip:
-              type: number
-              format: double
-              description: Swap slip
-            gas:
-              type: object
-              properties:
-                asset:
-                  $ref: '#/components/schemas/asset'
-                amount:
-                  type: string
-            memo:
-              type: string
-            txID:
-              type: string
-            date:
-              type: string
-              format: 'date-time'
-            height:
-              type: integer
-              format: int64
-    StakeTxData:
-      properties:
-        pool:
-          $ref: '#/components/schemas/asset'
-        type:
-          type: string
-          enum: [stake, withdraw]
-        status:
-          type: string
-          enum: [success, refund]
-        send:
-          type: object
-          properties:
-            Coins:
-              type: array
-              items:
+              txID:
+                type: string
+              memo:
+                type: string
+              address:
+                type: string
+              coin:
                 type: object
                 properties:
                   asset:
                     $ref: '#/components/schemas/asset'
                   amount:
-                    type: integer
-                    format: int64
-            memo:
-              type: string
-            txID:
-              type: string
-        receive:
+                    type: string
+        out:
           type: object
           properties:
-            coins:
-              type: array
-              items:
+              txID:
+                type: string
+              memo:
+                type: string
+              address:
+                type: string
+              coin:
                 type: object
                 properties:
                   asset:
                     $ref: '#/components/schemas/asset'
                   amount:
-                    type: integer
-                    format: int64
-            memo:
-              type: string
-            txID:
-              type: string
-            gas:
-              type: object
-              properties:
-                asset:
-                  $ref: '#/components/schemas/asset'
-                amount:
-                  type: integer
-                  format: int64
-        stake:
-          type: object
-          properties:
-            stakeUnitsAdded:
-              type: integer
-              format: int64
-              description: Stake units added
-        withdraw:
-          type: object
-          properties:
-            stakeUnitsSubtracted:
-              type: integer
-              format: int64
-              description: Stake units subtracted (reduces pool ownership)
-            withdrawBasisPoints:
-              type: integer
-              format: int64
-              description: Withdraw basis points (10000 = 100%)
-            asymmetry:
-              type: number
-              format: double
-              description: Asymmetry (-1.0 (Rune-biased) 0 (default) 1.0 (asset-biased))
+                    type: string
         date:
           type: string
           format: 'date-time'
+        gas:
+          type: object
+          properties:
+            asset:
+              $ref: '#/components/schemas/asset'
+            amount:
+              type: string        
+        options:
+            type: object
+            properties:
+              Stake:
+                type: string 
+              Withdraw:
+                type: string  
+              Swap:
+                type: string   
         height:
           type: integer
-          format: int64
-          description: THORChain blockheight
-
+          format: int64 
+        events:
+          type: object
+          properties:
+            fee:
+              type: integer
+              format: int64 
+            stakeUnits:
+              type: integer 
+              format: int64 
+            slip:
+              type: number 
+              format: double                      
     BEPSwapData:
       type: object
       properties:
@@ -717,8 +620,7 @@ components:
       type: object
       properties:
         error:
-          type: string
-
+          type: string                    
     asset:
       type: object
       properties:
