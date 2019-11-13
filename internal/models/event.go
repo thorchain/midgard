@@ -11,6 +11,26 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
+const (
+	EventsTable = "events"
+	// Tags and Fields const
+	PoolTag     = "PoolTag"
+	Id          = "Id"
+	Height      = "Height"
+	Status      = "Status"
+	EventType   = "type"
+	ToCoin      = "to_coins"
+	FromCoin    = "from_coin"
+	Gas         = "Gas"
+	InHash      = "in_hash"
+	OutHash     = "out_hash"
+	InMemo      = "in_memo"
+	OutMemo     = "out_memo"
+	FromAddress = "from_address"
+	ToAddress   = "to_address"
+	Fee         = "fee"
+)
+
 type event struct {
 	ID          int64
 	Status      string
@@ -49,31 +69,31 @@ func newEvent(e types.Event) event {
 
 func (e event) point() client.Point {
 	return client.Point{
-		Measurement: "events",
+		Measurement: EventsTable,
 		Tags: map[string]string{
-			"id":           fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			"status":       e.Status,
-			"type":         e.Type,
-			"in_hash":      e.InHash.String(),
-			"out_hash":     e.OutHash.String(),
-			"in_memo":      e.InMemo,
-			"out_memo":     e.OutMemo,
-			"from_address": e.FromAddress.String(),
-			"to_address":   e.ToAddress.String(),
+			Id:          fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			Status:      e.Status,
+			EventType:   e.Type,
+			InHash:      e.InHash.String(),
+			OutHash:     e.OutHash.String(),
+			InMemo:      e.InMemo,
+			OutMemo:     e.OutMemo,
+			FromAddress: e.FromAddress.String(),
+			ToAddress:   e.ToAddress.String(),
 		},
 		Time: time.Now(), // TODO
 		Fields: map[string]interface{}{
-			"ID":         e.ID,
-			"Height":     e.Height,
-			"to_coins":   e.ToCoins.Stringify(),
-			"from_coins": e.FromCoins.Stringify(),
-			"gas":        e.Gas.Stringify(),
-			"in_hash":      e.InHash.String(),
-			"out_hash":     e.OutHash.String(),
-			"in_memo":      e.InMemo,
-			"out_memo":     e.OutMemo,
-			"from_address": e.FromAddress.String(),
-			"to_address":   e.ToAddress.String(),
+			Id:          e.ID,
+			Height:      e.Height,
+			ToCoin:      e.ToCoins.Stringify(),
+			FromCoin:    e.FromCoins.Stringify(),
+			Gas:         e.Gas.Stringify(),
+			InHash:      e.InHash.String(),
+			OutHash:     e.OutHash.String(),
+			InMemo:      e.InMemo,
+			OutMemo:     e.OutMemo,
+			FromAddress: e.FromAddress.String(),
+			ToAddress:   e.ToAddress.String(),
 		},
 		Precision: "n",
 	}
