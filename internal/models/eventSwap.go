@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 
 	client "github.com/influxdata/influxdb1-client"
 
