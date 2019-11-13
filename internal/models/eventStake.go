@@ -21,6 +21,10 @@ func NewStakeEvent(stake types.EventStake, event types.Event) EventStake {
 	}
 }
 
+func (evt EventStake) Insert() {
+	evt.event.insert()
+}
+
 func (evt EventStake) Point() client.Point {
 	p := evt.event.point()
 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
