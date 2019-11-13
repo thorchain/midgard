@@ -72,6 +72,9 @@ influx_stack:
 influxdb:
 	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
 
+pg:
+	@docker-compose run --rm -p 5432:5432 --no-deps pg
+
 # -------------------------------------------- API Targets ------------------------------------
 
 # Open API Makefile targets
@@ -100,3 +103,20 @@ clean:
 
 run_mocked_endpint:
 	go run tools/mockServer/mockServer.go
+
+# ------------------------------------------- sql migrations ----------------------------------------------
+
+${GOBIN}/sql-migrate:
+	go get -v github.com/rubenv/sql-migrate/...
+
+create-database:
+	psql -h localhost -U postgres -c "create database midgard;"
+
+drop-database:
+	psql -h localhost -U postgres -c "drop database midgard;"
+
+migration-up: ${GOBIN}/sql-migrate
+	${GOBIN}/sql-migrate up
+
+migration-down: ${GOBIN}/sql-migrate
+	${GOBIN}/sql-migrate down

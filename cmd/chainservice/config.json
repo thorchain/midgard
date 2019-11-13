@@ -15,6 +15,15 @@
     "enable_scan": true,
     "scan_start_pos": 1
   },
+  "timescale": {
+    "host": "localhost",
+    "post": 5432,
+    "user_name": "postgres",
+    "password": "password",
+    "database": "midgard",
+    "sslmode": "disable"
+  },
+
   "binance": {
     "scheme": "https",
     "dex_host": "testnet-dex.binance.org",
