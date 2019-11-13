@@ -17,6 +17,7 @@ type Configuration struct {
 	ReadTimeout     time.Duration          `json:"read_timeout" mapstructure:"read_timeout"`
 	WriteTimeout    time.Duration          `json:"write_timeout" mapstructure:"write_timeout"`
 	Influx          InfluxDBConfiguration  `json:"influx" mapstructure:"influx"`
+	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	Binance         BinanceConfiguration   `json:"binance" mapstructure:"binance"`
 	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
@@ -31,6 +32,15 @@ type InfluxDBConfiguration struct {
 	Database     string `json:"database" mapstructure:"database"`
 	ResampleRate string `json:"resample" mapstructure:"resample"`
 	ResampleFor  string `json:"resample_for" mapstructure:"resample_for"`
+}
+
+type TimeScaleConfiguration struct {
+	Host     string `json:"host" mapstructure:"host"`
+	Port     int    `json:"port" mapstructure:"port"`
+	UserName string `json:"user_name" mapstructure:"user_name"`
+	Password string `json:"password" mapstructure:"password"`
+	Database string `json:"database" mapstructure:"database"`
+	Sslmode  string `json:"sslmode" mapstructure:"sslmode"`
 }
 
 type ThorChainConfiguration struct {
@@ -63,6 +73,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
 	viper.SetDefault("influx.port", 8086)
+	viper.SetDefault("timescale.port", 5432)
 	viper.SetDefault("thorchain.scheme", "http")
 	viper.SetDefault("thorchain.host", "localhost:1317")
 	viper.SetDefault("thorchain.read_timeout", "10s")

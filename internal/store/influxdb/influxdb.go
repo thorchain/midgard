@@ -95,6 +95,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 		// 	FROM "swaps" GROUP BY time(1d),target,pool,from_address
 		// END
 		// `,
+		// TODO move into stake.go some how
 		`
 		CREATE CONTINUOUS QUERY "cq_staker_addresses" ON "db0"
 		RESAMPLE EVERY %s FOR %s
@@ -102,7 +103,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 			SELECT
 				SUM(stake_units) as stake_units
 			INTO "db0"."autogen"."staker_addresses"
-			FROM "stakes" GROUP BY time(1h), from_address
+			FROM "events" GROUP BY time(1h), from_address
 		END
 	`,
 		// TODO Review is needed later

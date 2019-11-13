@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/handler"
+
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -15,7 +16,8 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
+
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 
@@ -29,7 +31,7 @@ const (
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           *influxdb.Client
+	store           *timescale.Client
 	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 	binanceClient   *binance.BinanceClient // TODO Move out of handler (Handler should only talk to the DB)
@@ -37,7 +39,7 @@ type Handlers struct {
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *influxdb.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
+func New(store *timescale.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
@@ -62,7 +64,34 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "OK")
 }
+// (GET /v1/tx/{address})
+func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
+	 
+	ass, _ := common.NewAsset("BNB")
 
+	response := api.TxDetails{
+		//TestDailyActiveUsers:   nil,
+		Pool:            helpers.ConvertAssetForAPI(ass),
+		// Status:          nil,
+		// Date:            nil,
+		// Height:          nil,
+		// TotalAssetBuys:     nil,
+		// TotalAssetSells:    nil,
+		// TotalDepth:         nil,
+		// TotalEarned:        nil,
+		// TotalStakeTx:       nil,
+		// TotalStaked:        nil,
+		// TotalTx:            nil,
+		// TotalUsers:         nil,
+		// TotalVolume:        nil,
+		// TotalVolume24hr:    nil,
+		// TotalWithdrawTx:    nil,
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+
+//	return ctx.JSON(http.StatusOK, "OK")
+}
 // (GET /v1/assets)
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
@@ -118,74 +147,6 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	// }
 
 	return ctx.JSON(http.StatusOK, "res")
-}
-
-// (GET /v1/swapTx)
-func (h *Handlers) GetSwapTxForAddress(ctx echo.Context, address string) error {
-	// to, _ := common.NewBnbAddress(params.Dest)
-	// from, _ := common.NewBnbAddress(params.Sender)
-	//
-	// if params.Limit == nil {
-	// 	params.Limit = pointy.Int(defaultLimit)
-	// }
-	//
-	// if params.Offset == nil {
-	// 	params.Offset = pointy.Int(defaultOffset)
-	// }
-	//
-	// asset, err := common.NewTicker(params.Asset)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusBadRequest, Err{"error": err.Error()})
-	// }
-	//
-	// data, err := h.store.ListSwapEvents(to, from, asset, *params.Limit, *params.Offset)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
-	// }
-
-	response := api.SwapTxDataResponse{}
-
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/stakeTx/{address})
-func (h *Handlers) GetStakerTxForAddress(ctx echo.Context, address string) error {
-	// addr, err := common.NewBnbAddress(params.Staker)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusBadRequest, Err{"error": err.Error()})
-	// }
-	//
-	// if params.Limit == nil {
-	// 	defaultLimit := 25
-	// 	params.Limit = &defaultLimit
-	// }
-	//
-	// if params.Offset == nil {
-	// 	defaultOffset := 0
-	// 	params.Offset = &defaultOffset
-	// }
-	//
-	// if params.Asset == nil {
-	// 	data, err := h.store.ListStakeEvents(addr, "", *params.Limit, *params.Offset)
-	// 	if err != nil {
-	// 		return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
-	// 	}
-	// 	return ctx.JSON(http.StatusOK, data)
-	// }
-	//
-	// ticker, err := common.NewTicker(*params.Asset)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusBadRequest, Err{"error": err.Error()})
-	// }
-	//
-	// data, err := h.store.ListStakeEvents(addr, ticker, *params.Limit, *params.Offset)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, Err{"error": err.Error()})
-	// }
-
-	response := api.StakeTxDataResponse{}
-
-	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/bepswap)
@@ -271,38 +232,45 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	addresses := h.store.GetStakerAddresses()
-	response := api.StakersResponse{}
-	for _,addr := range addresses {
-		response = append(response, api.Stakers(addr.String()))
-	}
-	return ctx.JSON(http.StatusOK, response)
+	// addresses := h.store.GetStakerAddresses()
+	// response := api.StakersResponse{}
+	// for _,addr := range addresses {
+	// 	response = append(response, api.Stakers(addr.String()))
+	// }
+	// return ctx.JSON(http.StatusOK, response)
+	return nil
 }
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	addr, err := common.NewAddress(address)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
-			Error: err.Error(),
-		})
-	}
+	// addr, err := common.NewAddress(address)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+	// 		Error: err.Error(),
+	// 	})
+	// }
+	//
+	// details, err := h.store.GetStakerAddressDetails(addr)
+	// if err != nil {
+	// 	return ctx.JSON(http.StatusInternalServerError, err)
+	// }
+	// assets := make([]api.Asset, len(details.StakerArray))
+	//
+	// for _,ass := range details.StakerArray {
+	// 	assets = append(assets, *helpers.ConvertAssetForAPI(ass))
+	// }
+	//
+	// response := api.StakersAddressDataResponse{
+	// 	StakeArray: &assets,
+	// 	TotalEarned: pointy.Int64(details.TotalEarned),
+	// 	TotalROI:    pointy.Int64(details.TotalROI),
+	// 	TotalStaked: pointy.Int64(details.TotalStaked),
+	// }
+	//
+	// spew.Dump()
+	// return ctx.JSON(http.StatusOK, response)
 
-	details := h.store.GetStakerAddressDetails(addr)
-	assets := make([]api.Asset, len(details.StakerArray))
-
-	for _,ass := range details.StakerArray {
-		assets = append(assets, *helpers.ConvertAssetForAPI(ass))
-	}
-
-	response := api.StakersAddressDataResponse{
-		StakeArray: &assets,
-		TotalEarned: pointy.Int64(details.TotalEarned),
-		TotalROI:    pointy.Int64(details.TotalROI),
-		TotalStaked: pointy.Int64(details.TotalStaked),
-	}
-
-	return ctx.JSON(http.StatusOK, response)
+	return nil
 }
 
 // (GET /v1/stakers/{address}/{asset})

@@ -7,6 +7,12 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
+const (
+	StakeUnits  = "stake_units"
+	BasisPoints = "basis_points"
+	Asymmetry   = "asymmetry"
+)
+
 type EventUnstake struct {
 	event
 	Pool        common.Asset
@@ -27,10 +33,10 @@ func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake
 
 func (evt EventUnstake) Point() client.Point {
 	p := evt.event.point()
-	p.Measurement = "stakes" // Part of stakes table
-	p.Tags["Pool"] = evt.Pool.String()
-	p.Fields["stake_units"] = evt.StakeUnits
-	p.Fields["basis_points"] = evt.BasisPoints
-	p.Fields["asymmetry"] = evt.Asymmetry
+	p.Tags[ModelPoolAttribute] = evt.Pool.String()
+	p.Fields[ModelPoolAttribute] = evt.Pool.String()
+	p.Fields[StakeUnits] = evt.StakeUnits
+	p.Fields[BasisPoints] = evt.BasisPoints
+	p.Fields[Asymmetry] = evt.Asymmetry
 	return p
 }
