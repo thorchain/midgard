@@ -6,7 +6,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
-// GET chainservice/stakers
+// GET midgard/stakers
 // Returns an array containing all the stakers.
 func (in Client) GetStakerAddresses() []common.Address {
 	addresses := []common.Address{}

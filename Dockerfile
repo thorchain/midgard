@@ -12,19 +12,19 @@ RUN apk update && \
     pip install dumb-init && \
     rm -rf /var/cache/apk/*
 
-COPY . /tmp/chainservice
-WORKDIR /tmp/chainservice
+COPY . /tmp/midgard
+WORKDIR /tmp/midgard
 
 ENV PATH="node_modules/.bin:${PATH}"
 RUN env
 
-RUN mkdir -p /etc/chainservice
-RUN cat ./cmd/chainservice/config.json | jq \
+RUN mkdir -p /etc/midgard
+RUN cat ./cmd/midgard/config.json | jq \
   --arg CHAIN_HOST "$CHAIN_HOST" \
   --arg INFLUX_HOST "$INFLUX_HOST" \
   '.influx["host"] = $INFLUX_HOST | \
-  .thorchain["host"] = $CHAIN_HOST' > /etc/chainservice/config.json
-RUN cat /etc/chainservice/config.json
+  .thorchain["host"] = $CHAIN_HOST' > /etc/midgard/config.json
+RUN cat /etc/midgard/config.json
 
 ENTRYPOINT ["dumb-init"]
 CMD ["/bin/sh"]
