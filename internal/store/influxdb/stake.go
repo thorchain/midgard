@@ -1,16 +1,17 @@
 package influxdb
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 // GET chainservice/stakers
 // Returns an array containing all the stakers.
 func (in Client) GetStakerAddresses() []common.Address {
 	addresses := []common.Address{}
-	query := "select * from staker_addresses"
+	query := fmt.Sprintf("select * from %s", models.ModelStakerAddressesContinuesQueryTable)
 
 	// Find the number of stakers
 	resp, err := in.Query(query)
@@ -21,7 +22,7 @@ func (in Client) GetStakerAddresses() []common.Address {
 	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
 		series := resp[0].Series[0]
 		for _, vals := range series.Values {
-			temp, _ := getStringValue(series.Columns, vals, "from_address")
+			temp, _ := getStringValue(series.Columns, vals, models.ModelFromAddressAttribute)
 			a, err := common.NewAddress(temp)
 			if err != nil {
 
@@ -39,19 +40,19 @@ type StakerAddressDetails struct {
 	TotalROI    int64
 }
 
-func (in Client) GetStakerAddressDetails(address common.Address) StakerAddressDetails {
+func (in Client) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
+
+	pools, err := in.GetPoolFromAddress(address)
+	if err != nil {
+		return StakerAddressDetails{}, err
+	}
+
 	return StakerAddressDetails{
-		StakerArray: []common.Asset{
-			{
-				Chain:  "BNB",
-				Symbol: "BNB",
-				Ticker: "BNB",
-			},
-		},
+		StakerArray: pools,
 		TotalStaked: 1,
 		TotalEarned: 2,
 		TotalROI:    3,
-	}
+	}, nil
 }
 
 //
@@ -219,15 +220,3 @@ func (in Client) GetStakerAddressDetails(address common.Address) StakerAddressDe
 // 	return
 // }
 //
-func (in Client) GetMaxIDStakes() (int64, error) {
-	resp, err := in.Query("SELECT MAX(ID) as maxID FROM stakes")
-	if nil != err {
-		return 0, errors.Wrap(err, "fail to get max id from stakers")
-	}
-	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
-		series := resp[0].Series[0]
-		id, _ := getIntValue(series.Columns, series.Values[0], "maxID")
-		return id, nil
-	}
-	return 0, nil
-}

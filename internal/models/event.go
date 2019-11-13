@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	client "github.com/influxdata/influxdb1-client"
@@ -12,23 +11,26 @@ import (
 )
 
 const (
-	EventsTable = "events"
+	// Table / Measurement name
+	ModelEventsTable                        = "events"
+	ModelStakerAddressesContinuesQueryTable = "staker_addresses"
+
 	// Tags and Fields const
-	PoolTag     = "PoolTag"
-	Id          = "Id"
-	Height      = "Height"
-	Status      = "Status"
-	EventType   = "type"
-	ToCoin      = "to_coins"
-	FromCoin    = "from_coin"
-	Gas         = "Gas"
-	InHash      = "in_hash"
-	OutHash     = "out_hash"
-	InMemo      = "in_memo"
-	OutMemo     = "out_memo"
-	FromAddress = "from_address"
-	ToAddress   = "to_address"
-	Fee         = "fee"
+	ModelPoolAttribute        = "pool"
+	ModelIdAttribute          = "id"
+	ModelHeightAttribute      = "height"
+	ModelStatusAttribute      = "status"
+	ModelEventTypeAttribute   = "type"
+	ModelToCoinAttribute      = "to_coins"
+	ModelFromCoinAttribute    = "from_coin"
+	ModelGasAttribute         = "gas"
+	ModelInHashAttribute      = "in_hash"
+	ModelOutHashAttribute     = "out_hash"
+	ModelInMemoAttribute      = "in_memo"
+	ModelOutMemoAttribute     = "out_memo"
+	ModelFromAddressAttribute = "from_address"
+	ModelToAddressAttribute   = "to_address"
+	ModelFeeAttribute         = "fee"
 )
 
 type event struct {
@@ -69,31 +71,31 @@ func newEvent(e types.Event) event {
 
 func (e event) point() client.Point {
 	return client.Point{
-		Measurement: EventsTable,
+		Measurement: ModelEventsTable,
 		Tags: map[string]string{
-			Id:          fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
-			Status:      e.Status,
-			EventType:   e.Type,
-			InHash:      e.InHash.String(),
-			OutHash:     e.OutHash.String(),
-			InMemo:      e.InMemo,
-			OutMemo:     e.OutMemo,
-			FromAddress: e.FromAddress.String(),
-			ToAddress:   e.ToAddress.String(),
+			// ModelIdAttribute:          fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
+			ModelStatusAttribute:      e.Status,
+			ModelEventTypeAttribute:   e.Type,
+			ModelInHashAttribute:      e.InHash.String(),
+			ModelOutHashAttribute:     e.OutHash.String(),
+			ModelInMemoAttribute:      e.InMemo,
+			ModelOutMemoAttribute:     e.OutMemo,
+			ModelFromAddressAttribute: e.FromAddress.String(),
+			ModelToAddressAttribute:   e.ToAddress.String(),
 		},
 		Time: time.Now(), // TODO
 		Fields: map[string]interface{}{
-			Id:          e.ID,
-			Height:      e.Height,
-			ToCoin:      e.ToCoins.Stringify(),
-			FromCoin:    e.FromCoins.Stringify(),
-			Gas:         e.Gas.Stringify(),
-			InHash:      e.InHash.String(),
-			OutHash:     e.OutHash.String(),
-			InMemo:      e.InMemo,
-			OutMemo:     e.OutMemo,
-			FromAddress: e.FromAddress.String(),
-			ToAddress:   e.ToAddress.String(),
+			ModelIdAttribute:          e.ID,
+			ModelHeightAttribute:      e.Height,
+			ModelToCoinAttribute:      e.ToCoins.Stringify(),
+			ModelFromCoinAttribute:    e.FromCoins.Stringify(),
+			ModelGasAttribute:         e.Gas.Stringify(),
+			ModelInHashAttribute:      e.InHash.String(),
+			ModelOutHashAttribute:     e.OutHash.String(),
+			ModelInMemoAttribute:      e.InMemo,
+			ModelOutMemoAttribute:     e.OutMemo,
+			ModelFromAddressAttribute: e.FromAddress.String(),
+			ModelToAddressAttribute:   e.ToAddress.String(),
 		},
 		Precision: "n",
 	}
