@@ -30,12 +30,12 @@ type API struct {
 	netClient     *http.Client
 	wg            *sync.WaitGroup
 	stopChan      chan struct{}
-	store        *timescale.Client
+	store         *timescale.Store
 	binanceClient *binance.BinanceClient
 }
 
 // NewBinanceClient create a new instance of API which can talk to thorChain
-func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.BinanceClient, timescale *timescale.Client) (*API, error) {
+func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.BinanceClient, timescale *timescale.Store) (*API, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
@@ -48,7 +48,7 @@ func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.Bina
 		baseUrl:       fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
 		stopChan:      make(chan struct{}),
 		wg:            &sync.WaitGroup{},
-		store: timescale,
+		store:         timescale,
 		binanceClient: binanceClient,
 	}, nil
 }
@@ -219,7 +219,7 @@ func (api *API) scan() {
 	api.logger.Info().Msg("start thorchain event scanning")
 	defer api.logger.Info().Msg("thorchain event scanning stopped")
 	currentPos := int64(1) // we start from 1
-	maxID, err := api.store.GetMaxID()
+	maxID, err := api.store.Events.GetMaxID()
 	if nil != err {
 		api.logger.Error().Err(err).Msg("fail to get currentPos from data store")
 	} else {

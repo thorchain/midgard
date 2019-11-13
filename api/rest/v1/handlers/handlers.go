@@ -31,7 +31,7 @@ const (
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           *timescale.Client
+	store           *timescale.Store
 	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 	binanceClient   *binance.BinanceClient // TODO Move out of handler (Handler should only talk to the DB)
@@ -39,7 +39,7 @@ type Handlers struct {
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *timescale.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
+func New(store *timescale.Store, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
@@ -64,14 +64,15 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "OK")
 }
+
 // (GET /v1/tx/{address})
 func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
-	 
+
 	ass, _ := common.NewAsset("BNB")
 
 	response := api.TxDetails{
 		//TestDailyActiveUsers:   nil,
-		Pool:            helpers.ConvertAssetForAPI(ass),
+		Pool: helpers.ConvertAssetForAPI(ass),
 		// Status:          nil,
 		// Date:            nil,
 		// Height:          nil,
@@ -90,8 +91,9 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 
 	return ctx.JSON(http.StatusOK, response)
 
-//	return ctx.JSON(http.StatusOK, "OK")
+	//	return ctx.JSON(http.StatusOK, "OK")
 }
+
 // (GET /v1/assets)
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
