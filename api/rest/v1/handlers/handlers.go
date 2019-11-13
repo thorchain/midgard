@@ -62,7 +62,34 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "OK")
 }
+// (GET /v1/tx/{address})
+func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
+	 
+	ass, _ := common.NewAsset("BNB")
 
+	response := api.TxDetails{
+		//TestDailyActiveUsers:   nil,
+		Pool:            helpers.ConvertAssetForAPI(ass),
+		// Status:          nil,
+		// Date:            nil,
+		// Height:          nil,
+		// TotalAssetBuys:     nil,
+		// TotalAssetSells:    nil,
+		// TotalDepth:         nil,
+		// TotalEarned:        nil,
+		// TotalStakeTx:       nil,
+		// TotalStaked:        nil,
+		// TotalTx:            nil,
+		// TotalUsers:         nil,
+		// TotalVolume:        nil,
+		// TotalVolume24hr:    nil,
+		// TotalWithdrawTx:    nil,
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+
+//	return ctx.JSON(http.StatusOK, "OK")
+}
 // (GET /v1/assets)
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
