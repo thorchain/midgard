@@ -19,7 +19,7 @@ import (
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
-	timescale2 "gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
@@ -75,7 +75,7 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	timescale, err := timescale2.NewClient(cfg.TimeScale)
+	timescale, err := timescale.NewClient(cfg.TimeScale)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create timescale")
 	}

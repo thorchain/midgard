@@ -10,16 +10,24 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 )
 
-type Client struct {
+type Store struct {
 	logger zerolog.Logger
 	cfg    config.TimeScaleConfiguration
 	db     *sqlx.DB
+	Events EventsStore
+	Swaps  SwapStore
+	Stakes StakesStore
+	Pools  PoolStore
 }
 
-func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
+func NewClient(cfg config.TimeScaleConfiguration) (*Store, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password)
 	db := sqlx.MustConnect("postgres", connStr)
-	return &Client{
+	return &Store{
+		Events:NewEventsStore(db),
+		Swaps: NewSwapStore(db),
+		Stakes:NewStakesStore(db),
+		Pools:NewPoolStore(db),
 		cfg: cfg,
 		db:  db,
 	}, nil
