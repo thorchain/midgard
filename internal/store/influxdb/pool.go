@@ -2,9 +2,11 @@ package influxdb
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 type Pool struct {
@@ -25,10 +27,6 @@ type Pool struct {
 }
 
 type Pools []Pool
-
-// func (in Client) GetPool1(asset common.Asset) (Pool, error) {
-//
-// }
 
 func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	var noPool Pool
@@ -109,4 +107,30 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	pool.RoiAT = ((pool.RuneAmount + pool.TokenAmount/2.0) - pool.Units) / pool.Units
 
 	return pool, nil
+}
+
+
+func (in Client) GetPoolFromAddress(address common.Address) ([]common.Asset, error) {
+	poolQuery := fmt.Sprintf("SELECT pool FROM events WHERE from_address = '%s'", address.String())
+	in.logger.Debug().Msg(poolQuery)
+
+	resp, err := in.Query(poolQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var assets []common.Asset
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		for _, vals := range series.Values {
+			temp, _ := getStringValue(series.Columns, vals, models.ModelPoolAttribute)
+			asset, err := common.NewAsset(temp)
+			if err != nil {
+				return nil, err
+			}
+			assets = append(assets, asset)
+		}
+	}
+
+	return assets, nil
 }

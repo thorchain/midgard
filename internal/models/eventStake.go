@@ -23,7 +23,8 @@ func NewStakeEvent(stake types.EventStake, event types.Event) EventStake {
 
 func (evt EventStake) Point() client.Point {
 	p := evt.event.point()
-	p.Tags[PoolTag] = evt.Pool.String()
+	p.Tags[ModelPoolAttribute] = evt.Pool.String()
+	p.Fields[ModelPoolAttribute] = evt.Pool.String()
 	p.Fields[StakeUnits] = evt.StakeUnits
 	return p
 }

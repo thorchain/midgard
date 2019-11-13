@@ -16,7 +16,7 @@ type EventSwap struct {
 	event
 	Pool        common.Asset
 	PriceTarget int64
-	TradeSlip   int64
+	TradeSlip   float64
 	Fee         int64
 }
 
@@ -32,9 +32,9 @@ func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 
 func (evt EventSwap) Point() client.Point {
 	p := evt.event.point()
-	p.Tags[PoolTag] = evt.Pool.String()
+	p.Tags[ModelPoolAttribute] = evt.Pool.String()
 	p.Fields[PriceTarget] = evt.PriceTarget
 	p.Fields[TradeSlip] = evt.TradeSlip
-	p.Fields[Fee] = evt.Fee
+	p.Fields[ModelFeeAttribute] = evt.Fee
 	return p
 }

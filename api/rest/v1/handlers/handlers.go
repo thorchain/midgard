@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/handler"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -247,7 +248,10 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 		})
 	}
 
-	details := h.store.GetStakerAddressDetails(addr)
+	details, err := h.store.GetStakerAddressDetails(addr)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err)
+	}
 	assets := make([]api.Asset, len(details.StakerArray))
 
 	for _,ass := range details.StakerArray {
@@ -261,6 +265,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 		TotalStaked: pointy.Int64(details.TotalStaked),
 	}
 
+	spew.Dump()
 	return ctx.JSON(http.StatusOK, response)
 }
 

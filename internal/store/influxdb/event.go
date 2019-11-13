@@ -1,20 +1,24 @@
 package influxdb
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
+)
 
 func (in *Client) GetMaxID() (int64, error) {
-	stakeID, err := in.GetMaxIDStakes()
-	if err != nil {
-		return 0, errors.Wrap(err, "fail to get max stakes id from store")
-	}
+	query := fmt.Sprintf("SELECT MAX(%s) as maxID FROM %s", models.ModelIdAttribute, models.ModelEventsTable)
 
-	swapID, err := in.GetMaxIDSwaps()
-	if err != nil {
-		return 0, errors.Wrap(err, "fail to get max swap id from store")
+	resp, err := in.Query(query)
+	if nil != err {
+		return 0, errors.Wrap(err, "fail to get max id")
 	}
-
-	if stakeID > swapID {
-		return stakeID, nil
+	if len(resp) > 0 && len(resp[0].Series) > 0 && len(resp[0].Series[0].Values) > 0 {
+		series := resp[0].Series[0]
+		id, _ := getIntValue(series.Columns, series.Values[0], "maxID")
+		return id, nil
 	}
-	return swapID, nil
+	return 0, nil
 }

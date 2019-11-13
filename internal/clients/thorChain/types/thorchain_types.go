@@ -9,7 +9,7 @@ import (
 type Event struct {
 	ID     int64     `json:"id,string"`
 	Status string    `json:"status"`
-	Height int64     `json:"height"`
+	Height int64     `json:"height,string"`
 	Type   string    `json:"type"`
 	InTx   common.Tx `json:"in_tx"`
 	OutTx  common.Tx `json:"out_tx"`
@@ -25,7 +25,7 @@ type EventStake struct {
 type EventSwap struct {
 	Pool        common.Asset `json:"pool"`
 	PriceTarget int64        `json:"price_target,string"`
-	TradeSlip   int64        `json:"trade_slip,string"`
+	TradeSlip   float64        `json:"trade_slip,string"`
 	Fee         int64        `json:"fee,string"`
 }
 

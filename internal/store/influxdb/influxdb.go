@@ -95,6 +95,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 		// 	FROM "swaps" GROUP BY time(1d),target,pool,from_address
 		// END
 		// `,
+		// TODO move into stake.go some how
 		`
 		CREATE CONTINUOUS QUERY "cq_staker_addresses" ON "db0"
 		RESAMPLE EVERY %s FOR %s
