@@ -49,6 +49,7 @@ func newEvent(e types.Event) event {
 
 func (e event) point() client.Point {
 	return client.Point{
+		Measurement: "events",
 		Tags: map[string]string{
 			"id":           fmt.Sprintf("%d", e.ID), // this ensures uniqueness and we don't overwrite previous events (?)
 			"status":       e.Status,

@@ -27,7 +27,6 @@ func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 
 func (evt EventSwap) Point() client.Point {
 	p := evt.event.point()
-	p.Measurement = "swaps"
 	p.Tags["Pool"] = evt.Pool.String()
 	p.Fields["price_target"] = evt.PriceTarget
 	p.Fields["trade_slip"] = evt.TradeSlip

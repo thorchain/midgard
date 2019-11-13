@@ -27,7 +27,6 @@ func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake
 
 func (evt EventUnstake) Point() client.Point {
 	p := evt.event.point()
-	p.Measurement = "stakes" // Part of stakes table
 	p.Tags["Pool"] = evt.Pool.String()
 	p.Fields["stake_units"] = evt.StakeUnits
 	p.Fields["basis_points"] = evt.BasisPoints
