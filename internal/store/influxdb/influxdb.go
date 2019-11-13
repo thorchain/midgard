@@ -102,7 +102,7 @@ func (in *Client) Init(resampleRate, resampleFor string) error {
 			SELECT
 				SUM(stake_units) as stake_units
 			INTO "db0"."autogen"."staker_addresses"
-			FROM "stakes" GROUP BY time(1h), from_address
+			FROM "events" GROUP BY time(1h), from_address
 		END
 	`,
 		// TODO Review is needed later

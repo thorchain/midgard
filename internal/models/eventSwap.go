@@ -7,6 +7,11 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
+const (
+	PriceTarget = "price_target"
+	TradeSlip = "trade_slip"
+)
+
 type EventSwap struct {
 	event
 	Pool        common.Asset
@@ -27,10 +32,9 @@ func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 
 func (evt EventSwap) Point() client.Point {
 	p := evt.event.point()
-	p.Measurement = "swaps"
-	p.Tags["Pool"] = evt.Pool.String()
-	p.Fields["price_target"] = evt.PriceTarget
-	p.Fields["trade_slip"] = evt.TradeSlip
-	p.Fields["fee"] = evt.Fee
+	p.Tags[PoolTag] = evt.Pool.String()
+	p.Fields[PriceTarget] = evt.PriceTarget
+	p.Fields[TradeSlip] = evt.TradeSlip
+	p.Fields[Fee] = evt.Fee
 	return p
 }
