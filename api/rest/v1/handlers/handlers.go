@@ -214,57 +214,53 @@ func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
 
 // (GET /v1/pools/{asset})
 func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
-	asset, err := common.NewAsset(ass)
-	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
-	}
+	//asset, err := common.NewAsset(ass)
+	//if err != nil {
+	//	h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
+	//	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	//}
 
-	// pool, err := h.store.GetPool(asset)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Str("params.Asset", asset.String()).Msg("ERROR")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "EREREER "})
-	// }
-
-	response := api.PoolsDetailedResponse{
-		Asset:            helpers.ConvertAssetForAPI(asset),
-		AssetDepth:       pointy.Int64(11),
-		AssetROI:         pointy.Float64(22.22),
-		AssetStakedTotal: pointy.Int64(33),
-		BuyAssetCount:    pointy.Int64(44),
-		BuyFeeAverage:    pointy.Int64(55),
-		BuyFeesTotal:     pointy.Int64(66),
-		BuySlipAverage:   pointy.Int64(77),
-		BuyTxAverage:     pointy.Int64(88),
-		BuyVolume:        pointy.Int64(99),
-		PoolDepth:        pointy.Int64(111),
-		PoolFeeAverage:   pointy.Int64(222),
-		PoolFeesTotal:    pointy.Int64(333),
-		PoolROI:          pointy.Float64(444.444),
-		PoolROI12:        pointy.Float64(555.555),
-		PoolSlipAverage:  pointy.Int64(666),
-		PoolStakedTotal:  pointy.Int64(777),
-		PoolTxAverage:    pointy.Int64(888),
-		PoolUnits:        pointy.Int64(999),
-		PoolVolume:       pointy.Int64(1111),
-		PoolVolume24hr:   pointy.Int64(2222),
-		Price:            pointy.Float64(3333.3333),
-		RuneDepth:        pointy.Int64(4444),
-		RuneROI:          pointy.Float64(5555.5555),
-		RuneStakedTotal:  pointy.Int64(6666),
-		SellAssetCount:   pointy.Int64(7777),
-		SellFeeAverage:   pointy.Int64(8888),
-		SellFeesTotal:    pointy.Int64(9999),
-		SellSlipAverage:  pointy.Int64(11111),
-		SellTxAverage:    pointy.Int64(22222),
-		SellVolume:       pointy.Int64(33333),
-		StakeTxCount:     pointy.Int64(44444),
-		StakersCount:     pointy.Int64(55555),
-		StakingTxCount:   pointy.Int64(66666),
-		SwappersCount:    pointy.Int64(77777),
-		SwappingTxCount:  pointy.Int64(88888),
-		WithdrawTxCount:  pointy.Int64(99999),
-	}
+	response := api.PoolsDetailedResponse{}
+	//pool := h.store.GetPool(asset)
+	//response := api.PoolsDetailedResponse{
+	//	Asset:            helpers.ConvertAssetForAPI(asset),
+	//	AssetDepth:       pointy.Int64(11),
+	//	AssetROI:         pointy.Float64(22.22),
+	//	AssetStakedTotal: pointy.Int64(33),
+	//	BuyAssetCount:    pointy.Int64(44),
+	//	BuyFeeAverage:    pointy.Int64(55),
+	//	BuyFeesTotal:     pointy.Int64(66),
+	//	BuySlipAverage:   pointy.Int64(77),
+	//	BuyTxAverage:     pointy.Int64(88),
+	//	BuyVolume:        pointy.Int64(99),
+	//	PoolDepth:        pointy.Int64(111),
+	//	PoolFeeAverage:   pointy.Int64(222),
+	//	PoolFeesTotal:    pointy.Int64(333),
+	//	PoolROI:          pointy.Float64(444.444),
+	//	PoolROI12:        pointy.Float64(555.555),
+	//	PoolSlipAverage:  pointy.Int64(666),
+	//	PoolStakedTotal:  pointy.Int64(777),
+	//	PoolTxAverage:    pointy.Int64(888),
+	//	PoolUnits:        pointy.Int64(999),
+	//	PoolVolume:       pointy.Int64(1111),
+	//	PoolVolume24hr:   pointy.Int64(2222),
+	//	Price:            pointy.Float64(3333.3333),
+	//	RuneDepth:        pointy.Int64(4444),
+	//	RuneROI:          pointy.Float64(5555.5555),
+	//	RuneStakedTotal:  pointy.Int64(6666),
+	//	SellAssetCount:   pointy.Int64(7777),
+	//	SellFeeAverage:   pointy.Int64(8888),
+	//	SellFeesTotal:    pointy.Int64(9999),
+	//	SellSlipAverage:  pointy.Int64(11111),
+	//	SellTxAverage:    pointy.Int64(22222),
+	//	SellVolume:       pointy.Int64(33333),
+	//	StakeTxCount:     pointy.Int64(44444),
+	//	StakersCount:     pointy.Int64(55555),
+	//	StakingTxCount:   pointy.Int64(66666),
+	//	SwappersCount:    pointy.Int64(77777),
+	//	SwappingTxCount:  pointy.Int64(88888),
+	//	WithdrawTxCount:  pointy.Int64(99999),
+	//}
 
 	return ctx.JSON(http.StatusOK, response)
 }
