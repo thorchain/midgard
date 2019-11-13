@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	client "github.com/influxdata/influxdb1-client"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
@@ -38,3 +40,4 @@ func (evt EventSwap) Point() client.Point {
 	p.Fields[ModelFeeAttribute] = evt.Fee
 	return p
 }
+
