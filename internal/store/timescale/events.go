@@ -3,7 +3,6 @@ package timescale
 import (
 	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
@@ -41,11 +40,13 @@ func (e *eventsStore) Create(record models.Event) error {
 		return errors.Wrap(err, "Failed createEventRecord")
 	}
 
+	// TODO Add a test for a blank record
 	_, err = e.createTxRecord(record, record.InTx, "in")
 	if err != nil {
 		return errors.Wrap(err, "Failed createTxRecord on InTx")
 	}
 
+	// TODO Add a test for a blank record
 	_, err = e.createTxRecord(record, record.OutTx, "out")
 	if err != nil {
 		return errors.Wrap(err, "Failed createTxRecord on OutTx")
@@ -82,9 +83,7 @@ func (e *eventsStore) createTxRecord(parent models.Event,record common.Tx, direc
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")
 	}
 
-	spew.Dump(results)
-
-	return results.LastInsertId()
+	return results.RowsAffected()
 }
 
 func (e *eventsStore) createEventRecord(record models.Event) error {

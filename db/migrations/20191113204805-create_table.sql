@@ -28,7 +28,7 @@ CREATE TABLE txs (
     from_address varchar,
     to_address varchar,
     memo varchar,
-    primary key (time, event_id)
+    primary key (time, event_id, tx_hash)
 );
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
