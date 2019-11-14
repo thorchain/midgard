@@ -18,6 +18,28 @@ CREATE TABLE stakes (
     units bigint,
     primary key (time, event_id)
 );
+CREATE TABLE swaps (
+    time        TIMESTAMPTZ       NOT NULL,
+    event_id bigint not null,
+    chain varchar not null,
+    symbol varchar not null,
+    ticker varchar not null,
+    price_target bigint,
+    trade_slip real,
+    liquidity_fee bigint,
+    primary key (time, event_id)
+);
+CREATE TABLE unstakes (
+    time        TIMESTAMPTZ       NOT NULL,
+    event_id bigint not null,
+    chain varchar not null,
+    symbol varchar not null,
+    ticker varchar not null,
+    units bigint,
+    basis_points bigint,
+    asymmetry real,
+    primary key (time, event_id)
+);
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
     time        TIMESTAMPTZ       NOT NULL,
@@ -52,6 +74,7 @@ CREATE TABLE gas (
 
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('stakes', 'time');
+SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
 SELECT create_hypertable('gas', 'time');
@@ -60,6 +83,7 @@ SELECT create_hypertable('gas', 'time');
 
 DROP TABLE events;
 DROP TABLE stakes;
+DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
 DROP TABLE gas;

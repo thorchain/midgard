@@ -12,19 +12,19 @@ const (
 
 type EventSwap struct {
 	Event
-	Pool        common.Asset
-	PriceTarget int64
-	TradeSlip   float64
-	Fee         int64
+	Pool         common.Asset
+	PriceTarget  int64
+	TradeSlip    float64
+	LiquidityFee int64
 }
 
 func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 	return EventSwap{
-		Pool:        swap.Pool,
-		PriceTarget: swap.PriceTarget,
-		TradeSlip:   swap.TradeSlip,
-		Fee:         swap.Fee,
-		Event:       newEvent(event),
+		Pool:         swap.Pool,
+		PriceTarget:  swap.PriceTarget,
+		TradeSlip:    swap.TradeSlip,
+		LiquidityFee: swap.LiquidityFee,
+		Event:        newEvent(event),
 	}
 }
 
