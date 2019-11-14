@@ -28,13 +28,3 @@ func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake
 		Event:       newEvent(event),
 	}
 }
-
-// func (evt EventUnstake) Point() client.Point {
-// 	p := evt.Event.point()
-// 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
-// 	p.Fields[ModelPoolAttribute] = evt.Pool.String()
-// 	p.Fields[StakeUnits] = evt.StakeUnits
-// 	p.Fields[BasisPoints] = evt.BasisPoints
-// 	p.Fields[Asymmetry] = evt.Asymmetry
-// 	return p
-// }

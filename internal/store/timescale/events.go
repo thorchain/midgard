@@ -86,8 +86,6 @@ func (e *eventsStore) Create(record models.Event) error {
 		}
 	}
 
-	// Ingest Coins
-
 	return nil
 }
 
