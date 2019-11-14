@@ -36,21 +36,21 @@ const (
 )
 
 type Event struct {
-	ID      int64
-	Status  string
-	Height  int64
-	Type    string
-	InHash  common.TxID
-	OutHash common.TxID
-	InMemo      string
-	OutMemo     string
-	FromAddress common.Address
-	ToAddress   common.Address
-	FromCoins   common.Coins
-	ToCoins     common.Coins
-	Gas         common.Coins
-	Event       json.RawMessage
-	Timestamp   time.Time
+	ID          int64  `json:"id" db:"id"`
+	Status      string `json:"status" db:"status"`
+	Height      int64
+	Type        string
+	InHash      common.TxID    `json:"in_hash" db:"in_hash"`
+	OutHash     common.TxID    `json:"out_hash" db:"out_hash"`
+	InMemo      string         `json:"in_memo" db:"in_memo"`
+	OutMemo     string         `json:"out_memo" db:"out_memo"`
+	FromAddress common.Address `json:"from_address" db:"from_address"`
+	ToAddress   common.Address `json:"to_address" db:"to_address"`
+	FromCoins   common.Coins   `json:"from_coins" db:"from_coins"`
+	ToCoins     common.Coins   `json:"to_coins" db:"to_coins"`
+	Gas         common.Coins   `json:"gas" db:"gas"`
+	Event       json.RawMessage `json:"event" db:"event"`
+	Timestamp   time.Time `json:"time" db:"time"`
 }
 
 func newEvent(e types.Event) Event {
@@ -68,6 +68,7 @@ func newEvent(e types.Event) Event {
 		ToCoins:     e.OutTx.Coins,
 		FromCoins:   e.InTx.Coins,
 		Gas:         e.Gas,
+		Timestamp:   time.Now(),
 	}
 }
 
