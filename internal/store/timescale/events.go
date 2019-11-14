@@ -35,22 +35,31 @@ func (e *eventsStore) GetMaxID() (int64, error) {
 
 func (e *eventsStore) Create(record models.Event) error {
 
+	// Ingest basic event
 	err := e.createEventRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "Failed createEventRecord")
 	}
 
-	// TODO Add a test for a blank record
-	_, err = e.createTxRecord(record, record.InTx, "in")
-	if err != nil {
-		return errors.Wrap(err, "Failed createTxRecord on InTx")
+	// Ingest InTx
+	if !record.InTx.IsEmpty() {
+		_, err = e.createTxRecord(record, record.InTx, "in")
+		if err != nil {
+			return errors.Wrap(err, "Failed createTxRecord on InTx")
+		}
 	}
 
-	// TODO Add a test for a blank record
-	_, err = e.createTxRecord(record, record.OutTx, "out")
-	if err != nil {
-		return errors.Wrap(err, "Failed createTxRecord on OutTx")
+	// Ingest OutTx
+	if !record.OutTx.IsEmpty() {
+		_, err = e.createTxRecord(record, record.OutTx, "out")
+		if err != nil {
+			return errors.Wrap(err, "Failed createTxRecord on OutTx")
+		}
 	}
+
+	// Ingest Coins
+
+
 
 	return nil
 }
