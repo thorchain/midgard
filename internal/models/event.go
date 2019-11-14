@@ -13,6 +13,7 @@ const (
 	ModelTxsTable    = "txs"
 	ModelGasTable    = "gas"
 	ModelCoinsTable  = "coins"
+	ModelStakesTable = "stakes"
 
 	ModelStakerAddressesContinuesQueryTable = "staker_addresses"
 
