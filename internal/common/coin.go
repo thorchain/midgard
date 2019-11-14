@@ -6,8 +6,11 @@ import (
 )
 
 type Coin struct {
-	Asset  Asset `json:"asset"`
-	Amount int64 `json:"amount,string"`
+	Asset  Asset  `json:"asset"`
+	Symbol Symbol `json:"symbol"`
+	Chain  Chain  `json:"chain"`
+	Ticker Ticker `json:"ticker"`
+	Amount int64  `json:"amount,string"`
 }
 
 var NoCoin = Coin{}

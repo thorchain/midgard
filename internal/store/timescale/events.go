@@ -57,8 +57,8 @@ func (e *eventsStore) Create(record models.Event) error {
 	}
 
 	// Ingest Gas.
-	for _, gas := range record.Gas {
-		_, err = e.createGasRecord(record, gas)
+	for _, coin := range record.Gas {
+		_, err = e.createGasRecord(record, coin)
 		if err != nil {
 			return errors.Wrap(err, "Failed createGasRecord on OutTx")
 		}
@@ -69,7 +69,7 @@ func (e *eventsStore) Create(record models.Event) error {
 	return nil
 }
 
-func (e *eventsStore) createGasRecord(parent models.Event, record common.GasItem) (int64, error) {
+func (e *eventsStore) createGasRecord(parent models.Event, record common.Coin) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -82,7 +82,7 @@ func (e *eventsStore) createGasRecord(parent models.Event, record common.GasItem
 
 	results, err := e.db.Exec(query,
 		parent.Time,
-		record.EventID,
+		parent.ID,
 		record.Chain,
 		record.Symbol,
 		record.Ticker,
