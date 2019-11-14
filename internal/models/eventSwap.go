@@ -7,7 +7,7 @@ import (
 
 const (
 	PriceTarget = "price_target"
-	TradeSlip = "trade_slip"
+	TradeSlip   = "trade_slip"
 )
 
 type EventSwap struct {
@@ -36,4 +36,3 @@ func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 // 	p.Fields[ModelFeeAttribute] = evt.Fee
 // 	return p
 // }
-

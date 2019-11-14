@@ -22,13 +22,12 @@ func NewEventsStore(db *sqlx.DB) *eventsStore {
 	return &eventsStore{db}
 }
 
-
 func (e *eventsStore) GetMaxID() (int64, error) {
 	query := fmt.Sprintf("SELECT MAX(%s) FROM %s", models.ModelIdAttribute, models.ModelEventsTable)
 	var maxId int64
 	err := e.db.Get(&maxId, query)
 	if err != nil {
-		return 0, errors.Wrap(err,"maxID query return null or failed")
+		return 0, errors.Wrap(err, "maxID query return null or failed")
 	}
 	return maxId, nil
 }
@@ -52,10 +51,45 @@ func (e *eventsStore) Create(record models.Event) error {
 		return errors.Wrap(err, "Failed createTxRecord on OutTx")
 	}
 
+	// TODO Add a test for a blank record
+	for _, gas := range record.Gas {
+		_, err = e.createGasRecord(record, gas)
+		if err != nil {
+			return errors.Wrap(err, "Failed createGasRecord on OutTx")
+		}
+	}
+
 	return nil
 }
 
-func (e *eventsStore) createTxRecord(parent models.Event,record common.Tx, direction string) (int64, error) {
+func (e *eventsStore) createGasRecord(parent models.Event, record common.GasItem) (int64, error) {
+	query := fmt.Sprintf(`
+		INSERT INTO %v (
+			time,
+			event_id,
+			chain,
+			symbol,
+			ticker,
+			amount
+		)`, models.ModelGasTable)
+
+	results, err := e.db.Exec(query,
+		parent.Time,
+		record.EventID,
+		record.Chain,
+		record.Symbol,
+		record.Ticker,
+		record.Amount,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "Failed to prepareNamed query for GasRecord")
+	}
+
+	return results.RowsAffected()
+}
+
+func (e *eventsStore) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -66,7 +100,7 @@ func (e *eventsStore) createTxRecord(parent models.Event,record common.Tx, direc
 			from_address,
 			to_address,
 			memo
-		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING event_id`,  models.ModelTxsTable)
+		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING event_id`, models.ModelTxsTable)
 
 	results, err := e.db.Exec(query,
 		parent.Time,

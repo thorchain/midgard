@@ -109,7 +109,6 @@ func (in Client) GetPool(ticker common.Ticker) (Pool, error) {
 	return pool, nil
 }
 
-
 func (in Client) GetPoolFromAddress(address common.Address) ([]common.Asset, error) {
 	poolQuery := fmt.Sprintf("SELECT pool FROM events WHERE from_address = '%s'", address.String())
 	in.logger.Debug().Msg(poolQuery)

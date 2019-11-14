@@ -27,7 +27,6 @@ func (s *stakesStore) Create(record models.EventStake) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
-
 	// Create / insert stake record..
 
 	return nil

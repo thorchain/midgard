@@ -14,7 +14,7 @@ type swapStore struct {
 	db *sqlx.DB
 }
 
-func NewSwapStore(db *sqlx.DB)*swapStore {
+func NewSwapStore(db *sqlx.DB) *swapStore {
 	return &swapStore{db}
 }
 

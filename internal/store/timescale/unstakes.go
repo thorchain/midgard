@@ -14,10 +14,10 @@ type unStakesStore struct {
 	db *sqlx.DB
 }
 
-func NewUnStakesStore(db *sqlx.DB)*unStakesStore {
+func NewUnStakesStore(db *sqlx.DB) *unStakesStore {
 	return &unStakesStore{db}
 }
 
-func (u *unStakesStore) Create(record models.EventUnstake) error{
+func (u *unStakesStore) Create(record models.EventUnstake) error {
 	return nil
 }

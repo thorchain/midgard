@@ -9,8 +9,9 @@ import (
 
 const (
 	// Table / Measurement name
-	ModelEventsTable                        = "events"
-	ModelTxsTable                        = "txs"
+	ModelEventsTable = "events"
+	ModelTxsTable    = "txs"
+	ModelGasTable    = "gas"
 
 	ModelStakerAddressesContinuesQueryTable = "staker_addresses"
 
@@ -41,6 +42,7 @@ type Event struct {
 	Type   string    `json:"type" db:"type"`
 	InTx   common.Tx
 	OutTx  common.Tx
+	Gas    common.Gas
 }
 
 func newEvent(e types.Event) Event {
@@ -52,5 +54,6 @@ func newEvent(e types.Event) Event {
 		Type:   e.Type,
 		InTx:   e.InTx,
 		OutTx:  e.OutTx,
+		Gas:    e.Gas,
 	}
 }
