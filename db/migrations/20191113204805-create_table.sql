@@ -75,6 +75,7 @@ CREATE TABLE gas (
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('stakes', 'time');
 SELECT create_hypertable('swaps', 'time');
+SELECT create_hypertable('unstakes', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
 SELECT create_hypertable('gas', 'time');
@@ -84,6 +85,7 @@ SELECT create_hypertable('gas', 'time');
 DROP TABLE events;
 DROP TABLE stakes;
 DROP TABLE swaps;
+DROP TABLE unstakes;
 DROP TABLE txs;
 DROP TABLE coins;
 DROP TABLE gas;
