@@ -15,9 +15,9 @@ type Gas struct {
 
 func NewGas(gas common.Coin, event types.Event) Gas {
 	return Gas{event.ID,
-		gas.Chain,
-		gas.Symbol,
-		gas.Ticker,
+		gas.Asset.Chain,
+		gas.Asset.Symbol,
+		gas.Asset.Ticker,
 		gas.Amount,
 	}
 }

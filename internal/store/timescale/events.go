@@ -83,9 +83,9 @@ func (e *eventsStore) createGasRecord(parent models.Event, record common.Coin) (
 	results, err := e.db.Exec(query,
 		parent.Time,
 		parent.ID,
-		record.Chain,
-		record.Symbol,
-		record.Ticker,
+		record.Asset.Chain,
+		record.Asset.Symbol,
+		record.Asset.Ticker,
 		record.Amount,
 	)
 
