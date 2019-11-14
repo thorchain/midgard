@@ -7,14 +7,10 @@ import (
 
 type Coin struct {
 	Asset  Asset  `json:"asset"`
-	Symbol Symbol `json:"symbol"`
-	Chain  Chain  `json:"chain"`
-	Ticker Ticker `json:"ticker"`
 	Amount int64  `json:"amount,string"`
 }
 
 var NoCoin = Coin{}
-
 type Coins []Coin
 
 // NewCoin return a new instance of Coin
