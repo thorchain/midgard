@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -169,10 +168,11 @@ func (api *API) processSwapEvent(evt types.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to unmarshal swap event")
 	}
-	p := models.NewSwapEvent(swap, evt)
-
-	spew.Dump(p)
-
+	record := models.NewSwapEvent(swap, evt)
+	err = api.store.Swaps.Create(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create swap record")
+	}
 	return nil
 }
 
@@ -183,10 +183,11 @@ func (api *API) processStakingEvent(evt types.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to unmarshal stake event")
 	}
-	p := models.NewStakeEvent(stake, evt)
-
-	spew.Dump(p)
-
+	record := models.NewStakeEvent(stake, evt)
+	err = api.store.Stakes.Create(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create stake record")
+	}
 	return nil
 }
 
@@ -197,10 +198,11 @@ func (api *API) processUnstakeEvent(evt types.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to unmarshal unstake event")
 	}
-	p := models.NewUnstakeEvent(unstake, evt)
-
-	spew.Dump(p)
-
+	record := models.NewUnstakeEvent(unstake, evt)
+	err = api.store.UnStakes.Create(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create unstake record")
+	}
 	return nil
 }
 

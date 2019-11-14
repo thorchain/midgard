@@ -18,6 +18,18 @@ CREATE TABLE events (
     primary key (time, id)
 );
 
+CREATE TABLE stakes (
+
+)
+
+CREATE TABLE swaps (
+
+)
+
+CREATE TABLE unstakes (
+
+)
+
 SELECT create_hypertable('events', 'time', 'id');
 
 -- +migrate Down

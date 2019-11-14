@@ -35,14 +35,13 @@ const (
 	ModelTimeAttribute        = "time"
 )
 
-type event struct {
+type Event struct {
 	ID      int64
 	Status  string
 	Height  int64
 	Type    string
 	InHash  common.TxID
 	OutHash common.TxID
-
 	InMemo      string
 	OutMemo     string
 	FromAddress common.Address
@@ -54,8 +53,8 @@ type event struct {
 	Timestamp   time.Time
 }
 
-func newEvent(e types.Event) event {
-	return event{
+func newEvent(e types.Event) Event {
+	return Event{
 		ID:          e.ID,
 		Status:      e.Status,
 		Height:      e.Height,
@@ -72,7 +71,7 @@ func newEvent(e types.Event) event {
 	}
 }
 
-func (e event) insert() string {
+func (e Event) insert() string {
 	insert := fmt.Sprintf("INSERT INTO %v (%v, %v, %v %v, %v, %v, %v, %v, %v, %v, %v,%v,%v) VALUES (%v, %v, %v %v, %v, %v, %v, %v, %v, %v, %v,%v,%v)", ModelEventsTable,
 		ModelIdAttribute,
 		ModelStatusAttribute,
@@ -104,7 +103,7 @@ func (e event) insert() string {
 	return insert
 }
 
-func (e event) point() client.Point {
+func (e Event) point() client.Point {
 	return client.Point{
 		Measurement: ModelEventsTable,
 		Tags: map[string]string{
