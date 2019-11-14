@@ -88,7 +88,24 @@
         "memo": ""
       }
     ],
-    "gas": null,
+    "gas": [
+      {
+        "asset": {
+          "chain":"BNB",
+          "symbol": "BNB",
+          "ticker": "BNB"
+        },
+        "amount": "500"
+      },
+      {
+        "asset": {
+          "chain":"BTC",
+          "symbol": "BTC",
+          "ticker": "BTC"
+        },
+        "amount": "500"
+      }
+    ],
     "event": {
       "pool": {
         "chain": "BNB",
