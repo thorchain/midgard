@@ -6,11 +6,12 @@ import (
 )
 
 type Coin struct {
-	Asset  Asset  `json:"asset"`
-	Amount int64  `json:"amount,string"`
+	Asset  Asset `json:"asset"`
+	Amount int64 `json:"amount,string"`
 }
 
 var NoCoin = Coin{}
+
 type Coins []Coin
 
 // NewCoin return a new instance of Coin

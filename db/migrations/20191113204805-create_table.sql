@@ -3,16 +3,16 @@
 
 CREATE TABLE events (
     time        TIMESTAMPTZ       not null,
-    id integer not null,
-    height integer not null,
+    id bigint not null,
+    height bigint not null,
     type varchar not null,
     status varchar not null,
     primary key (time, id)
 );
 CREATE TABLE stakes (
     time        TIMESTAMPTZ       NOT NULL,
-    event_id integer not null ,
-    chain integer not null,
+    event_id bigint not null ,
+    chain varchar not null,
     symbol varchar not null,
     ticker varchar not null,
     units integer,
@@ -22,7 +22,7 @@ CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
     time        TIMESTAMPTZ       NOT NULL,
     tx_hash varchar not null,
-    event_id integer not null,
+    event_id bigint not null,
     direction tx_direction not null,
     chain varchar,
     from_address varchar,
@@ -32,21 +32,21 @@ CREATE TABLE txs (
 );
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
-    tx_id integer not null,
-    event_id integer not null,
+    tx_hash varchar not null,
+    event_id bigint not null,
     chain varchar not null,
     symbol varchar not null,
     ticker varchar not null,
-    amount integer not null,
-    primary key (time, tx_id, event_id)
+    amount bigint not null,
+    primary key (time, event_id, tx_hash, chain, symbol)
 );
 CREATE TABLE gas (
     time        TIMESTAMPTZ       NOT NULL,
-    event_id integer not null,
+    event_id bigint not null,
     chain varchar not null,
     symbol varchar not null,
     ticker varchar not null,
-    amount integer not null,
+    amount bigint not null,
     primary key (time, event_id, chain, symbol)
 );
 

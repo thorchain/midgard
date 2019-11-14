@@ -12,6 +12,7 @@ const (
 	ModelEventsTable = "events"
 	ModelTxsTable    = "txs"
 	ModelGasTable    = "gas"
+	ModelCoinsTable  = "coins"
 
 	ModelStakerAddressesContinuesQueryTable = "staker_addresses"
 
