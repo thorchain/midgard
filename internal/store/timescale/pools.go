@@ -3,7 +3,6 @@ package timescale
 import "github.com/jmoiron/sqlx"
 
 type PoolStore interface {
-
 }
 
 type poolStore struct {
@@ -13,5 +12,3 @@ type poolStore struct {
 func NewPoolStore(db *sqlx.DB) *poolStore {
 	return &poolStore{db}
 }
-
-

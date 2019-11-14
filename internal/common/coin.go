@@ -6,7 +6,7 @@ import (
 )
 
 type Coin struct {
-	Asset  Asset    `json:"asset"`
+	Asset  Asset `json:"asset"`
 	Amount int64 `json:"amount,string"`
 }
 

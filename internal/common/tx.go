@@ -43,7 +43,7 @@ type Tx struct {
 	FromAddress Address `json:"from_address"`
 	ToAddress   Address `json:"to_address"`
 	Coins       Coins   `json:"coins"`
-	Memo        Memo  `json:"memo"`
+	Memo        Memo    `json:"memo"`
 }
 
 func NewTx(txID TxID, from Address, to Address, coins Coins, memo string) Tx {
