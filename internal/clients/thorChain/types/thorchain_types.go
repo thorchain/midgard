@@ -13,7 +13,7 @@ type Event struct {
 	Type   string          `json:"type"`
 	InTx   common.Tx       `json:"in_tx"`
 	OutTx  common.Tx       `json:"out_tx"`
-	Gas    common.Gas      `json:"gas"`
+	Gas    common.Coins    `json:"gas"`
 	Event  json.RawMessage `json:"event"`
 }
 

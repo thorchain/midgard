@@ -5,29 +5,19 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
-type Gas []GasItem
-type GasItem struct {
-	//Time    time.Time    `json:"time" db:"time"`
-	EventID int64        `json:"event_id" db:"event_id"`
-	Chain   common.Chain `json:"chain" db:"chain"`
-	Symbol  string       `json:"symbol" db:"symbol"`
-	Ticker  string       `json:"ticker" db:"ticker"`
-	Amount  int64        `json:"amount" db:"amount"`
+type Gas struct {
+	EventID int64         `json:"event_id" db:"event_id"`
+	Chain   common.Chain  `json:"chain" db:"chain"`
+	Symbol  common.Symbol `json:"symbol" db:"symbol"`
+	Ticker  common.Ticker `json:"ticker" db:"ticker"`
+	Amount  int64         `json:"amount" db:"amount"`
 }
 
-func NewGas(gas common.Gas, event types.Event) Gas {
-	var g Gas
-	for _, gi := range gas {
-		g = append(g,
-			GasItem{
-				//time.Now(),
-				event.ID,
-				gi.Chain,
-				gi.Symbol,
-				gi.Ticker,
-				gi.Amount,
-			})
+func NewGas(gas common.Coin, event types.Event) Gas {
+	return Gas{event.ID,
+		gas.Chain,
+		gas.Symbol,
+		gas.Ticker,
+		gas.Amount,
 	}
-
-	return g
 }
