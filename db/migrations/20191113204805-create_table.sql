@@ -11,11 +11,11 @@ CREATE TABLE events (
 );
 CREATE TABLE stakes (
     time        TIMESTAMPTZ       NOT NULL,
-    event_id bigint not null ,
+    event_id bigint not null,
     chain varchar not null,
     symbol varchar not null,
     ticker varchar not null,
-    units integer,
+    units bigint,
     primary key (time, event_id)
 );
 CREATE TYPE tx_direction as enum('in', 'out');
