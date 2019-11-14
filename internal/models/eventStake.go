@@ -8,7 +8,7 @@ import (
 )
 
 type EventStake struct {
-	event
+	Event
 	Pool       common.Asset
 	StakeUnits int64
 }
@@ -17,16 +17,16 @@ func NewStakeEvent(stake types.EventStake, event types.Event) EventStake {
 	return EventStake{
 		Pool:       stake.Pool,
 		StakeUnits: stake.StakeUnits,
-		event:      newEvent(event),
+		Event:      newEvent(event),
 	}
 }
 
 func (evt EventStake) Insert() {
-	evt.event.insert()
+	evt.Event.insert()
 }
 
 func (evt EventStake) Point() client.Point {
-	p := evt.event.point()
+	p := evt.Event.point()
 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
 	p.Fields[ModelPoolAttribute] = evt.Pool.String()
 	p.Fields[StakeUnits] = evt.StakeUnits

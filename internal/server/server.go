@@ -75,7 +75,7 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	timescale, err := timescale.NewClient(cfg.TimeScale)
+	timescale, err := timescale.NewStore(cfg.TimeScale)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create timescale")
 	}

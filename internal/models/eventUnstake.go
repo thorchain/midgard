@@ -14,7 +14,7 @@ const (
 )
 
 type EventUnstake struct {
-	event
+	Event
 	Pool        common.Asset
 	StakeUnits  int64
 	BasisPoints int64   `json:"basis_points"` // 1 ==> 10,0000
@@ -27,12 +27,12 @@ func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake
 		StakeUnits:  unstake.StakeUnits,
 		BasisPoints: unstake.BasisPoints,
 		Asymmetry:   unstake.Asymmetry,
-		event:       newEvent(event),
+		Event:       newEvent(event),
 	}
 }
 
 func (evt EventUnstake) Point() client.Point {
-	p := evt.event.point()
+	p := evt.Event.point()
 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
 	p.Fields[ModelPoolAttribute] = evt.Pool.String()
 	p.Fields[StakeUnits] = evt.StakeUnits
