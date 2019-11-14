@@ -9,11 +9,13 @@ import (
 
 const (
 	// Table / Measurement name
-	ModelEventsTable = "events"
-	ModelTxsTable    = "txs"
-	ModelGasTable    = "gas"
-	ModelCoinsTable  = "coins"
-	ModelStakesTable = "stakes"
+	ModelEventsTable   = "events"
+	ModelTxsTable      = "txs"
+	ModelGasTable      = "gas"
+	ModelCoinsTable    = "coins"
+	ModelStakesTable   = "stakes"
+	ModelSwapsTable    = "swaps"
+	ModelUnstakesTable = "unstakes"
 
 	ModelStakerAddressesContinuesQueryTable = "staker_addresses"
 
