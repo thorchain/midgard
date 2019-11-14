@@ -47,7 +47,7 @@ CREATE TABLE gas (
     symbol varchar not null,
     ticker varchar not null,
     amount integer not null,
-    primary key (time, event_id)
+    primary key (time, event_id, chain, symbol)
 );
 
 SELECT create_hypertable('events', 'time');
