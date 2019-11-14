@@ -58,9 +58,11 @@ func (e *eventsStore) Create(record models.Event) error {
 
 	// Ingest Gas.
 	for _, coin := range record.Gas {
-		_, err = e.createGasRecord(record, coin)
-		if err != nil {
-			return errors.Wrap(err, "Failed createGasRecord on OutTx")
+		if !coin.IsEmpty() {
+			_, err = e.createGasRecord(record, coin)
+			if err != nil {
+				return errors.Wrap(err, "Failed createGasRecord on OutTx")
+			}
 		}
 	}
 
