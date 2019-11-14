@@ -101,7 +101,7 @@ up:
 clean:
 	@rm ${GOBIN}/chainservice
 
-run_mocked_endpint:
+run_mocked_endpoint:
 	go run tools/mockServer/mockServer.go
 
 # ------------------------------------------- sql migrations ----------------------------------------------
