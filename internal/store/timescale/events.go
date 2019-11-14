@@ -46,6 +46,16 @@ func (e *eventsStore) Create(record models.Event) error {
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on InTx")
 		}
+
+		// InTx Coins
+		for _, coin := range record.InTx.Coins {
+			if !coin.IsEmpty() {
+				_, err = e.createCoinRecord(record, record.InTx, coin)
+				if err != nil {
+					return errors.Wrap(err, "Failed createCoinRecord on InTx")
+				}
+			}
+		}
 	}
 
 	// Ingest OutTx
@@ -54,6 +64,16 @@ func (e *eventsStore) Create(record models.Event) error {
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on OutTx")
 		}
+
+		// OutTx Coins
+		for _, coin := range record.OutTx.Coins {
+			if !coin.IsEmpty() {
+				_, err = e.createCoinRecord(record, record.OutTx, coin)
+				if err != nil {
+					return errors.Wrap(err, "Failed createCoinRecord on OutTx")
+				}
+			}
+		}
 	}
 
 	// Ingest Gas.
@@ -61,7 +81,7 @@ func (e *eventsStore) Create(record models.Event) error {
 		if !coin.IsEmpty() {
 			_, err = e.createGasRecord(record, coin)
 			if err != nil {
-				return errors.Wrap(err, "Failed createGasRecord on OutTx")
+				return errors.Wrap(err, "Failed createGasRecord")
 			}
 		}
 	}
@@ -69,6 +89,35 @@ func (e *eventsStore) Create(record models.Event) error {
 	// Ingest Coins
 
 	return nil
+}
+
+func (e *eventsStore) createCoinRecord(parent models.Event, record common.Tx, coin common.Coin) (int64, error) {
+	query := fmt.Sprintf(`
+		INSERT INTO %v (
+			time,
+			tx_hash,
+			event_id,
+			chain,
+			symbol,
+			ticker,
+			amount
+		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelCoinsTable)
+
+	results, err := e.db.Exec(query,
+		parent.Time,
+		record.ID,
+		parent.ID,
+		coin.Asset.Chain,
+		coin.Asset.Symbol,
+		coin.Asset.Ticker,
+		coin.Amount,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "Failed to prepareNamed query for CoinRecord")
+	}
+
+	return results.RowsAffected()
 }
 
 func (e *eventsStore) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
