@@ -59,7 +59,7 @@ package thorChain
 // 	now := time.Now()
 // 	b := &binance2.Dummy{
 // 		Detail: binance2.TxDetail{
-// 			Timestamp:   now,
+// 			Time:   now,
 // 			ToAddress:   "tbnb13wkwssdkxxj9ypwpgmkaahyvfw5qk823v8kqhl",
 // 			FromAddress: "tbnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7whxk9nt",
 // 		},

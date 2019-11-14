@@ -1,18 +1,5 @@
 
 -- +migrate Up
--- CREATE TABLE events (
---     time        TIMESTAMPTZ       NOT NULL,
---     id integer not null,
---     type varchar not null,
---     height integer not null,
---     in_tx jsonb not null,
---     out_tx jsonb not null,
---     gas jsonb not null,
---     event jsonb not null,
---     status varchar not null,
---     primary key (time, id)
--- );
-
 
 CREATE TABLE events (
     time        TIMESTAMPTZ       not null,
@@ -22,7 +9,6 @@ CREATE TABLE events (
     status varchar not null,
     primary key (time, id)
 );
-
 CREATE TABLE stakes (
     time        TIMESTAMPTZ       NOT NULL,
     event_id integer not null ,
@@ -32,12 +18,10 @@ CREATE TABLE stakes (
     units integer,
     primary key (time, event_id)
 );
-
---
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
     time        TIMESTAMPTZ       NOT NULL,
-    hash varchar not null,
+    tx_hash varchar not null,
     event_id integer not null,
     direction tx_direction not null,
     chain varchar,
@@ -46,7 +30,6 @@ CREATE TABLE txs (
     memo varchar,
     primary key (time, event_id)
 );
-
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
     tx_id integer not null,
@@ -57,8 +40,7 @@ CREATE TABLE coins (
     amount integer not null,
     primary key (time, tx_id, event_id)
 );
-
-CREATE TABLE gas_coins (
+CREATE TABLE gas (
     time        TIMESTAMPTZ       NOT NULL,
     event_id integer not null,
     chain varchar not null,
@@ -72,7 +54,7 @@ SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('stakes', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
-SELECT create_hypertable('gas_coins', 'time');
+SELECT create_hypertable('gas', 'time');
 
 -- +migrate Down
 
@@ -80,5 +62,6 @@ DROP TABLE events;
 DROP TABLE stakes;
 DROP TABLE txs;
 DROP TABLE coins;
-DROP TABLE gas_coins;
+DROP TABLE gas;
+
 DROP TYPE tx_direction;

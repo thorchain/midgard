@@ -2,12 +2,12 @@ package timescale
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
@@ -36,45 +36,76 @@ func (e *eventsStore) GetMaxID() (int64, error) {
 
 func (e *eventsStore) Create(record models.Event) error {
 
+	err := e.createEventRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "Failed createEventRecord")
+	}
+
+	_, err = e.createTxRecord(record, record.InTx, "in")
+	if err != nil {
+		return errors.Wrap(err, "Failed createTxRecord on InTx")
+	}
+
+	_, err = e.createTxRecord(record, record.OutTx, "out")
+	if err != nil {
+		return errors.Wrap(err, "Failed createTxRecord on OutTx")
+	}
+
+	return nil
+}
+
+func (e *eventsStore) createTxRecord(parent models.Event,record common.Tx, direction string) (int64, error) {
+	query := fmt.Sprintf(`
+		INSERT INTO %v (
+			time,
+			tx_hash,
+			event_id,
+			direction,
+			chain,
+			from_address,
+			to_address,
+			memo
+		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING event_id`,  models.ModelTxsTable)
+
+	results, err := e.db.Exec(query,
+		parent.Time,
+		record.ID,
+		parent.ID,
+		direction,
+		record.Chain,
+		record.FromAddress,
+		record.ToAddress,
+		record.Memo,
+	)
+
+	if err != nil {
+		return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")
+	}
+
+	spew.Dump(results)
+
+	return results.LastInsertId()
+}
+
+func (e *eventsStore) createEventRecord(record models.Event) error {
 	query := fmt.Sprintf(`
 			INSERT INTO %v (
 				time,
 				id,
 				height,
 				status,
-				type,
-				in_hash,
-				out_hash,
-				in_memo,
-				out_memo,
-				from_address,
-				to_address,
-				event
+				type
 			) VALUES (
 				:time,
 				:id,
 				:height,
 				:status,
-				:type,
-				:in_hash,
-				:out_hash,
-				:in_memo,
-				:out_memo,
-				:from_address,
-				:to_address,
-				:event
+				:type
 			) RETURNING id`, models.ModelEventsTable)
 
 	stmt, err := e.db.PrepareNamed(query)
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for event")
 	}
-
-	spew.Dump(record)
-	row := stmt.QueryRowx(record).Scan(&record.ID)
-	spew.Dump(row)
-	os.Exit(111)
-
-	return nil
+	return stmt.QueryRowx(record).Scan(&record.ID)
 }
-

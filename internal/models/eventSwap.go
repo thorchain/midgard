@@ -1,9 +1,6 @@
 package models
 
 import (
-
-	client "github.com/influxdata/influxdb1-client"
-
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
@@ -31,12 +28,12 @@ func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 	}
 }
 
-func (evt EventSwap) Point() client.Point {
-	p := evt.Event.point()
-	p.Tags[ModelPoolAttribute] = evt.Pool.String()
-	p.Fields[PriceTarget] = evt.PriceTarget
-	p.Fields[TradeSlip] = evt.TradeSlip
-	p.Fields[ModelFeeAttribute] = evt.Fee
-	return p
-}
+// func (evt EventSwap) Point() client.Point {
+// 	p := evt.Event.point()
+// 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
+// 	p.Fields[PriceTarget] = evt.PriceTarget
+// 	p.Fields[TradeSlip] = evt.TradeSlip
+// 	p.Fields[ModelFeeAttribute] = evt.Fee
+// 	return p
+// }
 

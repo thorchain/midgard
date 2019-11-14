@@ -1,8 +1,6 @@
 package models
 
 import (
-	client "github.com/influxdata/influxdb1-client"
-
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
@@ -21,14 +19,10 @@ func NewStakeEvent(stake types.EventStake, event types.Event) EventStake {
 	}
 }
 
-func (evt EventStake) Insert() {
-	evt.Event.insert()
-}
-
-func (evt EventStake) Point() client.Point {
-	p := evt.Event.point()
-	p.Tags[ModelPoolAttribute] = evt.Pool.String()
-	p.Fields[ModelPoolAttribute] = evt.Pool.String()
-	p.Fields[StakeUnits] = evt.StakeUnits
-	return p
-}
+// func (evt EventStake) Point() client.Point {
+// 	p := evt.Event.point()
+// 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
+// 	p.Fields[ModelPoolAttribute] = evt.Pool.String()
+// 	p.Fields[StakeUnits] = evt.StakeUnits
+// 	return p
+// }

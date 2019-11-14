@@ -22,7 +22,7 @@ import (
 // 	RuneFee     float64
 // 	TokenFee    float64
 // 	Pool        common.Ticker
-// 	Timestamp   time.Time
+// 	Time   time.Time
 // }
 
 // func NewSwapEvent(id int64, inhash, outhash common.TxID, rAmt, tAmt, priceSlip, tradeSlip, poolSlip, outputSlip, fee float64, pool common.Ticker, from, to common.Address, ts time.Time) SwapEvent {
@@ -47,7 +47,7 @@ import (
 // 		RuneFee:     runeFee,
 // 		TokenFee:    tokenFee,
 // 		Pool:        pool,
-// 		Timestamp:   ts,
+// 		Time:   ts,
 // 	}
 // }
 
@@ -82,7 +82,7 @@ import (
 // 			"rune_fee":    evt.RuneFee,
 // 			"token_fee":   evt.TokenFee,
 // 		},
-// 		Time:      evt.Timestamp,
+// 		Time:      evt.Time,
 // 		Precision: precision,
 // 	}
 // }
