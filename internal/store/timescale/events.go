@@ -69,7 +69,7 @@ func (e *eventsStore) Create(record models.Event) error {
 	return nil
 }
 
-func (e *eventsStore) createGasRecord(parent models.Event, record common.Coin) (int64, error) {
+func (e *eventsStore) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -83,10 +83,10 @@ func (e *eventsStore) createGasRecord(parent models.Event, record common.Coin) (
 	results, err := e.db.Exec(query,
 		parent.Time,
 		parent.ID,
-		record.Asset.Chain,
-		record.Asset.Symbol,
-		record.Asset.Ticker,
-		record.Amount,
+		coin.Asset.Chain,
+		coin.Asset.Symbol,
+		coin.Asset.Ticker,
+		coin.Amount,
 	)
 
 	if err != nil {
