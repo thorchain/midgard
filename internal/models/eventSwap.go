@@ -27,12 +27,3 @@ func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
 		Event:       newEvent(event),
 	}
 }
-
-// func (evt EventSwap) Point() client.Point {
-// 	p := evt.Event.point()
-// 	p.Tags[ModelPoolAttribute] = evt.Pool.String()
-// 	p.Fields[PriceTarget] = evt.PriceTarget
-// 	p.Fields[TradeSlip] = evt.TradeSlip
-// 	p.Fields[ModelFeeAttribute] = evt.Fee
-// 	return p
-// }
