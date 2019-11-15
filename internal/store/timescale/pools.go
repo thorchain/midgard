@@ -65,7 +65,7 @@ func (p *poolStore) swappersCount(asset common.Asset) uint64 {
                        		ON ttxs.event_id = s.event_id 
         		WHERE  s.symbol = %v 
                		AND txs.direction = 'in' 
-        		GROUP  BY t.from_address) x; `, asset.String())
+        		GROUP  BY t.from_address) x`, asset.String())
 
 	err := p.db.Get(&r, query)
 	if err != nil {
@@ -137,7 +137,7 @@ func (p *poolStore) stakersCount(asset common.Asset) uint64 {
                        		ON ttxs.event_id = s.event_id 
         		WHERE  s.symbol = %v 
                		AND txs.direction = 'in' 
-        		GROUP  BY t.from_address) x; `, asset.String())
+        		GROUP  BY t.from_address) x`, asset.String())
 
 	err := p.db.Get(&r, query)
 	if err != nil {
