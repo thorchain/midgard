@@ -49,7 +49,26 @@ func (p *poolStore) buyFeesTotal() {}
 func (p *poolStore) poolFeesTotal() {}
 func (p *poolStore) sellAssetCount() {}
 func (p *poolStore) buyAssetCount() {}
-func (p *poolStore) swappingTxCount() {}
+
+func (p *poolStore) swappingTxCount(asset common.Asset) uint64 {
+	type results struct {
+		swappingTxCount uint64 `db:"swapping_tx_count"`
+	}
+	r := results{}
+
+	query := fmt.Sprintf(`
+		SELECT
+			COUNT(event_id) swapping_tx_count 
+		FROM swaps
+			WHERE symbol = %v`, asset.String())
+
+	err := p.db.Get(&r, query)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return r.swappingTxCount
+}
 
 func (p *poolStore) swappersCount(asset common.Asset) uint64 {
 	type results struct {
