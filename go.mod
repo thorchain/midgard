@@ -7,11 +7,9 @@ require (
 	github.com/binance-chain/go-sdk v1.1.3
 	github.com/btcsuite/btcd v0.0.0-20190926002857-ba530c4abb35 // indirect
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
-	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cosmos/cosmos-sdk v0.37.3
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepmap/oapi-codegen v1.3.0
-	github.com/denisenkom/go-mssqldb v0.0.0-20191001013358-cfbb681360f0 // indirect
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
@@ -19,14 +17,11 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/influxdata/influxdb1-client v0.0.0-20190809212627-fc22c7df067e
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/lib/pq v1.2.0
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
-	github.com/mitchellh/cli v1.0.0 // indirect
-	github.com/olekukonko/tablewriter v0.0.2 // indirect
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/openlyinc/pointy v1.1.2
@@ -34,7 +29,6 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
 	github.com/rs/zerolog v1.15.0
-	github.com/rubenv/sql-migrate v0.0.0-20191025130928-9355dd04f4b3 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/tendermint/go-amino v0.15.1 // indirect
@@ -47,7 +41,6 @@ require (
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
-	gopkg.in/gorp.v1 v1.7.2 // indirect
 )
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
