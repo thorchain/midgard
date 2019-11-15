@@ -234,12 +234,12 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	// addresses := h.store.GetStakerAddresses()
-	// response := api.StakersResponse{}
-	// for _,addr := range addresses {
-	// 	response = append(response, api.Stakers(addr.String()))
-	// }
-	// return ctx.JSON(http.StatusOK, response)
+	addresses := h.store.Stakes.GetStakerAddresses()
+	response := api.StakersResponse{}
+	for _,addr := range addresses {
+		response = append(response, api.Stakers(addr.String()))
+	}
+	return ctx.JSON(http.StatusOK, response)
 	return nil
 }
 
