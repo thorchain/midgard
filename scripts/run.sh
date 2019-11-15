@@ -1,7 +1,7 @@
 #!/bin/sh
 # Usage: run.sh SERVICE [CMD...]
 
-# this is to ensure dependencies (ie influxdb) get shutdown and rm'ed after run
+# this is to ensure dependencies (ie pg) get shutdown and rm'ed after run
 # is completed
 # https://github.com/docker/compose/issues/2791#issuecomment-198327517
 

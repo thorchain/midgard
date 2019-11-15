@@ -66,12 +66,6 @@ test-watch: clear
 sh:
 	@docker-compose run --rm chain-service /bin/sh
 
-influx_stack:
-	@docker-compose run --rm -p 8888:8888 chronograf
-
-influxdb:
-	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
-
 pg:
 	@docker-compose run --rm -p 5432:5432 --no-deps pg
 
