@@ -9,7 +9,7 @@ endif
 config:
 	@echo CACHE: ${CACHE}
 	@echo ECS_CLUSTER: ${ECS_CLUSTER}
-	@echo INFLUX_HOST: ${INFLUX_HOST}
+	@echo PG_HOST: ${PG_HOST}
 	@echo REGISTRY_ID: ${REGISTRY_ID}
 	@echo REPOSITORY: ${REPOSITORY}
 	@echo ECR_CHAIN_SVC: ${ECR_CHAIN_SVC}
@@ -32,7 +32,7 @@ logger: login
 
 # Step 1
 build: logger
-	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg influx_host=${INFLUX_HOST} --build-arg chain_host=${CHAIN_HOST} . | tee ./log/chain-service-build.log
+	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg pg_host=${PG_HOST} --build-arg chain_host=${CHAIN_HOST} . | tee ./log/chain-service-build.log
 
 # Step 2
 tag: build

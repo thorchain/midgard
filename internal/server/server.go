@@ -19,7 +19,7 @@ import (
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
@@ -69,20 +69,19 @@ func New(cfgFile *string) (*Server, error) {
 
 	logoClient := logo.NewLogoClient(cfg)
 
-	// Setup influxdb
-	influx, err := influxdb.NewClient(cfg.Influx)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to create influxdb")
-	}
-
 	// Setup binance client
 	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
+	timescale, err := timescale.NewStore(cfg.TimeScale)
+	if err != nil {
+		return nil, errors.Wrap(err, "fail to create timescale")
+	}
+
 	// Setup thorchain BinanceClient scanner
-	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, influx, binanceClient)
+	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to create thorchain api instance")
 	}
@@ -94,7 +93,7 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(influx, thorChainApi, logger, binanceClient, logoClient)
+	handlers := handlers.New(timescale, thorChainApi, logger, binanceClient, logoClient)
 
 	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, handlers)

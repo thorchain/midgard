@@ -8,7 +8,7 @@ Chain Service
 To run the chain service you will need two terminal windows or tabs. In the
 first tab, run...
 ```bash
-make influxdb
+make pg
 ```
 
 In the second tab, run...
@@ -24,7 +24,7 @@ make test
 
 For rapid testing, in one terminal tab...
 ```bash
-make influxdb
+make pg
 ```
 
 In another tab, run...
@@ -39,7 +39,7 @@ make test-watch
 
 #### Short Testing
 You can run unit tests and omit the ones that require a running instance of
-influxdb
+timescale running on top of postgres
 ```bash
 make test-short
 ```

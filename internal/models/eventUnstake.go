@@ -1,8 +1,6 @@
 package models
 
 import (
-	client "github.com/influxdata/influxdb1-client"
-
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
@@ -14,7 +12,7 @@ const (
 )
 
 type EventUnstake struct {
-	event
+	Event
 	Pool        common.Asset
 	StakeUnits  int64
 	BasisPoints int64   `json:"basis_points"` // 1 ==> 10,0000
@@ -27,15 +25,6 @@ func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake
 		StakeUnits:  unstake.StakeUnits,
 		BasisPoints: unstake.BasisPoints,
 		Asymmetry:   unstake.Asymmetry,
-		event:       newEvent(event),
+		Event:       newEvent(event),
 	}
-}
-
-func (evt EventUnstake) Point() client.Point {
-	p := evt.event.point()
-	p.Tags[PoolTag] = evt.Pool.String()
-	p.Fields[StakeUnits] = evt.StakeUnits
-	p.Fields[BasisPoints] = evt.BasisPoints
-	p.Fields[Asymmetry] = evt.Asymmetry
-	return p
 }
