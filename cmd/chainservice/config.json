@@ -1,20 +1,21 @@
 {
   "listen_port": 8080,
   "is_testnet" : true,
-  "influx": {
-    "host": "localhost",
-    "user_name": "admin",
-    "password": "password",
-    "database": "db0",
-    "resample": "1m",
-    "resample_for": "1d"
-  },
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
     "enable_scan": true,
     "scan_start_pos": 1
   },
+  "timescale": {
+    "host": "localhost",
+    "post": 5432,
+    "user_name": "postgres",
+    "password": "password",
+    "database": "midgard",
+    "sslmode": "disable"
+  },
+
   "binance": {
     "scheme": "https",
     "dex_host": "testnet-dex.binance.org",

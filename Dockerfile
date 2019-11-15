@@ -1,10 +1,10 @@
 FROM golang:alpine
 
 ARG chain_host
-ARG influx_host
+ARG pg_host
 
 ENV CHAIN_HOST=$chain_host
-ENV INFLUX_HOST=$influx_host
+ENV PG_HOST=$pg_host
 
 RUN apk update && \
     apk add python python-dev py-pip build-base && \
@@ -21,8 +21,8 @@ RUN env
 RUN mkdir -p /etc/chainservice
 RUN cat ./cmd/chainservice/config.json | jq \
   --arg CHAIN_HOST "$CHAIN_HOST" \
-  --arg INFLUX_HOST "$INFLUX_HOST" \
-  '.influx["host"] = $INFLUX_HOST | \
+  --arg PG_HOST "$PG_HOST" \
+  '.timescale["host"] = $PG_HOST | \
   .thorchain["host"] = $CHAIN_HOST' > /etc/chainservice/config.json
 RUN cat /etc/chainservice/config.json
 

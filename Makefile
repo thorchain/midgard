@@ -8,12 +8,11 @@ API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 
 bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
 
-.PHONY: config
+.PHONY: config, tools, test
+
 config:
 	@echo GOBIN: ${GOBIN}
 	@echo GOPATH: ${GOPATH}
-
-.PHONY: tools
 
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
@@ -66,11 +65,8 @@ test-watch: clear
 sh:
 	@docker-compose run --rm chain-service /bin/sh
 
-influx_stack:
-	@docker-compose run --rm -p 8888:8888 chronograf
-
-influxdb:
-	@docker-compose run --rm -p 8086:8086 --no-deps influxdb
+pg:
+	@docker-compose run --rm -p 5432:5432 --no-deps pg
 
 # -------------------------------------------- API Targets ------------------------------------
 
@@ -98,5 +94,22 @@ up:
 clean:
 	@rm ${GOBIN}/chainservice
 
-run_mocked_endpint:
+run_mocked_endpoint:
 	go run tools/mockServer/mockServer.go
+
+# ------------------------------------------- sql migrations ----------------------------------------------
+
+${GOBIN}/sql-migrate:
+	go get -v github.com/rubenv/sql-migrate/...
+
+create-database:
+	psql -h localhost -U postgres -c "create database midgard;"
+
+drop-database:
+	psql -h localhost -U postgres -c "drop database midgard;"
+
+migration-up: ${GOBIN}/sql-migrate
+	${GOBIN}/sql-migrate up
+
+migration-down: ${GOBIN}/sql-migrate
+	${GOBIN}/sql-migrate down

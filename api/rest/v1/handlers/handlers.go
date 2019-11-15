@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/handler"
+
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -15,7 +16,8 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
+
+	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
 
 	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 
@@ -29,7 +31,7 @@ const (
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           *influxdb.Client
+	store           *timescale.Store
 	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 	binanceClient   *binance.BinanceClient // TODO Move out of handler (Handler should only talk to the DB)
@@ -37,7 +39,7 @@ type Handlers struct {
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *influxdb.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
+func New(store *timescale.Store, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.BinanceClient, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
@@ -62,14 +64,15 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "OK")
 }
+
 // (GET /v1/tx/{address})
 func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
-	 
+
 	ass, _ := common.NewAsset("BNB")
 
 	response := api.TxDetails{
 		//TestDailyActiveUsers:   nil,
-		Pool:            helpers.ConvertAssetForAPI(ass),
+		Pool: helpers.ConvertAssetForAPI(ass),
 		// Status:          nil,
 		// Date:            nil,
 		// Height:          nil,
@@ -88,8 +91,9 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 
 	return ctx.JSON(http.StatusOK, response)
 
-//	return ctx.JSON(http.StatusOK, "OK")
+	//	return ctx.JSON(http.StatusOK, "OK")
 }
+
 // (GET /v1/assets)
 func (h *Handlers) GetAssets(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
@@ -230,7 +234,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	addresses := h.store.GetStakerAddresses()
+	addresses := h.store.Stakes.GetStakerAddresses()
 	response := api.StakersResponse{}
 	for _,addr := range addresses {
 		response = append(response, api.Stakers(addr.String()))
@@ -240,24 +244,34 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	ass0, _ := common.NewAsset("BNB")
-	ass1, _ := common.NewAsset("FSN-F1B")
-	ass2, _ := common.NewAsset("FTM-585")
-	ass3, _ := common.NewAsset("LOK-3C0")
+	// addr, err := common.NewAddress(address)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+	// 		Error: err.Error(),
+	// 	})
+	// }
+	//
+	// details, err := h.store.GetStakerAddressDetails(addr)
+	// if err != nil {
+	// 	return ctx.JSON(http.StatusInternalServerError, err)
+	// }
+	// assets := make([]api.Asset, len(details.StakerArray))
+	//
+	// for _,ass := range details.StakerArray {
+	// 	assets = append(assets, *helpers.ConvertAssetForAPI(ass))
+	// }
+	//
+	// response := api.StakersAddressDataResponse{
+	// 	StakeArray: &assets,
+	// 	TotalEarned: pointy.Int64(details.TotalEarned),
+	// 	TotalROI:    pointy.Int64(details.TotalROI),
+	// 	TotalStaked: pointy.Int64(details.TotalStaked),
+	// }
+	//
+	// spew.Dump()
+	// return ctx.JSON(http.StatusOK, response)
 
-	response := api.StakersAddressDataResponse{
-		StakeArray: &[]api.Asset{
-			*helpers.ConvertAssetForAPI(ass0),
-			*helpers.ConvertAssetForAPI(ass1),
-			*helpers.ConvertAssetForAPI(ass2),
-			*helpers.ConvertAssetForAPI(ass3),
-		},
-		TotalEarned: pointy.Int64(333),
-		TotalROI:    pointy.Int64(444),
-		TotalStaked: pointy.Int64(555),
-	}
-
-	return ctx.JSON(http.StatusOK, response)
+	return nil
 }
 
 // (GET /v1/stakers/{address}/{asset})
