@@ -16,22 +16,10 @@ type Configuration struct {
 	ShutdownTimeout time.Duration          `json:"shutdown_timeout" mapstructure:"shutdown_timeout"`
 	ReadTimeout     time.Duration          `json:"read_timeout" mapstructure:"read_timeout"`
 	WriteTimeout    time.Duration          `json:"write_timeout" mapstructure:"write_timeout"`
-	Influx          InfluxDBConfiguration  `json:"influx" mapstructure:"influx"`
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	Binance         BinanceConfiguration   `json:"binance" mapstructure:"binance"`
 	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
-}
-
-// InfluxDBConfiguration config for Influxdb
-type InfluxDBConfiguration struct {
-	Host         string `json:"host" mapstructure:"host"`
-	Port         int    `json:"port" mapstructure:"port"`
-	UserName     string `json:"user_name" mapstructure:"user_name"`
-	Password     string `json:"password" mapstructure:"password"`
-	Database     string `json:"database" mapstructure:"database"`
-	ResampleRate string `json:"resample" mapstructure:"resample"`
-	ResampleFor  string `json:"resample_for" mapstructure:"resample_for"`
 }
 
 type TimeScaleConfiguration struct {
@@ -63,16 +51,10 @@ type BinanceConfiguration struct {
 	IsTestNet            bool          `json:"is_testnet" mapstructure:"is_testnet"`
 }
 
-// CoingeckoConfiguration settings for Coingecko
-// type CoingeckoConfiguration struct {
-// 	RequestTimeout time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
-// }
-
 func applyDefaultConfig() {
 	viper.SetDefault("listen_port", 8080)
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
-	viper.SetDefault("influx.port", 8086)
 	viper.SetDefault("timescale.port", 5432)
 	viper.SetDefault("thorchain.scheme", "http")
 	viper.SetDefault("thorchain.host", "localhost:1317")

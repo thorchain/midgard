@@ -9,7 +9,6 @@ endif
 config:
 	@echo CACHE: ${CACHE}
 	@echo ECS_CLUSTER: ${ECS_CLUSTER}
-	@echo INFLUX_HOST: ${INFLUX_HOST}
 	@echo REGISTRY_ID: ${REGISTRY_ID}
 	@echo REPOSITORY: ${REPOSITORY}
 	@echo ECR_CHAIN_SVC: ${ECR_CHAIN_SVC}

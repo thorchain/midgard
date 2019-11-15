@@ -16,26 +16,6 @@ const (
 	ModelStakesTable   = "stakes"
 	ModelSwapsTable    = "swaps"
 	ModelUnstakesTable = "unstakes"
-
-	ModelStakerAddressesContinuesQueryTable = "staker_addresses"
-
-	// Tags and Fields const
-	ModelPoolAttribute        = "pool"
-	ModelIdAttribute          = "id"
-	ModelHeightAttribute      = "height"
-	ModelStatusAttribute      = "status"
-	ModelEventTypeAttribute   = "type"
-	ModelToCoinAttribute      = "to_coins"
-	ModelFromCoinAttribute    = "from_coin"
-	ModelGasAttribute         = "gas"
-	ModelInHashAttribute      = "in_hash"
-	ModelOutHashAttribute     = "out_hash"
-	ModelInMemoAttribute      = "in_memo"
-	ModelOutMemoAttribute     = "out_memo"
-	ModelFromAddressAttribute = "from_address"
-	ModelToAddressAttribute   = "to_address"
-	ModelFeeAttribute         = "fee"
-	ModelTimeAttribute        = "time"
 )
 
 type Event struct {

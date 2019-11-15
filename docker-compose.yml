@@ -6,15 +6,14 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        influx_host: influxdb
         chain_host: $CHAIN_HOST
     image: bepswap-chain-service
     ports:
       - 8080:8080
     links:
-      - influxdb
+      - pg
     depends_on:
-      - influxdb
+      - pg
     volumes:
       - ${GOPATH}:/root/go
       - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
@@ -24,31 +23,6 @@ services:
       GOPATH: /root/go
       GOBIN: /root/go/bin
       GO111MODULE: "on"
-      INFLUXDB_ADMIN_USER: admin
-      INFLUXDB_ADMIN_PASSWORD: password
-      INFLUXDB_HOST: influxdb
-      INFLUXDB_DB: db0
-
-  chronograf:
-    image: chronograf:latest
-    depends_on:
-      - influxdb
-    ports:
-      - 8888:8888
-  influxdb:
-    image: influxdb:latest
-    ports:
-      - "8086:8086"
-      - "8083:8083"
-    expose:
-      - "8086"
-      - "8083"
-    environment:
-      INFLUXDB_ADMIN_ENABLED: "true"
-      INFLUXDB_ADMIN_USER: admin
-      INFLUXDB_ADMIN_PASSWORD: password
-      INFLUXDB_DB: db0
-
   pg:
     image: timescale/timescaledb:latest-pg11
     ports:
