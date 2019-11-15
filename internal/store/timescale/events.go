@@ -73,7 +73,7 @@ func (e *eventsStore) processGasRecord(record models.Event) error {
 
 func (e *eventsStore) processTxRecord(parent models.Event, record common.Tx, direction string) error {
 	// Ingest InTx
-	if !parent.InTx.IsEmpty() {
+	if !record.IsEmpty() {
 		_, err := e.createTxRecord(parent, record, direction)
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on InTx")
