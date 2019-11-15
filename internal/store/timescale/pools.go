@@ -62,10 +62,10 @@ func (p *poolStore) swappersCount(asset common.Asset) uint64 {
 		FROM   (SELECT COUNT(from_address) AS count 
         		FROM   txs 
                		inner join swaps 
-                       		ON ttxs.event_id = s.event_id 
-        		WHERE  s.symbol = %v 
+                       		ON txs.event_id = swaps.event_id 
+        		WHERE  swaps.symbol = %v 
                		AND txs.direction = 'in' 
-        		GROUP  BY t.from_address) x`, asset.String())
+        		GROUP  BY txs.from_address) x`, asset.String())
 
 	err := p.db.Get(&r, query)
 	if err != nil {
@@ -134,10 +134,10 @@ func (p *poolStore) stakersCount(asset common.Asset) uint64 {
 		FROM   (SELECT COUNT(from_address) AS count 
         		FROM   txs 
                		inner join stakes 
-                       		ON ttxs.event_id = s.event_id 
-        		WHERE  s.symbol = %v 
+                       		ON txs.event_id = stakes.event_id 
+        		WHERE  stakes.symbol = %v 
                		AND txs.direction = 'in' 
-        		GROUP  BY t.from_address) x`, asset.String())
+        		GROUP  BY txs.from_address) x`, asset.String())
 
 	err := p.db.Get(&r, query)
 	if err != nil {
