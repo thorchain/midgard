@@ -240,7 +240,6 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 		response = append(response, api.Stakers(addr.String()))
 	}
 	return ctx.JSON(http.StatusOK, response)
-	return nil
 }
 
 // (GET /v1/stakers/{address})
