@@ -23,7 +23,7 @@ func NewEventsStore(db *sqlx.DB) *eventsStore {
 }
 
 func (e *eventsStore) GetMaxID() (int64, error) {
-	query := fmt.Sprintf("SELECT MAX(%s) FROM %s", models.ModelIdAttribute, models.ModelEventsTable)
+	query := fmt.Sprintf("SELECT MAX(%s) FROM id", models.ModelEventsTable)
 	var maxId int64
 	err := e.db.Get(&maxId, query)
 	if err != nil {
