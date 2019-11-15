@@ -43,6 +43,7 @@ CREATE TABLE unstakes (
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
     time        TIMESTAMPTZ       NOT NULL,
+    id SERIAL,
     tx_hash varchar not null,
     event_id bigint not null,
     direction tx_direction not null,
@@ -50,17 +51,18 @@ CREATE TABLE txs (
     from_address varchar,
     to_address varchar,
     memo varchar,
-    primary key (time, event_id, tx_hash)
+    primary key (id, time, event_id)
 );
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
+    id SERIAL,
     tx_hash varchar not null,
     event_id bigint not null,
     chain varchar not null,
     symbol varchar not null,
     ticker varchar not null,
     amount bigint not null,
-    primary key (time, event_id, tx_hash, chain, symbol)
+    primary key (id, time, event_id)
 );
 CREATE TABLE gas (
     time        TIMESTAMPTZ       NOT NULL,

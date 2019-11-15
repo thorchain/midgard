@@ -87,7 +87,7 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 
 	maxID := id
 	// pts := make([]client.Point, 0)
-	for i, evt := range events {
+	for _, evt := range events {
 		if maxID < evt.ID {
 			maxID = evt.ID
 			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
@@ -96,17 +96,20 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 		case "swap":
 			err = api.processSwapEvent(evt)
 			if err != nil {
-				return maxID, i, err
+				api.logger.Err(err).Msg("processSwapEvent failed")
+				continue
 			}
 		case "stake":
 			err = api.processStakingEvent(evt)
 			if err != nil {
-				return maxID, i, err
+				api.logger.Err(err).Msg("processStakingEvent failed")
+				continue
 			}
 		case "unstake":
 			err = api.processUnstakeEvent(evt)
 			if err != nil {
-				return maxID, i, err
+				api.logger.Err(err).Msg("processUnstakeEvent failed")
+				continue
 			}
 		}
 	}
