@@ -9,7 +9,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
-	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
@@ -116,19 +115,6 @@ func New(cfgFile *string) (*Server, error) {
 		logger:          logger,
 		thorChainClient: thorChainApi,
 	}, nil
-}
-
-// TODO for echo or direct http server
-func CORS() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-
-		c.Next()
-	}
 }
 
 func (s *Server) Start() error {
