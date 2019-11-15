@@ -8,12 +8,11 @@ API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 
 bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
 
-.PHONY: config
+.PHONY: config, tools, test
+
 config:
 	@echo GOBIN: ${GOBIN}
 	@echo GOPATH: ${GOPATH}
-
-.PHONY: tools
 
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
