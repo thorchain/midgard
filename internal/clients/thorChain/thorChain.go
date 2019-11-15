@@ -52,54 +52,6 @@ func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.Bina
 	}, nil
 }
 
-// GetPools from thorchain
-// func (api *API) GetPools() ([]models.Pool, error) {
-// 	poolUrl := fmt.Sprintf("%s/pools", api.baseUrl)
-// 	api.logger.Debug().Msg(poolUrl)
-// 	resp, err := api.netClient.Get(poolUrl)
-// 	if nil != err {
-// 		return nil, errors.Wrap(err, "fail to get pools from thorchain")
-// 	}
-// 	defer func() {
-// 		if err := resp.Body.Close(); nil != err {
-// 			api.logger.Error().Err(err).Msg("fail to close response body")
-// 		}
-// 	}()
-// 	if resp.StatusCode != http.StatusOK {
-// 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
-// 	}
-// 	decoder := json.NewDecoder(resp.Body)
-// 	var pools []models.Pool
-// 	if err := decoder.Decode(&pools); nil != err {
-// 		return nil, errors.Wrap(err, "fail to unmarshal pools")
-// 	}
-// 	return pools, nil
-// }
-
-// GetPool with the given asset
-// func (api *API) GetPool(asset common.Asset) (*models.Pool, error) {
-// 	poolUrl := fmt.Sprintf("%s/pool/%s", api.baseUrl, asset.String())
-// 	api.logger.Debug().Msg(poolUrl)
-// 	resp, err := api.netClient.Get(poolUrl)
-// 	if nil != err {
-// 		return nil, errors.Wrap(err, "fail to get pools from thorchain")
-// 	}
-// 	defer func() {
-// 		if err := resp.Body.Close(); nil != err {
-// 			api.logger.Error().Err(err).Msg("fail to close response body")
-// 		}
-// 	}()
-// 	if resp.StatusCode != http.StatusOK {
-// 		return nil, errors.Errorf("unexpected status code from state chain %s", resp.Status)
-// 	}
-// 	decoder := json.NewDecoder(resp.Body)
-// 	var pool models.Pool
-// 	if err := decoder.Decode(&pool); nil != err {
-// 		return nil, errors.Wrap(err, "fail to unmarshal pool")
-// 	}
-// 	return &pool, nil
-// }
-
 func (api *API) getEvents(id int64) ([]types.Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", api.baseUrl, id)
 	api.logger.Debug().Msg(uri)
@@ -257,28 +209,6 @@ func (api *API) scan() {
 		}
 	}
 }
-
-// func (api *API) writePtsToStoreWithRetry(points []client.Point) error {
-// 	bf := backoff.NewExponentialBackOff()
-// 	try := 1
-// 	for {
-// 		err := api.store.Writes(points)
-// 		if nil == err {
-// 			return nil
-// 		}
-// 		api.logger.Error().Err(err).Msgf("fail to write points to store, try %d", try)
-// 		b := bf.NextBackOff()
-// 		if b == backoff.Stop {
-// 			return errors.New("fail to write points to store after maximum retry")
-// 		}
-// 		select {
-// 		case <-api.stopChan:
-// 			return err
-// 		case <-time.After(b):
-// 		}
-// 		try++
-// 	}
-// }
 
 func (api *API) StopScan() error {
 	api.logger.Info().Msg("stop scan request received")
