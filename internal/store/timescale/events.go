@@ -33,7 +33,6 @@ func (e *eventsStore) GetMaxID() (int64, error) {
 }
 
 func (e *eventsStore) Create(record models.Event) error {
-
 	// Ingest basic event
 	err := e.createEventRecord(record)
 	if err != nil {
@@ -41,51 +40,55 @@ func (e *eventsStore) Create(record models.Event) error {
 	}
 
 	// Ingest InTx
-	if !record.InTx.IsEmpty() {
-		_, err = e.createTxRecord(record, record.InTx, "in")
+	err = e.processTxRecord(record,record.InTx, "in")
+	if err != nil {
+		return errors.Wrap(err, "Failed to process InTx")
+	}
+
+	// Ingest OutTx
+	err = e.processTxRecord(record, record.OutTx, "out")
+	if err != nil {
+		return errors.Wrap(err, "Failed to process OutTx")
+	}
+
+	// Ingest Gas.
+	err = e.processGasRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "Failed to process Gas")
+	}
+	return nil
+}
+
+func (e *eventsStore) processGasRecord(record models.Event) error {
+	for _, coin := range record.Gas {
+		if !coin.IsEmpty() {
+			_, err := e.createGasRecord(record, coin)
+			if err != nil {
+				return errors.Wrap(err, "Failed createGasRecord")
+			}
+		}
+	}
+	return nil
+}
+
+func (e *eventsStore) processTxRecord(parent models.Event, record common.Tx, direction string) error {
+	// Ingest InTx
+	if !parent.InTx.IsEmpty() {
+		_, err := e.createTxRecord(parent, record, direction)
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on InTx")
 		}
 
-		// InTx Coins
-		for _, coin := range record.InTx.Coins {
+		// Ingest Coins
+		for _, coin := range record.Coins {
 			if !coin.IsEmpty() {
-				_, err = e.createCoinRecord(record, record.InTx, coin)
+				_, err = e.createCoinRecord(parent, record, coin)
 				if err != nil {
 					return errors.Wrap(err, "Failed createCoinRecord on InTx")
 				}
 			}
 		}
 	}
-
-	// Ingest OutTx
-	if !record.OutTx.IsEmpty() {
-		_, err = e.createTxRecord(record, record.OutTx, "out")
-		if err != nil {
-			return errors.Wrap(err, "Failed createTxRecord on OutTx")
-		}
-
-		// OutTx Coins
-		for _, coin := range record.OutTx.Coins {
-			if !coin.IsEmpty() {
-				_, err = e.createCoinRecord(record, record.OutTx, coin)
-				if err != nil {
-					return errors.Wrap(err, "Failed createCoinRecord on OutTx")
-				}
-			}
-		}
-	}
-
-	// Ingest Gas.
-	for _, coin := range record.Gas {
-		if !coin.IsEmpty() {
-			_, err = e.createGasRecord(record, coin)
-			if err != nil {
-				return errors.Wrap(err, "Failed createGasRecord")
-			}
-		}
-	}
-
 	return nil
 }
 
