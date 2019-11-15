@@ -45,7 +45,7 @@ type Event struct {
 	Height int64     `json:"height" db:"height"`
 	Type   string    `json:"type" db:"type"`
 	InTx   common.Tx
-	OutTx  common.Tx
+	OutTxs  common.Txs
 	Gas    common.Coins
 }
 
@@ -57,7 +57,7 @@ func newEvent(e types.Event) Event {
 		Height: e.Height,
 		Type:   e.Type,
 		InTx:   e.InTx,
-		OutTx:  e.OutTx,
+		OutTxs:  e.OutTxs,
 		Gas:    e.Gas,
 	}
 }

@@ -40,15 +40,15 @@ func (e *eventsStore) Create(record models.Event) error {
 	}
 
 	// Ingest InTx
-	err = e.processTxRecord(record,record.InTx, "in")
+	err = e.processTxRecord("in" , record,record.InTx )
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
 
-	// Ingest OutTx
-	err = e.processTxRecord(record, record.OutTx, "out")
+	// Ingest OutTxs
+	err = e.processTxsRecord("out", record, record.OutTxs)
 	if err != nil {
-		return errors.Wrap(err, "Failed to process OutTx")
+		return errors.Wrap(err, "Failed to process OutTxs")
 	}
 
 	// Ingest Gas.
@@ -71,9 +71,31 @@ func (e *eventsStore) processGasRecord(record models.Event) error {
 	return nil
 }
 
-func (e *eventsStore) processTxRecord(parent models.Event, record common.Tx, direction string) error {
+func (e *eventsStore) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
+	for _, record := range records {
+		if err := record.IsValid(); err == nil  {
+			_, err := e.createTxRecord(parent, record, direction)
+			if err != nil {
+				return errors.Wrap(err, "Failed createTxRecord")
+			}
+
+			// Ingest Coins
+			for _, coin := range record.Coins {
+				if !coin.IsEmpty() {
+					_, err = e.createCoinRecord(parent, record, coin)
+					if err != nil {
+						return errors.Wrap(err, "Failed createCoinRecord")
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (e *eventsStore) processTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
-	if !record.IsEmpty() {
+	if err := record.IsValid(); err == nil {
 		_, err := e.createTxRecord(parent, record, direction)
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on InTx")

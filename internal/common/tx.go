@@ -8,6 +8,8 @@ import (
 type TxID string
 type TxIDs []TxID
 
+var BlankTxID = TxID("0000000000000000000000000000000000000000000000000000000000000000")
+
 func NewTxID(hash string) (TxID, error) {
 	switch len(hash) {
 	case 64:
@@ -25,12 +27,22 @@ func NewTxID(hash string) (TxID, error) {
 	return TxID(strings.ToUpper(hash)), nil
 }
 
-func (tx TxID) Equals(tx2 TxID) bool {
-	return strings.EqualFold(tx.String(), tx2.String())
+func (txID TxID) Equals(tx2 TxID) bool {
+	return strings.EqualFold(txID.String(), tx2.String())
 }
 
-func (tx TxID) IsEmpty() bool {
-	return strings.TrimSpace(tx.String()) == ""
+func (txID TxID) IsEmpty() bool {
+	return strings.TrimSpace(txID.String()) == ""
+}
+
+func (txID TxID) IsValid() error {
+	if txID.IsEmpty() {
+		return fmt.Errorf("TxID cannot be empty")
+	}
+	if txID.Equals(BlankTxID) {
+		return fmt.Errorf("TxID cannot be BlankTxID")
+	}
+	return nil
 }
 
 func (tx TxID) String() string {
@@ -43,10 +55,12 @@ type Tx struct {
 	FromAddress Address `json:"from_address"`
 	ToAddress   Address `json:"to_address"`
 	Coins       Coins   `json:"coins"`
-	Memo        Memo    `json:"memo"`
+	Memo        Memo  `json:"memo"`
 }
 
-func NewTx(txID TxID, from Address, to Address, coins Coins, memo string) Tx {
+type Txs []Tx
+
+func NewTx(txID TxID, from Address, to Address, coins Coins, memo Memo) Tx {
 	var chain Chain
 	for _, coin := range coins {
 		chain = coin.Asset.Chain
@@ -58,7 +72,7 @@ func NewTx(txID TxID, from Address, to Address, coins Coins, memo string) Tx {
 		FromAddress: from,
 		ToAddress:   to,
 		Coins:       coins,
-		Memo:        Memo(memo),
+		Memo:        memo,
 	}
 }
 
@@ -68,6 +82,9 @@ func (tx Tx) IsEmpty() bool {
 
 func (tx Tx) IsValid() error {
 	if tx.ID.IsEmpty() {
+		return fmt.Errorf("Tx ID cannot be empty")
+	}
+	if err := tx.ID.IsValid(); err != nil {
 		return fmt.Errorf("Tx ID cannot be empty")
 	}
 	if tx.FromAddress.IsEmpty() {

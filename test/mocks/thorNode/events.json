@@ -154,6 +154,23 @@
           }
         ],
         "memo": "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E657"
+      },
+      {
+        "id": "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+        "chain": "BNB",
+        "from_address": "tbnb1tdfqy34uptx207scymqsy4k5uzfmry5s8lujqt",
+        "to_address": "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        "coins": [
+          {
+            "asset": {
+              "chain": "BNB",
+              "symbol": "RUNE-B1A",
+              "ticker": "RUNE"
+            },
+            "amount": "1"
+          }
+        ],
+        "memo": "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E657"
       }
     ],
     "gas": null,
