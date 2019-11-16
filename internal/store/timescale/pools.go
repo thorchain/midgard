@@ -21,15 +21,68 @@ func NewPoolStore(db *sqlx.DB) *poolStore {
 }
 
 func (p *poolStore) status() {}
-func (p *poolStore) price() {}
-func (p *poolStore) assetStakedTotal() {}
-func (p *poolStore) runeStakedTotal() {}
-func (p *poolStore) poolStakedTotal() {}
+
+func (p *poolStore) price(asset common.Asset) float64 {
+	return asset.RunePrice()
+}
+
+func (p *poolStore) assetStakedTotal(asset common.Asset) uint64 {
+	type results struct {
+		assetStakedTotal uint64 `db:"asset_staked_total"`
+	}
+	r := results{}
+
+	query := fmt.Sprintf(`
+		SELECT 
+			SUM(stakes_total - unstakes_total) asset_staked_total
+		FROM (
+			SELECT
+				SUM(stakes.units) stakes_total, 
+			CASE 
+				WHEN SUM(unstakes.units) IS NOT NULL THEN SUM(unstakes.units) 
+				ELSE 0 
+			END unstakes_total 
+			FROM stakes 
+				LEFT JOIN unstakes 
+				ON stakes.symbol = unstakes.symbol 
+			WHERE  stakes.symbol = %v) x;`, asset.String())
+
+	err := p.db.Get(&r, query)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return r.assetStakedTotal
+}
+
+func (p *poolStore) runeStakedTotal() uint64 {
+	runeAsset := common.RuneAsset()
+	return p.assetStakedTotal(runeAsset)
+}
+
+func (p *poolStore) poolStakedTotal(asset common.Asset) uint64 {
+	assetStakedTotal := p.assetStakedTotal(asset)
+	runeStakedTotal := p.runeStakedTotal()
+	price := p.price(asset)
+
+	assetStakedTotalPrice := float64(assetStakedTotal) * price
+	poolStakedTotal := runeStakedTotal + (uint64(assetStakedTotalPrice))
+
+	return poolStakedTotal
+}
+
 func (p *poolStore) assetDepth(asset common.Asset) uint64 {
 	return 0
 }
-func (p *poolStore) runeDepth() {}
-func (p *poolStore) poolDepth() {}
+func (p *poolStore) runeDepth(asset common.Asset) uint64 {
+	return 0
+}
+
+func (p *poolStore) poolDepth(asset common.Asset) uint64 {
+	runeDepth := p.runeDepth(asset)
+	return 2 * runeDepth
+}
+
 func (p *poolStore) poolUnits() {}
 func (p *poolStore) sellVolume() {}
 func (p *poolStore) buyVolume() {}
