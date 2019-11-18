@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/99designs/gqlgen/handler"
-
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -244,52 +242,64 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 
 // (GET /v1/stakers/{address})
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
-	// addr, err := common.NewAddress(address)
-	// if err != nil {
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
-	// 		Error: err.Error(),
-	// 	})
-	// }
-	//
-	// details, err := h.store.GetStakerAddressDetails(addr)
-	// if err != nil {
-	// 	return ctx.JSON(http.StatusInternalServerError, err)
-	// }
-	// assets := make([]api.Asset, len(details.StakerArray))
-	//
-	// for _,ass := range details.StakerArray {
-	// 	assets = append(assets, *helpers.ConvertAssetForAPI(ass))
-	// }
-	//
-	// response := api.StakersAddressDataResponse{
-	// 	StakeArray: &assets,
-	// 	TotalEarned: pointy.Int64(details.TotalEarned),
-	// 	TotalROI:    pointy.Int64(details.TotalROI),
-	// 	TotalStaked: pointy.Int64(details.TotalStaked),
-	// }
-	//
-	// spew.Dump()
-	// return ctx.JSON(http.StatusOK, response)
+	addr, err := common.NewAddress(address)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+			Error: err.Error(),
+		})
+	}
+	details := h.store.Stakes.GetStakerAddressDetails(addr)
 
-	return nil
+	var assets []api.Asset
+	for _, asset := range details.PoolsDetails{
+		assets = append(assets, *helpers.ConvertAssetForAPI(asset))
+	}
+
+	response := api.StakersAddressDataResponse{
+		PoolsArray: &assets,
+		TotalEarned: pointy.Int64(details.TotalEarned),
+		TotalROI:    pointy.Int64(details.TotalROI),
+		TotalStaked: pointy.Int64(details.TotalStaked),
+	}
+	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/stakers/{address}/{asset})
 func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error {
-	ass0, _ := common.NewAsset(asset)
+	addr, err := common.NewAddress(address)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
+	ass, err := common.NewAsset(asset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
+	details, err := h.store.Stakes.GetStakersAddressAndAssetDetails(addr, ass)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
 	var response = api.StakersAssetDataResponse{
-		Asset:           helpers.ConvertAssetForAPI(ass0),
-		AssetEarned:     pointy.Int64(111),
-		AssetROI:        pointy.Float64(222.222),
-		AssetStaked:     pointy.Int64(333),
-		DateFirstStaked: &time.Time{},
-		PoolEarned:      pointy.Int64(444),
-		PoolROI:         pointy.Float64(555.555),
-		PoolStaked:      pointy.Int64(666),
-		RuneEarned:      pointy.Int64(777),
-		RuneROI:         pointy.Float64(888.888),
-		RuneStaked:      pointy.Int64(999),
-		StakeUnits:      pointy.Int64(1111),
+		Asset:           helpers.ConvertAssetForAPI(details.Asset),
+		AssetEarned:     pointy.Int64(details.AssetEarned),
+		AssetROI:        pointy.Float64(details.AssetROI),
+		AssetStaked:     pointy.Int64(details.AssetStaked),
+		DateFirstStaked: &details.DateFirstStaked,
+		PoolEarned:      pointy.Int64(details.PoolEarned),
+		PoolROI:         pointy.Float64(details.PoolROI),
+		PoolStaked:      pointy.Int64(details.PoolStaked),
+		RuneEarned:      pointy.Int64(details.RuneEarned),
+		RuneROI:         pointy.Float64(details.RuneROI),
+		RuneStaked:      pointy.Int64(details.RuneStaked),
+		StakeUnits:      pointy.Int64(details.StakeUnits),
 	}
 
 	return ctx.JSON(http.StatusOK, response)
