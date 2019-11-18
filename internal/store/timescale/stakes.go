@@ -4,31 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-type StakesStore interface {
-	Create(record models.EventStake) error
-	GetStakerAddresses() []common.Address
-	GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error)
-	GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error)
-}
-
-type stakesStore struct {
-	db *sqlx.DB
-	*eventsStore
-}
-
-func NewStakesStore(db *sqlx.DB) *stakesStore {
-	return &stakesStore{db, NewEventsStore(db)}
-}
-
-func (s *stakesStore) Create(record models.EventStake) error {
-	err := s.eventsStore.Create(record.Event)
+func (s *Store) CreateStakeRecord(record models.EventStake) error {
+	err := s.CreateEventRecord(record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}
@@ -59,7 +42,7 @@ func (s *stakesStore) Create(record models.EventStake) error {
 }
 
 // GetStakerAddresses returns am array of all the staker addresses seen by the api
-func (s *stakesStore) GetStakerAddresses() []common.Address {
+func (s *Store) GetStakerAddresses() []common.Address {
 	query := `
 		select from_address
 		from (
@@ -106,7 +89,7 @@ type StakerAddressDetails struct {
 	TotalStaked  uint64
 }
 
-func (s *stakesStore) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
+func (s *Store) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
 	pools := s.getPools(address)
 
 	return StakerAddressDetails{
@@ -132,16 +115,9 @@ type StakerAddressAndAssetDetails struct {
 	DateFirstStaked time.Time
 }
 
-type addressAndAsset struct {
-	Address common.Address
-	Asset   common.Asset
-}
-
-func (s *stakesStore) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
-
+func (s *Store) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
 	// confirm asset in addresses pools
 	pools := s.getPools(address)
-
 	found := false
 	for _, v := range pools {
 		if v.String() == asset.String() {
@@ -153,74 +129,120 @@ func (s *stakesStore) GetStakersAddressAndAssetDetails(address common.Address, a
 		return StakerAddressAndAssetDetails{}, errors.New("no pool exists for that asset")
 	}
 
-	// build object
-	data := addressAndAsset{
-		Address: address,
-		Asset:   asset,
-	}
-
 	details := StakerAddressAndAssetDetails{
-		Asset:           data.Asset,
-		StakeUnits:      s.stakeUnits(data),
-		RuneStaked:      s.runeStaked(data),
-		AssetStaked:     s.assetStaked(data),
-		PoolStaked:      s.poolStaked(data),
-		RuneEarned:      s.runeEarned(data),
-		AssetEarned:     s.assetEarned(data),
-		PoolEarned:      s.poolEarned(data),
-		RuneROI:         s.runeROI(data),
-		AssetROI:        s.assetROI(data),
-		PoolROI:         s.poolROI(data),
-		DateFirstStaked: s.dateFirstStaked(data),
+		Asset:           asset,
+		StakeUnits:      s.stakeUnits(address, asset),
+		RuneStaked:      s.runeStaked(address, asset),
+		AssetStaked:     s.assetStaked(address, asset),
+		PoolStaked:      s.poolStaked(address, asset),
+		RuneEarned:      s.runeEarned(address, asset),
+		AssetEarned:     s.assetEarned(address, asset),
+		PoolEarned:      s.poolEarned(address, asset),
+		RuneROI:         s.stakersRuneROI(address, asset),
+		AssetROI:        s.stakersAssetROI(address, asset),
+		PoolROI:         s.stakersPoolROI(address, asset),
+		DateFirstStaked: s.dateFirstStaked(address, asset),
 	}
 	return details, nil
 }
 
-func (s *stakesStore) stakeUnits(data addressAndAsset) uint64 {
+func (s *Store) stakeUnits(address common.Address, asset common.Asset) uint64 {
+	query := `
+		SELECT SUM(s.units)
+		FROM stakes s
+        	INNER JOIN  coins c on c.event_id = s.event_id
+         	INNER JOIN txs t on s.event_id = t.event_id
+         	INNER JOIN events e on s.event_id = e.id
+		WHERE t.from_address = ($1)
+  		AND c.symbol = ($2)
+  		AND t.direction = 'in'
+	`
+
+	var stakeUnits uint64
+	err := s.db.Get(&stakeUnits, query, address, asset.Symbol.String())
+	if err != nil {
+		// TODO error handle
+	}
+
+	return stakeUnits
+}
+
+func (s *Store) runeStaked(address common.Address, asset common.Asset) uint64 {
+	query := `
+		select sum(amount)
+		FROM coins c
+			INNER JOIN stakes s on c.event_id = s.event_id
+			INNER JOIN txs t on c.event_id = t.event_id
+			INNER JOIN events e on c.event_id = e.id
+		WHERE t.from_address = ($1)
+		AND s.symbol = ($2)
+		AND c.ticker = 'RUNE'
+	`
+
+	var runeStaked uint64
+	err := s.db.Get(&runeStaked, query, address, asset.Symbol.String())
+	if err != nil {
+		// TODO error handle
+	}
+
+	return runeStaked
+}
+
+func (s *Store) assetStaked(address common.Address, asset common.Asset) uint64 {
+	query := `
+		select sum(amount)
+		FROM coins c
+		INNER JOIN stakes s on c.event_id = s.event_id
+		INNER JOIN txs t on c.event_id = t.event_id
+		INNER JOIN events e on c.event_id = e.id
+		WHERE t.from_address = ($1)
+		AND s.symbol = ($2)
+		AND c.ticker != 'RUNE'
+	`
+
+	var assetStaked uint64
+	err := s.db.Get(&assetStaked, query, address, asset.Symbol.String())
+	if err != nil {
+		// TODO error handling
+	}
+
+	return assetStaked
+}
+
+func (s *Store) poolStaked(address common.Address, asset common.Asset) uint64 {
+	return s.runeStaked(address,asset) + s.assetStaked(address,asset) * 1 // TODO finish this when we have price sorted out.
+}
+
+func (s *Store) runeEarned(address common.Address, asset common.Asset) uint64 {
+
+	// return s.stakeUnits(address, asset) / s.poolUnits(asset)
+}
+
+func (s *Store) assetEarned(address common.Address, asset common.Asset) uint64 {
 	return 0
 }
 
-func (s *stakesStore) runeStaked(data addressAndAsset) uint64 {
+func (s *Store) poolEarned(address common.Address, asset common.Asset) uint64 {
 	return 0
 }
 
-func (s *stakesStore) assetStaked(data addressAndAsset) uint64 {
+func (s *Store) stakersRuneROI(address common.Address, asset common.Asset) float64 {
 	return 0
 }
 
-func (s *stakesStore) poolStaked(data addressAndAsset) uint64 {
-	return 0
-}
-
-func (s *stakesStore) runeEarned(data addressAndAsset) uint64 {
-	return 0
-}
-
-func (s *stakesStore) assetEarned(data addressAndAsset) uint64 {
-	return 0
-}
-
-func (s *stakesStore) poolEarned(data addressAndAsset) uint64 {
-	return 0
-}
-
-func (s *stakesStore) runeROI(data addressAndAsset) float64 {
-	return 0
-}
-
-func (s *stakesStore) dateFirstStaked(data addressAndAsset) time.Time {
+func (s *Store) dateFirstStaked(address common.Address, asset common.Asset) time.Time {
 	return time.Time{}
 }
 
-func (s *stakesStore) poolROI(data addressAndAsset) float64 {
+func (s *Store) stakersPoolROI(address common.Address, asset common.Asset) float64 {
 	return 0
 }
 
-func (s *stakesStore) assetROI(data addressAndAsset) float64 {
+func (s *Store) stakersAssetROI(address common.Address, asset common.Asset) float64 {
 	return 0
 }
 
-func (s *stakesStore) totalStaked(address common.Address) uint64 {
+func (s *Store) totalStaked(address common.Address) uint64 {
 	query := `
 		SELECT SUM(units)
 		FROM (
@@ -246,7 +268,7 @@ func (s *stakesStore) totalStaked(address common.Address) uint64 {
 	return totalStaked
 }
 
-func (s *stakesStore) getPools(address common.Address) []common.Asset {
+func (s *Store) getPools(address common.Address) []common.Asset {
 	query := `
 		SELECT chain, symbol, ticker
 		FROM (
@@ -294,10 +316,10 @@ func (s *stakesStore) getPools(address common.Address) []common.Asset {
 	return pools
 }
 
-func (s *stakesStore) totalEarned(pools []common.Asset) uint64 {
+func (s *Store) totalEarned(pools []common.Asset) uint64 {
 	return 0
 }
 
-func (s *stakesStore) totalROI(address common.Address) float64 {
+func (s *Store) totalROI(address common.Address) float64 {
 	return 0
 }

@@ -124,7 +124,7 @@ func (api *API) processSwapEvent(evt types.Event) error {
 		return errors.Wrap(err, "fail to unmarshal swap event")
 	}
 	record := models.NewSwapEvent(swap, evt)
-	err = api.store.Swaps.Create(record)
+	err = api.store.CreateSwapRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create swap record")
 	}
@@ -139,7 +139,7 @@ func (api *API) processStakingEvent(evt types.Event) error {
 		return errors.Wrap(err, "fail to unmarshal stake event")
 	}
 	record := models.NewStakeEvent(stake, evt)
-	err = api.store.Stakes.Create(record)
+	err = api.store.CreateStakeRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create stake record")
 	}
@@ -154,7 +154,7 @@ func (api *API) processUnstakeEvent(evt types.Event) error {
 		return errors.Wrap(err, "fail to unmarshal unstake event")
 	}
 	record := models.NewUnstakeEvent(unstake, evt)
-	err = api.store.UnStakes.Create(record)
+	err = api.store.CreateUnStakesRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create unstake record")
 	}
@@ -176,7 +176,7 @@ func (api *API) scan() {
 	api.logger.Info().Msg("start thorchain event scanning")
 	defer api.logger.Info().Msg("thorchain event scanning stopped")
 	currentPos := int64(1) // we start from 1
-	maxID, err := api.store.Events.GetMaxID()
+	maxID, err := api.store.GetMaxID()
 	if nil != err {
 		api.logger.Error().Err(err).Msg("fail to get currentPos from data store")
 	} else {
