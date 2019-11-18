@@ -511,16 +511,16 @@ components:
           format: int64
           description: Average pool transaction
         sellSlipAverage:
-          type: integer
-          format: int64
+          type: number
+          format: double
           description: Average trade slip for ASSET->RUNE in %
         buySlipAverage:
-          type: integer
-          format: int64
+          type: number
+          format: double
           description: Average trade slip for RUNE->ASSET in %
         poolSlipAverage:
-          type: integer
-          format: int64
+          type: number
+          format: double
           description: Average pool slip
         sellFeeAverage:
           type: integer
