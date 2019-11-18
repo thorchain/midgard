@@ -3,72 +3,53 @@ package timescale
 import (
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-type EventsStore interface {
-	GetMaxID() (int64, error)
-}
-
-type eventsStore struct {
-	db *sqlx.DB
-	logger          zerolog.Logger
-}
-
-func NewEventsStore(db *sqlx.DB) *eventsStore {
-	return &eventsStore{
-		db:db,
-		logger: log.With().Str("module", "eventStore").Logger(),
-	}
-}
-
-func (e *eventsStore) GetMaxID() (int64, error) {
+func (s *Store) GetMaxID() (int64, error) {
 	query := fmt.Sprintf("SELECT MAX(id) FROM %s", models.ModelEventsTable)
 	var maxId int64
-	err := e.db.Get(&maxId, query)
+	err := s.db.Get(&maxId, query)
 	if err != nil {
 		return 0, errors.Wrap(err, "maxID query return null or failed")
 	}
 	return maxId, nil
 }
 
-func (e *eventsStore) Create(record models.Event) error {
+func (s *Store) CreateEventRecord(record models.Event) error {
 	// Ingest basic event
-	err := e.createEventRecord(record)
+	err := s.createEventRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "Failed createEventRecord")
 	}
 
 	// Ingest InTx
-	err = e.processTxRecord("in" , record,record.InTx )
+	err = s.processTxRecord("in" , record,record.InTx )
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
 
 	// Ingest OutTxs
-	err = e.processTxsRecord("out", record, record.OutTxs)
+	err = s.processTxsRecord("out", record, record.OutTxs)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process OutTxs")
 	}
 
 	// Ingest Gas.
-	err = e.processGasRecord(record)
+	err = s.processGasRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process Gas")
 	}
 	return nil
 }
 
-func (e *eventsStore) processGasRecord(record models.Event) error {
+func (s *Store) processGasRecord(record models.Event) error {
 	for _, coin := range record.Gas {
 		if !coin.IsEmpty() {
-			_, err := e.createGasRecord(record, coin)
+			_, err := s.createGasRecord(record, coin)
 			if err != nil {
 				return errors.Wrap(err, "Failed createGasRecord")
 			}
@@ -77,10 +58,10 @@ func (e *eventsStore) processGasRecord(record models.Event) error {
 	return nil
 }
 
-func (e *eventsStore) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
+func (s *Store) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
 	for _, record := range records {
 		if err := record.IsValid(); err == nil  {
-			_, err := e.createTxRecord(parent, record, direction)
+			_, err := s.createTxRecord(parent, record, direction)
 			if err != nil {
 				return errors.Wrap(err, "Failed createTxRecord")
 			}
@@ -88,7 +69,7 @@ func (e *eventsStore) processTxsRecord(direction string, parent models.Event, re
 			// Ingest Coins
 			for _, coin := range record.Coins {
 				if !coin.IsEmpty() {
-					_, err = e.createCoinRecord(parent, record, coin)
+					_, err = s.createCoinRecord(parent, record, coin)
 					if err != nil {
 						return errors.Wrap(err, "Failed createCoinRecord")
 					}
@@ -99,10 +80,10 @@ func (e *eventsStore) processTxsRecord(direction string, parent models.Event, re
 	return nil
 }
 
-func (e *eventsStore) processTxRecord(direction string, parent models.Event, record common.Tx) error {
+func (s *Store) processTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
-		_, err := e.createTxRecord(parent, record, direction)
+		_, err := s.createTxRecord(parent, record, direction)
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on InTx")
 		}
@@ -110,7 +91,7 @@ func (e *eventsStore) processTxRecord(direction string, parent models.Event, rec
 		// Ingest Coins
 		for _, coin := range record.Coins {
 			if !coin.IsEmpty() {
-				_, err = e.createCoinRecord(parent, record, coin)
+				_, err = s.createCoinRecord(parent, record, coin)
 				if err != nil {
 					return errors.Wrap(err, "Failed createCoinRecord on InTx")
 				}
@@ -120,7 +101,7 @@ func (e *eventsStore) processTxRecord(direction string, parent models.Event, rec
 	return nil
 }
 
-func (e *eventsStore) createCoinRecord(parent models.Event, record common.Tx, coin common.Coin) (int64, error) {
+func (s *Store) createCoinRecord(parent models.Event, record common.Tx, coin common.Coin) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -132,7 +113,7 @@ func (e *eventsStore) createCoinRecord(parent models.Event, record common.Tx, co
 			amount
 		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelCoinsTable)
 
-	results, err := e.db.Exec(query,
+	results, err := s.db.Exec(query,
 		parent.Time,
 		record.ID,
 		parent.ID,
@@ -149,7 +130,7 @@ func (e *eventsStore) createCoinRecord(parent models.Event, record common.Tx, co
 	return results.RowsAffected()
 }
 
-func (e *eventsStore) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
+func (s *Store) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -160,7 +141,7 @@ func (e *eventsStore) createGasRecord(parent models.Event, coin common.Coin) (in
 			amount
 		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelGasTable)
 
-	results, err := e.db.Exec(query,
+	results, err := s.db.Exec(query,
 		parent.Time,
 		parent.ID,
 		coin.Asset.Chain,
@@ -176,7 +157,7 @@ func (e *eventsStore) createGasRecord(parent models.Event, coin common.Coin) (in
 	return results.RowsAffected()
 }
 
-func (e *eventsStore) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
+func (s *Store) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -189,7 +170,7 @@ func (e *eventsStore) createTxRecord(parent models.Event, record common.Tx, dire
 			memo
 		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING event_id`, models.ModelTxsTable)
 
-	results, err := e.db.Exec(query,
+	results, err := s.db.Exec(query,
 		parent.Time,
 		record.ID,
 		parent.ID,
@@ -207,7 +188,7 @@ func (e *eventsStore) createTxRecord(parent models.Event, record common.Tx, dire
 	return results.RowsAffected()
 }
 
-func (e *eventsStore) createEventRecord(record models.Event) error {
+func (s *Store) createEventRecord(record models.Event) error {
 	query := fmt.Sprintf(`
 			INSERT INTO %v (
 				time,
@@ -223,7 +204,7 @@ func (e *eventsStore) createEventRecord(record models.Event) error {
 				:type
 			) RETURNING id`, models.ModelEventsTable)
 
-	stmt, err := e.db.PrepareNamed(query)
+	stmt, err := s.db.PrepareNamed(query)
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for event")
 	}

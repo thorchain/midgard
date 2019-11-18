@@ -2,27 +2,14 @@ package timescale
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
+
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-type SwapStore interface {
-	Create(record models.EventSwap) error
-}
-
-type swapStore struct {
-	db *sqlx.DB
-	*eventsStore
-}
-
-func NewSwapStore(db *sqlx.DB) *swapStore {
-	return &swapStore{db, NewEventsStore(db)}
-}
-
-func (s *swapStore) Create(record models.EventSwap) error {
-	err := s.eventsStore.Create(record.Event)
+func (s *Store) CreateSwapRecord(record models.EventSwap) error {
+	err := s.CreateEventRecord(record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}
