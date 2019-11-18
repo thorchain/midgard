@@ -10,6 +10,7 @@ import (
 )
 
 type PoolStore interface {
+	PoolData(asset common.Asset) PoolData
 }
 
 type poolStore struct {
@@ -18,42 +19,42 @@ type poolStore struct {
 
 type PoolData struct {
 	Asset            string
-	AssetDepth       uint64
+	AssetDepth       int64
 	AssetROI         float64
-	AssetStakedTotal uint64
-	BuyAssetCount    uint64
-	BuyFeeAverage    uint64
-	BuyFeesTotal     uint64
+	AssetStakedTotal int64
+	BuyAssetCount    int64
+	BuyFeeAverage    int64
+	BuyFeesTotal     int64
 	BuySlipAverage   float64
-	BuyTxAverage     uint64
-	BuyVolume        uint64
-	PoolDepth        uint64
-	PoolFeeAverage   uint64
-	PoolFeesTotal    uint64
+	BuyTxAverage     int64
+	BuyVolume        int64
+	PoolDepth        int64
+	PoolFeeAverage   int64
+	PoolFeesTotal    int64
 	PoolROI          float64
 	PoolROI12        float64
 	PoolSlipAverage  float64
-	PoolStakedTotal  uint64
-	PoolTxAverage    uint64
-	PoolUnits        uint64
-	PoolVolume       uint64
-	PoolVolume24hr   uint64
+	PoolStakedTotal  int64
+	PoolTxAverage    int64
+	PoolUnits        int64
+	PoolVolume       int64
+	PoolVolume24hr   int64
 	Price            float64
-	RuneDepth        uint64
+	RuneDepth        int64
 	RuneROI          float64
-	RuneStakedTotal  uint64
-	SellAssetCount   uint64
-	SellFeeAverage   uint64
-	SellFeesTotal    uint64
+	RuneStakedTotal  int64
+	SellAssetCount   int64
+	SellFeeAverage   int64
+	SellFeesTotal    int64
 	SellSlipAverage  float64
-	SellTxAverage    uint64
-	SellVolume       uint64
-	StakeTxCount     uint64
-	StakersCount     uint64
-	StakingTxCount   uint64
-	SwappersCount    uint64
-	SwappingTxCount  uint64
-	WithdrawTxCount  uint64
+	SellTxAverage    int64
+	SellVolume       int64
+	StakeTxCount     int64
+	StakersCount     int64
+	StakingTxCount   int64
+	SwappersCount    int64
+	SwappingTxCount  int64
+	WithdrawTxCount  int64
 }
 
 func NewPoolStore(db *sqlx.DB) *poolStore {
@@ -108,9 +109,9 @@ func (p *poolStore) price(asset common.Asset) float64 {
 	return asset.RunePrice()
 }
 
-func (p *poolStore) assetStakedTotal(asset common.Asset) uint64 {
+func (p *poolStore) assetStakedTotal(asset common.Asset) int64 {
 	type results struct {
-		assetStakedTotal uint64 `db:"asset_staked_total"`
+		assetStakedTotal int64 `db:"asset_staked_total"`
 	}
 	r := results{}
 
@@ -128,9 +129,9 @@ func (p *poolStore) assetStakedTotal(asset common.Asset) uint64 {
 	return r.assetStakedTotal
 }
 
-func (p *poolStore) assetWithdrawnTotal(asset common.Asset) uint64 {
+func (p *poolStore) assetWithdrawnTotal(asset common.Asset) int64 {
 	type results struct {
-		assetWithdrawnTotal uint64 `db:"asset_withdrawn_total"`
+		assetWithdrawnTotal int64 `db:"asset_withdrawn_total"`
 	}
 	r := results{}
 
@@ -149,9 +150,9 @@ func (p *poolStore) assetWithdrawnTotal(asset common.Asset) uint64 {
 	return r.assetWithdrawnTotal
 }
 
-func (p *poolStore) runeStakedTotal(asset common.Asset) uint64 {
+func (p *poolStore) runeStakedTotal(asset common.Asset) int64 {
 	type results struct {
-		runeStakedTotal uint64 `db:"rune_staked_total"`
+		runeStakedTotal int64 `db:"rune_staked_total"`
 	}
 	r := results{}
 	query := fmt.Sprintf(`
@@ -173,13 +174,13 @@ func (p *poolStore) runeStakedTotal(asset common.Asset) uint64 {
 	return r.runeStakedTotal
 }
 
-func (p *poolStore) poolStakedTotal(asset common.Asset) uint64 {
+func (p *poolStore) poolStakedTotal(asset common.Asset) int64 {
 	assetTotal := p.assetStakedTotal(asset)
 	runeTotal := p.runeStakedTotal(asset)
 	price := p.price(asset)
 
 	stakedPrice := float64(assetTotal) * price
-	stakedTotal := runeTotal + (uint64(stakedPrice))
+	stakedTotal := runeTotal + (int64(stakedPrice))
 
 	return stakedTotal
 }
@@ -188,7 +189,7 @@ func (p *poolStore) poolStakedTotal(asset common.Asset) uint64 {
 // +incomingSwapAsset
 // -outgoingSwapAsset
 // -withdraws
-func (p *poolStore) assetDepth(asset common.Asset) uint64 {
+func (p *poolStore) assetDepth(asset common.Asset) int64 {
 	stakes := p.assetStakedTotal(asset)
 	inSwap := p.incomingSwapTotal(asset)
 	outSwap := p.outgoingSwapTotal(asset)
@@ -197,7 +198,7 @@ func (p *poolStore) assetDepth(asset common.Asset) uint64 {
 	return depth
 }
 
-func (p *poolStore) runeDepth(asset common.Asset) uint64 {
+func (p *poolStore) runeDepth(asset common.Asset) int64 {
 	stakes := p.runeStakedTotal(asset)
 	inSwap := p.incomingRuneSwapTotal(asset)
 	outSwap := p.outgoingRuneSwapTotal(asset)
@@ -206,9 +207,9 @@ func (p *poolStore) runeDepth(asset common.Asset) uint64 {
 	return depth
 }
 
-func (p *poolStore) incomingSwapTotal(asset common.Asset) uint64 {
+func (p *poolStore) incomingSwapTotal(asset common.Asset) int64 {
 	type results struct {
-		incomingSwapTotal uint64 `db:"incoming_swap_total"`
+		incomingSwapTotal int64 `db:"incoming_swap_total"`
 	}
 	r := results{}
 
@@ -230,9 +231,9 @@ func (p *poolStore) incomingSwapTotal(asset common.Asset) uint64 {
 	return r.incomingSwapTotal
 }
 
-func (p *poolStore) outgoingSwapTotal(asset common.Asset) uint64 {
+func (p *poolStore) outgoingSwapTotal(asset common.Asset) int64 {
 	type results struct {
-		outgoingSwapTotal uint64 `db:"outgoing_swap_total"`
+		outgoingSwapTotal int64 `db:"outgoing_swap_total"`
 	}
 	r := results{}
 
@@ -254,9 +255,9 @@ func (p *poolStore) outgoingSwapTotal(asset common.Asset) uint64 {
 	return r.outgoingSwapTotal
 }
 
-func (p *poolStore) incomingRuneSwapTotal(asset common.Asset) uint64 {
+func (p *poolStore) incomingRuneSwapTotal(asset common.Asset) int64 {
 	type results struct {
-		incomingSwapTotal uint64 `db:"incoming_swap_total"`
+		incomingSwapTotal int64 `db:"incoming_swap_total"`
 	}
 	r := results{}
 
@@ -280,9 +281,9 @@ func (p *poolStore) incomingRuneSwapTotal(asset common.Asset) uint64 {
 	return r.incomingSwapTotal
 }
 
-func (p *poolStore) outgoingRuneSwapTotal(asset common.Asset) uint64 {
+func (p *poolStore) outgoingRuneSwapTotal(asset common.Asset) int64 {
 	type results struct {
-		outgoingSwapTotal uint64 `db:"outgoing_swap_total"`
+		outgoingSwapTotal int64 `db:"outgoing_swap_total"`
 	}
 	r := results{}
 
@@ -306,12 +307,12 @@ func (p *poolStore) outgoingRuneSwapTotal(asset common.Asset) uint64 {
 	return r.outgoingSwapTotal
 }
 
-func (p *poolStore) poolDepth(asset common.Asset) uint64 {
+func (p *poolStore) poolDepth(asset common.Asset) int64 {
 	runeDepth := p.runeDepth(asset)
 	return 2 * runeDepth
 }
 
-func (p *poolStore) poolUnits(asset common.Asset) uint64 {
+func (p *poolStore) poolUnits(asset common.Asset) int64 {
 	assetTotal := p.assetStakedTotal(asset)
 	runeTotal := p.runeStakedTotal(asset)
 
@@ -320,9 +321,9 @@ func (p *poolStore) poolUnits(asset common.Asset) uint64 {
 	return totalUnits
 }
 
-func (p *poolStore) sellVolume(asset common.Asset) uint64 {
+func (p *poolStore) sellVolume(asset common.Asset) int64 {
 	type results struct {
-		sellVolume uint64 `db:"sell_volume"`
+		sellVolume int64 `db:"sell_volume"`
 	}
 	r := results{}
 
@@ -343,9 +344,9 @@ func (p *poolStore) sellVolume(asset common.Asset) uint64 {
 	return r.sellVolume
 }
 
-func (p *poolStore) buyVolume(asset common.Asset) uint64 {
+func (p *poolStore) buyVolume(asset common.Asset) int64 {
 	type results struct {
-		buyVolume uint64 `db:"buy_volume"`
+		buyVolume int64 `db:"buy_volume"`
 	}
 	r := results{}
 
@@ -366,22 +367,22 @@ func (p *poolStore) buyVolume(asset common.Asset) uint64 {
 	return r.buyVolume
 }
 
-func (p *poolStore) poolVolume(asset common.Asset) uint64 {
+func (p *poolStore) poolVolume(asset common.Asset) int64 {
 	buyVolume := float64(p.buyVolume(asset))
 	sellVolume := float64(p.sellVolume(asset))
 	assetPrice := asset.RunePrice()
 
 	poolVolume := (buyVolume + sellVolume) * assetPrice
 
-	return uint64(poolVolume)
+	return int64(poolVolume)
 }
 
 // TODO : Needs to be implemented.
-func (p *poolStore) poolVolume24hr(asset common.Asset) uint64 {
+func (p *poolStore) poolVolume24hr(asset common.Asset) int64 {
 	return 0
 }
 
-func (p *poolStore) sellTxAverage(asset common.Asset) uint64 {
+func (p *poolStore) sellTxAverage(asset common.Asset) int64 {
 	sellVolume := p.sellVolume(asset)
 	sellCount := p.sellAssetCount(asset)
 	avg := sellVolume / sellCount
@@ -389,7 +390,7 @@ func (p *poolStore) sellTxAverage(asset common.Asset) uint64 {
 	return avg
 }
 
-func (p *poolStore) buyTxAverage(asset common.Asset) uint64 {
+func (p *poolStore) buyTxAverage(asset common.Asset) int64 {
 	buyVolume := p.buyVolume(asset)
 	buyCount := p.buyAssetCount(asset)
 	avg := buyVolume / buyCount
@@ -397,12 +398,12 @@ func (p *poolStore) buyTxAverage(asset common.Asset) uint64 {
 	return avg
 }
 
-func (p *poolStore) poolTxAverage(asset common.Asset) uint64 {
+func (p *poolStore) poolTxAverage(asset common.Asset) int64 {
 	sellAvg := float64(p.sellTxAverage(asset))
 	buyAvg := float64(p.buyTxAverage(asset))
 	avg := ((sellAvg + buyAvg) * asset.RunePrice()) / 2
 
-	return uint64(avg)
+	return int64(avg)
 }
 
 func (p *poolStore) sellSlipAverage(asset common.Asset) float64 {
@@ -459,9 +460,9 @@ func (p *poolStore) poolSlipAverage(asset common.Asset) float64 {
 	return avg
 }
 
-func (p *poolStore) sellFeeAverage(asset common.Asset) uint64 {
+func (p *poolStore) sellFeeAverage(asset common.Asset) int64 {
 	type results struct {
-		sellFeeAverage uint64 `db:"sell_fee_average"`
+		sellFeeAverage int64 `db:"sell_fee_average"`
 	}
 	r := results{}
 
@@ -482,9 +483,9 @@ func (p *poolStore) sellFeeAverage(asset common.Asset) uint64 {
 	return r.sellFeeAverage
 }
 
-func (p *poolStore) buyFeeAverage(asset common.Asset) uint64 {
+func (p *poolStore) buyFeeAverage(asset common.Asset) int64 {
 	type results struct {
-		buyFeeAverage uint64 `db:"buy_fee_average"`
+		buyFeeAverage int64 `db:"buy_fee_average"`
 	}
 	r := results{}
 
@@ -505,7 +506,7 @@ func (p *poolStore) buyFeeAverage(asset common.Asset) uint64 {
 	return r.buyFeeAverage
 }
 
-func (p *poolStore) poolFeeAverage(asset common.Asset) uint64 {
+func (p *poolStore) poolFeeAverage(asset common.Asset) int64 {
 	sellAvg := p.sellFeeAverage(asset)
 	buyAvg := p.buyFeeAverage(asset)
 	poolAvg := (sellAvg + buyAvg) / 2
@@ -513,9 +514,9 @@ func (p *poolStore) poolFeeAverage(asset common.Asset) uint64 {
 	return poolAvg
 }
 
-func (p *poolStore) sellFeesTotal(asset common.Asset) uint64 {
+func (p *poolStore) sellFeesTotal(asset common.Asset) int64 {
 	type results struct {
-		sellFeesTotal uint64 `db:"sell_fees_total"`
+		sellFeesTotal int64 `db:"sell_fees_total"`
 	}
 	r := results{}
 
@@ -536,9 +537,9 @@ func (p *poolStore) sellFeesTotal(asset common.Asset) uint64 {
 	return r.sellFeesTotal
 }
 
-func (p *poolStore) buyFeesTotal(asset common.Asset) uint64 {
+func (p *poolStore) buyFeesTotal(asset common.Asset) int64 {
 	type results struct {
-		buyFeesTotal uint64 `db:"buy_fees_total"`
+		buyFeesTotal int64 `db:"buy_fees_total"`
 	}
 	r := results{}
 
@@ -559,17 +560,17 @@ func (p *poolStore) buyFeesTotal(asset common.Asset) uint64 {
 	return r.buyFeesTotal
 }
 
-func (p *poolStore) poolFeesTotal(asset common.Asset) uint64 {
+func (p *poolStore) poolFeesTotal(asset common.Asset) int64 {
 	buyTotal := float64(p.buyFeesTotal(asset))
 	sellTotal := float64(p.sellFeesTotal(asset))
 	poolTotal := (buyTotal * asset.RunePrice()) + sellTotal
 
-	return uint64(poolTotal)
+	return int64(poolTotal)
 }
 
-func (p *poolStore) sellAssetCount(asset common.Asset) uint64 {
+func (p *poolStore) sellAssetCount(asset common.Asset) int64 {
 	type results struct {
-		sellAssetCount uint64 `db:"sell_asset_count"`
+		sellAssetCount int64 `db:"sell_asset_count"`
 	}
 	r := results{}
 
@@ -590,9 +591,9 @@ func (p *poolStore) sellAssetCount(asset common.Asset) uint64 {
 	return r.sellAssetCount
 }
 
-func (p *poolStore) buyAssetCount(asset common.Asset) uint64 {
+func (p *poolStore) buyAssetCount(asset common.Asset) int64 {
 	type results struct {
-		buyAssetCount uint64 `db:"buy_asset_count"`
+		buyAssetCount int64 `db:"buy_asset_count"`
 	}
 	r := results{}
 
@@ -613,9 +614,9 @@ func (p *poolStore) buyAssetCount(asset common.Asset) uint64 {
 	return r.buyAssetCount
 }
 
-func (p *poolStore) swappingTxCount(asset common.Asset) uint64 {
+func (p *poolStore) swappingTxCount(asset common.Asset) int64 {
 	type results struct {
-		swappingTxCount uint64 `db:"swapping_tx_count"`
+		swappingTxCount int64 `db:"swapping_tx_count"`
 	}
 	r := results{}
 
@@ -633,9 +634,9 @@ func (p *poolStore) swappingTxCount(asset common.Asset) uint64 {
 	return r.swappingTxCount
 }
 
-func (p *poolStore) swappersCount(asset common.Asset) uint64 {
+func (p *poolStore) swappersCount(asset common.Asset) int64 {
 	type results struct {
-		swappersCount uint64 `db:"swappers_count"`
+		swappersCount int64 `db:"swappers_count"`
 	}
 	r := results{}
 
@@ -657,9 +658,9 @@ func (p *poolStore) swappersCount(asset common.Asset) uint64 {
 	return r.swappersCount
 }
 
-func (p *poolStore) stakeTxCount(asset common.Asset) uint64 {
+func (p *poolStore) stakeTxCount(asset common.Asset) int64 {
 	type results struct {
-		stateTxCount uint64 `db:"stake_tx_count"`
+		stateTxCount int64 `db:"stake_tx_count"`
 	}
 	r := results{}
 
@@ -677,9 +678,9 @@ func (p *poolStore) stakeTxCount(asset common.Asset) uint64 {
 	return r.stateTxCount
 }
 
-func (p *poolStore) withdrawTxCount(asset common.Asset) uint64 {
+func (p *poolStore) withdrawTxCount(asset common.Asset) int64 {
 	type results struct {
-		withdrawTxCount uint64 `db:"withdraw_tx_count"`
+		withdrawTxCount int64 `db:"withdraw_tx_count"`
 	}
 	r := results{}
 
@@ -699,7 +700,7 @@ func (p *poolStore) withdrawTxCount(asset common.Asset) uint64 {
 	return r.withdrawTxCount
 }
 
-func (p *poolStore) stakingTxCount(asset common.Asset) uint64 {
+func (p *poolStore) stakingTxCount(asset common.Asset) int64 {
 	stakeTxCount := p.stakeTxCount(asset)
 	withdrawTxCount := p.withdrawTxCount(asset)
 	stakingTxCount := stakeTxCount + withdrawTxCount
@@ -707,9 +708,9 @@ func (p *poolStore) stakingTxCount(asset common.Asset) uint64 {
 	return stakingTxCount
 }
 
-func (p *poolStore) stakersCount(asset common.Asset) uint64 {
+func (p *poolStore) stakersCount(asset common.Asset) int64 {
 	type results struct {
-		stakersCount uint64 `db:"stakers_count"`
+		stakersCount int64 `db:"stakers_count"`
 	}
 	r := results{}
 
