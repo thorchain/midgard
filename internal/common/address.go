@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/btcsuite/btcutil/bech32"
+	"github.com/pkg/errors"
 )
 
 type Address string
@@ -14,12 +15,12 @@ var NoAddress Address = Address("")
 // Sample: bnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6
 func NewAddress(address string) (Address, error) {
 	if len(address) == 0 {
-		return NoAddress, nil
+		return NoAddress, errors.New("NoAddress")
 	}
 
 	_, _, err := bech32.Decode(address)
 	if err != nil {
-		return NoAddress, err
+		return NoAddress, errors.Wrap(err, "address invalid")
 	}
 
 	return Address(address), nil
