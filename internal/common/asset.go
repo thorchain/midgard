@@ -24,7 +24,7 @@ func NewAsset(input string) (Asset, error) {
 	asset := Asset{}
 	parts := strings.Split(input, ".")
 	var sym string
-	if len(parts) == 1 {
+	if len(parts) == 1 { // TODO I really dont think we should default at all.
 		asset.Chain = BNBChain
 		sym = parts[0]
 	} else {

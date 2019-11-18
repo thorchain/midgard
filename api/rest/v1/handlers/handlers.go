@@ -181,7 +181,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
 	}
 
-	poolData := h.store.Pools.PoolData(asset)
+	poolData := h.store.PoolData(asset)
 
 	response := api.PoolsDetailedResponse{
 		Asset:            helpers.ConvertAssetForAPI(asset),
@@ -228,7 +228,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	addresses := h.store.Stakes.GetStakerAddresses()
+	addresses := h.store.GetStakerAddresses()
 	response := api.StakersResponse{}
 	for _,addr := range addresses {
 		response = append(response, api.Stakers(addr.String()))
@@ -244,7 +244,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 			Error: err.Error(),
 		})
 	}
-	details, err := h.store.Stakes.GetStakerAddressDetails(addr)
+	details, err := h.store.GetStakerAddressDetails(addr)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 			Error: err.Error(),
@@ -281,7 +281,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		})
 	}
 
-	details, err := h.store.Stakes.GetStakersAddressAndAssetDetails(addr, ass)
+	details, err := h.store.GetStakersAddressAndAssetDetails(addr, ass)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 			Error: err.Error(),
