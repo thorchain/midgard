@@ -82,6 +82,9 @@ doco:
 
 # -----------------------------------------------------------------------------------------
 
+dev: migration-down migration-up
+	go run cmd/chainservice/main.go
+
 run-in-docker:
 	@${GOBIN}/chainservice -c /etc/chainservice/config.json
 
@@ -94,7 +97,7 @@ up:
 clean:
 	@rm ${GOBIN}/chainservice
 
-run_mocked_endpoint:
+run-mocked-endpoint:
 	go run tools/mockServer/mockServer.go
 
 # ------------------------------------------- sql migrations ----------------------------------------------
