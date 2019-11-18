@@ -1,6 +1,10 @@
 package timescale
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+
+	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+)
 
 type PoolStore interface {
 }
@@ -11,4 +15,8 @@ type poolStore struct {
 
 func NewPoolStore(db *sqlx.DB) *poolStore {
 	return &poolStore{db}
+}
+
+func GetPools(address common.Address) []common.Address {
+	return nil
 }

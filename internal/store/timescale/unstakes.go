@@ -34,10 +34,8 @@ func (u *unStakesStore) Create(record models.EventUnstake) error {
 			chain,
 			symbol,
 			ticker,
-			units,
-			basis_points,
-			asymmetry
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7, $8 ) RETURNING event_id`, models.ModelUnstakesTable)
+			units
+		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelStakesTable)
 
 	_, err = u.db.Exec(query,
 		record.Event.Time,
@@ -45,9 +43,7 @@ func (u *unStakesStore) Create(record models.EventUnstake) error {
 		record.Pool.Chain,
 		record.Pool.Symbol,
 		record.Pool.Ticker,
-		record.StakeUnits,
-		record.BasisPoints,
-		record.Asymmetry,
+		-record.StakeUnits,
 	)
 
 	if err != nil {

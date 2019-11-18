@@ -371,7 +371,7 @@ components:
     StakersAddressData:
       type: object
       properties:
-        stakeArray:
+        poolsArray:
           type: array
           items:
             $ref: '#/components/schemas/asset'

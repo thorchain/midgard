@@ -15,7 +15,6 @@ const (
 	ModelCoinsTable    = "coins"
 	ModelStakesTable   = "stakes"
 	ModelSwapsTable    = "swaps"
-	ModelUnstakesTable = "unstakes"
 )
 
 type Event struct {
