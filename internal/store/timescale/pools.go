@@ -157,9 +157,9 @@ func (p *poolStore) runeStakedTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(stakes.units) as rune_staked_total
 			FROM coins
-				inner join stakes on coins.event_id = stakes.event_id
-				inner join txs on coins.event_id = txs.event_id
-				inner join events on coins.event_id = event.id
+				INNER JOIN stakes on coins.event_id = stakes.event_id
+				INNER JOIN txs on coins.event_id = txs.event_id
+				INNER JOIN events on coins.event_id = event.id
 			AND coins.event_id IN (
 				SELECT event_id FROM stakes WHERE ticker = %v
         	)
@@ -643,7 +643,7 @@ func (p *poolStore) swappersCount(asset common.Asset) uint64 {
 		SELECT SUM(count) swappers_count 
 		FROM   (SELECT COUNT(from_address) AS count 
         		FROM   txs 
-               		inner join swaps 
+               		INNER JOIN swaps 
                        		ON txs.event_id = swaps.event_id 
         		WHERE  swaps.ticker = %v 
                		AND txs.direction = 'in' 
@@ -717,7 +717,7 @@ func (p *poolStore) stakersCount(asset common.Asset) uint64 {
 		SELECT SUM(count) stakers_count 
 		FROM   (SELECT COUNT(from_address) AS count 
         		FROM   txs 
-               		inner join stakes 
+               		INNER JOIN stakes 
                        		ON txs.event_id = stakes.event_id 
         		WHERE  stakes.ticker = %v 
                		AND txs.direction = 'in' 
