@@ -1,9 +1,6 @@
 package timescale
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/jmoiron/sqlx"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
@@ -18,7 +15,7 @@ type poolStore struct {
 }
 
 type PoolData struct {
-	Asset            string
+	Asset common.Asset
 	AssetDepth       int64
 	AssetROI         float64
 	AssetStakedTotal int64
@@ -62,8 +59,12 @@ func NewPoolStore(db *sqlx.DB) *poolStore {
 }
 
 func (p *poolStore) PoolData(asset common.Asset) PoolData {
+	if !p.exists(asset) {
+		return PoolData{}
+	}
+
 	return PoolData{
-		Asset:            asset.String(),
+		Asset:            asset,
 		AssetDepth:       p.assetDepth(asset),
 		AssetROI:         p.assetROI(asset),
 		AssetStakedTotal: p.assetStakedTotal(asset),
@@ -105,73 +106,74 @@ func (p *poolStore) PoolData(asset common.Asset) PoolData {
 
 func (p *poolStore) status() {}
 
+func (p *poolStore) exists(asset common.Asset) bool {
+	staked := p.stakeTxCount(asset)
+	if staked > 0 {
+		return true
+	}
+
+	return false
+}
+
 func (p *poolStore) price(asset common.Asset) float64 {
 	return asset.RunePrice()
 }
 
 func (p *poolStore) assetStakedTotal(asset common.Asset) int64 {
-	type results struct {
-		assetStakedTotal int64 `db:"asset_staked_total"`
-	}
-	r := results{}
+	stmnt := `
+		SELECT SUM(stakes.units)
+		    AS asset_staked_total 
+		FROM stakes 
+		WHERE stakes.ticker = $1`
 
-	query := fmt.Sprintf(`
-		SELECT
-			SUM(stakes.units) stakes_total,
-			FROM stakes
-			WHERE stakes.symbol = %v`, asset.String())
+	var assetStakedTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	if err := row.Scan(&assetStakedTotal); err != nil {
+		return 0
 	}
 
-	return r.assetStakedTotal
+	return assetStakedTotal
 }
 
 func (p *poolStore) assetWithdrawnTotal(asset common.Asset) int64 {
-	type results struct {
-		assetWithdrawnTotal int64 `db:"asset_withdrawn_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT COALESCE(SUM(stakes.units), 0) asset_withdrawn_total
 		FROM stakes
 			INNER JOIN events ON stakes.event_id = events.id
 		WHERE events.type = 'stake'
-		AND stakes.symbol = %v`, asset.String())
+		AND stakes.ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var assetWithdrawnTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&assetWithdrawnTotal); err != nil {
+		return 0
 	}
 
-	return r.assetWithdrawnTotal
+	return assetWithdrawnTotal
 }
 
 func (p *poolStore) runeStakedTotal(asset common.Asset) int64 {
-	type results struct {
-		runeStakedTotal int64 `db:"rune_staked_total"`
-	}
-	r := results{}
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(stakes.units) as rune_staked_total
 			FROM coins
 				INNER JOIN stakes on coins.event_id = stakes.event_id
 				INNER JOIN txs on coins.event_id = txs.event_id
-				INNER JOIN events on coins.event_id = event.id
+				INNER JOIN events on coins.event_id = events.id
 			AND coins.event_id IN (
-				SELECT event_id FROM stakes WHERE ticker = %v
+				SELECT event_id FROM stakes WHERE ticker = $1
         	)
-			AND coins.ticker = 'RUNE'`, asset.String())
+			AND coins.ticker = 'RUNE'`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var runeStakedTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&runeStakedTotal); err != nil {
+		return 0
 	}
 
-	return r.runeStakedTotal
+	return runeStakedTotal
 }
 
 func (p *poolStore) poolStakedTotal(asset common.Asset) int64 {
@@ -208,60 +210,49 @@ func (p *poolStore) runeDepth(asset common.Asset) int64 {
 }
 
 func (p *poolStore) incomingSwapTotal(asset common.Asset) int64 {
-	type results struct {
-		incomingSwapTotal int64 `db:"incoming_swap_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
         		INNER JOIN swaps ON coins.event_id = swaps.event_id
         		INNER JOIN txs ON coins.tx_hash = txs.tx_hash
     		WHERE txs.direction = 'in'
-    		AND coins.symbol = %v
+    		AND coins.ticker = $1
     		AND txs.event_id = swaps.event_id
-    		GROUP BY coins.tx_hash;`, asset.String())
+    		GROUP BY coins.tx_hash`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var incomingSwapTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&incomingSwapTotal); err != nil {
+		return 0
 	}
 
-	return r.incomingSwapTotal
+	return incomingSwapTotal
 }
 
 func (p *poolStore) outgoingSwapTotal(asset common.Asset) int64 {
-	type results struct {
-		outgoingSwapTotal int64 `db:"outgoing_swap_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
         		INNER JOIN swaps ON coins.event_id = swaps.event_id
         		INNER JOIN txs ON coins.tx_hash = txs.tx_hash
     		WHERE txs.direction = 'out'
-    		AND coins.symbol = %v
+    		AND coins.ticker = $1
     		AND txs.event_id = swaps.event_id
-    		GROUP BY coins.tx_hash`, asset.String())
+    		GROUP BY coins.tx_hash`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var outgoingSwapTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&outgoingSwapTotal); err != nil {
+		return 0
 	}
 
-	return r.outgoingSwapTotal
+	return outgoingSwapTotal
 }
 
 func (p *poolStore) incomingRuneSwapTotal(asset common.Asset) int64 {
-	type results struct {
-		incomingSwapTotal int64 `db:"incoming_swap_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
@@ -269,25 +260,22 @@ func (p *poolStore) incomingRuneSwapTotal(asset common.Asset) int64 {
 			WHERE txs.direction = 'in'
   			AND coins.ticker = 'RUNE'
   			AND txs.event_id IN (
-				SELECT event_id FROM swaps WHERE ticker = %v
+				SELECT event_id FROM swaps WHERE ticker = $1
     		)
-			GROUP BY coins.tx_hash`, asset.String())
+			GROUP BY coins.tx_hash`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var incomingRuneSwapTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&incomingRuneSwapTotal); err != nil {
+		return 0
 	}
 
-	return r.incomingSwapTotal
+	return incomingRuneSwapTotal
 }
 
 func (p *poolStore) outgoingRuneSwapTotal(asset common.Asset) int64 {
-	type results struct {
-		outgoingSwapTotal int64 `db:"outgoing_swap_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
@@ -295,16 +283,18 @@ func (p *poolStore) outgoingRuneSwapTotal(asset common.Asset) int64 {
 			WHERE txs.direction = 'in'
   			AND coins.ticker = 'RUNE'
   			AND txs.event_id IN (
-				SELECT event_id FROM swaps WHERE ticker = %v
+				SELECT event_id FROM swaps WHERE ticker = $1
     		)
-			GROUP BY coins.tx_hash`, asset.Ticker)
+			GROUP BY coins.tx_hash`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var outgoingSwapTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&outgoingSwapTotal); err != nil {
+		return 0
 	}
 
-	return r.outgoingSwapTotal
+	return outgoingSwapTotal
 }
 
 func (p *poolStore) poolDepth(asset common.Asset) int64 {
@@ -322,49 +312,43 @@ func (p *poolStore) poolUnits(asset common.Asset) int64 {
 }
 
 func (p *poolStore) sellVolume(asset common.Asset) int64 {
-	type results struct {
-		sellVolume int64 `db:"sell_volume"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(coins.amount) sell_volume
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
-    		AND swaps.ticker = %v`, asset.String())
+    		AND swaps.ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var sellVolume int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&sellVolume); err != nil {
+		return 0
 	}
 
-	return r.sellVolume
+	return sellVolume
 }
 
 func (p *poolStore) buyVolume(asset common.Asset) int64 {
-	type results struct {
-		buyVolume int64 `db:"buy_volume"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(coins.amount) buy_volume
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
-			AND coins.ticker = %v'
-    		AND swaps.ticker = 'RUNE'`, asset.String())
+			AND coins.ticker = $1
+    		AND swaps.ticker = 'RUNE'`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var buyVolume int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&buyVolume); err != nil {
+		return 0
 	}
 
-	return r.buyVolume
+	return buyVolume
 }
 
 func (p *poolStore) poolVolume(asset common.Asset) int64 {
@@ -385,7 +369,11 @@ func (p *poolStore) poolVolume24hr(asset common.Asset) int64 {
 func (p *poolStore) sellTxAverage(asset common.Asset) int64 {
 	sellVolume := p.sellVolume(asset)
 	sellCount := p.sellAssetCount(asset)
-	avg := sellVolume / sellCount
+
+	var avg int64
+	if sellCount > 0 {
+		avg = sellVolume / sellCount
+	}
 
 	return avg
 }
@@ -393,7 +381,11 @@ func (p *poolStore) sellTxAverage(asset common.Asset) int64 {
 func (p *poolStore) buyTxAverage(asset common.Asset) int64 {
 	buyVolume := p.buyVolume(asset)
 	buyCount := p.buyAssetCount(asset)
-	avg := buyVolume / buyCount
+
+	var avg int64
+	if buyCount > 0 {
+		avg = buyVolume / buyCount
+	}
 
 	return avg
 }
@@ -407,49 +399,43 @@ func (p *poolStore) poolTxAverage(asset common.Asset) int64 {
 }
 
 func (p *poolStore) sellSlipAverage(asset common.Asset) float64 {
-	type results struct {
-		sellSlipAverage float64 `db:"sell_slip_average"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT AVG(swaps.trade_slip) sell_slip_average
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
-    		AND swaps.ticker = %v`, asset.String())
+    		AND swaps.ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var sellSlipAverage float64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&sellSlipAverage); err != nil {
+		return 0
 	}
 
-	return r.sellSlipAverage
+	return sellSlipAverage
 }
 
 func (p *poolStore) buySlipAverage(asset common.Asset) float64 {
-	type results struct {
-		buySlipAverage float64 `db:"buy_slip_average"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT AVG(swaps.trade_slip) buy_slip_average
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
-			AND coins.ticker = %v
-    		AND swaps.ticker = 'RUNE'`, asset.String())
+			AND coins.ticker = $1
+    		AND swaps.ticker = 'RUNE'`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var buySlipAverage float64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&buySlipAverage); err != nil {
+		return 0
 	}
 
-	return r.buySlipAverage
+	return buySlipAverage
 }
 
 func (p *poolStore) poolSlipAverage(asset common.Asset) float64 {
@@ -461,49 +447,43 @@ func (p *poolStore) poolSlipAverage(asset common.Asset) float64 {
 }
 
 func (p *poolStore) sellFeeAverage(asset common.Asset) int64 {
-	type results struct {
-		sellFeeAverage int64 `db:"sell_fee_average"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT AVG(swaps.liquidity_fee) sell_fee_average
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
-    		AND swaps.ticker = %v`, asset.String())
+    		AND swaps.ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var sellFeeAverage int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&sellFeeAverage); err != nil {
+		return 0
 	}
 
-	return r.sellFeeAverage
+	return sellFeeAverage
 }
 
 func (p *poolStore) buyFeeAverage(asset common.Asset) int64 {
-	type results struct {
-		buyFeeAverage int64 `db:"buy_fee_average"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT AVG(swaps.liquidity_fee) buy_fee_average
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
-			AND coins.ticker = %v
-    		AND swaps.ticker = 'RUNE'`, asset.String())
+			AND coins.ticker = $1
+    		AND swaps.ticker = 'RUNE'`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var buyFeeAverage int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&buyFeeAverage); err != nil {
+		return 0
 	}
 
-	return r.buyFeeAverage
+	return buyFeeAverage
 }
 
 func (p *poolStore) poolFeeAverage(asset common.Asset) int64 {
@@ -515,49 +495,43 @@ func (p *poolStore) poolFeeAverage(asset common.Asset) int64 {
 }
 
 func (p *poolStore) sellFeesTotal(asset common.Asset) int64 {
-	type results struct {
-		sellFeesTotal int64 `db:"sell_fees_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT AVG(swaps.liquidity_fee) sell_fees_total
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
-    		AND swaps.ticker = %v`, asset.String())
+    		AND swaps.ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var sellFeesTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&sellFeesTotal); err != nil {
+		return 0
 	}
 
-	return r.sellFeesTotal
+	return sellFeesTotal
 }
 
 func (p *poolStore) buyFeesTotal(asset common.Asset) int64 {
-	type results struct {
-		buyFeesTotal int64 `db:"buy_fees_total"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(swaps.liquidity_fee) buy_fees_total
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
-			AND coins.ticker = %v
-    		AND swaps.ticker = 'RUNE'`, asset.String())
+			AND coins.ticker = $1
+    		AND swaps.ticker = 'RUNE'`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var buyFeesTotal int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&buyFeesTotal); err != nil {
+		return 0
 	}
 
-	return r.buyFeesTotal
+	return buyFeesTotal
 }
 
 func (p *poolStore) poolFeesTotal(asset common.Asset) int64 {
@@ -569,135 +543,117 @@ func (p *poolStore) poolFeesTotal(asset common.Asset) int64 {
 }
 
 func (p *poolStore) sellAssetCount(asset common.Asset) int64 {
-	type results struct {
-		sellAssetCount int64 `db:"sell_asset_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT COUNT(coins.amount) sell_asset_count
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
-    		AND swaps.ticker = %v`, asset.String())
+    		AND swaps.ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var sellAssetCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&sellAssetCount); err != nil {
+		return 0
 	}
 
-	return r.sellAssetCount
+	return sellAssetCount
 }
 
 func (p *poolStore) buyAssetCount(asset common.Asset) int64 {
-	type results struct {
-		buyAssetCount int64 `db:"buy_asset_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT COUNT(coins.amount) buy_asset_count
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
-			AND coins.ticket = %v
-    		AND swaps.ticker = 'RUNE'`, asset.String())
+			AND coins.ticker = $1
+    		AND swaps.ticker = 'RUNE'`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var buyAssetCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&buyAssetCount); err != nil {
+		return 0
 	}
 
-	return r.buyAssetCount
+	return buyAssetCount
 }
 
 func (p *poolStore) swappingTxCount(asset common.Asset) int64 {
-	type results struct {
-		swappingTxCount int64 `db:"swapping_tx_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT
 			COUNT(event_id) swapping_tx_count 
 		FROM swaps
-			WHERE ticker = %v`, asset.Ticker)
+			WHERE ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var swappingTxCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&swappingTxCount); err != nil {
+		return 0
 	}
 
-	return r.swappingTxCount
+	return swappingTxCount
 }
 
 func (p *poolStore) swappersCount(asset common.Asset) int64 {
-	type results struct {
-		swappersCount int64 `db:"swappers_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(count) swappers_count 
 		FROM   (SELECT COUNT(from_address) AS count 
         		FROM   txs 
                		INNER JOIN swaps 
                        		ON txs.event_id = swaps.event_id 
-        		WHERE  swaps.ticker = %v 
+        		WHERE  swaps.ticker = $1 
                		AND txs.direction = 'in' 
-        		GROUP  BY txs.from_address) x`, asset.Ticker)
+        		GROUP  BY txs.from_address) x`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var swappersCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&swappersCount); err != nil {
+		return 0
 	}
 
-	return r.swappersCount
+	return swappersCount
 }
 
 func (p *poolStore) stakeTxCount(asset common.Asset) int64 {
-	type results struct {
-		stateTxCount int64 `db:"stake_tx_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT
 			COUNT(event_id) stake_tx_count 
 		FROM stakes
-			WHERE ticker = %v`, asset.Ticker)
+			WHERE ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var stateTxCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&stateTxCount); err != nil {
+		return 0
 	}
 
-	return r.stateTxCount
+	return stateTxCount
 }
 
 func (p *poolStore) withdrawTxCount(asset common.Asset) int64 {
-	type results struct {
-		withdrawTxCount int64 `db:"withdraw_tx_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT
 			COUNT(event_id) withdraw_tx_count 
 		FROM stakes
 		INNER JOIN events ON events.id = stakes.event_id
 		WHERE events.type = 'unstake'		
-		AND ticker = %v`, asset.Ticker)
+		AND ticker = $1`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var withdrawTxCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&withdrawTxCount); err != nil {
+		return 0
 	}
 
-	return r.withdrawTxCount
+	return withdrawTxCount
 }
 
 func (p *poolStore) stakingTxCount(asset common.Asset) int64 {
@@ -709,34 +665,34 @@ func (p *poolStore) stakingTxCount(asset common.Asset) int64 {
 }
 
 func (p *poolStore) stakersCount(asset common.Asset) int64 {
-	type results struct {
-		stakersCount int64 `db:"stakers_count"`
-	}
-	r := results{}
-
-	query := fmt.Sprintf(`
+	stmnt := `
 		SELECT SUM(count) stakers_count 
 		FROM   (SELECT COUNT(from_address) AS count 
         		FROM   txs 
                		INNER JOIN stakes 
                        		ON txs.event_id = stakes.event_id 
-        		WHERE  stakes.ticker = %v 
+        		WHERE  stakes.ticker = $1
                		AND txs.direction = 'in' 
-        		GROUP  BY txs.from_address) x`, asset.Ticker)
+        		GROUP  BY txs.from_address) x`
 
-	err := p.db.Get(&r, query)
-	if err != nil {
-		log.Fatal(err)
+	var stakersCount int64
+	row := p.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&stakersCount); err != nil {
+		return 0
 	}
 
-	return r.stakersCount
+	return stakersCount
 }
 
 func (p *poolStore) assetROI(asset common.Asset) float64 {
 	depth := float64(p.assetDepth(asset))
 	staked := float64(p.assetStakedTotal(asset))
 
-	roi := (depth - staked) / staked
+	var roi float64
+	if staked > 0 {
+		roi = (depth - staked) / staked
+	}
 
 	return roi
 }
@@ -745,13 +701,22 @@ func (p *poolStore) runeROI(asset common.Asset) float64 {
 	depth := float64(p.runeDepth(asset))
 	staked := float64(p.runeStakedTotal(asset))
 
-	roi := (depth - staked) / staked
+	var roi float64
+	if staked > 0 {
+		roi = (depth - staked) / staked
+	}
 
 	return roi
 }
 
 func (p *poolStore) poolROI(asset common.Asset) float64 {
-	roi := (p.assetROI(asset) / p.runeROI(asset)) / 2
+	assetRoi := p.assetROI(asset)
+	runeRoi := p.runeROI(asset)
+
+	var roi float64
+	if runeRoi > 0 {
+		roi = (assetRoi / runeRoi) / 2
+	}
 
 	return roi
 }
