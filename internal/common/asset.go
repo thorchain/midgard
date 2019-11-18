@@ -68,6 +68,10 @@ func RuneAsset() Asset {
 	return RuneB1AAsset
 }
 
+func (a Asset) RunePrice() float64 {
+	return 2.50
+}
+
 func IsBNBAsset(a Asset) bool {
 	return a.Equals(BNBAsset)
 }
