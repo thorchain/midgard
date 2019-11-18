@@ -16,8 +16,90 @@ type poolStore struct {
 	db *sqlx.DB
 }
 
+type PoolData struct {
+	Asset            string
+	AssetDepth       uint64
+	AssetROI         float64
+	AssetStakedTotal uint64
+	BuyAssetCount    uint64
+	BuyFeeAverage    uint64
+	BuyFeesTotal     uint64
+	BuySlipAverage   float64
+	BuyTxAverage     uint64
+	BuyVolume        uint64
+	PoolDepth        uint64
+	PoolFeeAverage   uint64
+	PoolFeesTotal    uint64
+	PoolROI          float64
+	PoolROI12        float64
+	PoolSlipAverage  float64
+	PoolStakedTotal  uint64
+	PoolTxAverage    uint64
+	PoolUnits        uint64
+	PoolVolume       uint64
+	PoolVolume24hr   uint64
+	Price            float64
+	RuneDepth        uint64
+	RuneROI          float64
+	RuneStakedTotal  uint64
+	SellAssetCount   uint64
+	SellFeeAverage   uint64
+	SellFeesTotal    uint64
+	SellSlipAverage  float64
+	SellTxAverage    uint64
+	SellVolume       uint64
+	StakeTxCount     uint64
+	StakersCount     uint64
+	StakingTxCount   uint64
+	SwappersCount    uint64
+	SwappingTxCount  uint64
+	WithdrawTxCount  uint64
+}
+
 func NewPoolStore(db *sqlx.DB) *poolStore {
 	return &poolStore{db}
+}
+
+func (p *poolStore) PoolData(asset common.Asset) PoolData {
+	return PoolData{
+		Asset:            asset.String(),
+		AssetDepth:       p.assetDepth(asset),
+		AssetROI:         p.assetROI(asset),
+		AssetStakedTotal: p.assetStakedTotal(asset),
+		BuyAssetCount:    p.buyAssetCount(asset),
+		BuyFeeAverage:    p.buyFeeAverage(asset),
+		BuyFeesTotal:     p.buyFeesTotal(asset),
+		BuySlipAverage:   p.buySlipAverage(asset),
+		BuyTxAverage:     p.buyTxAverage(asset),
+		BuyVolume:        p.buyVolume(asset),
+		PoolDepth:        p.poolDepth(asset),
+		PoolFeeAverage:   p.poolFeeAverage(asset),
+		PoolFeesTotal:    p.poolFeesTotal(asset),
+		PoolROI:          p.poolROI(asset),
+		PoolROI12:        p.poolROI12(asset),
+		PoolSlipAverage:  p.poolSlipAverage(asset),
+		PoolStakedTotal:  p.poolStakedTotal(asset),
+		PoolTxAverage:    p.poolTxAverage(asset),
+		PoolUnits:        p.poolUnits(asset),
+		PoolVolume:       p.poolVolume(asset),
+		PoolVolume24hr:   p.poolVolume24hr(asset),
+		Price:            p.price(asset),
+		RuneDepth:        p.runeDepth(asset),
+		RuneROI:          p.runeROI(asset),
+		RuneStakedTotal:  p.runeStakedTotal(asset),
+		SellAssetCount:   p.sellAssetCount(asset),
+		SellFeeAverage:   p.sellFeeAverage(asset),
+		SellFeesTotal:    p.sellFeesTotal(asset),
+		SellSlipAverage:  p.sellSlipAverage(asset),
+		SellTxAverage:    p.sellTxAverage(asset),
+		SellVolume:       p.sellVolume(asset),
+		StakeTxCount:     p.stakeTxCount(asset),
+		StakersCount:     p.stakersCount(asset),
+		StakingTxCount:   p.stakingTxCount(asset),
+		SwappersCount:    p.swappersCount(asset),
+		SwappingTxCount:  p.swappingTxCount(asset),
+		WithdrawTxCount:  p.withdrawTxCount(asset),
+	}
 }
 
 func (p *poolStore) status() {}
@@ -55,7 +137,7 @@ func (p *poolStore) assetWithdrawnTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT COALESCE(SUM(stakes.units), 0) asset_withdrawn_total
 		FROM stakes
-			LEFT JOIN events ON stakes.event_id = events.id
+			INNER JOIN events ON stakes.event_id = events.id
 		WHERE events.type = 'stake'
 		AND stakes.symbol = %v`, asset.String())
 
@@ -133,8 +215,8 @@ func (p *poolStore) incomingSwapTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
-        		LEFT JOIN swaps ON coins.event_id = swaps.event_id
-        		LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+        		INNER JOIN swaps ON coins.event_id = swaps.event_id
+        		INNER JOIN txs ON coins.tx_hash = txs.tx_hash
     		WHERE txs.direction = 'in'
     		AND coins.symbol = %v
     		AND txs.event_id = swaps.event_id
@@ -157,8 +239,8 @@ func (p *poolStore) outgoingSwapTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
-        		LEFT JOIN swaps ON coins.event_id = swaps.event_id
-        		LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+        		INNER JOIN swaps ON coins.event_id = swaps.event_id
+        		INNER JOIN txs ON coins.tx_hash = txs.tx_hash
     		WHERE txs.direction = 'out'
     		AND coins.symbol = %v
     		AND txs.event_id = swaps.event_id
@@ -181,8 +263,8 @@ func (p *poolStore) incomingRuneSwapTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'in'
   			AND coins.ticker = 'RUNE'
   			AND txs.event_id IN (
@@ -207,8 +289,8 @@ func (p *poolStore) outgoingRuneSwapTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'in'
   			AND coins.ticker = 'RUNE'
   			AND txs.event_id IN (
@@ -247,8 +329,8 @@ func (p *poolStore) sellVolume(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(coins.amount) sell_volume
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
     		AND swaps.ticker = %v`, asset.String())
@@ -270,8 +352,8 @@ func (p *poolStore) buyVolume(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(coins.amount) buy_volume
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = %v'
     		AND swaps.ticker = 'RUNE'`, asset.String())
@@ -294,7 +376,10 @@ func (p *poolStore) poolVolume(asset common.Asset) uint64 {
 	return uint64(poolVolume)
 }
 
-func (p *poolStore) poolVolume24hr() {}
+// TODO : Needs to be implemented.
+func (p *poolStore) poolVolume24hr(asset common.Asset) uint64 {
+	return 0
+}
 
 func (p *poolStore) sellTxAverage(asset common.Asset) uint64 {
 	sellVolume := p.sellVolume(asset)
@@ -329,8 +414,8 @@ func (p *poolStore) sellSlipAverage(asset common.Asset) float64 {
 	query := fmt.Sprintf(`
 		SELECT AVG(swaps.trade_slip) sell_slip_average
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
     		AND swaps.ticker = %v`, asset.String())
@@ -352,8 +437,8 @@ func (p *poolStore) buySlipAverage(asset common.Asset) float64 {
 	query := fmt.Sprintf(`
 		SELECT AVG(swaps.trade_slip) buy_slip_average
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = %v
     		AND swaps.ticker = 'RUNE'`, asset.String())
@@ -383,8 +468,8 @@ func (p *poolStore) sellFeeAverage(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT AVG(swaps.liquidity_fee) sell_fee_average
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
     		AND swaps.ticker = %v`, asset.String())
@@ -406,8 +491,8 @@ func (p *poolStore) buyFeeAverage(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT AVG(swaps.liquidity_fee) buy_fee_average
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = %v
     		AND swaps.ticker = 'RUNE'`, asset.String())
@@ -437,8 +522,8 @@ func (p *poolStore) sellFeesTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT AVG(swaps.liquidity_fee) sell_fees_total
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
     		AND swaps.ticker = %v`, asset.String())
@@ -460,8 +545,8 @@ func (p *poolStore) buyFeesTotal(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT SUM(swaps.liquidity_fee) buy_fees_total
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = %v
     		AND swaps.ticker = 'RUNE'`, asset.String())
@@ -477,7 +562,7 @@ func (p *poolStore) buyFeesTotal(asset common.Asset) uint64 {
 func (p *poolStore) poolFeesTotal(asset common.Asset) uint64 {
 	buyTotal := float64(p.buyFeesTotal(asset))
 	sellTotal := float64(p.sellFeesTotal(asset))
-	poolTotal := (buyTotal*asset.RunePrice()) + sellTotal
+	poolTotal := (buyTotal * asset.RunePrice()) + sellTotal
 
 	return uint64(poolTotal)
 }
@@ -491,8 +576,8 @@ func (p *poolStore) sellAssetCount(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT COUNT(coins.amount) sell_asset_count
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticker = 'RUNE'
     		AND swaps.ticker = %v`, asset.String())
@@ -514,8 +599,8 @@ func (p *poolStore) buyAssetCount(asset common.Asset) uint64 {
 	query := fmt.Sprintf(`
 		SELECT COUNT(coins.amount) buy_asset_count
 			FROM coins
-				LEFT JOIN swaps ON coins.event_id = swaps.event_id
-				LEFT JOIN txs ON coins.tx_hash = txs.tx_hash
+				INNER JOIN swaps ON coins.event_id = swaps.event_id
+				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
 			WHERE txs.direction = 'out'
 			AND coins.ticket = %v
     		AND swaps.ticker = 'RUNE'`, asset.String())
@@ -602,7 +687,7 @@ func (p *poolStore) withdrawTxCount(asset common.Asset) uint64 {
 		SELECT
 			COUNT(event_id) withdraw_tx_count 
 		FROM stakes
-		LEFT JOIN events ON events.id = stakes.event_id
+		INNER JOIN events ON events.id = stakes.event_id
 		WHERE events.type = 'unstake'		
 		AND ticker = %v`, asset.Ticker)
 
@@ -617,7 +702,7 @@ func (p *poolStore) withdrawTxCount(asset common.Asset) uint64 {
 func (p *poolStore) stakingTxCount(asset common.Asset) uint64 {
 	stakeTxCount := p.stakeTxCount(asset)
 	withdrawTxCount := p.withdrawTxCount(asset)
-	stakingTxCount := stakeTxCount+withdrawTxCount
+	stakingTxCount := stakeTxCount + withdrawTxCount
 
 	return stakingTxCount
 }
@@ -670,4 +755,7 @@ func (p *poolStore) poolROI(asset common.Asset) float64 {
 	return roi
 }
 
-func (p *poolStore) poolROI12() {}
+// TODO : Needs to be implemented.
+func (p *poolStore) poolROI12(asset common.Asset) float64 {
+	return 0
+}
