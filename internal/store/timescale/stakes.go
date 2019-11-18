@@ -101,57 +101,41 @@ func (s *stakesStore) GetStakerAddresses() []common.Address {
 
 type StakerAddressDetails struct {
 	PoolsDetails []common.Asset
-	TotalEarned int64
-	TotalROI    int64
-	TotalStaked int64
+	TotalEarned  int64
+	TotalROI     int64
+	TotalStaked  int64
 }
 
 func (s *stakesStore) GetStakerAddressDetails(address common.Address) StakerAddressDetails {
 	pools := s.getPools(address)
 
 	return StakerAddressDetails{
-		PoolsDetails:  pools,
-		TotalEarned: s.totalEarned(pools),
-		TotalROI:    s.totalROI(address),
-		TotalStaked: s.totalStaked(address),
+		PoolsDetails: pools,
+		TotalEarned:  s.totalEarned(pools),
+		TotalROI:     s.totalROI(address),
+		TotalStaked:  s.totalStaked(address),
 	}
 }
 
 type StakerAddressAndAssetDetails struct {
-	Asset common.Asset
-	StakeUnits int64
-	RuneStaked int64
-	AssetStaked int64
-	PoolStaked int64
-	RuneEarned int64
-	AssetEarned int64
-	PoolEarned int64
-	RuneROI float64
-	AssetROI float64
-	PoolROI float64
+	Asset           common.Asset
+	StakeUnits      int64
+	RuneStaked      int64
+	AssetStaked     int64
+	PoolStaked      int64
+	RuneEarned      int64
+	AssetEarned     int64
+	PoolEarned      int64
+	RuneROI         float64
+	AssetROI        float64
+	PoolROI         float64
 	DateFirstStaked time.Time
 }
 
 func (s *stakesStore) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
 
-
-
 	return StakerAddressAndAssetDetails{}, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 func (s *stakesStore) totalStaked(address common.Address) int64 {
 	query := `
@@ -234,4 +218,3 @@ func (s *stakesStore) totalEarned(pools []common.Asset) int64 {
 func (s *stakesStore) totalROI(address common.Address) int64 {
 	return 0
 }
-

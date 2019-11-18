@@ -151,23 +151,25 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 
 // (GET /v1/bepswap)
 func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
+	bepswapData := h.store.BepSwap.GetBepSwapData()
+
 	response := api.BEPSwapResponse{
-		DailyActiveUsers:   nil,
-		DailyTx:            nil,
-		MonthlyActiveUsers: nil,
-		MonthlyTx:          nil,
-		PoolCount:          nil,
-		TotalAssetBuys:     nil,
-		TotalAssetSells:    nil,
-		TotalDepth:         nil,
-		TotalEarned:        nil,
-		TotalStakeTx:       nil,
-		TotalStaked:        nil,
-		TotalTx:            nil,
-		TotalUsers:         nil,
-		TotalVolume:        nil,
-		TotalVolume24hr:    nil,
-		TotalWithdrawTx:    nil,
+		DailyActiveUsers:   &bepswapData.DailyActiveUsers,
+		DailyTx:            &bepswapData.DailyTx,
+		MonthlyActiveUsers: &bepswapData.MonthlyActiveUsers,
+		MonthlyTx:          &bepswapData.MonthlyTx,
+		PoolCount:          &bepswapData.PoolCount,
+		TotalAssetBuys:     &bepswapData.TotalAssetBuys,
+		TotalAssetSells:    &bepswapData.TotalAssetSells,
+		TotalDepth:         &bepswapData.TotalDepth,
+		TotalEarned:        &bepswapData.TotalEarned,
+		TotalStakeTx:       &bepswapData.TotalStakeTx,
+		TotalStaked:        &bepswapData.TotalStaked,
+		TotalTx:            &bepswapData.TotalTx,
+		TotalUsers:         &bepswapData.TotalUsers,
+		TotalVolume:        &bepswapData.TotalVolume,
+		TotalVolume24hr:    &bepswapData.TotalVolume24hr,
+		TotalWithdrawTx:    &bepswapData.TotalWithdrawTx,
 	}
 
 	return ctx.JSON(http.StatusOK, response)

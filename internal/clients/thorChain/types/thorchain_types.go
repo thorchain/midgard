@@ -30,6 +30,6 @@ type EventSwap struct {
 }
 
 type EventUnstake struct {
-	Pool        common.Asset `json:"pool"`
-	StakeUnits  int64        `json:"stake_units,string"`
+	Pool       common.Asset `json:"pool"`
+	StakeUnits int64        `json:"stake_units,string"`
 }

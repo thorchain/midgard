@@ -15,7 +15,7 @@ type poolStore struct {
 }
 
 type PoolData struct {
-	Asset common.Asset
+	Asset            common.Asset
 	AssetDepth       int64
 	AssetROI         float64
 	AssetStakedTotal int64

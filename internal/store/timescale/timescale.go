@@ -19,6 +19,7 @@ type Store struct {
 	Stakes   StakesStore
 	Pools    PoolStore
 	UnStakes UnStakesStore
+	BepSwap  BepSwapStore
 }
 
 func NewStore(cfg config.TimeScaleConfiguration) (*Store, error) {
@@ -30,6 +31,7 @@ func NewStore(cfg config.TimeScaleConfiguration) (*Store, error) {
 		Stakes:   NewStakesStore(db),
 		Pools:    NewPoolStore(db),
 		UnStakes: NewUnStakesStore(db),
+		BepSwap:  NewBepSwapStore(db),
 		cfg:      cfg,
 		db:       db,
 	}, nil

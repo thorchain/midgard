@@ -9,12 +9,12 @@ import (
 
 const (
 	// Table / Measurement name
-	ModelEventsTable   = "events"
-	ModelTxsTable      = "txs"
-	ModelGasTable      = "gas"
-	ModelCoinsTable    = "coins"
-	ModelStakesTable   = "stakes"
-	ModelSwapsTable    = "swaps"
+	ModelEventsTable = "events"
+	ModelTxsTable    = "txs"
+	ModelGasTable    = "gas"
+	ModelCoinsTable  = "coins"
+	ModelStakesTable = "stakes"
+	ModelSwapsTable  = "swaps"
 )
 
 type Event struct {
@@ -24,7 +24,7 @@ type Event struct {
 	Height int64     `json:"height" db:"height"`
 	Type   string    `json:"type" db:"type"`
 	InTx   common.Tx
-	OutTxs  common.Txs
+	OutTxs common.Txs
 	Gas    common.Coins
 }
 
@@ -36,7 +36,7 @@ func newEvent(e types.Event) Event {
 		Height: e.Height,
 		Type:   e.Type,
 		InTx:   e.InTx,
-		OutTxs:  e.OutTxs,
+		OutTxs: e.OutTxs,
 		Gas:    e.Gas,
 	}
 }

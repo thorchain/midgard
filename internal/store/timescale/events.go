@@ -17,13 +17,13 @@ type EventsStore interface {
 }
 
 type eventsStore struct {
-	db *sqlx.DB
-	logger          zerolog.Logger
+	db     *sqlx.DB
+	logger zerolog.Logger
 }
 
 func NewEventsStore(db *sqlx.DB) *eventsStore {
 	return &eventsStore{
-		db:db,
+		db:     db,
 		logger: log.With().Str("module", "eventStore").Logger(),
 	}
 }
@@ -46,7 +46,7 @@ func (e *eventsStore) Create(record models.Event) error {
 	}
 
 	// Ingest InTx
-	err = e.processTxRecord("in" , record,record.InTx )
+	err = e.processTxRecord("in", record, record.InTx)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
@@ -79,7 +79,7 @@ func (e *eventsStore) processGasRecord(record models.Event) error {
 
 func (e *eventsStore) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
 	for _, record := range records {
-		if err := record.IsValid(); err == nil  {
+		if err := record.IsValid(); err == nil {
 			_, err := e.createTxRecord(parent, record, direction)
 			if err != nil {
 				return errors.Wrap(err, "Failed createTxRecord")
