@@ -5,6 +5,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
@@ -16,14 +18,18 @@ type EventsStore interface {
 
 type eventsStore struct {
 	db *sqlx.DB
+	logger          zerolog.Logger
 }
 
 func NewEventsStore(db *sqlx.DB) *eventsStore {
-	return &eventsStore{db}
+	return &eventsStore{
+		db:db,
+		logger: log.With().Str("module", "eventStore").Logger(),
+	}
 }
 
 func (e *eventsStore) GetMaxID() (int64, error) {
-	query := fmt.Sprintf("SELECT MAX(%s) FROM id", models.ModelEventsTable)
+	query := fmt.Sprintf("SELECT MAX(id) FROM %s", models.ModelEventsTable)
 	var maxId int64
 	err := e.db.Get(&maxId, query)
 	if err != nil {
