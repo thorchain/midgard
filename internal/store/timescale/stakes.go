@@ -218,11 +218,11 @@ func (s *Store) poolStaked(address common.Address, asset common.Asset) uint64 {
 }
 
 func (s *Store) runeEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.runeDepth(asset)) - uint64(s.runeStakedTotal(asset)))
+	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.runeDepth(asset) - s.runeStakedTotal(asset))
 }
 
 func (s *Store) assetEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.assetDepth(asset)) - uint64(s.assetStakedTotal(asset)))
+	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.assetDepth(asset) -s.assetStakedTotal(asset))
 }
 
 func (s *Store) poolEarned(address common.Address, asset common.Asset) uint64 {
