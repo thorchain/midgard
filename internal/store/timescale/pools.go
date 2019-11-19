@@ -108,10 +108,11 @@ func (s *Store) price(asset common.Asset) float64 {
 
 func (s *Store) assetStakedTotal(asset common.Asset) int64 {
 	stmnt := `
-		SELECT SUM(stakes.units)
-		    AS asset_staked_total 
-		FROM stakes 
-		WHERE stakes.ticker = $1`
+		SELECT coins.amount
+			FROM stakes
+				INNER JOIN coins ON stakes.event_id = coins.event_id
+		WHERE coins.ticker = stakes.ticker
+		AND stakes.ticker = $1`
 
 	var assetStakedTotal int64
 	row := s.db.QueryRow(stmnt, asset.Ticker.String())

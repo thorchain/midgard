@@ -1,6 +1,7 @@
 package common
 
 import (
+	//"fmt"
 	. "gopkg.in/check.v1"
 )
 
@@ -29,5 +30,5 @@ func (s *AddressSuite) TestAddress(c *C) {
 
 	c.Check(NoAddress.Equals(Address("")), Equals, true)
 	_, err = NewAddress("")
-	c.Assert(err, IsNil)
+	c.Assert(err, NotNil)
 }
