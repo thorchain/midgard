@@ -1,6 +1,7 @@
 package timescale
 
 import (
+	"log"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
@@ -43,6 +44,34 @@ type PoolData struct {
 	SwappersCount    uint64
 	SwappingTxCount  uint64
 	WithdrawTxCount  uint64
+}
+
+func (s *Store) GetPools() []common.Asset {
+	var pools []common.Asset
+
+	query := `
+		select chain, symbol, ticker
+		from (
+			select chain, symbol, ticker, sum(units)
+			from stakes
+			group by chain, symbol, ticker) as pools
+		where sum >0
+	`
+
+	rows, err := s.db.Queryx(query)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	for rows.Next() {
+		var asset common.Asset
+		if err := rows.StructScan(&asset); err != nil {
+			s.logger.Err(err).Msg("failed to structScan for asset")
+		}
+		pools = append(pools, asset)
+	}
+
+	return pools
 }
 
 func (s *Store) PoolData(asset common.Asset) PoolData {
@@ -90,8 +119,6 @@ func (s *Store) PoolData(asset common.Asset) PoolData {
 		WithdrawTxCount:  s.withdrawTxCount(asset),
 	}
 }
-
-func (s *Store) status() {}
 
 func (s *Store) exists(asset common.Asset) bool {
 	staked := s.stakeTxCount(asset)

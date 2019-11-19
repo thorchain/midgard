@@ -92,26 +92,16 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 	//	return ctx.JSON(http.StatusOK, "OK")
 }
 
-// (GET /v1/assets)
-func (h *Handlers) GetAssets(ctx echo.Context) error {
+// (GET /v1/pools)
+func (h *Handlers) GetPools(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
-
-	// pools, err := h.thorChainClient.GetPools()
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Msg("fail to get pools")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
-	// 		Error: err.Error(),
-	// 	})
-	// }
-	//
-	// assets := api.AssetsResponse{}
-	//
-	// for _, item := range pools {
-	// 	a := *helpers.ConvertAssetForAPI(item.Asset)
-	// 	assets = append(assets, a)
-	// }
-
-	return ctx.JSON(http.StatusOK, "assets")
+	pools := h.store.GetPools()
+	assets := api.PoolsResponse{}
+	for _, pool := range pools {
+		a := *helpers.ConvertAssetForAPI(pool)
+		assets = append(assets, a)
+	}
+	return ctx.JSON(http.StatusOK, assets)
 }
 
 // (GET /v1/assets/{asset})
