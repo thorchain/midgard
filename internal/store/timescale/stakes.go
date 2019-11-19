@@ -115,6 +115,7 @@ type StakerAddressAndAssetDetails struct {
 	DateFirstStaked time.Time
 }
 
+// GetStakersAddressAndAssetDetails:
 func (s *Store) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
 	// confirm asset in addresses pools
 	pools := s.getPools(address)
@@ -210,36 +211,41 @@ func (s *Store) assetStaked(address common.Address, asset common.Asset) uint64 {
 }
 
 func (s *Store) poolStaked(address common.Address, asset common.Asset) uint64 {
-	return s.runeStaked(address,asset) + s.assetStaked(address,asset) * 1 // TODO finish this when we have price sorted out.
+	runeStaked := float64(s.runeStaked(address,asset))
+	assetStaked := float64(s.assetStaked(address,asset))
+	assetPrice := s.price(asset)
+	return uint64(runeStaked + assetStaked * assetPrice)
 }
 
 func (s *Store) runeEarned(address common.Address, asset common.Asset) uint64 {
-
-	// return s.stakeUnits(address, asset) / s.poolUnits(asset)
+	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.runeDepth(asset)) - uint64(s.runeStakedTotal(asset)))
 }
 
 func (s *Store) assetEarned(address common.Address, asset common.Asset) uint64 {
-	return 0
+	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.assetDepth(asset)) - uint64(s.assetStakedTotal(asset)))
 }
 
 func (s *Store) poolEarned(address common.Address, asset common.Asset) uint64 {
-	return 0
+	runeEarned := float64(s.runeEarned(address, asset))
+	assetEarned := float64(s.assetEarned(address, asset))
+	assetPrice := s.price(asset)
+	return uint64(runeEarned + (assetEarned * assetPrice))
 }
 
 func (s *Store) stakersRuneROI(address common.Address, asset common.Asset) float64 {
-	return 0
+	return float64(s.runeEarned(address, asset) / s.runeStaked(address, asset))
 }
 
 func (s *Store) dateFirstStaked(address common.Address, asset common.Asset) time.Time {
-	return time.Time{}
-}
-
-func (s *Store) stakersPoolROI(address common.Address, asset common.Asset) float64 {
-	return 0
+	return time.Time{} // TODO finish
 }
 
 func (s *Store) stakersAssetROI(address common.Address, asset common.Asset) float64 {
-	return 0
+	return float64(s.assetEarned(address, asset) / s.assetStaked(address, asset))
+}
+
+func (s *Store) stakersPoolROI(address common.Address, asset common.Asset) float64 {
+	return (s.stakersAssetROI(address,asset) + s.stakersAssetROI(address,asset)) / 2
 }
 
 func (s *Store) totalStaked(address common.Address) uint64 {
