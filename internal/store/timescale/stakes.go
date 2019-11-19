@@ -115,6 +115,7 @@ type StakerAddressAndAssetDetails struct {
 	DateFirstStaked time.Time
 }
 
+// GetStakersAddressAndAssetDetails:
 func (s *Store) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
 	// confirm asset in addresses pools
 	pools := s.getPools(address)
@@ -212,7 +213,7 @@ func (s *Store) assetStaked(address common.Address, asset common.Asset) uint64 {
 func (s *Store) poolStaked(address common.Address, asset common.Asset) uint64 {
 	runeStaked := float64(s.runeStaked(address,asset))
 	assetStaked := float64(s.assetStaked(address,asset))
-	assetPrice := asset.RunePrice()
+	assetPrice := s.price(asset)
 	return uint64(runeStaked + assetStaked * assetPrice)
 }
 
@@ -227,7 +228,7 @@ func (s *Store) assetEarned(address common.Address, asset common.Asset) uint64 {
 func (s *Store) poolEarned(address common.Address, asset common.Asset) uint64 {
 	runeEarned := float64(s.runeEarned(address, asset))
 	assetEarned := float64(s.assetEarned(address, asset))
-	assetPrice := asset.RunePrice()
+	assetPrice := s.price(asset)
 	return uint64(runeEarned + (assetEarned * assetPrice))
 }
 
