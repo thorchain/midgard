@@ -16,11 +16,11 @@ type Store struct {
 	db       *sqlx.DB
 }
 
-func NewStore(cfg config.TimeScaleConfiguration) (*Store, error) {
+func NewStore(cfg config.TimeScaleConfiguration) *Store {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password)
 	db := sqlx.MustConnect("postgres", connStr)
 	return &Store{
 		cfg:      cfg,
 		db:       db,
-	}, nil
+	}
 }

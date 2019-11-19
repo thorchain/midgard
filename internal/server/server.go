@@ -74,10 +74,7 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	timescale, err := timescale.NewStore(cfg.TimeScale)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to create timescale")
-	}
+	timescale:= timescale.NewStore(cfg.TimeScale)
 
 	// Setup thorchain BinanceClient scanner
 	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)
