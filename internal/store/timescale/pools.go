@@ -103,7 +103,7 @@ func (s *Store) exists(asset common.Asset) bool {
 }
 
 func (s *Store) price(asset common.Asset) float64 {
-	return asset.RunePrice()
+	return float64(s.runeDepth(asset) / s.assetDepth(asset))
 }
 
 func (s *Store) assetStakedTotal(asset common.Asset) int64 {
@@ -178,6 +178,7 @@ func (s *Store) poolStakedTotal(asset common.Asset) int64 {
 // +incomingSwapAsset
 // -outgoingSwapAsset
 // -withdraws
+// TODO This is bring back an incorrect amount.
 func (s *Store) assetDepth(asset common.Asset) int64 {
 	stakes := s.assetStakedTotal(asset)
 	inSwap := s.incomingSwapTotal(asset)
@@ -341,7 +342,7 @@ func (s *Store) buyVolume(asset common.Asset) int64 {
 func (s *Store) poolVolume(asset common.Asset) int64 {
 	buyVolume := float64(s.buyVolume(asset))
 	sellVolume := float64(s.sellVolume(asset))
-	assetPrice := asset.RunePrice()
+	assetPrice := s.price(asset)
 
 	poolVolume := (buyVolume + sellVolume) * assetPrice
 
@@ -380,7 +381,7 @@ func (s *Store) buyTxAverage(asset common.Asset) int64 {
 func (s *Store) poolTxAverage(asset common.Asset) int64 {
 	sellAvg := float64(s.sellTxAverage(asset))
 	buyAvg := float64(s.buyTxAverage(asset))
-	avg := ((sellAvg + buyAvg) * asset.RunePrice()) / 2
+	avg := ((sellAvg + buyAvg) * s.price(asset)) / 2
 
 	return int64(avg)
 }
@@ -524,8 +525,7 @@ func (s *Store) buyFeesTotal(asset common.Asset) int64 {
 func (s *Store) poolFeesTotal(asset common.Asset) int64 {
 	buyTotal := float64(s.buyFeesTotal(asset))
 	sellTotal := float64(s.sellFeesTotal(asset))
-	poolTotal := (buyTotal * asset.RunePrice()) + sellTotal
-
+	poolTotal := (buyTotal * s.price(asset)) + sellTotal
 	return int64(poolTotal)
 }
 
