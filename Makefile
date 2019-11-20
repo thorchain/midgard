@@ -105,14 +105,32 @@ run-mocked-endpoint:
 ${GOBIN}/sql-migrate:
 	go get -v github.com/rubenv/sql-migrate/...
 
+create-database-test:
+	PGPASSWORD=password psql -h localhost -U postgres -c "create database midgard_test;"
+
 create-database:
 	psql -h localhost -U postgres -c "create database midgard;"
 
 drop-database:
 	psql -h localhost -U postgres -c "drop database midgard;"
 
+drop-database-test:
+	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard_test;"
+
+
 migration-up: ${GOBIN}/sql-migrate
 	${GOBIN}/sql-migrate up
 
 migration-down: ${GOBIN}/sql-migrate
 	${GOBIN}/sql-migrate down
+
+migration-up-test: ${GOBIN}/sql-migrate
+	${GOBIN}/sql-migrate up --env="test"
+
+migration-down-test: ${GOBIN}/sql-migrate
+	${GOBIN}/sql-migrate down --env="test"
+
+run-test-suite:
+	@make drop-database-test
+	@make create-database-test
+	@make migration-up-test

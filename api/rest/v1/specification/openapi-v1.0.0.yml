@@ -76,16 +76,16 @@ paths:
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
           $ref: '#/components/responses/AssetsDetailedResponse'
-  "/v1/assets":
+  "/v1/pools":
     get:
-      operationId: GetAssets
-      summary: Get Assets
-      description: Returns an array containing all the assets supported on BEPSwap.
+      operationId: GetPools
+      summary: Get Asset Pools
+      description: Returns an array containing all the assets supported on BEPSwap pools
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
-          $ref: '#/components/responses/AssetsResponse'
+          $ref: '#/components/responses/PoolsResponse'
   "/v1/pools/{asset}":
     get:
       operationId: GetPoolsData
@@ -207,7 +207,7 @@ components:
           schema:
             $ref: '#/components/schemas/AssetDetail'
 
-    AssetsResponse:
+    PoolsResponse:
       description: array of assets
       content:
         application/json:

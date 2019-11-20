@@ -9,7 +9,7 @@
   },
   "timescale": {
     "host": "localhost",
-    "post": 5432,
+    "port": 5432,
     "user_name": "postgres",
     "password": "password",
     "database": "midgard",
