@@ -20,6 +20,7 @@ type Configuration struct {
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	Binance         BinanceConfiguration   `json:"binance" mapstructure:"binance"`
 	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
+	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
 }
 
 type TimeScaleConfiguration struct {
@@ -52,21 +53,14 @@ type BinanceConfiguration struct {
 }
 
 func applyDefaultConfig() {
-	viper.SetDefault("listen_port", 8080)
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
-	viper.SetDefault("timescale.port", 5432)
-	viper.SetDefault("thorchain.scheme", "http")
-	viper.SetDefault("thorchain.host", "localhost:1317")
 	viper.SetDefault("thorchain.read_timeout", "10s")
 	viper.SetDefault("thorchain.no_events_backoff", "30s")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
-	viper.SetDefault("binance.scheme", "https")
 	viper.SetDefault("binance.request_timeout", "30s")
 	viper.SetDefault("binance.markets_cache_duration", "24h")
 	viper.SetDefault("binance.tokens_cache_duration", "24h")
-	viper.SetDefault("binance.full_node_scheme", "http")
-	viper.SetDefault("binance.is_testnet", "true")
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
