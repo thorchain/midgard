@@ -50,14 +50,14 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/TxDetailedResponse'       
-  "/v1/bepswap":
+  "/v1/stats":
     get:
-      operationId: GetBEPSwapData
-      summary: Get BEPSwap Data
-      description: Returns an object containing global BEPSwap data for all pools and all transactions.
+      operationId: GetStats
+      summary: Get Global Stats
+      description: Returns an object containing global stats for all pools and all transactions.
       responses:
         "200":
-          $ref: '#/components/responses/BEPSwapResponse'      
+          $ref: '#/components/responses/StatsResponse'
   "/v1/assets/{asset}":
     get:
       operationId: GetAssetInfo
@@ -162,12 +162,12 @@ components:
           schema:
             $ref: '#/components/schemas/PoolDetail'
 
-    BEPSwapResponse:
+    StatsResponse:
       description: object containing global BEPSwap data
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/BEPSwapData'
+            $ref: '#/components/schemas/StatsData'
     TxDetailedResponse:
       description: Returns an array of transaction events
       content:
@@ -300,7 +300,7 @@ components:
             slip:
               type: number 
               format: double                      
-    BEPSwapData:
+    StatsData:
       type: object
       properties:
         dailyActiveUsers:

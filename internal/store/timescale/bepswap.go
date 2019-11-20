@@ -19,7 +19,7 @@ type BepSwapData struct {
 	TotalWithdrawTx    uint64
 }
 
-func (s *Store) GetBepSwapData() BepSwapData {
+func (s *Client) GetBepSwapData() BepSwapData {
 	return BepSwapData{
 		DailyActiveUsers:   s.dailyActiveUsers(),
 		MonthlyActiveUsers: s.monthlyActiveUsers(),
@@ -40,7 +40,7 @@ func (s *Store) GetBepSwapData() BepSwapData {
 	}
 }
 
-func (s *Store) dailyActiveUsers() uint64 {
+func (s *Client) dailyActiveUsers() uint64 {
 	stmnt := `
 		SELECT COUNT(DISTINCT(from_address))+COUNT(DISTINCT (to_address)) daily_active_users
 			FROM txs
@@ -55,7 +55,7 @@ func (s *Store) dailyActiveUsers() uint64 {
 	return dailyActiveUsers
 }
 
-func (s *Store) monthlyActiveUsers() uint64 {
+func (s *Client) monthlyActiveUsers() uint64 {
 	stmnt := `
 		SELECT COUNT(DISTINCT(from_address))+COUNT(DISTINCT (to_address)) monthly_active_users
 			FROM txs
@@ -70,7 +70,7 @@ func (s *Store) monthlyActiveUsers() uint64 {
 	return dailyActiveUsers
 }
 
-func (s *Store) totalUsers() uint64 {
+func (s *Client) totalUsers() uint64 {
 	stmnt := `SELECT COUNT(DISTINCT(from_address))+COUNT(DISTINCT (to_address)) FROM txs`
 	var totalUsers uint64
 	row := s.db.QueryRow(stmnt)
@@ -82,7 +82,7 @@ func (s *Store) totalUsers() uint64 {
 	return totalUsers
 }
 
-func (s *Store) dailyTx() uint64 {
+func (s *Client) dailyTx() uint64 {
 	stmnt := `
 		SELECT COALESCE(COUNT(tx_hash), 0) daily_tx
 			FROM txs
@@ -98,7 +98,7 @@ func (s *Store) dailyTx() uint64 {
 	return dailyTx
 }
 
-func (s *Store) monthlyTx() uint64 {
+func (s *Client) monthlyTx() uint64 {
 	stmnt := `
 		SELECT COALESCE(COUNT(tx_hash), 0) monthly_tx
 			FROM txs
@@ -114,7 +114,7 @@ func (s *Store) monthlyTx() uint64 {
 	return monthlyTx
 }
 
-func (s *Store) totalTx() uint64 {
+func (s *Client) totalTx() uint64 {
 	stmnt := `SELECT COALESCE(COUNT(tx_hash), 0) FROM txs`
 	var totalTx uint64
 	row := s.db.QueryRow(stmnt)
@@ -126,7 +126,7 @@ func (s *Store) totalTx() uint64 {
 	return totalTx
 }
 
-func (s *Store) totalVolume24hr() uint64 {
+func (s *Client) totalVolume24hr() uint64 {
 	stmnt := `
 		SELECT COALESCE(SUM(coins.amount), 0)
 			FROM swaps
@@ -144,7 +144,7 @@ func (s *Store) totalVolume24hr() uint64 {
 	return totalVolume
 }
 
-func (s *Store) totalVolume() uint64 {
+func (s *Client) totalVolume() uint64 {
 	stmnt := `
 		SELECT COALESCE(SUM(coins.amount), 0)
 			FROM swaps
@@ -161,7 +161,7 @@ func (s *Store) totalVolume() uint64 {
 	return totalVolume
 }
 
-func (s *Store) bTotalStaked() uint64 {
+func (s *Client) bTotalStaked() uint64 {
 	stmnt := `SELECT COALESCE(SUM(units), 0) FROM stakes WHERE ticker = 'RUNE'`
 	var totalStaked uint64
 	row := s.db.QueryRow(stmnt)
@@ -173,7 +173,7 @@ func (s *Store) bTotalStaked() uint64 {
 	return totalStaked
 }
 
-func (s *Store) totalDepth() uint64 {
+func (s *Client) totalDepth() uint64 {
 	stakes := s.totalRuneStaked()
 	inSwap := s.runeIncomingSwaps()
 	outSwap := s.runeOutgoingSwaps()
@@ -182,7 +182,7 @@ func (s *Store) totalDepth() uint64 {
 	return depth
 }
 
-func (s *Store) totalRuneStaked() uint64 {
+func (s *Client) totalRuneStaked() uint64 {
 	stmnt := `
 		SELECT SUM(stakes.units) as rune_staked_total
 			FROM coins
@@ -199,7 +199,7 @@ func (s *Store) totalRuneStaked() uint64 {
 	return totalRuneStaked
 }
 
-func (s *Store) runeIncomingSwaps() uint64 {
+func (s *Client) runeIncomingSwaps() uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
@@ -220,7 +220,7 @@ func (s *Store) runeIncomingSwaps() uint64 {
 	return runeIncomingSwaps
 }
 
-func (s *Store) runeOutgoingSwaps() uint64 {
+func (s *Client) runeOutgoingSwaps() uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
@@ -241,11 +241,11 @@ func (s *Store) runeOutgoingSwaps() uint64 {
 	return runeOutgoingSwaps
 }
 
-func (s *Store) bTotalEarned() uint64 {
+func (s *Client) bTotalEarned() uint64 {
 	return 0
 }
 
-func (s *Store) poolCount() uint64 {
+func (s *Client) poolCount() uint64 {
 	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM stakes WHERE ticker != 'RUNE'`
 	var poolCount uint64
 	row := s.db.QueryRow(stmnt)
@@ -257,7 +257,7 @@ func (s *Store) poolCount() uint64 {
 	return poolCount
 }
 
-func (s *Store) totalAssetBuys() uint64 {
+func (s *Client) totalAssetBuys() uint64 {
 	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM swaps WHERE ticker != 'RUNE'`
 	var totalAssetBuys uint64
 	row := s.db.QueryRow(stmnt)
@@ -269,7 +269,7 @@ func (s *Store) totalAssetBuys() uint64 {
 	return totalAssetBuys
 }
 
-func (s *Store) totalAssetSells() uint64 {
+func (s *Client) totalAssetSells() uint64 {
 	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM swaps WHERE ticker == 'RUNE'`
 	var totalAssetSells uint64
 	row := s.db.QueryRow(stmnt)
@@ -281,7 +281,7 @@ func (s *Store) totalAssetSells() uint64 {
 	return totalAssetSells
 }
 
-func (s *Store) totalStakeTx() uint64 {
+func (s *Client) totalStakeTx() uint64 {
 	stmnt := `SELECT COUNT(event_id) FROM stakes`
 	var totalStakeTx uint64
 	row := s.db.QueryRow(stmnt)
@@ -293,7 +293,7 @@ func (s *Store) totalStakeTx() uint64 {
 	return totalStakeTx
 }
 
-func (s *Store) totalWithdrawTx() uint64 {
+func (s *Client) totalWithdrawTx() uint64 {
 	stmnt := `SELECT COUNT(event_id) FROM stakes WHERE units < 0`
 	var totalStakeTx uint64
 	row := s.db.QueryRow(stmnt)
