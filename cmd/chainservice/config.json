@@ -1,6 +1,7 @@
 {
   "listen_port": 8080,
   "is_testnet" : true,
+  "log_level": "debug",
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
