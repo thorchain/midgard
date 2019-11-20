@@ -13,28 +13,28 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 )
 
-type Store struct {
+type Client struct {
 	logger   zerolog.Logger
 	cfg      config.TimeScaleConfiguration
 	db       *sqlx.DB
 }
 
-func NewStoreConnection(cfg config.TimeScaleConfiguration) *Store {
+func NewClientConnection(cfg config.TimeScaleConfiguration) *Client {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password)
 	db := sqlx.MustConnect("postgres", connStr)
-	return &Store{
+	return &Client{
 		cfg:      cfg,
 		db:       db,
 	}
 }
 
-func NewStore(cfg config.TimeScaleConfiguration) (*Store, error) {
+func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	connStr := fmt.Sprintf("user=%s sslmode=%v password=%v", cfg.UserName, cfg.Sslmode, cfg.Password)
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
-		return &Store{}, err
+		return &Client{}, err
 	}
-	return &Store{
+	return &Client{
 		cfg:      cfg,
 		db:       db,
 	}, nil
@@ -43,40 +43,52 @@ func NewStore(cfg config.TimeScaleConfiguration) (*Store, error) {
 // ------------------------------------------------------------------------------------------------------
 // Used for testing
 
-func (s *Store) Open() (*Store, error) {
+func (s *Client) Open() (*Client, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v", s.cfg.UserName, s.cfg.Database, s.cfg.Sslmode, s.cfg.Password)
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
-		return &Store{}, err
+		return &Client{}, err
 	}
-	return &Store{
+	return &Client{
 		cfg:      s.cfg,
 		db:       db,
 	}, nil
 }
 
-func (s *Store) CreateDatabase()  {
+func (s *Client) CreateDatabase() error  {
 	query := fmt.Sprintf(`CREATE DATABASE %v;`, s.cfg.Database)
-	s.db.MustExec(query)
+	_, err := s.db.Exec(query)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *Store) RunMigrations() {
-	migrations := &migrate.FileMigrationSource{
+var (
+	migrations = &migrate.FileMigrationSource{
 		Dir: "../../../db/migrations/",
 	}
+)
 
+func (s *Client) MigrationsUp() error {
 	n, err := migrate.Exec(s.db.DB, "postgres", migrations, migrate.Up)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
-
-	fmt.Printf("Applied %d migrations\n", n)
+	fmt.Printf("Applied %d migrations up\n", n)
+	return nil
 }
 
-func (s *Store) DropDatabase() {
-	// if err := s.db.Close(); err != nil {
-	// 	log.Fatal(err.Error())
-	// }
+func (s *Client) MigrationsDown() error {
+	n, err := migrate.Exec(s.db.DB, "postgres", migrations, migrate.Down)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Applied %d migrations down\n", n)
+	return nil
+}
+
+func (s *Client) DropDatabase() {
 	query := fmt.Sprintf(`DROP DATABASE %v;`, s.cfg.Database)
 	res, err := s.db.Exec(query)
 	if err != nil {
