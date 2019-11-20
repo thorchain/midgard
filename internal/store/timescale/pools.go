@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"log"
+	"time"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
@@ -46,6 +47,31 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
+func (s *Client) GetPriceInUSD(asset common.Asset) float64 {
+	return 0
+}
+
+func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
+	query := `
+		select chain, symbol, ticker
+		from (
+				 select chain, symbol, ticker, sum(units)
+				 from stakes
+				 where symbol = ($1)
+				 group by chain, symbol, ticker) as pools
+		where sum >0
+	`
+
+	row := s.db.QueryRowx(query, asset.Symbol.String())
+
+	var a common.Asset
+
+	if err := row.StructScan(&a); err != nil {
+		return common.Asset{}, err
+	}
+	return a, nil
+}
+
 func (s *Client) GetPools() []common.Asset {
 	var pools []common.Asset
 
@@ -74,7 +100,7 @@ func (s *Client) GetPools() []common.Asset {
 	return pools
 }
 
-func (s *Client) PoolData(asset common.Asset) PoolData {
+func (s *Client) GetPoolData(asset common.Asset) PoolData {
 	if !s.exists(asset) {
 		return PoolData{}
 	}
@@ -101,7 +127,7 @@ func (s *Client) PoolData(asset common.Asset) PoolData {
 		PoolUnits:        s.poolUnits(asset),
 		PoolVolume:       s.poolVolume(asset),
 		PoolVolume24hr:   s.poolVolume24hr(asset),
-		Price:            s.price(asset),
+		Price:            s.GetPriceInRune(asset),
 		RuneDepth:        s.runeDepth(asset),
 		RuneROI:          s.runeROI(asset),
 		RuneStakedTotal:  s.runeStakedTotal(asset),
@@ -120,6 +146,14 @@ func (s *Client) PoolData(asset common.Asset) PoolData {
 	}
 }
 
+func (s *Client) GetPriceInRune(asset common.Asset) float64 {
+	return float64(s.runeDepth(asset) / s.assetDepth(asset))
+}
+
+func (s *Client) GetDateCreated(asset common.Asset) *time.Time {
+	return &time.Time{}
+}
+
 func (s *Client) exists(asset common.Asset) bool {
 	staked := s.stakeTxCount(asset)
 	if staked > 0 {
@@ -127,10 +161,6 @@ func (s *Client) exists(asset common.Asset) bool {
 	}
 
 	return false
-}
-
-func (s *Client) price(asset common.Asset) float64 {
-	return float64(s.runeDepth(asset) / s.assetDepth(asset))
 }
 
 func (s *Client) assetStakedTotal(asset common.Asset) uint64 {
@@ -194,7 +224,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) uint64 {
 func (s *Client) poolStakedTotal(asset common.Asset) uint64 {
 	assetTotal := s.assetStakedTotal(asset)
 	runeTotal := s.runeStakedTotal(asset)
-	price := s.price(asset)
+	price := s.GetPriceInRune(asset)
 
 	stakedPrice := float64(assetTotal) * price
 	stakedTotal := runeTotal + (uint64(stakedPrice))
@@ -370,7 +400,7 @@ func (s *Client) buyVolume(asset common.Asset) uint64 {
 func (s *Client) poolVolume(asset common.Asset) uint64 {
 	buyVolume := float64(s.buyVolume(asset))
 	sellVolume := float64(s.sellVolume(asset))
-	assetPrice := s.price(asset)
+	assetPrice := s.GetPriceInRune(asset)
 
 	poolVolume := (buyVolume + sellVolume) * assetPrice
 
@@ -409,7 +439,7 @@ func (s *Client) buyTxAverage(asset common.Asset) uint64 {
 func (s *Client) poolTxAverage(asset common.Asset) uint64 {
 	sellAvg := float64(s.sellTxAverage(asset))
 	buyAvg := float64(s.buyTxAverage(asset))
-	avg := ((sellAvg + buyAvg) * s.price(asset)) / 2
+	avg := ((sellAvg + buyAvg) * s.GetPriceInRune(asset)) / 2
 
 	return uint64(avg)
 }
@@ -553,7 +583,7 @@ func (s *Client) buyFeesTotal(asset common.Asset) uint64 {
 func (s *Client) poolFeesTotal(asset common.Asset) uint64 {
 	buyTotal := float64(s.buyFeesTotal(asset))
 	sellTotal := float64(s.sellFeesTotal(asset))
-	poolTotal := (buyTotal * s.price(asset)) + sellTotal
+	poolTotal := (buyTotal * s.GetPriceInRune(asset)) + sellTotal
 	return uint64(poolTotal)
 }
 

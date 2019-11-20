@@ -15,7 +15,7 @@
             "symbol": "RUNE-B1A",
             "ticker": "RUNE"
           },
-          "amount": "100"
+          "amount": "2349500000"
         },
         {
           "asset": {
@@ -23,7 +23,7 @@
             "symbol": "TCAN-014",
             "ticker": "TCAN"
           },
-          "amount": "10"
+          "amount": "334850000"
         }
       ],
       "memo": "stake:TCAN-014"
@@ -45,7 +45,110 @@
         "symbol": "TCAN-014",
         "ticker": "TCAN"
       },
-      "stake_units": "100"
+      "stake_units": "1342175000"
+    },
+    "status": "Success"
+  },
+  {
+    "id": "2",
+    "height": "9",
+    "type": "stake",
+    "in_tx": {
+      "id": "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C3",
+      "chain": "BNB",
+      "from_address": "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+      "to_address": "bnb1t3c49u74fum2gtgekwqqdngg5alt4txrq3txad",
+      "coins": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "RUNE-B1A",
+            "ticker": "RUNE"
+          },
+          "amount": "2349500000"
+        },
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BOLT-E42",
+            "ticker": "BOLT"
+          },
+          "amount": "334850000"
+        }
+      ],
+      "memo": "stake:BNB.BOLT-014"
+    },
+    "out_txs": [
+      {
+        "id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "chain": "",
+        "from_address": "",
+        "to_address": "",
+        "coins": null,
+        "memo": ""
+      }
+    ],
+    "gas": null,
+    "event": {
+      "pool": {
+        "chain": "BNB",
+        "symbol": "BOLT-E42",
+        "ticker": "BOLT"
+      },
+      "stake_units": "1342175000"
+    },
+    "status": "Success"
+  },
+  {
+    "id": "3",
+    "height": "10",
+    "type": "swap",
+    "in_tx": {
+      "id": "C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E657",
+      "chain": "BNB",
+      "from_address": "bnb1s3f8vxaqum3pft6cefyn99px8wq6uk3jdtyarn",
+      "to_address": "bnb1t3c49u74fum2gtgekwqqdngg5alt4txrq3txad",
+      "coins": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BOLT-014",
+            "ticker": "BOLT"
+          },
+          "amount": "20000000"
+        }
+      ],
+      "memo": "swap:RUNE-B1A:bnb1ntqj0v0sv62ut0ehxt7jqh7lenfrd3hmfws0aq:124958592"
+    },
+    "out_txs": [
+      {
+        "id": "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+        "chain": "BNB",
+        "from_address": "tbnb1tdfqy34uptx207scymqsy4k5uzfmry5s8lujqt",
+        "to_address": "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        "coins": [
+          {
+            "asset": {
+              "chain": "BNB",
+              "symbol": "RUNE-B1A",
+              "ticker": "RUNE"
+            },
+            "amount": "1"
+          }
+        ],
+        "memo": "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E657"
+      }
+    ],
+    "gas": null,
+    "event": {
+      "pool": {
+        "chain": "BNB",
+        "symbol": "BOLT-014",
+        "ticker": "BOLT"
+      },
+      "price_target": "124958592",
+      "trade_slip": "0.123023930000000000",
+      "liquidity_fee": "7463556"
     },
     "status": "Success"
   },
