@@ -58,9 +58,9 @@ var _ = Describe("Pools", func() {
 				OutTxs: nil,
 				Gas:    nil,
 			},
-			Pool:       common.Asset{
+			Pool: common.Asset{
 				Chain:  "BNB",
-				Symbol: "BNB" ,
+				Symbol: "BNB",
 				Ticker: "BNB",
 			},
 			StakeUnits: 100,

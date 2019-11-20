@@ -7,7 +7,7 @@ import (
 )
 
 type PoolData struct {
-	Asset common.Asset
+	Asset            common.Asset
 	AssetDepth       uint64
 	AssetROI         float64
 	AssetStakedTotal uint64
