@@ -9,7 +9,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-func (s *Store) GetMaxID() (int64, error) {
+func (s *Client) GetMaxID() (int64, error) {
 	query := fmt.Sprintf("SELECT MAX(id) FROM %s", models.ModelEventsTable)
 	var maxId int64
 	err := s.db.Get(&maxId, query)
@@ -19,7 +19,7 @@ func (s *Store) GetMaxID() (int64, error) {
 	return maxId, nil
 }
 
-func (s *Store) CreateEventRecord(record models.Event) error {
+func (s *Client) CreateEventRecord(record models.Event) error {
 	// Ingest basic event
 	err := s.createEventRecord(record)
 	if err != nil {
@@ -46,7 +46,7 @@ func (s *Store) CreateEventRecord(record models.Event) error {
 	return nil
 }
 
-func (s *Store) processGasRecord(record models.Event) error {
+func (s *Client) processGasRecord(record models.Event) error {
 	for _, coin := range record.Gas {
 		if !coin.IsEmpty() {
 			_, err := s.createGasRecord(record, coin)
@@ -58,7 +58,7 @@ func (s *Store) processGasRecord(record models.Event) error {
 	return nil
 }
 
-func (s *Store) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
+func (s *Client) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
 	for _, record := range records {
 		if err := record.IsValid(); err == nil  {
 			_, err := s.createTxRecord(parent, record, direction)
@@ -80,7 +80,7 @@ func (s *Store) processTxsRecord(direction string, parent models.Event, records 
 	return nil
 }
 
-func (s *Store) processTxRecord(direction string, parent models.Event, record common.Tx) error {
+func (s *Client) processTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
 		_, err := s.createTxRecord(parent, record, direction)
@@ -101,7 +101,7 @@ func (s *Store) processTxRecord(direction string, parent models.Event, record co
 	return nil
 }
 
-func (s *Store) createCoinRecord(parent models.Event, record common.Tx, coin common.Coin) (int64, error) {
+func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin common.Coin) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -130,7 +130,7 @@ func (s *Store) createCoinRecord(parent models.Event, record common.Tx, coin com
 	return results.RowsAffected()
 }
 
-func (s *Store) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
+func (s *Client) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -157,7 +157,7 @@ func (s *Store) createGasRecord(parent models.Event, coin common.Coin) (int64, e
 	return results.RowsAffected()
 }
 
-func (s *Store) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
+func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -188,7 +188,7 @@ func (s *Store) createTxRecord(parent models.Event, record common.Tx, direction 
 	return results.RowsAffected()
 }
 
-func (s *Store) createEventRecord(record models.Event) error {
+func (s *Client) createEventRecord(record models.Event) error {
 	query := fmt.Sprintf(`
 			INSERT INTO %v (
 				time,
