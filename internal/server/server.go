@@ -69,7 +69,7 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	timescale:= timescale.NewClientConnection(cfg.TimeScale)
+	timescale := timescale.NewClientConnection(cfg.TimeScale)
 
 	// Setup thorchain BinanceClient scanner
 	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)
@@ -107,7 +107,7 @@ func New(cfgFile *string) (*Server, error) {
 func (s *Server) Start() error {
 	s.registerEchoWithLogger()
 	// Serve HTTP
-	go func()  {
+	go func() {
 		s.echoEngine.Logger.Fatal(s.echoEngine.StartServer(s.srv))
 	}()
 	return s.thorChainClient.StartScan()

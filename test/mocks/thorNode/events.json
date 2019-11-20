@@ -48,5 +48,55 @@
       "stake_units": "100"
     },
     "status": "Success"
+  },
+  {
+    "id": "2",
+    "height": "10",
+    "type": "stake",
+    "in_tx": {
+      "id": "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB3",
+      "chain": "BNB",
+      "from_address": "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju39",
+      "to_address": "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hf",
+      "coins": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "RUNE-B1A",
+            "ticker": "RUNE"
+          },
+          "amount": "100"
+        },
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "TCAN-014",
+            "ticker": "TCAN"
+          },
+          "amount": "10"
+        }
+      ],
+      "memo": "stake:TCAN-014"
+    },
+    "out_txs": [
+      {
+        "id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "chain": "",
+        "from_address": "",
+        "to_address": "",
+        "coins": null,
+        "memo": ""
+      }
+    ],
+    "gas": null,
+    "event": {
+      "pool": {
+        "chain": "BNB",
+        "symbol": "TCAN-014",
+        "ticker": "TCAN"
+      },
+      "stake_units": "100"
+    },
+    "status": "Success"
   }
 ]

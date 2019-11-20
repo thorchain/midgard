@@ -14,17 +14,17 @@ import (
 )
 
 type Client struct {
-	logger   zerolog.Logger
-	cfg      config.TimeScaleConfiguration
-	db       *sqlx.DB
+	logger zerolog.Logger
+	cfg    config.TimeScaleConfiguration
+	db     *sqlx.DB
 }
 
 func NewClientConnection(cfg config.TimeScaleConfiguration) *Client {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password)
 	db := sqlx.MustConnect("postgres", connStr)
 	return &Client{
-		cfg:      cfg,
-		db:       db,
+		cfg: cfg,
+		db:  db,
 	}
 }
 
@@ -35,8 +35,8 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		return &Client{}, err
 	}
 	return &Client{
-		cfg:      cfg,
-		db:       db,
+		cfg: cfg,
+		db:  db,
 	}, nil
 }
 
@@ -50,12 +50,12 @@ func (s *Client) Open() (*Client, error) {
 		return &Client{}, err
 	}
 	return &Client{
-		cfg:      s.cfg,
-		db:       db,
+		cfg: s.cfg,
+		db:  db,
 	}, nil
 }
 
-func (s *Client) CreateDatabase() error  {
+func (s *Client) CreateDatabase() error {
 	query := fmt.Sprintf(`CREATE DATABASE %v;`, s.cfg.Database)
 	_, err := s.db.Exec(query)
 	if err != nil {
@@ -96,4 +96,5 @@ func (s *Client) DropDatabase() {
 	}
 	spew.Dump(res)
 }
+
 // ------------------------------------------------------------------------------------------------------

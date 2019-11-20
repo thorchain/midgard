@@ -211,18 +211,18 @@ func (s *Client) assetStaked(address common.Address, asset common.Asset) uint64 
 }
 
 func (s *Client) poolStaked(address common.Address, asset common.Asset) uint64 {
-	runeStaked := float64(s.runeStaked(address,asset))
-	assetStaked := float64(s.assetStaked(address,asset))
+	runeStaked := float64(s.runeStaked(address, asset))
+	assetStaked := float64(s.assetStaked(address, asset))
 	assetPrice := s.price(asset)
-	return uint64(runeStaked + assetStaked * assetPrice)
+	return uint64(runeStaked + assetStaked*assetPrice)
 }
 
 func (s *Client) runeEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.runeDepth(asset)) - uint64(s.runeStakedTotal(asset)))
+	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.runeDepth(asset) - s.runeStakedTotal(asset))
 }
 
 func (s *Client) assetEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.assetDepth(asset)) - uint64(s.assetStakedTotal(asset)))
+	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.assetDepth(asset) - s.assetStakedTotal(asset))
 }
 
 func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
@@ -245,7 +245,7 @@ func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) flo
 }
 
 func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) float64 {
-	return (s.stakersAssetROI(address,asset) + s.stakersAssetROI(address,asset)) / 2
+	return (s.stakersAssetROI(address, asset) + s.stakersAssetROI(address, asset)) / 2
 }
 
 func (s *Client) totalStaked(address common.Address) uint64 {
