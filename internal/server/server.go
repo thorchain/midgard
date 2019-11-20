@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
@@ -30,9 +28,9 @@ import (
 // Server
 type Server struct {
 	cfg             config.Configuration
+	srv             *http.Server
 	logger          zerolog.Logger
 	echoEngine      *echo.Echo
-	httpServer      *http.Server
 	thorChainClient *thorChain.API
 }
 
@@ -55,16 +53,13 @@ func initLog(level string, pretty bool) zerolog.Logger {
 }
 
 func New(cfgFile *string) (*Server, error) {
-
 	// Load config
 	cfg, err := config.LoadConfiguration(*cfgFile)
-	spew.Dump(cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to load chain service config")
 	}
 
-	// TODO update configuration with logger level and pretty settings
-	log := initLog("debug", false)
+	log := initLog(cfg.LogLevel, false)
 
 	logoClient := logo.NewLogoClient(cfg)
 
@@ -89,42 +84,31 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	handlers := handlers.New(timescale, thorChainApi, logger, binanceClient, logoClient)
+	h := handlers.New(timescale, thorChainApi, logger, binanceClient, logoClient)
 
 	// Register handlers with BinanceClient handlers
-	api.RegisterHandlers(echoEngine, handlers)
-
-	// TODO Remove this for a pure echo setup
-	mux := http.NewServeMux()
-	mux.Handle("/v1/", echoEngine)
+	api.RegisterHandlers(echoEngine, h)
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.ListenPort),
+		Addr:         fmt.Sprintf(":%v", cfg.ListenPort),
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
-		Handler:      mux,
 	}
 
 	return &Server{
 		echoEngine:      echoEngine,
-		httpServer:      srv,
 		cfg:             *cfg,
+		srv:             srv,
 		logger:          logger,
 		thorChainClient: thorChainApi,
 	}, nil
 }
 
 func (s *Server) Start() error {
-	s.logger.Info().Msgf("start http httpServer, listen on port:%d", s.cfg.ListenPort)
-
 	s.registerEchoWithLogger()
-
 	// Serve HTTP
-	go func() {
-		// TODO Make echo only
-		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			s.logger.Error().Err(err).Msg("fail to start server")
-		}
+	go func()  {
+		s.echoEngine.Logger.Fatal(s.echoEngine.StartServer(s.srv))
 	}()
 	return s.thorChainClient.StartScan()
 }
@@ -135,7 +119,7 @@ func (s *Server) Stop() error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
 	defer cancel()
-	return s.httpServer.Shutdown(ctx)
+	return s.echoEngine.Shutdown(ctx)
 }
 
 func (s *Server) Log() *zerolog.Logger {

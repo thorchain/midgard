@@ -163,7 +163,9 @@ func (api *API) processUnstakeEvent(evt types.Event) error {
 
 // StartScan start to scan
 func (api *API) StartScan() error {
+	api.logger.Info().Msg("start thorchain event scanning")
 	if !api.cfg.EnableScan {
+		api.logger.Debug().Msg("Scan not enabled.")
 		return nil
 	}
 	api.wg.Add(1)
