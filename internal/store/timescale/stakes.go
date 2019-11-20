@@ -211,10 +211,10 @@ func (s *Client) assetStaked(address common.Address, asset common.Asset) uint64 
 }
 
 func (s *Client) poolStaked(address common.Address, asset common.Asset) uint64 {
-	runeStaked := float64(s.runeStaked(address, asset))
-	assetStaked := float64(s.assetStaked(address, asset))
-	assetPrice := s.price(asset)
-	return uint64(runeStaked + assetStaked*assetPrice)
+	runeStaked := float64(s.runeStaked(address,asset))
+	assetStaked := float64(s.assetStaked(address,asset))
+	assetPrice := s.GetPriceInRune(asset)
+	return uint64(runeStaked + assetStaked * assetPrice)
 }
 
 func (s *Client) runeEarned(address common.Address, asset common.Asset) uint64 {
@@ -228,7 +228,7 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) uint64 
 func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
 	runeEarned := float64(s.runeEarned(address, asset))
 	assetEarned := float64(s.assetEarned(address, asset))
-	assetPrice := s.price(asset)
+	assetPrice := s.GetPriceInRune(asset)
 	return uint64(runeEarned + (assetEarned * assetPrice))
 }
 
