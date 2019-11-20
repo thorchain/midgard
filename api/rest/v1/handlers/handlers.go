@@ -139,11 +139,10 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	return ctx.JSON(http.StatusOK, "res")
 }
 
-// (GET /v1/bepswap)
-func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
+// (GET /v1/stats)
+func (h *Handlers) GetStats(ctx echo.Context) error {
 	bepSwapData := h.store.GetBepSwapData()
-
-	response := api.BEPSwapResponse{
+	response := api.StatsResponse{
 		DailyActiveUsers:   pointy.Int64(int64(bepSwapData.DailyActiveUsers)),
 		DailyTx:            pointy.Int64(int64(bepSwapData.DailyTx)),
 		MonthlyActiveUsers: pointy.Int64(int64(bepSwapData.MonthlyActiveUsers)),
@@ -161,7 +160,6 @@ func (h *Handlers) GetBEPSwapData(ctx echo.Context) error {
 		TotalVolume24hr:    pointy.Int64(int64(bepSwapData.TotalVolume24hr)),
 		TotalWithdrawTx:    pointy.Int64(int64(bepSwapData.TotalWithdrawTx)),
 	}
-
 	return ctx.JSON(http.StatusOK, response)
 }
 
