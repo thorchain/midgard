@@ -27,7 +27,7 @@ func (s *Client) CreateEventRecord(record models.Event) error {
 	}
 
 	// Ingest InTx
-	err = s.processTxRecord("in" , record,record.InTx )
+	err = s.processTxRecord("in", record, record.InTx)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
@@ -60,7 +60,7 @@ func (s *Client) processGasRecord(record models.Event) error {
 
 func (s *Client) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
 	for _, record := range records {
-		if err := record.IsValid(); err == nil  {
+		if err := record.IsValid(); err == nil {
 			_, err := s.createTxRecord(parent, record, direction)
 			if err != nil {
 				return errors.Wrap(err, "Failed createTxRecord")

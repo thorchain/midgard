@@ -1,23 +1,19 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/99designs/gqlgen/handler"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
-
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/resolvers"
+	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
 	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/helpers"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
-
 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
-
-	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -65,31 +61,29 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 
 // (GET /v1/tx/{address})
 func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
-
-	ass, _ := common.NewAsset("BNB")
-
-	response := api.TxDetails{
-		//TestDailyActiveUsers:   nil,
-		Pool: helpers.ConvertAssetForAPI(ass),
-		// Status:          nil,
-		// Date:            nil,
-		// Height:          nil,
-		// TotalAssetBuys:     nil,
-		// TotalAssetSells:    nil,
-		// TotalDepth:         nil,
-		// TotalEarned:        nil,
-		// TotalStakeTx:       nil,
-		// TotalStaked:        nil,
-		// TotalTx:            nil,
-		// TotalUsers:         nil,
-		// TotalVolume:        nil,
-		// TotalVolume24hr:    nil,
-		// TotalWithdrawTx:    nil,
+	addr, _ := common.NewAddress(address)
+	txData := h.store.GetTxData(addr)
+	var response api.TxDetailedResponse
+	for _, d := range txData {
+		txD := api.TxDetails{
+			Date:    &d.Date,
+			Events:  helpers.ConvertEventDataForAPI(d.Events),
+			Gas:     helpers.ConvertGasForAPI(d.Gas),
+			Height:  pointy.Int64(int64(d.Height)),
+			In:      helpers.ConvertTxForAPI(d.In),
+			Options: helpers.ConvertOptionsForAPI(d.Options),
+			Out:     helpers.ConvertTxForAPI(d.Out),
+			Pool: &api.Asset{
+				Chain:  pointy.String(d.Pool.Chain.String()),
+				Symbol: pointy.String(d.Pool.Symbol.String()),
+				Ticker: pointy.String(d.Pool.Ticker.String()),
+			},
+			Status: pointy.String(d.Status),
+			Type:   pointy.String(d.Type),
+		}
+		response = append(response, txD)
 	}
-
 	return ctx.JSON(http.StatusOK, response)
-
-	//	return ctx.JSON(http.StatusOK, "OK")
 }
 
 // (GET /v1/pools)
@@ -152,7 +146,7 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 		TotalAssetSells:    pointy.Int64(int64(bepSwapData.TotalAssetSells)),
 		TotalDepth:         pointy.Int64(int64(bepSwapData.TotalDepth)),
 		TotalEarned:        pointy.Int64(int64(bepSwapData.TotalEarned)),
-		TotalStakeTx:      	pointy.Int64(int64(bepSwapData.TotalStakeTx)),
+		TotalStakeTx:       pointy.Int64(int64(bepSwapData.TotalStakeTx)),
 		TotalStaked:        pointy.Int64(int64(bepSwapData.TotalStaked)),
 		TotalTx:            pointy.Int64(int64(bepSwapData.TotalTx)),
 		TotalUsers:         pointy.Int64(int64(bepSwapData.TotalUsers)),
@@ -220,7 +214,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
 	addresses := h.store.GetStakerAddresses()
 	response := api.StakersResponse{}
-	for _,addr := range addresses {
+	for _, addr := range addresses {
 		response = append(response, api.Stakers(addr.String()))
 	}
 	return ctx.JSON(http.StatusOK, response)
@@ -242,12 +236,12 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 	}
 
 	var assets []api.Asset
-	for _, asset := range details.PoolsDetails{
+	for _, asset := range details.PoolsDetails {
 		assets = append(assets, *helpers.ConvertAssetForAPI(asset))
 	}
 
 	response := api.StakersAddressDataResponse{
-		PoolsArray: &assets,
+		PoolsArray:  &assets,
 		TotalEarned: pointy.Int64(int64(details.TotalEarned)),
 		TotalROI:    pointy.Float64(details.TotalROI),
 		TotalStaked: pointy.Int64(int64(details.TotalStaked)),

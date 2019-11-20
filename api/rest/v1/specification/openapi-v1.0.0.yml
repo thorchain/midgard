@@ -38,7 +38,7 @@ paths:
     get:
       operationId: GetTxDetails
       summary: Get transaction
-      description: Returns an object containing the health response of the API.
+      description: Return an object containing the tx details
       parameters:
         - in: path
           name: address
@@ -235,71 +235,22 @@ components:
           type: string
           enum: [success, refund, priceCancelled] 
         in:
-          type: object
-          properties:
-              txID:
-                type: string
-              memo:
-                type: string
-              address:
-                type: string
-              coin:
-                type: object
-                properties:
-                  asset:
-                    $ref: '#/components/schemas/asset'
-                  amount:
-                    type: string
+          $ref: '#/components/schemas/tx'
         out:
-          type: object
-          properties:
-              txID:
-                type: string
-              memo:
-                type: string
-              address:
-                type: string
-              coin:
-                type: object
-                properties:
-                  asset:
-                    $ref: '#/components/schemas/asset'
-                  amount:
-                    type: string
+          $ref: '#/components/schemas/tx'
         date:
           type: string
           format: 'date-time'
         gas:
-          type: object
-          properties:
-            asset:
-              $ref: '#/components/schemas/asset'
-            amount:
-              type: string        
+          $ref: '#/components/schemas/gas'
         options:
-            type: object
-            properties:
-              Stake:
-                type: string 
-              Withdraw:
-                type: string  
-              Swap:
-                type: string   
+          $ref: '#/components/schemas/option'
         height:
           type: integer
           format: int64 
         events:
-          type: object
-          properties:
-            fee:
-              type: integer
-              format: int64 
-            stakeUnits:
-              type: integer 
-              format: int64 
-            slip:
-              type: number 
-              format: double                      
+          $ref: '#/components/schemas/event'
+
     StatsData:
       type: object
       properties:
@@ -620,7 +571,19 @@ components:
       type: object
       properties:
         error:
-          type: string                    
+          type: string
+    coins:
+      type: array
+      items:
+        $ref: '#/components/schemas/coin'
+    coin:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/asset'
+        amount:
+          type: integer
+          format: int64
     asset:
       type: object
       properties:
@@ -630,6 +593,49 @@ components:
           type: string
         ticker:
           type: string
+    tx:
+      type: object
+      properties:
+        txID:
+          type: string
+        memo:
+          type: string
+        address:
+          type: string
+        coins:
+          $ref: '#/components/schemas/coins'
+    gas:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/asset'
+        amount:
+          type: integer
+          format: int64
+    option:
+      type: object
+      properties:
+        priceTarget:
+          type: integer
+          format: int64
+        withdrawBasisPoints:
+          type: integer
+          format: int64
+        asymmetry:
+          type: number
+          format: double
+    event:
+      type: object
+      properties:
+        fee:
+          type: integer
+          format: int64
+        stakeUnits:
+          type: integer
+          format: int64
+        slip:
+          type: number
+          format: double
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
