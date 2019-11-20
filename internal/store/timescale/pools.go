@@ -7,6 +7,7 @@ import (
 )
 
 type PoolData struct {
+	Status           string // TODO build
 	Asset            common.Asset
 	AssetDepth       uint64
 	AssetROI         float64
