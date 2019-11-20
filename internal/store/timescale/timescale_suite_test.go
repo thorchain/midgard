@@ -2,19 +2,11 @@ package timescale_test
 
 import (
 	"log"
-	"testing"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
 )
 
-func TestTimescale(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Timescale Suite")
-}
 
 const (
 	host     = "localhost"

@@ -2,7 +2,6 @@ package timescale
 
 import (
 	"log"
-	"time"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
@@ -47,6 +46,7 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
+// TODO Calculate from USD pools
 func (s *Client) GetPriceInUSD(asset common.Asset) float64 {
 	return 0
 }
@@ -148,10 +148,6 @@ func (s *Client) GetPoolData(asset common.Asset) PoolData {
 
 func (s *Client) GetPriceInRune(asset common.Asset) float64 {
 	return float64(s.runeDepth(asset) / s.assetDepth(asset))
-}
-
-func (s *Client) GetDateCreated(asset common.Asset) *time.Time {
-	return &time.Time{}
 }
 
 func (s *Client) exists(asset common.Asset) bool {
