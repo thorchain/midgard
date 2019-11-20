@@ -32,6 +32,7 @@ var (
 		"FTM-585":   "FTM-A64",
 		"LOK-3C0":   "LOKI-6A9",
 		"TOMOB-1E1": "TOMOB-4BC",
+		"BOLT-E42": "BOLT-4C6",
 	}
 )
 
@@ -56,11 +57,11 @@ func (lc *LogoClient) buildUrl(asset common.Asset) string {
 			return "url unavailable"
 		}
 
-		logoUrl := fmt.Sprintf("%s/%s/assets/%s/logo.png", baseUrl, chain, strings.ToLower(ass))
+		logoUrl := fmt.Sprintf("%s/%s/assets/%s/logo.png", baseUrl, chain, strings.ToUpper(ass))
 		return logoUrl
 	}
 
-	logoUrl := fmt.Sprintf("%s/%s/assets/%s/logo.png", baseUrl, chain, strings.ToLower(asset.Symbol.String()))
+	logoUrl := fmt.Sprintf("%s/%s/assets/%s/logo.png", baseUrl, chain, strings.ToUpper(asset.Symbol.String()))
 	return logoUrl
 }
 

@@ -1,20 +1,15 @@
-package timescale_test
+package timescale
 
 import (
 	"log"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "gopkg.in/check.v1"
 
 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
 )
 
-func TestTimescale(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Timescale Suite")
-}
+func Test(t *testing.T) { TestingT(t) }
 
 const (
 	host     = "localhost"
@@ -25,7 +20,7 @@ const (
 	sslMode  = "disable"
 )
 
-func NewTestStore() *timescale.Client {
+func NewTestStore() *Client {
 	cfg := config.TimeScaleConfiguration{
 		Host:     host,
 		Port:     port,
@@ -35,7 +30,7 @@ func NewTestStore() *timescale.Client {
 		Sslmode:  sslMode,
 	}
 
-	db, err := timescale.NewClient(cfg)
+	db, err := NewClient(cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
