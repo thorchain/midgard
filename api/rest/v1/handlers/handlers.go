@@ -122,11 +122,11 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	}
 
 	response := api.AssetsDetailedResponse{
-		Asset: helpers.ConvertAssetForAPI(pool),
+		Asset:       helpers.ConvertAssetForAPI(pool),
 		DateCreated: h.store.GetDateCreated(pool),
-		Logo: pointy.String(h.logoClient.GetLogoUrl(pool)),
-		Name: pointy.String(tokenData.Name),
-		PriceRune: pointy.Float64(h.store.GetPriceInRune(pool)),
+		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
+		Name:        pointy.String(tokenData.Name),
+		PriceRune:   pointy.Float64(h.store.GetPriceInRune(pool)),
 		PriceUSD:    pointy.Float64(h.store.GetPriceInUSD(pool)),
 	}
 
