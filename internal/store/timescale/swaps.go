@@ -8,7 +8,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-func (s *Store) CreateSwapRecord(record models.EventSwap) error {
+func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 	err := s.CreateEventRecord(record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")

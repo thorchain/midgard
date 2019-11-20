@@ -29,12 +29,12 @@ type API struct {
 	netClient     *http.Client
 	wg            *sync.WaitGroup
 	stopChan      chan struct{}
-	store         *timescale.Store
+	store         *timescale.Client
 	binanceClient *binance.BinanceClient
 }
 
 // NewBinanceClient create a new instance of API which can talk to thorChain
-func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.BinanceClient, timescale *timescale.Store) (*API, error) {
+func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.BinanceClient, timescale *timescale.Client) (*API, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}

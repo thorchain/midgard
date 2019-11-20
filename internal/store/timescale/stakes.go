@@ -10,7 +10,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-func (s *Store) CreateStakeRecord(record models.EventStake) error {
+func (s *Client) CreateStakeRecord(record models.EventStake) error {
 	err := s.CreateEventRecord(record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
@@ -42,7 +42,7 @@ func (s *Store) CreateStakeRecord(record models.EventStake) error {
 }
 
 // GetStakerAddresses returns am array of all the staker addresses seen by the api
-func (s *Store) GetStakerAddresses() []common.Address {
+func (s *Client) GetStakerAddresses() []common.Address {
 	query := `
 		select from_address
 		from (
@@ -89,7 +89,7 @@ type StakerAddressDetails struct {
 	TotalStaked  uint64
 }
 
-func (s *Store) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
+func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
 	pools := s.getPools(address)
 
 	return StakerAddressDetails{
@@ -116,7 +116,7 @@ type StakerAddressAndAssetDetails struct {
 }
 
 // GetStakersAddressAndAssetDetails:
-func (s *Store) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
+func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
 	// confirm asset in addresses pools
 	pools := s.getPools(address)
 	found := false
@@ -147,7 +147,7 @@ func (s *Store) GetStakersAddressAndAssetDetails(address common.Address, asset c
 	return details, nil
 }
 
-func (s *Store) stakeUnits(address common.Address, asset common.Asset) uint64 {
+func (s *Client) stakeUnits(address common.Address, asset common.Asset) uint64 {
 	query := `
 		SELECT SUM(s.units)
 		FROM stakes s
@@ -168,7 +168,7 @@ func (s *Store) stakeUnits(address common.Address, asset common.Asset) uint64 {
 	return stakeUnits
 }
 
-func (s *Store) runeStaked(address common.Address, asset common.Asset) uint64 {
+func (s *Client) runeStaked(address common.Address, asset common.Asset) uint64 {
 	query := `
 		select sum(amount)
 		FROM coins c
@@ -189,7 +189,7 @@ func (s *Store) runeStaked(address common.Address, asset common.Asset) uint64 {
 	return runeStaked
 }
 
-func (s *Store) assetStaked(address common.Address, asset common.Asset) uint64 {
+func (s *Client) assetStaked(address common.Address, asset common.Asset) uint64 {
 	query := `
 		select sum(amount)
 		FROM coins c
@@ -210,45 +210,45 @@ func (s *Store) assetStaked(address common.Address, asset common.Asset) uint64 {
 	return assetStaked
 }
 
-func (s *Store) poolStaked(address common.Address, asset common.Asset) uint64 {
+func (s *Client) poolStaked(address common.Address, asset common.Asset) uint64 {
 	runeStaked := float64(s.runeStaked(address,asset))
 	assetStaked := float64(s.assetStaked(address,asset))
 	assetPrice := s.price(asset)
 	return uint64(runeStaked + assetStaked * assetPrice)
 }
 
-func (s *Store) runeEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.runeDepth(asset) - s.runeStakedTotal(asset))
+func (s *Client) runeEarned(address common.Address, asset common.Asset) uint64 {
+	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.runeDepth(asset)) - uint64(s.runeStakedTotal(asset)))
 }
 
-func (s *Store) assetEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.assetDepth(asset) -s.assetStakedTotal(asset))
+func (s *Client) assetEarned(address common.Address, asset common.Asset) uint64 {
+	return s.stakeUnits(address, asset) / uint64(s.poolUnits(asset)) * (uint64(s.assetDepth(asset)) - uint64(s.assetStakedTotal(asset)))
 }
 
-func (s *Store) poolEarned(address common.Address, asset common.Asset) uint64 {
+func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
 	runeEarned := float64(s.runeEarned(address, asset))
 	assetEarned := float64(s.assetEarned(address, asset))
 	assetPrice := s.price(asset)
 	return uint64(runeEarned + (assetEarned * assetPrice))
 }
 
-func (s *Store) stakersRuneROI(address common.Address, asset common.Asset) float64 {
+func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) float64 {
 	return float64(s.runeEarned(address, asset) / s.runeStaked(address, asset))
 }
 
-func (s *Store) dateFirstStaked(address common.Address, asset common.Asset) time.Time {
+func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) time.Time {
 	return time.Time{} // TODO finish
 }
 
-func (s *Store) stakersAssetROI(address common.Address, asset common.Asset) float64 {
+func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) float64 {
 	return float64(s.assetEarned(address, asset) / s.assetStaked(address, asset))
 }
 
-func (s *Store) stakersPoolROI(address common.Address, asset common.Asset) float64 {
+func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) float64 {
 	return (s.stakersAssetROI(address,asset) + s.stakersAssetROI(address,asset)) / 2
 }
 
-func (s *Store) totalStaked(address common.Address) uint64 {
+func (s *Client) totalStaked(address common.Address) uint64 {
 	query := `
 		SELECT SUM(units)
 		FROM (
@@ -274,7 +274,7 @@ func (s *Store) totalStaked(address common.Address) uint64 {
 	return totalStaked
 }
 
-func (s *Store) getPools(address common.Address) []common.Asset {
+func (s *Client) getPools(address common.Address) []common.Asset {
 	query := `
 		SELECT chain, symbol, ticker
 		FROM (
@@ -322,10 +322,10 @@ func (s *Store) getPools(address common.Address) []common.Asset {
 	return pools
 }
 
-func (s *Store) totalEarned(pools []common.Asset) uint64 {
+func (s *Client) totalEarned(pools []common.Asset) uint64 {
 	return 0
 }
 
-func (s *Store) totalROI(address common.Address) float64 {
+func (s *Client) totalROI(address common.Address) float64 {
 	return 0
 }

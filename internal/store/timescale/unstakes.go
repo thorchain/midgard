@@ -8,7 +8,7 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
-func (s *Store) CreateUnStakesRecord(record models.EventUnstake) error {
+func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 	err := s.CreateEventRecord(record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")

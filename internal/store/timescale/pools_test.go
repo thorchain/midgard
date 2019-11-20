@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("Pools", func() {
 	var (
-		Store *timescale.Store
+		Store *timescale.Client
 		Pools []common.Asset
 	)
 
@@ -74,7 +74,9 @@ var _ = Describe("Pools", func() {
 	})
 
 	AfterSuite(func() {
-		Store.DropDatabase()
+		if err := Store.MigrationsDown(); err != nil {
+			log.Println(err.Error())
+		}
 	})
 
 	Describe("when an asset is staked", func() {

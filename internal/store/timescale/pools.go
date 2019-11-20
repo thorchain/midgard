@@ -46,7 +46,7 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
-func (s *Store) GetPools() []common.Asset {
+func (s *Client) GetPools() []common.Asset {
 	var pools []common.Asset
 
 	query := `
@@ -74,7 +74,7 @@ func (s *Store) GetPools() []common.Asset {
 	return pools
 }
 
-func (s *Store) PoolData(asset common.Asset) PoolData {
+func (s *Client) PoolData(asset common.Asset) PoolData {
 	if !s.exists(asset) {
 		return PoolData{}
 	}
@@ -120,7 +120,7 @@ func (s *Store) PoolData(asset common.Asset) PoolData {
 	}
 }
 
-func (s *Store) exists(asset common.Asset) bool {
+func (s *Client) exists(asset common.Asset) bool {
 	staked := s.stakeTxCount(asset)
 	if staked > 0 {
 		return true
@@ -129,11 +129,11 @@ func (s *Store) exists(asset common.Asset) bool {
 	return false
 }
 
-func (s *Store) price(asset common.Asset) float64 {
+func (s *Client) price(asset common.Asset) float64 {
 	return float64(s.runeDepth(asset) / s.assetDepth(asset))
 }
 
-func (s *Store) assetStakedTotal(asset common.Asset) uint64 {
+func (s *Client) assetStakedTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT coins.amount
 			FROM stakes
@@ -151,7 +151,7 @@ func (s *Store) assetStakedTotal(asset common.Asset) uint64 {
 	return assetStakedTotal
 }
 
-func (s *Store) assetWithdrawnTotal(asset common.Asset) uint64 {
+func (s *Client) assetWithdrawnTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT COALESCE(SUM(stakes.units), 0) asset_withdrawn_total
 		FROM stakes
@@ -169,7 +169,7 @@ func (s *Store) assetWithdrawnTotal(asset common.Asset) uint64 {
 	return assetWithdrawnTotal
 }
 
-func (s *Store) runeStakedTotal(asset common.Asset) uint64 {
+func (s *Client) runeStakedTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(stakes.units) as rune_staked_total
 			FROM coins
@@ -191,7 +191,7 @@ func (s *Store) runeStakedTotal(asset common.Asset) uint64 {
 	return runeStakedTotal
 }
 
-func (s *Store) poolStakedTotal(asset common.Asset) uint64 {
+func (s *Client) poolStakedTotal(asset common.Asset) uint64 {
 	assetTotal := s.assetStakedTotal(asset)
 	runeTotal := s.runeStakedTotal(asset)
 	price := s.price(asset)
@@ -207,7 +207,7 @@ func (s *Store) poolStakedTotal(asset common.Asset) uint64 {
 // -outgoingSwapAsset
 // -withdraws
 // TODO This is bring back an incorrect amount.
-func (s *Store) assetDepth(asset common.Asset) uint64 {
+func (s *Client) assetDepth(asset common.Asset) uint64 {
 	stakes := s.assetStakedTotal(asset)
 	inSwap := s.incomingSwapTotal(asset)
 	outSwap := s.outgoingSwapTotal(asset)
@@ -216,7 +216,7 @@ func (s *Store) assetDepth(asset common.Asset) uint64 {
 	return depth
 }
 
-func (s *Store) runeDepth(asset common.Asset) uint64 {
+func (s *Client) runeDepth(asset common.Asset) uint64 {
 	stakes := s.runeStakedTotal(asset)
 	inSwap := s.incomingRuneSwapTotal(asset)
 	outSwap := s.outgoingRuneSwapTotal(asset)
@@ -225,7 +225,7 @@ func (s *Store) runeDepth(asset common.Asset) uint64 {
 	return depth
 }
 
-func (s *Store) incomingSwapTotal(asset common.Asset) uint64 {
+func (s *Client) incomingSwapTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
@@ -246,7 +246,7 @@ func (s *Store) incomingSwapTotal(asset common.Asset) uint64 {
 	return incomingSwapTotal
 }
 
-func (s *Store) outgoingSwapTotal(asset common.Asset) uint64 {
+func (s *Client) outgoingSwapTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
@@ -267,7 +267,7 @@ func (s *Store) outgoingSwapTotal(asset common.Asset) uint64 {
 	return outgoingSwapTotal
 }
 
-func (s *Store) incomingRuneSwapTotal(asset common.Asset) uint64 {
+func (s *Client) incomingRuneSwapTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) AS incoming_swap_total
 			FROM coins
@@ -290,7 +290,7 @@ func (s *Store) incomingRuneSwapTotal(asset common.Asset) uint64 {
 	return incomingRuneSwapTotal
 }
 
-func (s *Store) outgoingRuneSwapTotal(asset common.Asset) uint64 {
+func (s *Client) outgoingRuneSwapTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) AS outgoing_swap_total
 			FROM coins
@@ -313,12 +313,12 @@ func (s *Store) outgoingRuneSwapTotal(asset common.Asset) uint64 {
 	return outgoingSwapTotal
 }
 
-func (s *Store) poolDepth(asset common.Asset) uint64 {
+func (s *Client) poolDepth(asset common.Asset) uint64 {
 	runeDepth := s.runeDepth(asset)
 	return 2 * runeDepth
 }
 
-func (s *Store) poolUnits(asset common.Asset) uint64 {
+func (s *Client) poolUnits(asset common.Asset) uint64 {
 	assetTotal := s.assetStakedTotal(asset)
 	runeTotal := s.runeStakedTotal(asset)
 
@@ -327,7 +327,7 @@ func (s *Store) poolUnits(asset common.Asset) uint64 {
 	return totalUnits
 }
 
-func (s *Store) sellVolume(asset common.Asset) uint64 {
+func (s *Client) sellVolume(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) sell_volume
 			FROM coins
@@ -347,7 +347,7 @@ func (s *Store) sellVolume(asset common.Asset) uint64 {
 	return sellVolume
 }
 
-func (s *Store) buyVolume(asset common.Asset) uint64 {
+func (s *Client) buyVolume(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(coins.amount) buy_volume
 			FROM coins
@@ -367,7 +367,7 @@ func (s *Store) buyVolume(asset common.Asset) uint64 {
 	return buyVolume
 }
 
-func (s *Store) poolVolume(asset common.Asset) uint64 {
+func (s *Client) poolVolume(asset common.Asset) uint64 {
 	buyVolume := float64(s.buyVolume(asset))
 	sellVolume := float64(s.sellVolume(asset))
 	assetPrice := s.price(asset)
@@ -378,11 +378,11 @@ func (s *Store) poolVolume(asset common.Asset) uint64 {
 }
 
 // TODO : Needs to be implemented.
-func (s *Store) poolVolume24hr(asset common.Asset) uint64 {
+func (s *Client) poolVolume24hr(asset common.Asset) uint64 {
 	return 0
 }
 
-func (s *Store) sellTxAverage(asset common.Asset) uint64 {
+func (s *Client) sellTxAverage(asset common.Asset) uint64 {
 	sellVolume := s.sellVolume(asset)
 	sellCount := s.sellAssetCount(asset)
 
@@ -394,7 +394,7 @@ func (s *Store) sellTxAverage(asset common.Asset) uint64 {
 	return avg
 }
 
-func (s *Store) buyTxAverage(asset common.Asset) uint64 {
+func (s *Client) buyTxAverage(asset common.Asset) uint64 {
 	buyVolume := s.buyVolume(asset)
 	buyCount := s.buyAssetCount(asset)
 
@@ -406,7 +406,7 @@ func (s *Store) buyTxAverage(asset common.Asset) uint64 {
 	return avg
 }
 
-func (s *Store) poolTxAverage(asset common.Asset) uint64 {
+func (s *Client) poolTxAverage(asset common.Asset) uint64 {
 	sellAvg := float64(s.sellTxAverage(asset))
 	buyAvg := float64(s.buyTxAverage(asset))
 	avg := ((sellAvg + buyAvg) * s.price(asset)) / 2
@@ -414,7 +414,7 @@ func (s *Store) poolTxAverage(asset common.Asset) uint64 {
 	return uint64(avg)
 }
 
-func (s *Store) sellSlipAverage(asset common.Asset) float64 {
+func (s *Client) sellSlipAverage(asset common.Asset) float64 {
 	stmnt := `
 		SELECT AVG(swaps.trade_slip) sell_slip_average
 			FROM coins
@@ -434,7 +434,7 @@ func (s *Store) sellSlipAverage(asset common.Asset) float64 {
 	return sellSlipAverage
 }
 
-func (s *Store) buySlipAverage(asset common.Asset) float64 {
+func (s *Client) buySlipAverage(asset common.Asset) float64 {
 	stmnt := `
 		SELECT AVG(swaps.trade_slip) buy_slip_average
 			FROM coins
@@ -454,7 +454,7 @@ func (s *Store) buySlipAverage(asset common.Asset) float64 {
 	return buySlipAverage
 }
 
-func (s *Store) poolSlipAverage(asset common.Asset) float64 {
+func (s *Client) poolSlipAverage(asset common.Asset) float64 {
 	sellAvg := s.sellSlipAverage(asset)
 	buyAvg := s.buySlipAverage(asset)
 	avg := (sellAvg + buyAvg) / 2
@@ -462,7 +462,7 @@ func (s *Store) poolSlipAverage(asset common.Asset) float64 {
 	return avg
 }
 
-func (s *Store) sellFeeAverage(asset common.Asset) uint64 {
+func (s *Client) sellFeeAverage(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT AVG(swaps.liquidity_fee) sell_fee_average
 			FROM coins
@@ -482,7 +482,7 @@ func (s *Store) sellFeeAverage(asset common.Asset) uint64 {
 	return sellFeeAverage
 }
 
-func (s *Store) buyFeeAverage(asset common.Asset) uint64 {
+func (s *Client) buyFeeAverage(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT AVG(swaps.liquidity_fee) buy_fee_average
 			FROM coins
@@ -502,7 +502,7 @@ func (s *Store) buyFeeAverage(asset common.Asset) uint64 {
 	return buyFeeAverage
 }
 
-func (s *Store) poolFeeAverage(asset common.Asset) uint64 {
+func (s *Client) poolFeeAverage(asset common.Asset) uint64 {
 	sellAvg := s.sellFeeAverage(asset)
 	buyAvg := s.buyFeeAverage(asset)
 	poolAvg := (sellAvg + buyAvg) / 2
@@ -510,7 +510,7 @@ func (s *Store) poolFeeAverage(asset common.Asset) uint64 {
 	return poolAvg
 }
 
-func (s *Store) sellFeesTotal(asset common.Asset) uint64 {
+func (s *Client) sellFeesTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT AVG(swaps.liquidity_fee) sell_fees_total
 			FROM coins
@@ -530,7 +530,7 @@ func (s *Store) sellFeesTotal(asset common.Asset) uint64 {
 	return sellFeesTotal
 }
 
-func (s *Store) buyFeesTotal(asset common.Asset) uint64 {
+func (s *Client) buyFeesTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(swaps.liquidity_fee) buy_fees_total
 			FROM coins
@@ -550,14 +550,14 @@ func (s *Store) buyFeesTotal(asset common.Asset) uint64 {
 	return buyFeesTotal
 }
 
-func (s *Store) poolFeesTotal(asset common.Asset) uint64 {
+func (s *Client) poolFeesTotal(asset common.Asset) uint64 {
 	buyTotal := float64(s.buyFeesTotal(asset))
 	sellTotal := float64(s.sellFeesTotal(asset))
 	poolTotal := (buyTotal * s.price(asset)) + sellTotal
 	return uint64(poolTotal)
 }
 
-func (s *Store) sellAssetCount(asset common.Asset) uint64 {
+func (s *Client) sellAssetCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT COUNT(coins.amount) sell_asset_count
 			FROM coins
@@ -577,7 +577,7 @@ func (s *Store) sellAssetCount(asset common.Asset) uint64 {
 	return sellAssetCount
 }
 
-func (s *Store) buyAssetCount(asset common.Asset) uint64 {
+func (s *Client) buyAssetCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT COUNT(coins.amount) buy_asset_count
 			FROM coins
@@ -597,7 +597,7 @@ func (s *Store) buyAssetCount(asset common.Asset) uint64 {
 	return buyAssetCount
 }
 
-func (s *Store) swappingTxCount(asset common.Asset) uint64 {
+func (s *Client) swappingTxCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT
 			COUNT(event_id) swapping_tx_count 
@@ -614,7 +614,7 @@ func (s *Store) swappingTxCount(asset common.Asset) uint64 {
 	return swappingTxCount
 }
 
-func (s *Store) swappersCount(asset common.Asset) uint64 {
+func (s *Client) swappersCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(count) swappers_count 
 		FROM   (SELECT COUNT(from_address) AS count 
@@ -635,7 +635,7 @@ func (s *Store) swappersCount(asset common.Asset) uint64 {
 	return swappersCount
 }
 
-func (s *Store) stakeTxCount(asset common.Asset) uint64 {
+func (s *Client) stakeTxCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT
 			COUNT(event_id) stake_tx_count 
@@ -652,7 +652,7 @@ func (s *Store) stakeTxCount(asset common.Asset) uint64 {
 	return stateTxCount
 }
 
-func (s *Store) withdrawTxCount(asset common.Asset) uint64 {
+func (s *Client) withdrawTxCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT
 			COUNT(event_id) withdraw_tx_count 
@@ -671,7 +671,7 @@ func (s *Store) withdrawTxCount(asset common.Asset) uint64 {
 	return withdrawTxCount
 }
 
-func (s *Store) stakingTxCount(asset common.Asset) uint64 {
+func (s *Client) stakingTxCount(asset common.Asset) uint64 {
 	stakeTxCount := s.stakeTxCount(asset)
 	withdrawTxCount := s.withdrawTxCount(asset)
 	stakingTxCount := stakeTxCount + withdrawTxCount
@@ -679,7 +679,7 @@ func (s *Store) stakingTxCount(asset common.Asset) uint64 {
 	return stakingTxCount
 }
 
-func (s *Store) stakersCount(asset common.Asset) uint64 {
+func (s *Client) stakersCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(count) stakers_count 
 		FROM   (SELECT COUNT(from_address) AS count 
@@ -700,7 +700,7 @@ func (s *Store) stakersCount(asset common.Asset) uint64 {
 	return stakersCount
 }
 
-func (s *Store) assetROI(asset common.Asset) float64 {
+func (s *Client) assetROI(asset common.Asset) float64 {
 	depth := float64(s.assetDepth(asset))
 	staked := float64(s.assetStakedTotal(asset))
 
@@ -712,7 +712,7 @@ func (s *Store) assetROI(asset common.Asset) float64 {
 	return roi
 }
 
-func (s *Store) runeROI(asset common.Asset) float64 {
+func (s *Client) runeROI(asset common.Asset) float64 {
 	depth := float64(s.runeDepth(asset))
 	staked := float64(s.runeStakedTotal(asset))
 
@@ -724,7 +724,7 @@ func (s *Store) runeROI(asset common.Asset) float64 {
 	return roi
 }
 
-func (s *Store) poolROI(asset common.Asset) float64 {
+func (s *Client) poolROI(asset common.Asset) float64 {
 	assetRoi := s.assetROI(asset)
 	runeRoi := s.runeROI(asset)
 
@@ -737,6 +737,6 @@ func (s *Store) poolROI(asset common.Asset) float64 {
 }
 
 // TODO : Needs to be implemented.
-func (s *Store) poolROI12(asset common.Asset) float64 {
+func (s *Client) poolROI12(asset common.Asset) float64 {
 	return 0
 }
