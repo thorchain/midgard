@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/99designs/gqlgen/handler"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
@@ -13,7 +15,6 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -135,24 +136,24 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 
 // (GET /v1/stats)
 func (h *Handlers) GetStats(ctx echo.Context) error {
-	bepSwapData := h.store.GetBepSwapData()
+	StatsData := h.store.GetStatsData()
 	response := api.StatsResponse{
-		DailyActiveUsers:   pointy.Int64(int64(bepSwapData.DailyActiveUsers)),
-		DailyTx:            pointy.Int64(int64(bepSwapData.DailyTx)),
-		MonthlyActiveUsers: pointy.Int64(int64(bepSwapData.MonthlyActiveUsers)),
-		MonthlyTx:          pointy.Int64(int64(bepSwapData.MonthlyTx)),
-		PoolCount:          pointy.Int64(int64(bepSwapData.PoolCount)),
-		TotalAssetBuys:     pointy.Int64(int64(bepSwapData.TotalAssetBuys)),
-		TotalAssetSells:    pointy.Int64(int64(bepSwapData.TotalAssetSells)),
-		TotalDepth:         pointy.Int64(int64(bepSwapData.TotalDepth)),
-		TotalEarned:        pointy.Int64(int64(bepSwapData.TotalEarned)),
-		TotalStakeTx:       pointy.Int64(int64(bepSwapData.TotalStakeTx)),
-		TotalStaked:        pointy.Int64(int64(bepSwapData.TotalStaked)),
-		TotalTx:            pointy.Int64(int64(bepSwapData.TotalTx)),
-		TotalUsers:         pointy.Int64(int64(bepSwapData.TotalUsers)),
-		TotalVolume:        pointy.Int64(int64(bepSwapData.TotalVolume)),
-		TotalVolume24hr:    pointy.Int64(int64(bepSwapData.TotalVolume24hr)),
-		TotalWithdrawTx:    pointy.Int64(int64(bepSwapData.TotalWithdrawTx)),
+		DailyActiveUsers:   pointy.Int64(int64(StatsData.DailyActiveUsers)),
+		DailyTx:            pointy.Int64(int64(StatsData.DailyTx)),
+		MonthlyActiveUsers: pointy.Int64(int64(StatsData.MonthlyActiveUsers)),
+		MonthlyTx:          pointy.Int64(int64(StatsData.MonthlyTx)),
+		PoolCount:          pointy.Int64(int64(StatsData.PoolCount)),
+		TotalAssetBuys:     pointy.Int64(int64(StatsData.TotalAssetBuys)),
+		TotalAssetSells:    pointy.Int64(int64(StatsData.TotalAssetSells)),
+		TotalDepth:         pointy.Int64(int64(StatsData.TotalDepth)),
+		TotalEarned:        pointy.Int64(int64(StatsData.TotalEarned)),
+		TotalStakeTx:       pointy.Int64(int64(StatsData.TotalStakeTx)),
+		TotalStaked:        pointy.Int64(int64(StatsData.TotalStaked)),
+		TotalTx:            pointy.Int64(int64(StatsData.TotalTx)),
+		TotalUsers:         pointy.Int64(int64(StatsData.TotalUsers)),
+		TotalVolume:        pointy.Int64(int64(StatsData.TotalVolume)),
+		TotalVolume24hr:    pointy.Int64(int64(StatsData.TotalVolume24hr)),
+		TotalWithdrawTx:    pointy.Int64(int64(StatsData.TotalWithdrawTx)),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
@@ -168,6 +169,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 	poolData := h.store.GetPoolData(asset)
 
 	response := api.PoolsDetailedResponse{
+		Status:           pointy.String(poolData.Status),
 		Asset:            helpers.ConvertAssetForAPI(asset),
 		AssetDepth:       pointy.Int64(int64(poolData.AssetDepth)),
 		AssetROI:         pointy.Float64(poolData.AssetROI),
