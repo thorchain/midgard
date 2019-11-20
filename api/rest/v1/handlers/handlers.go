@@ -103,34 +103,34 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
 
 	// asset passed in
-	// ass, err := common.NewAsset(asset)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
-	// }
+	ass, err := common.NewAsset(asset)
+	if err != nil {
+		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+	}
 
-	// pool, err := h.thorChainClient.GetPool(ass)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
-	// }
+	pool, err := h.store.GetPool(ass)
+	if err != nil {
+		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
+	}
 
-	// tokenData, err := h.binanceClient.GetToken(pool.Asset)
-	// if err != nil {
-	// 	h.logger.Error().Err(err).Msg("fail to get token data from binance")
-	// 	return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
-	// }
-	//
-	// res := api.AssetsDetailedResponse{
-	// 	Asset: helpers.ConvertAssetForAPI(pool.Asset),
-	// 	// DateCreated: &t, // TODO Pending
-	// 	Logo: pointy.String(h.logoClient.GetLogoUrl(pool.Asset)),
-	// 	Name: pointy.String(tokenData.Name),
-	// 	// PriceRune:   pointy.Float64(-1), // TODO Pending
-	// 	// PriceUSD:    pointy.Float64(-1), // TODO Pending
-	// }
+	tokenData, err := h.binanceClient.GetToken(pool)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("fail to get token data from binance")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+	}
 
-	return ctx.JSON(http.StatusOK, "res")
+	response := api.AssetsDetailedResponse{
+		Asset: helpers.ConvertAssetForAPI(pool),
+		DateCreated: h.store.GetDateCreated(pool),
+		Logo: pointy.String(h.logoClient.GetLogoUrl(pool)),
+		Name: pointy.String(tokenData.Name),
+		PriceRune: pointy.Float64(h.store.GetPriceInRune(pool)),
+		PriceUSD:    pointy.Float64(h.store.GetPriceInUSD(pool)),
+	}
+
+	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/stats)
@@ -165,7 +165,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
 	}
 
-	poolData := h.store.PoolData(asset)
+	poolData := h.store.GetPoolData(asset)
 
 	response := api.PoolsDetailedResponse{
 		Asset:            helpers.ConvertAssetForAPI(asset),
