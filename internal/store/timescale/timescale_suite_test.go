@@ -25,7 +25,7 @@ const (
 	sslMode  = "disable"
 )
 
-func NewTestStore() *timescale.Store {
+func NewTestStore() *timescale.Client {
 	cfg := config.TimeScaleConfiguration{
 		Host:     host,
 		Port:     port,
@@ -34,15 +34,23 @@ func NewTestStore() *timescale.Store {
 		Database: database,
 		Sslmode:  sslMode,
 	}
-	db, err := timescale.NewStore(cfg)
+
+	db, err := timescale.NewClient(cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	db.CreateDatabase()
+
+	if err := db.CreateDatabase(); err != nil {
+		log.Println(err.Error()) // Only log error as the a second run will already have a db created.
+	}
+
 	db, err = db.Open()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	db.RunMigrations()
+
+	if err := db.MigrationsUp(); err != nil {
+		log.Println(err.Error())
+	}
 	return db
 }
