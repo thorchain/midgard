@@ -1,8 +1,6 @@
 package timescale
 
 import (
-	"time"
-
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
@@ -249,16 +247,11 @@ func (s *Client) stakeEvents(eventId uint64) models.Events {
 	return events
 }
 
-func (s *Client) txDate(eventId uint64) time.Time {
-	stmnt := `SELECT time FROM events WHERE id = $1`
-	var txDate time.Time
-	row := s.db.QueryRow(stmnt, eventId)
+func (s *Client) txDate(eventId uint64) uint64 {
+	txHeight := s.txHeight(eventId)
+	timeOfBlock := s.getTimeOfBlock(txHeight)
 
-	if err := row.Scan(&txDate); err != nil {
-		return time.Now()
-	}
-
-	return txDate
+	return timeOfBlock
 }
 
 func (s *Client) txHeight(eventId uint64) uint64 {
@@ -285,22 +278,23 @@ func (s *Client) priceTarget(eventId uint64) uint64 {
 	return priceTarget
 }
 
-func (s *Client) eventBasic(eventId uint64) (time.Time, uint64, string, string) {
+func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string) {
 	stmnt := `
-		SELECT time, height, type, status 
+		SELECT height, type, status 
 			FROM events
 		WHERE id = $1`
 
 	var (
-		eventTime         time.Time
 		height            uint64
 		eventType, status string
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
-	if err := row.Scan(&eventTime, &height, &eventType, &status); err != nil {
-		return time.Now(), 0, "", ""
+	if err := row.Scan(&height, &eventType, &status); err != nil {
+		return 0, 0, "", ""
 	}
+
+	eventTime := s.txDate(height)
 
 	return eventTime, height, eventType, status
 }
