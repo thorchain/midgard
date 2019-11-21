@@ -3,7 +3,7 @@ version: '3'
 services:
   midgard:
     build:
-      context: ./
+      context: .
       dockerfile: ./build/Dockerfile
       args:
         thornode_host: thormock:8081
@@ -17,6 +17,25 @@ services:
     depends_on:
       - pg
       - thormock
+  testcode:
+    build:
+      context: .
+      dockerfile: ./build/test/Dockerfile
+      args:
+        thornode_host: thormock:8081
+        pg_host: pg
+    image: midgard-test
+    volumes:
+      - .:/var/midgard
+    ports:
+      - 8080:8080
+    links:
+      - pg
+      - thormock
+    depends_on:
+      - pg
+      - thormock
+    command: make install test
   pg:
     image: timescale/timescaledb:latest-pg11
     ports:

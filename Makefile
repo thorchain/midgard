@@ -50,8 +50,15 @@ coverage-report: test-coverage
 test-short:
 	@go test -short ./...
 
+# pg docker required
+test-internal:
+	PG_HOST=pg go test ./...
+
 test:
-	@./scripts/test.sh
+	@./scripts/run.sh testcode make test-internal
+
+test-docker:
+	@docker-compose run --rm --no-deps test --build
 
 clear:
 	clear
@@ -60,7 +67,7 @@ test-watch: clear
 	@./scripts/watch.bash
 
 sh:
-	@docker-compose run --rm chain-service /bin/sh
+	@docker-compose run --rm midgard /bin/sh
 
 thormock:
 	@docker-compose run --rm -p 8081:8081 --no-deps thormock

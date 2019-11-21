@@ -1,7 +1,6 @@
 package binance
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,9 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binance-chain/go-sdk/common/types"
-	bmsg "github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -29,9 +25,9 @@ var (
 	tokensPerPage  = 1000
 )
 
-type Binance interface {
-	GetTx(txID common.TxID) (time.Time, error)
-}
+// type Binance interface {
+// 	GetTx(txID common.TxID) (time.Time, error)
+// }
 
 // BinanceClient is a client design to talk to binance using their api endpoint
 type BinanceClient struct {
@@ -49,12 +45,12 @@ func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 	if len(cfg.DEXHost) == 0 {
 		return nil, errors.New("DEXHost is empty")
 	}
-	if len(cfg.FullNodeHost) == 0 {
-		return nil, errors.New("FullNodeHost is empty")
-	}
-	if cfg.IsTestNet {
-		types.Network = types.TestNetwork
-	}
+	// if len(cfg.FullNodeHost) == 0 {
+	// 	return nil, errors.New("FullNodeHost is empty")
+	// }
+	// if cfg.IsTestNet {
+	// 	types.Network = types.TestNetwork
+	// }
 	return &BinanceClient{
 		logger: log.With().Str("module", "binance-client").Logger(),
 		cfg:    cfg,
@@ -295,110 +291,110 @@ func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 	return u.String()
 }
 
-func (bc *BinanceClient) getTxDetailUrl(hash common.TxID) string {
-	uri := url.URL{
-		Scheme: bc.cfg.FullNodeScheme,
-		Host:   bc.cfg.FullNodeHost,
-		Path:   "tx",
-	}
-	q := uri.Query()
-	q.Set("hash", fmt.Sprintf("0x%s", hash))
-	q.Set("prove", "true")
-	uri.RawQuery = q.Encode()
-	return uri.String()
-}
-func (bc *BinanceClient) getBlockUrl(height string) string {
-	uri := url.URL{
-		Scheme: bc.cfg.FullNodeScheme,
-		Host:   bc.cfg.FullNodeHost,
-		Path:   "block",
-	}
-	q := uri.Query()
-	q.Set("height", height)
-	uri.RawQuery = q.Encode()
-	return uri.String()
-}
+// func (bc *BinanceClient) getTxDetailUrl(hash common.TxID) string {
+// 	uri := url.URL{
+// 		Scheme: bc.cfg.FullNodeScheme,
+// 		Host:   bc.cfg.FullNodeHost,
+// 		Path:   "tx",
+// 	}
+// 	q := uri.Query()
+// 	q.Set("hash", fmt.Sprintf("0x%s", hash))
+// 	q.Set("prove", "true")
+// 	uri.RawQuery = q.Encode()
+// 	return uri.String()
+// }
+// func (bc *BinanceClient) getBlockUrl(height string) string {
+// 	uri := url.URL{
+// 		Scheme: bc.cfg.FullNodeScheme,
+// 		Host:   bc.cfg.FullNodeHost,
+// 		Path:   "block",
+// 	}
+// 	q := uri.Query()
+// 	q.Set("height", height)
+// 	uri.RawQuery = q.Encode()
+// 	return uri.String()
+// }
 
 // GetTxEx given the txID , we get the tx detail from binance full node
-func (bc *BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
-	noTx := TxDetail{}
-	if txID.IsEmpty() {
-		return noTx, errors.New("txID is empty")
-	}
-	requestUrl := bc.getTxDetailUrl(txID)
-	bc.logger.Debug().Msg(requestUrl)
-	resp, err := bc.httpClient.Get(requestUrl)
-	if nil != err {
-		return noTx, errors.Wrap(err, "fail to get tx from binance full node")
-	}
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			bc.logger.Error().Err(err).Msg("fail to close response body")
-		}
-	}()
-	if resp.StatusCode != http.StatusOK {
-		return noTx, errors.Errorf("unexpected status code %d", resp.StatusCode)
-	}
-	var fnr FullNodeTxResp
-	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
-		return noTx, errors.Wrap(err, "fail to decode response body")
-	}
-	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
-	if nil != err {
-		return noTx, errors.Wrap(err, "fail to base64 decode tx")
-	}
-	var t tx.StdTx
-	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
-		return noTx, errors.Wrap(err, "fail to unmarshal tx")
-	}
-	// usually we don't expect too many msgs in it , but given it is a slice, let's enumerate it
-	for _, m := range t.Msgs {
-		switch mt := m.(type) {
-		case bmsg.SendMsg:
-			txDetail := bc.getTxDetailFromMsg(fnr.Result.Hash, mt)
-			blockTime, err := bc.getTimeFromBlock(fnr.Result.Height)
-			if nil != err {
-				return noTx, errors.Wrap(err, "fail to get block time")
-			}
-			txDetail.Timestamp = blockTime
-			return txDetail, nil
-		default:
-		}
-	}
-	return noTx, nil
-}
+// func (bc *BinanceClient) GetTx(txID common.TxID) (TxDetail, error) {
+// 	noTx := TxDetail{}
+// 	if txID.IsEmpty() {
+// 		return noTx, errors.New("txID is empty")
+// 	}
+// 	requestUrl := bc.getTxDetailUrl(txID)
+// 	bc.logger.Debug().Msg(requestUrl)
+// 	resp, err := bc.httpClient.Get(requestUrl)
+// 	if nil != err {
+// 		return noTx, errors.Wrap(err, "fail to get tx from binance full node")
+// 	}
+// 	defer func() {
+// 		if err := resp.Body.Close(); nil != err {
+// 			bc.logger.Error().Err(err).Msg("fail to close response body")
+// 		}
+// 	}()
+// 	if resp.StatusCode != http.StatusOK {
+// 		return noTx, errors.Errorf("unexpected status code %d", resp.StatusCode)
+// 	}
+// 	var fnr FullNodeTxResp
+// 	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
+// 		return noTx, errors.Wrap(err, "fail to decode response body")
+// 	}
+// 	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
+// 	if nil != err {
+// 		return noTx, errors.Wrap(err, "fail to base64 decode tx")
+// 	}
+// 	var t tx.StdTx
+// 	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
+// 		return noTx, errors.Wrap(err, "fail to unmarshal tx")
+// 	}
+// 	// usually we don't expect too many msgs in it , but given it is a slice, let's enumerate it
+// 	for _, m := range t.Msgs {
+// 		switch mt := m.(type) {
+// 		case bmsg.SendMsg:
+// 			txDetail := bc.getTxDetailFromMsg(fnr.Result.Hash, mt)
+// 			blockTime, err := bc.getTimeFromBlock(fnr.Result.Height)
+// 			if nil != err {
+// 				return noTx, errors.Wrap(err, "fail to get block time")
+// 			}
+// 			txDetail.Timestamp = blockTime
+// 			return txDetail, nil
+// 		default:
+// 		}
+// 	}
+// 	return noTx, nil
+// }
 
-func (bc *BinanceClient) getTimeFromBlock(height string) (time.Time, error) {
-	t := time.Time{}
-	requestUrl := bc.getBlockUrl(height)
-	resp, err := bc.httpClient.Get(requestUrl)
-	if nil != err {
-		return t, errors.Wrap(err, "fail to get block from binance full node")
-	}
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			bc.logger.Error().Err(err).Msg("fail to close response body")
-		}
-	}()
-	var br BlockResponse
-	if err := json.NewDecoder(resp.Body).Decode(&br); nil != err {
-		return t, errors.Wrap(err, "fail to unmarshal block response")
-	}
-	return br.Result.Block.Header.Time, nil
-}
+// func (bc *BinanceClient) getTimeFromBlock(height string) (time.Time, error) {
+// 	t := time.Time{}
+// 	requestUrl := bc.getBlockUrl(height)
+// 	resp, err := bc.httpClient.Get(requestUrl)
+// 	if nil != err {
+// 		return t, errors.Wrap(err, "fail to get block from binance full node")
+// 	}
+// 	defer func() {
+// 		if err := resp.Body.Close(); nil != err {
+// 			bc.logger.Error().Err(err).Msg("fail to close response body")
+// 		}
+// 	}()
+// 	var br BlockResponse
+// 	if err := json.NewDecoder(resp.Body).Decode(&br); nil != err {
+// 		return t, errors.Wrap(err, "fail to unmarshal block response")
+// 	}
+// 	return br.Result.Block.Header.Time, nil
+// }
 
-func (bc *BinanceClient) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
-	td := TxDetail{
-		TxHash:      hash,
-		ToAddress:   "",
-		FromAddress: "",
-		Timestamp:   time.Time{},
-	}
-	if len(msg.Inputs) > 0 {
-		td.FromAddress = msg.Inputs[0].Address.String()
-	}
-	if len(msg.Outputs) > 0 {
-		td.ToAddress = msg.Outputs[0].Address.String()
-	}
-	return td
-}
+// func (bc *BinanceClient) getTxDetailFromMsg(hash string, msg bmsg.SendMsg) TxDetail {
+// 	td := TxDetail{
+// 		TxHash:      hash,
+// 		ToAddress:   "",
+// 		FromAddress: "",
+// 		Timestamp:   time.Time{},
+// 	}
+// 	if len(msg.Inputs) > 0 {
+// 		td.FromAddress = msg.Inputs[0].Address.String()
+// 	}
+// 	if len(msg.Outputs) > 0 {
+// 		td.ToAddress = msg.Outputs[0].Address.String()
+// 	}
+// 	return td
+// }

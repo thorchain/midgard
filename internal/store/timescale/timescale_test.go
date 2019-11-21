@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"log"
+	"os"
 	"testing"
 
 	. "gopkg.in/check.v1"
@@ -9,10 +10,11 @@ import (
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func Test(t *testing.T) {
+	TestingT(t)
+}
 
 const (
-	host     = "localhost"
 	port     = 5432
 	userName = "postgres"
 	password = "password"
@@ -27,7 +29,7 @@ func NewTestStore(c *C) *Client {
 	}
 
 	cfg := config.TimeScaleConfiguration{
-		Host:     host,
+		Host:     getVar("PG_HOST", "localhost"),
 		Port:     port,
 		UserName: userName,
 		Password: password,
@@ -36,6 +38,14 @@ func NewTestStore(c *C) *Client {
 		MigrationsDir: migrationsDir,
 	}
 	return NewClient(cfg)
+}
+
+func getVar(env, fallback string) string {
+	x := os.Getenv(env)
+	if x == "" {
+		return fallback
+	}
+	return x
 }
 
 type Migrations interface {
