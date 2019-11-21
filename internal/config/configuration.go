@@ -30,6 +30,7 @@ type TimeScaleConfiguration struct {
 	Password string `json:"password" mapstructure:"password"`
 	Database string `json:"database" mapstructure:"database"`
 	Sslmode  string `json:"sslmode" mapstructure:"sslmode"`
+	MigrationsDir string `json:"migrationsDir mapstructure:"sslmode"`
 }
 
 type ThorChainConfiguration struct {

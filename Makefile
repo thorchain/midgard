@@ -22,7 +22,7 @@ ${GOPATH}/bin/oapi-codegen:
 node_modules:
 	yarn
 
-install: bootstrap go.sum build
+install: bootstrap go.sum
 	GO111MODULE=on go install -v ./cmd/midgard
 
 go.sum: go.mod
@@ -65,6 +65,9 @@ test-watch: clear
 sh:
 	@docker-compose run --rm chain-service /bin/sh
 
+thormock:
+	@docker-compose run --rm -p 8081:8081 --no-deps thormock
+
 pg:
 	@docker-compose run --rm -p 5432:5432 --no-deps pg
 
@@ -82,8 +85,8 @@ doco:
 
 # -----------------------------------------------------------------------------------------
 
-dev: migration-down migration-up
-	go run cmd/midgard/main.go
+dev:
+	go run cmd/midgard/main.go -c cmd/midgard/config.json
 
 run-in-docker:
 	@${GOBIN}/midgard -c /etc/midgard/config.json
@@ -112,23 +115,10 @@ create-database:
 	psql -h localhost -U postgres -c "create database midgard;"
 
 drop-database:
-	psql -h localhost -U postgres -c "drop database midgard;"
+	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard;"
 
 drop-database-test:
 	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard_test;"
-
-
-migration-up: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate up
-
-migration-down: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate down
-
-migration-up-test: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate up --env="test"
-
-migration-down-test: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate down --env="test"
 
 run-test-suite:
 	@make drop-database-test

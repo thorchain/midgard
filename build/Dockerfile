@@ -1,5 +1,5 @@
 #
-# Chain Service
+# Midgard
 #
 
 #
@@ -7,38 +7,36 @@
 #
 FROM golang:1.13 AS build
 
-ARG chain_host
 ARG pg_host
+ARG thornode_host
 
-ENV CHAIN_HOST=$chain_host
 ENV PG_HOST=$pg_host
+ENV THORNODE_HOST=$thornode_host
 
 RUN env
 
-WORKDIR /tmp
-# TODO Move away from the embed clone as this will only work for master branchs
-RUN git config --global http.sslVerify "false"
-RUN git clone https://gitlab.com/thorchain/bepswap/chain-service.git /tmp/midgard
+WORKDIR /tmp/midgard
+
+COPY . .
 
 # Install jq to update the chain service config.
 RUN apt-get update
-RUN apt-get install -y jq
+RUN apt-get install -y jq apt-utils
 
 # Generate config.
-WORKDIR /tmp/midgard
 RUN mkdir -p /etc/midgard
 RUN cat ./cmd/midgard/config.json | jq \
-  --arg CHAIN_HOST "$CHAIN_HOST" \
+  --arg THORNODE_HOST "$THORNODE_HOST" \
   --arg PG_HOST "$PG_HOST" \
   '.timescale["host"] = $PG_HOST | \
-  .thorchain["host"] = $CHAIN_HOST' > /etc/midgard/config.json
+  .timescale["migrationsDir"] = "/var/midgard/db/migrations/" | \
+  .thorchain["host"] = $THORNODE_HOST' > /etc/midgard/config.json
 RUN cat /etc/midgard/config.json
 
 # Compile.
 RUN GO111MODULE=on go mod verify
 
-WORKDIR /tmp/midgard/cmd/midgard
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o midgard .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o midgard /tmp/midgard/cmd/midgard
 
 #
 # Main
@@ -47,11 +45,11 @@ FROM golang:alpine
 
 ENV PATH="${PATH}:/go/bin"
 
-RUN apk add --update busybox-extras && \
-    rm -rf /var/cache/apk/*
+# Copy the db migrations
+COPY --from=build /tmp/midgard/db/ /var/midgard/db/
 
 # Copy the compiled binaires over.
-COPY --from=build /tmp/midgard/cmd/midgard/midgard /go/bin/midgard
+COPY --from=build /tmp/midgard/midgard /go/bin/midgard
 
 # Copy the chain service config.
 COPY --from=build /etc/midgard /etc/midgard
