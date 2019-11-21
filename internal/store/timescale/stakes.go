@@ -112,7 +112,7 @@ type StakerAddressAndAssetDetails struct {
 	RuneROI         float64
 	AssetROI        float64
 	PoolROI         float64
-	DateFirstStaked time.Time
+	DateFirstStaked uint64
 }
 
 // GetStakersAddressAndAssetDetails:
@@ -236,8 +236,21 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) floa
 	return float64(s.runeEarned(address, asset) / s.runeStaked(address, asset))
 }
 
-func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) time.Time {
-	return time.Time{} // TODO finish
+func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) uint64 {
+	query := `
+		SELECT MIN(stakes.time) FROM stakes
+    		INNER JOIN txs ON stakes.event_id = txs.event_id
+		WHERE txs.from_address = $1 
+		AND stakes.ticker = $2`
+
+	firstStaked := time.Time{}
+	err := s.db.Get(&firstStaked, query, address.String(), asset.Ticker.String())
+	if err != nil {
+		s.logger.Err(err).Msg("Get dateFirstStaked failed")
+		return 0
+	}
+
+	return uint64(firstStaked.Unix())
 }
 
 func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) float64 {
