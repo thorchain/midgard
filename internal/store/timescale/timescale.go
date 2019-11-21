@@ -75,12 +75,6 @@ func (s *Client) CreateDatabase() error {
 	return CreateDatabase(s.db, s.cfg)
 }
 
-var (
-	migrations = &migrate.FileMigrationSource{
-		Dir: "./db/migrations/",
-	}
-)
-
 func MigrationsUp(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConfiguration) error {
 	n, err := migrate.Exec(db.DB, "postgres", &migrate.FileMigrationSource{Dir:cfg.MigrationsDir}, migrate.Up)
 
