@@ -248,7 +248,7 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) uint64 {
 				SELECT event_id
 					FROM stakes
 				WHERE ticker = $1
-			    AND events.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+			    AND stakes.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
         	)
 			AND coins.ticker = 'RUNE'`
 
@@ -434,7 +434,7 @@ func (s *Client) incomingRuneSwapTotal12m(asset common.Asset) uint64 {
 				SELECT event_id
 					FROM swaps
 				WHERE ticker = $1
-  			    AND events.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+  			    AND swaps.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
     		)
 			GROUP BY coins.tx_hash`
 
@@ -481,7 +481,7 @@ func (s *Client) outgoingRuneSwapTotal12m(asset common.Asset) uint64 {
   			AND coins.ticker = 'RUNE'
   			AND txs.event_id IN (
 				SELECT event_id FROM swaps WHERE ticker = $1
-  			    AND events.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+  			    AND swaps.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
     		)
 			GROUP BY coins.tx_hash`
 
