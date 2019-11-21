@@ -35,6 +35,7 @@ type TimeScaleConfiguration struct {
 type ThorChainConfiguration struct {
 	Scheme          string        `json:"scheme" mapstructure:"scheme"`
 	Host            string        `json:"host" mapstructure:"host"`
+	RPCHost         string        `json:"rpc_host" mapstructure:"rpc_host"`
 	ReadTimeout     time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
 	EnableScan      bool          `json:"enable_scan" mapstructure:"enable_scan"`
 	NoEventsBackoff time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
