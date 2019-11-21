@@ -14,11 +14,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
+	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
+	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
+	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/store/timescale"
 )
 
 // API to talk to thorchain

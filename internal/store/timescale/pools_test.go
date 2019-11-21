@@ -6,8 +6,8 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
+	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 type PoolSuite struct {
@@ -146,13 +146,11 @@ var (
 )
 
 func (s *PoolSuite) SetUpSuite(c *C) {
-	s.Store = NewTestStore()
+	s.Store = NewTestStore(c)
 }
 
 func (s *PoolSuite) TearDownSuite(c *C) {
-	if err := s.Store.MigrationsDown(); err != nil {
-		log.Println(err.Error())
-	}
+	MigrationDown(c, s.Store)
 }
 
 func (s *PoolSuite) TestGetPool(c *C) {

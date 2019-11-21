@@ -50,11 +50,8 @@ coverage-report: test-coverage
 test-short:
 	@go test -short ./...
 
-test-internal:
-	@go test -cover ./...
-
 test:
-	@./scripts/run.sh chain-service make test-internal
+	@./scripts/test.sh
 
 clear:
 	clear

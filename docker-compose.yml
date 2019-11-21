@@ -13,8 +13,10 @@ services:
       - 8080:8080
     links:
       - pg
+      - thormock
     depends_on:
       - pg
+      - thormock
   pg:
     image: timescale/timescaledb:latest-pg11
     ports:

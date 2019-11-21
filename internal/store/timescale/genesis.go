@@ -5,9 +5,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 const blockSpeed = 3

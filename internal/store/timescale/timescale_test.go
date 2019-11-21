@@ -1,11 +1,12 @@
 package timescale
 
 import (
+	"log"
 	"testing"
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
+	"gitlab.com/thorchain/midgard/internal/config"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -17,9 +18,14 @@ const (
 	password = "password"
 	database = "midgard_test"
 	sslMode  = "disable"
+	migrationsDir = "../../../db/migrations/"
 )
 
-func NewTestStore() *Client {
+func NewTestStore(c *C) *Client {
+	if testing.Short() {
+		c.Skip("Short mode: no integration tests")
+	}
+
 	cfg := config.TimeScaleConfiguration{
 		Host:     host,
 		Port:     port,
@@ -27,6 +33,20 @@ func NewTestStore() *Client {
 		Password: password,
 		Database: database,
 		Sslmode:  sslMode,
+		MigrationsDir: migrationsDir,
 	}
 	return NewClient(cfg)
+}
+
+type Migrations interface {
+	MigrationsDown() error
+}
+
+func MigrationDown(c *C, migrations Migrations) {
+	if testing.Short() {
+		c.Skip("skipped")
+	}
+	if err := migrations.MigrationsDown(); err != nil {
+		log.Println(err.Error())
+	}
 }
