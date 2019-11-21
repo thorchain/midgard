@@ -5,6 +5,7 @@
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
+    "rpc_host": "localhost:8081",
     "enable_scan": true,
     "scan_start_pos": 1
   },
@@ -16,7 +17,6 @@
     "database": "midgard",
     "sslmode": "disable"
   },
-
   "binance": {
     "scheme": "https",
     "dex_host": "testnet-dex.binance.org",
