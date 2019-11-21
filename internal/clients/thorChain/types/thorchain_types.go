@@ -2,8 +2,8 @@ package types
 
 import (
 	"encoding/json"
-
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"time"
 )
 
 type Event struct {
@@ -33,3 +33,36 @@ type EventUnstake struct {
 	Pool       common.Asset `json:"pool"`
 	StakeUnits int64        `json:"stake_units,string"`
 }
+
+type Genesis struct {
+	Jsonrpc string        `json:"jsonrpc"`
+	ID      string        `json:"id"`
+	Result  GenesisResult `json:"result"`
+}
+
+type GenesisResult struct {
+	GenesisData GenesisData `json:"genesis"`
+}
+
+type GenesisData struct {
+	GenesisTime time.Time `json:"genesis_time"`
+}
+
+//
+//type Header struct {
+//	Height  string `json:"height"`
+//}
+//
+//type BlockMeta struct {
+//	Header Header `json:"header"`
+//}
+//
+//type BlockResult struct {
+//	BlockMeta BlockMeta `json:"block_meta"`
+//}
+//
+//type Block struct {
+//	Jsonrpc string `json:"jsonrpc"`
+//	ID      string `json:"id"`
+//	Result  BlockResult `json:"result"`
+//}

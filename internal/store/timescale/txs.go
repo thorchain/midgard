@@ -3,8 +3,8 @@ package timescale
 import (
 	"time"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
 )
 
 func (s *Client) GetTxData(address common.Address) []models.TxDetails {
@@ -181,7 +181,7 @@ func (s *Client) gas(eventId uint64) models.TxGas {
 
 	var (
 		chain, symbol, ticker string
-		amount uint64
+		amount                uint64
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
@@ -191,7 +191,7 @@ func (s *Client) gas(eventId uint64) models.TxGas {
 
 	asset, _ := common.NewAsset(symbol)
 	return models.TxGas{
-		Asset: asset,
+		Asset:  asset,
 		Amount: amount,
 	}
 }
