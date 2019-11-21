@@ -2,7 +2,6 @@ package models
 
 import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
-	"time"
 )
 
 type Events struct {
@@ -39,6 +38,6 @@ type TxDetails struct {
 	Gas     TxGas
 	Options Options
 	Events  Events
-	Date    time.Time
+	Date    uint64
 	Height  uint64
 }
