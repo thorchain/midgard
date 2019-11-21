@@ -398,7 +398,7 @@ components:
       properties:
         asset:
           $ref: '#/components/schemas/asset'
-        statue:
+        status:
           type: string
           enum: [bootstrapped, enabled, disabled]
         price:

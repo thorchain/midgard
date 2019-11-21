@@ -322,10 +322,12 @@ func (s *Client) getPools(address common.Address) []common.Asset {
 	return pools
 }
 
+// TODO build
 func (s *Client) totalEarned(pools []common.Asset) uint64 {
 	return 0
 }
 
+// TODO build
 func (s *Client) totalROI(address common.Address) float64 {
 	return 0
 }

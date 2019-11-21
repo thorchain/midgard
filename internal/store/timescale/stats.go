@@ -1,6 +1,6 @@
 package timescale
 
-type BepSwapData struct {
+type StatsData struct {
 	DailyActiveUsers   uint64
 	MonthlyActiveUsers uint64
 	TotalUsers         uint64
@@ -19,8 +19,8 @@ type BepSwapData struct {
 	TotalWithdrawTx    uint64
 }
 
-func (s *Client) GetBepSwapData() BepSwapData {
-	return BepSwapData{
+func (s *Client) GetStatsData() StatsData {
+	return StatsData{
 		DailyActiveUsers:   s.dailyActiveUsers(),
 		MonthlyActiveUsers: s.monthlyActiveUsers(),
 		TotalUsers:         s.totalUsers(),
