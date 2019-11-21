@@ -279,7 +279,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		AssetEarned:     pointy.Int64(int64(details.AssetEarned)),
 		AssetROI:        pointy.Float64(details.AssetROI),
 		AssetStaked:     pointy.Int64(int64(details.AssetStaked)),
-		DateFirstStaked: &details.DateFirstStaked,
+		DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
 		PoolEarned:      pointy.Int64(int64(details.PoolEarned)),
 		PoolROI:         pointy.Float64(details.PoolROI),
 		PoolStaked:      pointy.Int64(int64(details.PoolStaked)),
