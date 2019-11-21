@@ -21,7 +21,7 @@ COPY . .
 
 # Install jq to update the chain service config.
 RUN apt-get update
-RUN apt-get install -y jq apt-utils
+RUN apt-get install -y jq apt-utils make
 
 # Generate config.
 RUN mkdir -p /etc/midgard
@@ -44,6 +44,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o midgard /tmp/midg
 FROM golang:alpine
 
 ENV PATH="${PATH}:/go/bin"
+
+RUN apk update
+RUN apk add make
+
+COPY --from=build /tmp/midgard/ .
 
 # Copy the db migrations
 COPY --from=build /tmp/midgard/db/ /var/midgard/db/

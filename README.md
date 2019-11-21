@@ -1,5 +1,5 @@
-[![pipeline status](https://gitlab.com/thorchain/bepswap/chain-service/badges/master/pipeline.svg)](https://gitlab.com/thorchain/bepswap/chain-service/commits/master)
-[![coverage report](https://gitlab.com/thorchain/bepswap/chain-service/badges/master/coverage.svg)](https://gitlab.com/thorchain/bepswap/chain-service/commits/master)
+[![pipeline status](https://gitlab.com/thorchain/midgard/badges/master/pipeline.svg)](https://gitlab.com/thorchain/midgard/commits/master)
+[![coverage report](https://gitlab.com/thorchain/midgard/badges/master/coverage.svg)](https://gitlab.com/thorchain/midgard/commits/master)
 
 Chain Service 
 =============

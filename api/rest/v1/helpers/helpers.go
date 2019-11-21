@@ -2,10 +2,10 @@ package helpers
 
 import (
 	"github.com/openlyinc/pointy"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 
-	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func ConvertAssetForAPI(asset common.Asset) *api.Asset {
