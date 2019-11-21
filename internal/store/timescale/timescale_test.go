@@ -1,7 +1,6 @@
 package timescale
 
 import (
-	"log"
 	"testing"
 
 	. "gopkg.in/check.v1"
@@ -29,23 +28,5 @@ func NewTestStore() *Client {
 		Database: database,
 		Sslmode:  sslMode,
 	}
-
-	db, err := NewClient(cfg)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if err := db.CreateDatabase(); err != nil {
-		log.Println(err.Error()) // Only log error as the a second run will already have a db created.
-	}
-
-	db, err = db.Open()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if err := db.MigrationsUp(); err != nil {
-		log.Println(err.Error())
-	}
-	return db
+	return NewClient(cfg)
 }
