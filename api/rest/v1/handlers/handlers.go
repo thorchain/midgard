@@ -67,7 +67,7 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 	var response api.TxDetailedResponse
 	for _, d := range txData {
 		txD := api.TxDetails{
-			Date:    &d.Date,
+			Date:    pointy.Int64(int64(d.Date)),
 			Events:  helpers.ConvertEventDataForAPI(d.Events),
 			Gas:     helpers.ConvertGasForAPI(d.Gas),
 			Height:  pointy.Int64(int64(d.Height)),

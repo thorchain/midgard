@@ -239,8 +239,8 @@ components:
         out:
           $ref: '#/components/schemas/tx'
         date:
-          type: string
-          format: 'date-time'
+          type: integer
+          format: int64
         gas:
           $ref: '#/components/schemas/gas'
         options:

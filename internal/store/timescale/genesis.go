@@ -10,14 +10,23 @@ import (
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
 )
 
+const blockSpeed = 3
+
 // timeOfBlock = ((currentTime - genesisTime) / (currentBlockheight))*blockHeight + genesisTime (edited)
 func (s *Client) GetDateCreated(asset common.Asset) uint64 {
+	assetBlockHeight := s.getBlockHeight(asset)
+	dateCreated := s.getTimeOfBlock(assetBlockHeight)
+
+	return dateCreated
+}
+
+func (s *Client) getTimeOfBlock(assetBlockHeight uint64) uint64 {
 	currentTime := uint64(time.Now().Unix())
 	genesisTime := uint64(s.getGenesis().Unix())
-	currentBlockHeight := (currentTime - genesisTime) / 3
-	assetBlockHeight := s.getBlockHeight(asset)
+	currentBlockHeight := (currentTime - genesisTime) / blockSpeed
 
 	timeOfBlock := (((currentTime - genesisTime) / currentBlockHeight) * assetBlockHeight) + genesisTime
+
 	return timeOfBlock
 }
 
