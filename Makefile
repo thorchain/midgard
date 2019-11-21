@@ -23,7 +23,7 @@ node_modules:
 	yarn
 
 install: bootstrap go.sum build
-	GO111MODULE=on go install -v ./cmd/chainservice
+	GO111MODULE=on go install -v ./cmd/midgard
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
@@ -83,19 +83,19 @@ doco:
 # -----------------------------------------------------------------------------------------
 
 dev: migration-down migration-up
-	go run cmd/chainservice/main.go
+	go run cmd/midgard/main.go
 
 run-in-docker:
-	@${GOBIN}/chainservice -c /etc/chainservice/config.json
+	@${GOBIN}/midgard -c /etc/midgard/config.json
 
 run:
-	@${GOBIN}/chainservice -c cmd/chainservice/config.json
+	@${GOBIN}/midgard -c cmd/midgard/config.json
 
 up:
 	@docker-compose up --build
 
 clean:
-	@rm ${GOBIN}/chainservice
+	@rm ${GOBIN}/midgard
 
 run-mocked-endpoint:
 	go run tools/mockServer/mockServer.go
