@@ -343,8 +343,8 @@ func (s *Client) incomingSwapTotal12m(asset common.Asset) uint64 {
     		WHERE txs.direction = 'in'
     		AND coins.ticker = $1
     		AND txs.event_id = swaps.event_id
-    		GROUP BY coins.tx_hash
-    		AND coins.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
+    		AND coins.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+    		GROUP BY coins.tx_hash`
 
 	var incomingSwapTotal uint64
 	row := s.db.QueryRow(stmnt, asset.Ticker.String())
@@ -386,8 +386,8 @@ func (s *Client) outgoingSwapTotal12m(asset common.Asset) uint64 {
     		WHERE txs.direction = 'out'
     		AND coins.ticker = $1
     		AND txs.event_id = swaps.event_id
-    		GROUP BY coins.tx_hash
-    		AND coins.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
+			AND coins.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+    		GROUP BY coins.tx_hash`
 
 	var outgoingSwapTotal uint64
 	row := s.db.QueryRow(stmnt, asset.Ticker.String())
