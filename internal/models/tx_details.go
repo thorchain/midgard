@@ -1,8 +1,8 @@
 package models
 
 import (
-	"time"
 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"time"
 )
 
 type Events struct {
@@ -42,4 +42,3 @@ type TxDetails struct {
 	Date    time.Time
 	Height  uint64
 }
-

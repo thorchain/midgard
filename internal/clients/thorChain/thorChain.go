@@ -26,6 +26,7 @@ type API struct {
 	logger        zerolog.Logger
 	cfg           config.ThorChainConfiguration
 	baseUrl       string
+	baseRPCUrl    string
 	netClient     *http.Client
 	wg            *sync.WaitGroup
 	stopChan      chan struct{}
@@ -44,12 +45,46 @@ func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.Bina
 		netClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
-		baseUrl:       fmt.Sprintf("%s://%s/swapservice", cfg.Scheme, cfg.Host),
+		baseUrl:       fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
+		baseRPCUrl:    fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
 		stopChan:      make(chan struct{}),
 		wg:            &sync.WaitGroup{},
 		store:         timescale,
 		binanceClient: binanceClient,
 	}, nil
+}
+
+func (api *API) getGenesis() (types.Genesis, error) {
+	uri := fmt.Sprintf("%s/genesis", api.baseRPCUrl)
+	api.logger.Debug().Msg(uri)
+	resp, err := api.netClient.Get(uri)
+	if err != nil {
+		return types.Genesis{}, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			api.logger.Error().Err(err).Msg("fail to close response body")
+		}
+	}()
+
+	var genesis types.Genesis
+	if err := json.NewDecoder(resp.Body).Decode(&genesis); nil != err {
+		return types.Genesis{}, errors.Wrap(err, "fail to unmarshal events")
+	}
+
+	return genesis, nil
+}
+
+func (api *API) processGenesis(genesisTime types.Genesis) error {
+	api.logger.Debug().Msg("processGenesisTime")
+
+	record := models.NewGenesis(genesisTime)
+	_, err := api.store.CreateGenesis(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create genesis record")
+	}
+	return nil
 }
 
 func (api *API) getEvents(id int64) ([]types.Event, error) {
@@ -174,7 +209,20 @@ func (api *API) StartScan() error {
 }
 
 func (api *API) scan() {
+	api.logger.Info().Msg("getting thorchain genesis")
+	genesisTime, err := api.getGenesis()
+	if err != nil {
+		api.logger.Error().Err(err).Msg("fail to get genesis from thorchain")
+	}
+
+	err = api.processGenesis(genesisTime)
+	if err != nil {
+		api.logger.Error().Err(err).Msg("fail to set genesis in db")
+	}
+	api.logger.Info().Msg("processed thorchain genesis")
+
 	defer api.wg.Done()
+
 	api.logger.Info().Msg("start thorchain event scanning")
 	defer api.logger.Info().Msg("thorchain event scanning stopped")
 	currentPos := int64(1) // we start from 1

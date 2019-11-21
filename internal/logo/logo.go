@@ -32,7 +32,7 @@ var (
 		"FTM-585":   "FTM-A64",
 		"LOK-3C0":   "LOKI-6A9",
 		"TOMOB-1E1": "TOMOB-4BC",
-		"BOLT-E42": "BOLT-4C6",
+		"BOLT-E42":  "BOLT-4C6",
 	}
 )
 

@@ -554,8 +554,8 @@ components:
         name:
           type: string
         dateCreated:
-          type: string
-          format: date
+          type: integer
+          format: int64
         logo:
           type: string
         priceRune:

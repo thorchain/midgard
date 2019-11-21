@@ -60,14 +60,27 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, string(content))
 }
 
+func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
+	log.Println("genesisMockedEndpoint Hit!")
+
+	content, err := ioutil.ReadFile("./test/mocks/thorNode/genesis.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(writer, string(content))
+}
+
 func main() {
 	addr := "127.0.0.1:8081"
 	router := mux.NewRouter()
 
 	// TODO update url
-	router.HandleFunc("/swapservice/events/{id}", eventsMockedEndpoint).Methods("GET")
-	router.HandleFunc("/swapservice/pools", poolsMockedEndpoint).Methods("GET")
-	router.HandleFunc("/swapservice/pool/{asset}", poolMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/pools", poolsMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/pool/{asset}", poolMockedEndpoint).Methods("GET")
+	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
 
 	// setup server
 	srv := &http.Server{
