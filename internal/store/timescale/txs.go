@@ -12,13 +12,18 @@ func (s *Client) GetTxData(address common.Address) []models.TxDetails {
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAsset(address common.Address, asset common.Asset) []models.TxDetails {
+func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) []models.TxDetails {
 	events := s.eventsForAddressAsset(address, asset)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByTxId(address common.Address, txid string) []models.TxDetails {
+func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) []models.TxDetails {
 	events := s.eventsForAddressTxId(address, txid)
+	return s.processEvents(events)
+}
+
+func (s *Client) GetTxDataByAsset(asset common.Asset) []models.TxDetails {
+	events := s.eventsForAsset(asset)
 	return s.processEvents(events)
 }
 
@@ -60,6 +65,21 @@ func (s *Client) eventsForAddressTxId(address common.Address, txid string) []uin
 		AND (txs.from_address = $2 OR txs.to_address = $2)`
 
 	rows, err := s.db.Queryx(stmnt, txid, address.String())
+	if err != nil {
+		s.logger.Err(err).Msg("Failed")
+	}
+
+	return s.eventsResults(rows)
+}
+
+func (s *Client) eventsForAsset(asset common.Asset) []uint64 {
+	stmnt := `
+		SELECT DISTINCT(txs.event_id)
+			FROM txs
+				LEFT JOIN coins ON txs.tx_hash = coins.tx_hash
+		WHERE coins.ticker = $1`
+
+	rows, err := s.db.Queryx(stmnt, asset.Ticker.String())
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
 	}
