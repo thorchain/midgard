@@ -112,19 +112,11 @@ run-mocked-endpoint:
 ${GOBIN}/sql-migrate:
 	go get -v github.com/rubenv/sql-migrate/...
 
-create-database-test:
-	PGPASSWORD=password psql -h localhost -U postgres -c "create database midgard_test;"
+create-user:
+	PGPASSWORD=password psql -h localhost -U postgres -c "CREATE USER midgard WITH CREATEDB CREATEROLE PASSWORD 'password';"
 
 create-database:
-	psql -h localhost -U postgres -c "create database midgard;"
+	 PGPASSWORD=password psql -h localhost -U postgres -c "CREATE DATABASE midgard OWNER midgard;"
 
 drop-database:
 	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard;"
-
-drop-database-test:
-	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard_test;"
-
-run-test-suite:
-	@make drop-database-test
-	@make create-database-test
-	@make migration-up-test
