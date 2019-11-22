@@ -31,18 +31,18 @@ logger: login
 	mkdir -p ./log
 
 # Step 1
-build: logger
+docker-build: logger
 	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg pg_host=${PG_HOST} --build-arg thornode_host=${THORNODE_HOST} . | tee ./log/chain-service-build.log
 
 # Step 2
-tag: build
+docker-tag: docker-build
 	docker tag ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:${CHAIN_SERVICE_IMAGE_HASH}
 
 # Step 3
-push: tag
+docker-push: docker-tag
 	docker push ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:${CHAIN_SERVICE_IMAGE_HASH}
 	docker push ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest
 
 # Step 4
-deploy: config push
+docker-deploy: config docker-push
 	aws ecs update-service --force-new-deployment --cluster ${ECS_CLUSTER} --service ${ECR_CHAIN_SVC}
