@@ -1,7 +1,6 @@
 package timescale
 
 import (
-	"time"
 
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/common"
