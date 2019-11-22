@@ -53,7 +53,7 @@ build:
     - pip install awscli
   environment:
     name: develop
-  script: make -C ./build build
+  script: make docker-build
 
 deploy:develop:
   stage: deploy
@@ -71,7 +71,7 @@ deploy:develop:
     - schedules
   environment:
     name: develop
-  script: make -C ./build deploy
+  script: make docker-deploy
   only:
     - master
 
@@ -89,7 +89,7 @@ deploy:staging:
     - pip install awscli
   environment:
     name: staging
-  script: make -C ./build deploy
+  script: make docker-deploy
   only:
     - schedules
 
@@ -107,7 +107,7 @@ deploy:production:
     - pip install awscli
   environment:
     name: production
-  script: make -C ./build deploy
+  script: make docker-deploy
   only:
     - master
   when: manual
