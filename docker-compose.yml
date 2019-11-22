@@ -4,7 +4,7 @@ services:
   midgard:
     build:
       context: .
-      dockerfile: ./build/Dockerfile
+      dockerfile: Dockerfile
       args:
         thornode_host: thormock:8081
         pg_host: pg
