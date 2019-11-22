@@ -52,7 +52,7 @@ paths:
           $ref: '#/components/responses/TxDetailedResponse'
   "/v1/tx/{address}/txid/{txid}":
     get:
-      operationId: GetTxDetailsByTxId
+      operationId: GetTxDetailsByAddressTxId
       summary: Get transaction
       description: Return an object containing the tx details
       parameters:
@@ -75,7 +75,7 @@ paths:
           $ref: '#/components/responses/TxDetailedResponse'
   "/v1/tx/{address}/asset/{asset}":
     get:
-      operationId: GetTxDetailsByAsset
+      operationId: GetTxDetailsByAddressAsset
       summary: Get transaction
       description: Return an object containing the tx details
       parameters:
@@ -86,6 +86,22 @@ paths:
           schema:
             type: string
           example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
+        - in: path
+          name: asset
+          description: An Asset
+          required: true
+          schema:
+            type: string
+          example: TCAN-014
+      responses:
+        "200":
+          $ref: '#/components/responses/TxDetailedResponse'
+  "/v1/tx/asset/{asset}":
+    get:
+      operationId: GetTxDetailsByAsset
+      summary: Get transaction
+      description: Return an object containing the tx details
+      parameters:
         - in: path
           name: asset
           description: An Asset

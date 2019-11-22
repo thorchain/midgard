@@ -1,6 +1,6 @@
 development:
   dialect: postgres
-  datasource: host=127.0.0.1 dbname=midgard user=postgres password=password sslmode=disable
+  datasource: host=127.0.0.1 dbname=midgard user=midgard password=password sslmode=disable
   dir: ./db/migrations
   table: migrations
 

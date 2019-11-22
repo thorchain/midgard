@@ -70,19 +70,28 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 }
 
 // (GET /v1/tx/{address}/asset/{asset})
-func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, address, asset string) error {
+func (h *Handlers) GetTxDetailsByAddressAsset(ctx echo.Context, address, asset string) error {
 	addr, _ := common.NewAddress(address)
 	ass, _ := common.NewAsset(asset)
-	txData := h.store.GetTxDataByAsset(addr, ass)
+	txData := h.store.GetTxDataByAddressAsset(addr, ass)
 
 	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/tx/{address}/txid/{txid})
-func (h *Handlers) GetTxDetailsByTxId(ctx echo.Context, address, txid string) error {
+func (h *Handlers) GetTxDetailsByAddressTxId(ctx echo.Context, address, txid string) error {
 	addr, _ := common.NewAddress(address)
-	txData := h.store.GetTxDataByTxId(addr, txid)
+	txData := h.store.GetTxDataByAddressTxId(addr, txid)
+
+	response := helpers.PrepareTxDataResponseForAPI(txData)
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// (GET /v1/tx/asset/{asset})
+func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, asset string) error {
+	ass, _ := common.NewAsset(asset)
+	txData := h.store.GetTxDataByAsset(ass)
 
 	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
