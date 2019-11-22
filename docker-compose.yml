@@ -1,31 +1,51 @@
 version: '3'
 
 services:
-  chain-service:
+  midgard:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./build/Dockerfile
       args:
-        chain_host: $CHAIN_HOST
-    image: bepswap-chain-service
+        thornode_host: thormock:8081
+        pg_host: pg
+    image: midgard
     ports:
       - 8080:8080
     links:
       - pg
+      - thormock
     depends_on:
       - pg
+      - thormock
+  testcode:
+    build:
+      context: .
+      dockerfile: ./build/test/Dockerfile
+      args:
+        thornode_host: thormock:8081
+        pg_host: pg
+    image: midgard-test
     volumes:
-      - ${GOPATH}:/root/go
-      - .:/root/go/src/gitlab.com/thorchain/bepswap/chain-service
-    working_dir: /root/go/src/gitlab.com/thorchain/bepswap/chain-service
-    command: make install run-in-docker
-    environment:
-      GOPATH: /root/go
-      GOBIN: /root/go/bin
-      GO111MODULE: "on"
+      - .:/var/midgard
+    ports:
+      - 8080:8080
+    links:
+      - pg
+      - thormock
+    depends_on:
+      - pg
+      - thormock
+    command: make install test
   pg:
     image: timescale/timescaledb:latest-pg11
     ports:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=password
+  thormock:
+    build:
+      context: ./tools/mockServer
+      dockerfile: ./Dockerfile
+    ports:
+      - 8081:8081
+

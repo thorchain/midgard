@@ -22,8 +22,8 @@ ${GOPATH}/bin/oapi-codegen:
 node_modules:
 	yarn
 
-install: bootstrap go.sum build
-	GO111MODULE=on go install -v ./cmd/chainservice
+install: bootstrap go.sum
+	GO111MODULE=on go install -v ./cmd/midgard
 
 go.sum: go.mod
 	@echo "--> Ensure dependencies have not been modified"
@@ -50,11 +50,15 @@ coverage-report: test-coverage
 test-short:
 	@go test -short ./...
 
+# pg docker required
 test-internal:
-	@go test -cover ./...
+	PG_HOST=pg go test ./...
 
 test:
-	@./scripts/run.sh chain-service make test-internal
+	@./scripts/run.sh testcode make test-internal
+
+test-docker:
+	@docker-compose run --rm --no-deps test --build
 
 clear:
 	clear
@@ -63,7 +67,10 @@ test-watch: clear
 	@./scripts/watch.bash
 
 sh:
-	@docker-compose run --rm chain-service /bin/sh
+	@docker-compose run --rm midgard /bin/sh
+
+thormock:
+	@docker-compose run --rm -p 8081:8081 --no-deps thormock
 
 pg:
 	@docker-compose run --rm -p 5432:5432 --no-deps pg
@@ -82,20 +89,20 @@ doco:
 
 # -----------------------------------------------------------------------------------------
 
-dev: migration-down migration-up
-	go run cmd/chainservice/main.go
+dev:
+	go run cmd/midgard/main.go -c cmd/midgard/config.json
 
 run-in-docker:
-	@${GOBIN}/chainservice -c /etc/chainservice/config.json
+	@${GOBIN}/midgard -c /etc/midgard/config.json
 
 run:
-	@${GOBIN}/chainservice -c cmd/chainservice/config.json
+	@${GOBIN}/midgard -c cmd/midgard/config.json
 
 up:
 	@docker-compose up --build
 
 clean:
-	@rm ${GOBIN}/chainservice
+	@rm ${GOBIN}/midgard
 
 run-mocked-endpoint:
 	go run tools/mockServer/mockServer.go
@@ -105,32 +112,11 @@ run-mocked-endpoint:
 ${GOBIN}/sql-migrate:
 	go get -v github.com/rubenv/sql-migrate/...
 
-create-database-test:
-	PGPASSWORD=password psql -h localhost -U postgres -c "create database midgard_test;"
+create-user:
+	PGPASSWORD=password psql -h localhost -U postgres -c "CREATE USER midgard WITH CREATEDB CREATEROLE PASSWORD 'password';"
 
 create-database:
-	psql -h localhost -U postgres -c "create database midgard;"
+	 PGPASSWORD=password psql -h localhost -U postgres -c "CREATE DATABASE midgard OWNER midgard;"
 
 drop-database:
-	psql -h localhost -U postgres -c "drop database midgard;"
-
-drop-database-test:
-	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard_test;"
-
-
-migration-up: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate up
-
-migration-down: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate down
-
-migration-up-test: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate up --env="test"
-
-migration-down-test: ${GOBIN}/sql-migrate
-	${GOBIN}/sql-migrate down --env="test"
-
-run-test-suite:
-	@make drop-database-test
-	@make create-database-test
-	@make migration-up-test
+	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard;"

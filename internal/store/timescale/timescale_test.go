@@ -2,50 +2,61 @@ package timescale
 
 import (
 	"log"
+	"os"
 	"testing"
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
+	"gitlab.com/thorchain/midgard/internal/config"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func Test(t *testing.T) {
+	TestingT(t)
+}
 
 const (
-	host     = "localhost"
 	port     = 5432
 	userName = "postgres"
 	password = "password"
 	database = "midgard_test"
 	sslMode  = "disable"
+	migrationsDir = "../../../db/migrations/"
 )
 
-func NewTestStore() *Client {
+func NewTestStore(c *C) *Client {
+	if testing.Short() {
+		c.Skip("Short mode: no integration tests")
+	}
+
 	cfg := config.TimeScaleConfiguration{
-		Host:     host,
+		Host:     getVar("PG_HOST", "localhost"),
 		Port:     port,
 		UserName: userName,
 		Password: password,
 		Database: database,
 		Sslmode:  sslMode,
+		MigrationsDir: migrationsDir,
 	}
+	return NewClient(cfg)
+}
 
-	db, err := NewClient(cfg)
-	if err != nil {
-		log.Fatal(err.Error())
+func getVar(env, fallback string) string {
+	x := os.Getenv(env)
+	if x == "" {
+		return fallback
 	}
+	return x
+}
 
-	if err := db.CreateDatabase(); err != nil {
-		log.Println(err.Error()) // Only log error as the a second run will already have a db created.
+type Migrations interface {
+	MigrationsDown() error
+}
+
+func MigrationDown(c *C, migrations Migrations) {
+	if testing.Short() {
+		c.Skip("skipped")
 	}
-
-	db, err = db.Open()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if err := db.MigrationsUp(); err != nil {
+	if err := migrations.MigrationsDown(); err != nil {
 		log.Println(err.Error())
 	}
-	return db
 }

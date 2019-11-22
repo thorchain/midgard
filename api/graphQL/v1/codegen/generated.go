@@ -14,7 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/vektah/gqlparser"
 	"github.com/vektah/gqlparser/ast"
-	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/models"
+	"gitlab.com/thorchain/midgard/api/graphQL/v1/models"
 )
 
 // region    ************************** generated!.gotpl **************************

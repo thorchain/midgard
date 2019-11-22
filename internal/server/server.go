@@ -14,15 +14,15 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v2"
 
-	api "gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/api/rest/v1/handlers"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/store/timescale"
+	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
+	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
+	"gitlab.com/thorchain/midgard/internal/store/timescale"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain"
+	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
+	"gitlab.com/thorchain/midgard/internal/clients/thorChain"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/logo"
+	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/internal/logo"
 )
 
 // Server
@@ -49,7 +49,7 @@ func initLog(level string, pretty bool) zerolog.Logger {
 	}
 
 	zerolog.SetGlobalLevel(l)
-	return log.Output(out).With().Str("service", "chain-service").Logger()
+	return log.Output(out).With().Str("service", "midgard").Logger()
 }
 
 func New(cfgFile *string) (*Server, error) {
@@ -69,7 +69,7 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "fail to create binance client")
 	}
 
-	timescale := timescale.NewClientConnection(cfg.TimeScale)
+	timescale := timescale.NewClient(cfg.TimeScale)
 
 	// Setup thorchain BinanceClient scanner
 	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)

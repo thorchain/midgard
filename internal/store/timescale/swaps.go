@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateSwapRecord(record models.EventSwap) error {

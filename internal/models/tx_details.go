@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type Events struct {
@@ -41,3 +41,4 @@ type TxDetails struct {
 	Date    uint64
 	Height  uint64
 }
+

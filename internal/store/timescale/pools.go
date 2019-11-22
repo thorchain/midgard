@@ -3,7 +3,7 @@ package timescale
 import (
 	"log"
 
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type PoolData struct {
