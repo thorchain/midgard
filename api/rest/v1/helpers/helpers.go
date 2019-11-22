@@ -79,3 +79,28 @@ func ConvertOptionsForAPI(options models.Options) *api.Option {
 		WithdrawBasisPoints: pointy.Int64(int64(options.WithdrawBasisPoints)),
 	}
 }
+
+func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedResponse {
+	var response api.TxDetailedResponse
+	for _, d := range txData {
+		txD := api.TxDetails{
+			Date:    pointy.Int64(int64(d.Date)),
+			Events:  ConvertEventDataForAPI(d.Events),
+			Gas:     ConvertGasForAPI(d.Gas),
+			Height:  pointy.Int64(int64(d.Height)),
+			In:      ConvertTxForAPI(d.In),
+			Options: ConvertOptionsForAPI(d.Options),
+			Out:     ConvertTxForAPI(d.Out),
+			Pool: &api.Asset{
+				Chain:  pointy.String(d.Pool.Chain.String()),
+				Symbol: pointy.String(d.Pool.Symbol.String()),
+				Ticker: pointy.String(d.Pool.Ticker.String()),
+			},
+			Status: pointy.String(d.Status),
+			Type:   pointy.String(d.Type),
+		}
+		response = append(response, txD)
+	}
+
+	return response
+}

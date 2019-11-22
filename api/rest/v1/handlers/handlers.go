@@ -64,26 +64,27 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 	addr, _ := common.NewAddress(address)
 	txData := h.store.GetTxData(addr)
-	var response api.TxDetailedResponse
-	for _, d := range txData {
-		txD := api.TxDetails{
-			Date:    pointy.Int64(int64(d.Date)),
-			Events:  helpers.ConvertEventDataForAPI(d.Events),
-			Gas:     helpers.ConvertGasForAPI(d.Gas),
-			Height:  pointy.Int64(int64(d.Height)),
-			In:      helpers.ConvertTxForAPI(d.In),
-			Options: helpers.ConvertOptionsForAPI(d.Options),
-			Out:     helpers.ConvertTxForAPI(d.Out),
-			Pool: &api.Asset{
-				Chain:  pointy.String(d.Pool.Chain.String()),
-				Symbol: pointy.String(d.Pool.Symbol.String()),
-				Ticker: pointy.String(d.Pool.Ticker.String()),
-			},
-			Status: pointy.String(d.Status),
-			Type:   pointy.String(d.Type),
-		}
-		response = append(response, txD)
-	}
+
+	response := helpers.PrepareTxDataResponseForAPI(txData)
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// (GET /v1/tx/{address}/asset/{asset})
+func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, address, asset string) error {
+	addr, _ := common.NewAddress(address)
+	ass, _ := common.NewAsset(asset)
+	txData := h.store.GetTxDataByAsset(addr, ass)
+
+	response := helpers.PrepareTxDataResponseForAPI(txData)
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// (GET /v1/tx/{address}/txid/{txid})
+func (h *Handlers) GetTxDetailsByTxId(ctx echo.Context, address, txid string) error {
+	addr, _ := common.NewAddress(address)
+	txData := h.store.GetTxDataByTxId(addr, txid)
+
+	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
 }
 

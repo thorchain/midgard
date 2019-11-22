@@ -49,7 +49,53 @@ paths:
           example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
       responses:
         "200":
-          $ref: '#/components/responses/TxDetailedResponse'       
+          $ref: '#/components/responses/TxDetailedResponse'
+  "/v1/tx/{address}/txid/{txid}":
+    get:
+      operationId: GetTxDetailsByTxId
+      summary: Get transaction
+      description: Return an object containing the tx details
+      parameters:
+        - in: path
+          name: address
+          description: An address
+          required: true
+          schema:
+            type: string
+          example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
+        - in: path
+          name: txid
+          description: An Asset
+          required: true
+          schema:
+            type: string
+          example: TCAN-014
+      responses:
+        "200":
+          $ref: '#/components/responses/TxDetailedResponse'
+  "/v1/tx/{address}/asset/{asset}":
+    get:
+      operationId: GetTxDetailsByAsset
+      summary: Get transaction
+      description: Return an object containing the tx details
+      parameters:
+        - in: path
+          name: address
+          description: An address
+          required: true
+          schema:
+            type: string
+          example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
+        - in: path
+          name: asset
+          description: An Asset
+          required: true
+          schema:
+            type: string
+          example: TCAN-014
+      responses:
+        "200":
+          $ref: '#/components/responses/TxDetailedResponse'
   "/v1/stats":
     get:
       operationId: GetStats

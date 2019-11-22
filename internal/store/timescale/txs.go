@@ -1,19 +1,91 @@
 package timescale
 
 import (
-
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func (s *Client) GetTxData(address common.Address) []models.TxDetails {
-	return s.txData(address)
+	events := s.eventsForAddress(address)
+	return s.processEvents(events)
 }
 
-func (s *Client) txData(address common.Address) []models.TxDetails {
+func (s *Client) GetTxDataByAsset(address common.Address, asset common.Asset) []models.TxDetails {
+	events := s.eventsForAddressAsset(address, asset)
+	return s.processEvents(events)
+}
+
+func (s *Client) GetTxDataByTxId(address common.Address, txid string) []models.TxDetails {
+	events := s.eventsForAddressTxId(address, txid)
+	return s.processEvents(events)
+}
+
+func (s *Client) eventsForAddress(address common.Address) []uint64 {
+	stmnt := `
+		SELECT DISTINCT(event_id)
+			FROM txs
+		WHERE (from_address = $1 OR to_address = $1)`
+
+	rows, err := s.db.Queryx(stmnt, address.String())
+	if err != nil {
+		s.logger.Err(err).Msg("Failed")
+	}
+
+	return s.eventsResults(rows)
+}
+
+func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asset) []uint64 {
+	stmnt := `
+		SELECT DISTINCT(txs.event_id)
+			FROM txs
+				LEFT JOIN coins ON txs.tx_hash = coins.tx_hash
+		WHERE coins.ticker = $1
+		AND (txs.from_address = $2 OR txs.to_address = $2)`
+
+	rows, err := s.db.Queryx(stmnt, asset.Ticker.String(), address.String())
+	if err != nil {
+		s.logger.Err(err).Msg("Failed")
+	}
+
+	return s.eventsResults(rows)
+}
+
+func (s *Client) eventsForAddressTxId(address common.Address, txid string) []uint64 {
+	stmnt := `
+		SELECT DISTINCT(txs.event_id)
+			FROM txs
+		WHERE tx_hash = $1
+		AND (txs.from_address = $2 OR txs.to_address = $2)`
+
+	rows, err := s.db.Queryx(stmnt, txid, address.String())
+	if err != nil {
+		s.logger.Err(err).Msg("Failed")
+	}
+
+	return s.eventsResults(rows)
+}
+
+func (s *Client) eventsResults(rows *sqlx.Rows) []uint64 {
+	var events []uint64
+
+	for rows.Next() {
+		results := make(map[string]interface{})
+		err := rows.MapScan(results)
+		if err != nil {
+			s.logger.Err(err).Msg("MapScan error")
+			continue
+		}
+
+		eventId, _ := results["event_id"].(int64)
+		events = append(events, uint64(eventId))
+	}
+
+	return events
+}
+
+func (s *Client) processEvents(events []uint64) []models.TxDetails {
 	var txData []models.TxDetails
 
-	events := s.eventsForAddress(address)
 	for _, eventId := range events {
 		eventDate, height, eventType, status := s.eventBasic(eventId)
 		txData = append(txData, models.TxDetails{
@@ -31,33 +103,6 @@ func (s *Client) txData(address common.Address) []models.TxDetails {
 	}
 
 	return txData
-}
-
-func (s *Client) eventsForAddress(address common.Address) []uint64 {
-	stmnt := `
-		SELECT DISTINCT(event_id)
-			FROM txs
-		WHERE (from_address = $1 OR to_address = $1)`
-
-	rows, err := s.db.Queryx(stmnt, address.String())
-	if err != nil {
-		s.logger.Err(err).Msg("Failed")
-	}
-
-	var events []uint64
-	for rows.Next() {
-		results := make(map[string]interface{})
-		err = rows.MapScan(results)
-		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
-		}
-
-		eventId, _ := results["event_id"].(int64)
-		events = append(events, uint64(eventId))
-	}
-
-	return events
 }
 
 func (s *Client) eventPool(eventId uint64) common.Asset {
