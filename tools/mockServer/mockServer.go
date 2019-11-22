@@ -9,36 +9,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func poolMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
-	log.Println("poolMockedEndpoint Hit!")
-
-	vars := mux.Vars(request)
-	asset := vars["asset"]
-	path := fmt.Sprintf("./test/mocks/thorNode/pool/%s.json", asset)
-
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Printf("Error: %v", err.Error())
-		fmt.Fprintf(writer, err.Error())
-		return
-	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(writer, string(content))
-}
-
-func poolsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
-	log.Println("poolsMockedEndpoint Hit!")
-
-	content, err := ioutil.ReadFile("./test/mocks/thorNode/pools.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(writer, string(content))
-}
-
 func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("eventsMockedEndpoint Hit!")
 	vars := mux.Vars(request)
@@ -51,7 +21,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	content, err := ioutil.ReadFile("./test/mocks/thorNode/events.json")
+	content, err := ioutil.ReadFile("./events/events.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,31 +42,23 @@ func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, string(content))
 }
 
+func welcome(writer http.ResponseWriter, request *http.Request) {
+	log.Println("Welcome Hit!")
+	fmt.Fprintf(writer, "Welcome to thorMock")
+}
+
 func main() {
-	addr := "127.0.0.1:8081"
+	addr := ":8081"
 	router := mux.NewRouter()
 
-	// TODO update url
 	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
-	router.HandleFunc("/thorchain/pools", poolsMockedEndpoint).Methods("GET")
-	router.HandleFunc("/thorchain/pool/{asset}", poolMockedEndpoint).Methods("GET")
+	router.HandleFunc("/", welcome).Methods("GET")
 	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
 
 	// setup server
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           router,
-		TLSConfig:         nil,
-		ReadTimeout:       0,
-		ReadHeaderTimeout: 0,
-		WriteTimeout:      0,
-		IdleTimeout:       0,
-		MaxHeaderBytes:    0,
-		TLSNextProto:      nil,
-		ConnState:         nil,
-		ErrorLog:          nil,
-		BaseContext:       nil,
-		ConnContext:       nil,
 	}
 
 	fmt.Println("Running mocked endpoints: ", addr)

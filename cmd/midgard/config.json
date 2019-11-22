@@ -5,18 +5,19 @@
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
+    "rpc_host": "localhost:8081",
     "enable_scan": true,
     "scan_start_pos": 1
   },
   "timescale": {
     "host": "localhost",
     "port": 5432,
-    "user_name": "postgres",
+    "user_name": "midgard",
     "password": "password",
     "database": "midgard",
-    "sslmode": "disable"
+    "sslmode": "disable",
+    "migrationsDir": "./db/migrations/"
   },
-
   "binance": {
     "scheme": "https",
     "dex_host": "testnet-dex.binance.org",

@@ -1,8 +1,9 @@
 package timescale
 
 import (
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/models"
+
+	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func (s *Client) GetTxData(address common.Address) []models.TxDetails {

@@ -7,8 +7,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"math/rand"
 
-	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/codegen"
-	"gitlab.com/thorchain/bepswap/chain-service/api/graphQL/v1/models"
+	"gitlab.com/thorchain/midgard/api/graphQL/v1/codegen"
+	"gitlab.com/thorchain/midgard/api/graphQL/v1/models"
 )
 
 // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.

@@ -2,7 +2,8 @@ package types
 
 import (
 	"encoding/json"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+
+	"gitlab.com/thorchain/midgard/internal/common"
 	"time"
 )
 

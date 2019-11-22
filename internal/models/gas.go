@@ -1,8 +1,8 @@
 package models
 
 import (
-	"gitlab.com/thorchain/bepswap/chain-service/internal/clients/thorChain/types"
-	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
+	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type Gas struct {

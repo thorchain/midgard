@@ -30,6 +30,7 @@ type TimeScaleConfiguration struct {
 	Password string `json:"password" mapstructure:"password"`
 	Database string `json:"database" mapstructure:"database"`
 	Sslmode  string `json:"sslmode" mapstructure:"sslmode"`
+	MigrationsDir string `json:"migrationsDir" mapstructure:"migrationsDir"`
 }
 
 type ThorChainConfiguration struct {
@@ -48,7 +49,7 @@ type BinanceConfiguration struct {
 	RequestTimeout       time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
 	MarketsCacheDuration time.Duration `json:"markets_cache_duration" mapstructure:"markets_cache_duration"`
 	TokensCacheDuration  time.Duration `json:"tokens_cache_duration" mapstructure:"tokens_cache_duration"`
-	FullNodeHost         string        `json:"full_node_host" mapstructure:"full_node_host"`
+	// FullNodeHost         string        `json:"full_node_host" mapstructure:"full_node_host"`
 	FullNodeScheme       string        `json:"full_node_scheme" mapstructure:"full_node_scheme"`
 	IsTestNet            bool          `json:"is_testnet" mapstructure:"is_testnet"`
 }

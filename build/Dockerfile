@@ -1,5 +1,5 @@
 #
-# Chain Service
+# Midgard
 #
 
 #
@@ -7,38 +7,36 @@
 #
 FROM golang:1.13 AS build
 
-ARG chain_host
 ARG pg_host
+ARG thornode_host
 
-ENV CHAIN_HOST=$chain_host
 ENV PG_HOST=$pg_host
+ENV THORNODE_HOST=$thornode_host
 
 RUN env
 
-WORKDIR /tmp
-# TODO Move away from the embed clone as this will only work for master branchs
-RUN git config --global http.sslVerify "false"
-RUN git clone https://gitlab.com/thorchain/bepswap/chain-service.git /tmp/chainservice
+WORKDIR /tmp/midgard
+
+COPY . .
 
 # Install jq to update the chain service config.
 RUN apt-get update
-RUN apt-get install -y jq
+RUN apt-get install -y jq apt-utils make
 
 # Generate config.
-WORKDIR /tmp/chainservice
-RUN mkdir -p /etc/chainservice
-RUN cat ./cmd/chainservice/config.json | jq \
-  --arg CHAIN_HOST "$CHAIN_HOST" \
+RUN mkdir -p /etc/midgard
+RUN cat ./cmd/midgard/config.json | jq \
+  --arg THORNODE_HOST "$THORNODE_HOST" \
   --arg PG_HOST "$PG_HOST" \
   '.timescale["host"] = $PG_HOST | \
-  .thorchain["host"] = $CHAIN_HOST' > /etc/chainservice/config.json
-RUN cat /etc/chainservice/config.json
+  .timescale["migrationsDir"] = "/var/midgard/db/migrations/" | \
+  .thorchain["host"] = $THORNODE_HOST' > /etc/midgard/config.json
+RUN cat /etc/midgard/config.json
 
 # Compile.
 RUN GO111MODULE=on go mod verify
 
-WORKDIR /tmp/chainservice/cmd/chainservice
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o chainservice .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o midgard /tmp/midgard/cmd/midgard
 
 #
 # Main
@@ -47,18 +45,23 @@ FROM golang:alpine
 
 ENV PATH="${PATH}:/go/bin"
 
-RUN apk add --update busybox-extras && \
-    rm -rf /var/cache/apk/*
+RUN apk update
+RUN apk add make
+
+COPY --from=build /tmp/midgard/ .
+
+# Copy the db migrations
+COPY --from=build /tmp/midgard/db/ /var/midgard/db/
 
 # Copy the compiled binaires over.
-COPY --from=build /tmp/chainservice/cmd/chainservice/chainservice /go/bin/chainservice
+COPY --from=build /tmp/midgard/midgard /go/bin/midgard
 
 # Copy the chain service config.
-COPY --from=build /etc/chainservice /etc/chainservice
+COPY --from=build /etc/midgard /etc/midgard
 
 # Copy the chain service public folder ie generated docs
-COPY --from=build /tmp/chainservice/public/ /go/public/
+COPY --from=build /tmp/midgard/public/ /go/public/
 
 EXPOSE 8080
 
-CMD ["chainservice", "-c", "/etc/chainservice/config.json"]
+CMD ["midgard", "-c", "/etc/midgard/config.json"]

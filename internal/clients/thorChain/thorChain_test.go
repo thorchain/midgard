@@ -8,10 +8,10 @@ package thorChain
 // 	"testing"
 // 	"time"
 //
-// 	binance2 "gitlab.com/thorchain/bepswap/chain-service/internal/clients/blockchains/binance"
-// 	"gitlab.com/thorchain/bepswap/chain-service/internal/common"
-// 	"gitlab.com/thorchain/bepswap/chain-service/internal/config"
-// 	"gitlab.com/thorchain/bepswap/chain-service/internal/store/influxdb"
+// 	binance2 "gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
+// 	"gitlab.com/thorchain/midgard/internal/common"
+// 	"gitlab.com/thorchain/midgard/internal/config"
+// 	"gitlab.com/thorchain/midgard/internal/store/influxdb"
 //
 // 	. "gopkg.in/check.v1"
 // )
