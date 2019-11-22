@@ -1,3 +1,4 @@
+include Makefile.cicd
 all: lint install
 
 GOBIN?=${GOPATH}/bin
@@ -9,10 +10,6 @@ API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
 
 .PHONY: config, tools, test
-
-config:
-	@echo GOBIN: ${GOBIN}
-	@echo GOPATH: ${GOPATH}
 
 # cli tool for openapi
 ${GOPATH}/bin/oapi-codegen:
@@ -60,9 +57,6 @@ test:
 test-docker:
 	@docker-compose run --rm --no-deps test --build
 
-clear:
-	clear
-
 test-watch: clear
 	@./scripts/watch.bash
 
@@ -100,9 +94,6 @@ run:
 
 up:
 	@docker-compose up --build
-
-clean:
-	@rm ${GOBIN}/midgard
 
 run-mocked-endpoint:
 	go run tools/mockServer/mockServer.go
