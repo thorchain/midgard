@@ -32,7 +32,7 @@ logger: login
 
 # Step 1
 build: logger
-	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg pg_host=${PG_HOST} --build-arg chain_host=${CHAIN_HOST} . | tee ./log/chain-service-build.log
+	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg pg_host=${PG_HOST} --build-arg thornode_host=${THORNODE_HOST} . | tee ./log/chain-service-build.log
 
 # Step 2
 tag: build
