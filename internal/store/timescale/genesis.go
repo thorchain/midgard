@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 const blockSpeed = 3

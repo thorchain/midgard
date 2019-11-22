@@ -1,7 +1,6 @@
 package models
 
 import (
-	"time"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 

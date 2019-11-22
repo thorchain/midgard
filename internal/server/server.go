@@ -49,7 +49,7 @@ func initLog(level string, pretty bool) zerolog.Logger {
 	}
 
 	zerolog.SetGlobalLevel(l)
-	return log.Output(out).With().Str("service", "chain-service").Logger()
+	return log.Output(out).With().Str("service", "midgard").Logger()
 }
 
 func New(cfgFile *string) (*Server, error) {
