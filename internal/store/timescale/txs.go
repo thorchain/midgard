@@ -1,6 +1,8 @@
 package timescale
 
 import (
+	"github.com/jmoiron/sqlx"
+
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
