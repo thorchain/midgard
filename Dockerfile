@@ -17,7 +17,7 @@ RUN env
 
 WORKDIR /tmp/midgard
 
-COPY build .
+COPY  . .
 
 # Install jq to update the chain service config.
 RUN apt-get update
