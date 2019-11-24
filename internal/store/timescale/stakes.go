@@ -94,7 +94,7 @@ func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressD
 
 	return StakerAddressDetails{
 		PoolsDetails: pools,
-		TotalEarned:  s.totalEarned(pools),
+		TotalEarned:  s.totalEarned(address, pools),
 		TotalROI:     s.totalROI(address),
 		TotalStaked:  s.totalStaked(address),
 	}, nil
@@ -218,11 +218,11 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) uint64 {
 }
 
 func (s *Client) runeEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.runeDepth(asset) - s.runeStakedTotal(asset))
+	return (s.stakeUnits(address, asset) / s.poolUnits(asset)) * s.runeDepth(asset) - s.runeStakedTotal(asset)
 }
 
 func (s *Client) assetEarned(address common.Address, asset common.Asset) uint64 {
-	return s.stakeUnits(address, asset) / s.poolUnits(asset) * (s.assetDepth(asset) - s.assetStakedTotal(asset))
+	return ((s.stakeUnits(address, asset) / s.poolUnits(asset)) * s.assetDepth(asset)) - s.assetStakedTotal(asset)
 }
 
 func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
@@ -335,12 +335,27 @@ func (s *Client) getPools(address common.Address) []common.Asset {
 	return pools
 }
 
-// TODO build
-func (s *Client) totalEarned(pools []common.Asset) uint64 {
-	return 0
+func (s *Client) totalEarned(address common.Address, pools []common.Asset) uint64 {
+	var totalEarned float64
+
+	for _, pool := range pools {
+		totalEarned += (float64(s.runeEarned(address, pool)) + float64(s.assetEarned(address, pool))) / s.GetPriceInRune(pool)
+	}
+
+	return uint64(totalEarned)
 }
 
-// TODO build
 func (s *Client) totalROI(address common.Address) float64 {
-	return 0
+	var total float64
+
+	pools := s.getPools(address)
+	if len(pools) == 0 {
+		return 0
+	}
+
+	for _, pool := range pools {
+		total += s.stakersPoolROI(address, pool)
+	}
+
+	return total / float64(len(pools))
 }
