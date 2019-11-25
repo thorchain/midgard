@@ -49,6 +49,10 @@ func NewClient(cfg config.TimeScaleConfiguration) *Client {
 	}
 }
 
+func (s *Client) Ping() error {
+	return s.db.Ping()
+}
+
 func Open(cfg config.TimeScaleConfiguration) (*sqlx.DB, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v host=%v port=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password, cfg.Host, cfg.Port)
 	db, err := sqlx.Open("postgres", connStr)
