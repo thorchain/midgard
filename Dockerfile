@@ -8,9 +8,11 @@
 FROM golang:1.13 AS build
 
 ARG pg_host
+ARG rpc_host
 ARG thornode_host
 
 ENV PG_HOST=$pg_host
+ENV RPC_HOST=$rpc_host
 ENV THORNODE_HOST=$thornode_host
 
 RUN env
@@ -30,6 +32,7 @@ RUN cat ./cmd/midgard/config.json | jq \
   --arg PG_HOST "$PG_HOST" \
   '.timescale["host"] = $PG_HOST | \
   .timescale["migrationsDir"] = "/var/midgard/db/migrations/" | \
+  .thorchain["rpc_host"] = $RPC_HOST \
   .thorchain["host"] = $THORNODE_HOST' > /etc/midgard/config.json
 RUN cat /etc/midgard/config.json
 
