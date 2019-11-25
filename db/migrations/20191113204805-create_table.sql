@@ -69,6 +69,7 @@ CREATE TABLE gas (
     primary key (time, event_id, chain, symbol)
 );
 
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('stakes', 'time');
 SELECT create_hypertable('swaps', 'time');
