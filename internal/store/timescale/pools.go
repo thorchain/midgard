@@ -47,8 +47,33 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
-// TODO Calculate from USD pools
+var USDPools = []string{
+	"BNB.TUSD-000",
+	"BNB.BUSD-BD1",
+}
+
 func (s *Client) GetPriceInUSD(asset common.Asset) float64 {
+	var totalPrice float64
+	totalPools := float64(len(USDPools))
+
+	for _, symbol := range USDPools {
+		usdAsset, _ := common.NewAsset(symbol)
+		usdRune := float64(s.assetDepth(usdAsset) / s.runeDepth(usdAsset))
+		assetRune := float64(s.runeDepth(asset) / s.assetDepth(asset))
+		assetPrice := usdRune * assetRune
+
+		// Ensure that the assetPrice > 0
+		if assetPrice == 0 {
+			totalPools -= 1
+		} else {
+			totalPrice += assetPrice
+		}
+	}
+
+	if totalPools > 0 {
+		return totalPrice / totalPools
+	}
+
 	return 0
 }
 
