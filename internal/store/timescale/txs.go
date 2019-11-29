@@ -1,10 +1,11 @@
 package timescale
 
 import (
+	"database/sql"
 	"github.com/jmoiron/sqlx"
 
-	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) GetTxData(address common.Address) []models.TxDetails {
@@ -109,6 +110,7 @@ func (s *Client) processEvents(events []uint64) []models.TxDetails {
 	var txData []models.TxDetails
 
 	for _, eventId := range events {
+
 		eventDate, height, eventType, status := s.eventBasic(eventId)
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
@@ -190,6 +192,10 @@ func (s *Client) txForDirection(eventId uint64, direction string) models.TxData 
 	tx := models.TxData{}
 	row := s.db.QueryRow(stmnt, eventId, direction)
 	if err := row.Scan(&tx.TxID, &tx.Memo, &tx.Address); err != nil {
+		if err == sql.ErrNoRows {
+			return tx
+		}
+
 		s.logger.Err(err).Msg("Scan error")
 	}
 
@@ -198,7 +204,7 @@ func (s *Client) txForDirection(eventId uint64, direction string) models.TxData 
 
 func (s *Client) coinsForTxHash(txHash string) common.Coins {
 	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.amount
+		SELECT coins.chain, coins.symbol, coins.ticker, coins.amount
 			FROM coins
 		WHERE coins.tx_hash = $1`
 
