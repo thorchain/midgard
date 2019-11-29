@@ -32,7 +32,7 @@ RUN cat ./cmd/midgard/config.json | jq \
   --arg PG_HOST "$PG_HOST" \
   '.timescale["host"] = $PG_HOST | \
   .timescale["migrationsDir"] = "/var/midgard/db/migrations/" | \
-  .thorchain["rpc_host"] = $RPC_HOST \
+  .thorchain["rpc_host"] = $RPC_HOST | \
   .thorchain["host"] = $THORNODE_HOST' > /etc/midgard/config.json
 RUN cat /etc/midgard/config.json
 
