@@ -1,8 +1,9 @@
 package timescale
 
 import (
+	"database/sql"
 	"fmt"
-	"time"
+	"math"
 
 	"github.com/pkg/errors"
 
@@ -193,16 +194,15 @@ func (s *Client) assetStaked(address common.Address, asset common.Asset) uint64 
 	query := `
 		select sum(amount)
 		FROM coins c
-		INNER JOIN stakes s on c.event_id = s.event_id
-		INNER JOIN txs t on c.event_id = t.event_id
-		INNER JOIN events e on c.event_id = e.id
+			INNER JOIN stakes s on c.event_id = s.event_id
+			INNER JOIN txs t on c.event_id = t.event_id
+			INNER JOIN events e on c.event_id = e.id
 		WHERE t.from_address = ($1)
-		AND s.symbol = ($2)
-		AND c.ticker != 'RUNE'
+		AND c.ticker = $2
 	`
 
 	var assetStaked uint64
-	err := s.db.Get(&assetStaked, query, address, asset.Symbol.String())
+	err := s.db.Get(&assetStaked, query, address, asset.Ticker.String())
 	if err != nil {
 		// TODO error handling
 	}
@@ -214,15 +214,25 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) uint64 {
 	runeStaked := float64(s.runeStaked(address, asset))
 	assetStaked := float64(s.assetStaked(address, asset))
 	assetPrice := s.GetPriceInRune(asset)
-	return uint64(runeStaked + assetStaked*assetPrice)
+	return uint64(runeStaked + (assetStaked * assetPrice))
 }
 
 func (s *Client) runeEarned(address common.Address, asset common.Asset) uint64 {
-	return (s.stakeUnits(address, asset) / s.poolUnits(asset)) * s.runeDepth(asset) - s.runeStakedTotal(asset)
+	poolUnits := s.poolUnits(asset)
+	if poolUnits > 0 {
+		return (s.stakeUnits(address, asset) / s.poolUnits(asset)) * (s.runeDepth(asset) - s.runeStakedTotal(asset))
+	}
+
+	return 0
 }
 
 func (s *Client) assetEarned(address common.Address, asset common.Asset) uint64 {
-	return ((s.stakeUnits(address, asset) / s.poolUnits(asset)) * s.assetDepth(asset)) - s.assetStakedTotal(asset)
+	poolUnits := s.poolUnits(asset)
+	if poolUnits > 0 {
+		return (s.stakeUnits(address, asset) / s.poolUnits(asset)) * (s.assetDepth(asset) - s.assetStakedTotal(asset))
+	}
+
+	return 0
 }
 
 func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
@@ -233,7 +243,12 @@ func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
 }
 
 func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) float64 {
-	return float64(s.runeEarned(address, asset) / s.runeStaked(address, asset))
+	runeStaked := s.runeStaked(address, asset)
+	if runeStaked > 0 {
+		return float64(s.runeEarned(address, asset) / s.runeStaked(address, asset))
+	}
+
+	return 0
 }
 
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) uint64 {
@@ -243,18 +258,27 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) uin
 		WHERE txs.from_address = $1 
 		AND stakes.ticker = $2`
 
-	firstStaked := time.Time{}
+	firstStaked := sql.NullTime{}
 	err := s.db.Get(&firstStaked, query, address.String(), asset.Ticker.String())
 	if err != nil {
 		s.logger.Err(err).Msg("Get dateFirstStaked failed")
 		return 0
 	}
 
-	return uint64(firstStaked.Unix())
+	if firstStaked.Valid {
+		return uint64(firstStaked.Time.Unix())
+	}
+
+	return 0
 }
 
 func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) float64 {
-	return float64(s.assetEarned(address, asset) / s.assetStaked(address, asset))
+	assetStaked := s.assetStaked(address, asset)
+	if assetStaked > 0 {
+		return float64(s.assetEarned(address, asset) / s.assetStaked(address, asset))
+	}
+
+	return 0
 }
 
 func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) float64 {
@@ -263,7 +287,7 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) floa
 
 func (s *Client) totalStaked(address common.Address) uint64 {
 	query := `
-		SELECT SUM(units)
+		SELECT COALESCE(SUM(units), 0)
 		FROM (
 			SELECT c.chain, c.symbol, c.ticker, SUM(s.units) as units
          	FROM coins c
@@ -340,6 +364,10 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) uint6
 
 	for _, pool := range pools {
 		totalEarned += (float64(s.runeEarned(address, pool)) + float64(s.assetEarned(address, pool))) / s.GetPriceInRune(pool)
+	}
+
+	if math.IsNaN(totalEarned) {
+		return 0
 	}
 
 	return uint64(totalEarned)

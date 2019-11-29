@@ -1,5 +1,11 @@
 package timescale
 
+import (
+	"log"
+
+	"gitlab.com/thorchain/midgard/internal/common"
+)
+
 type StatsData struct {
 	DailyActiveUsers   uint64
 	MonthlyActiveUsers uint64
@@ -42,9 +48,18 @@ func (s *Client) GetStatsData() StatsData {
 
 func (s *Client) dailyActiveUsers() uint64 {
 	stmnt := `
-		SELECT COUNT(DISTINCT(from_address))+COUNT(DISTINCT (to_address)) daily_active_users
-			FROM txs
-			WHERE time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()`
+		SELECT SUM(users)
+			FROM (
+			    SELECT COUNT(DISTINCT(txs.from_address)) users 
+			    	FROM txs
+			    WHERE txs.direction = 'in'
+			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()	
+			    UNION
+			    SELECT COUNT(DISTINCT(txs.to_address)) users 
+			    	FROM txs
+			    WHERE txs.direction = 'out'
+			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
+			) x;`
 	var dailyActiveUsers uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -57,9 +72,18 @@ func (s *Client) dailyActiveUsers() uint64 {
 
 func (s *Client) monthlyActiveUsers() uint64 {
 	stmnt := `
-		SELECT COUNT(DISTINCT(from_address))+COUNT(DISTINCT (to_address)) monthly_active_users
-			FROM txs
-			WHERE time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()`
+		SELECT SUM(users)
+			FROM (
+			    SELECT COUNT(DISTINCT(txs.from_address)) users 
+			    	FROM txs
+			    WHERE txs.direction = 'in'
+			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()	
+			    UNION
+			    SELECT COUNT(DISTINCT(txs.to_address)) users 
+			    	FROM txs
+			    WHERE txs.direction = 'out'
+			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()
+			) x;`
 	var dailyActiveUsers uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -71,7 +95,17 @@ func (s *Client) monthlyActiveUsers() uint64 {
 }
 
 func (s *Client) totalUsers() uint64 {
-	stmnt := `SELECT COUNT(DISTINCT(from_address))+COUNT(DISTINCT (to_address)) FROM txs`
+	stmnt := `
+		SELECT SUM(users)
+			FROM (
+			    SELECT COUNT(DISTINCT(txs.from_address)) users 
+			    	FROM txs
+			    WHERE txs.direction = 'in'
+			    UNION
+			    SELECT COUNT(DISTINCT(txs.to_address)) users 
+			    	FROM txs
+			    WHERE txs.direction = 'out'
+			) x;`
 	var totalUsers uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -100,9 +134,9 @@ func (s *Client) dailyTx() uint64 {
 
 func (s *Client) monthlyTx() uint64 {
 	stmnt := `
-		SELECT COALESCE(COUNT(tx_hash), 0) monthly_tx
+		SELECT COALESCE(COUNT(txs.tx_hash), 0) monthly_tx
 			FROM txs
-		WHERE time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()`
+		WHERE txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()`
 
 	var monthlyTx uint64
 	row := s.db.QueryRow(stmnt)
@@ -151,6 +185,7 @@ func (s *Client) totalVolume() uint64 {
 				INNER JOIN coins ON swaps.event_id = coins.event_id
 		WHERE coins.ticker = swaps.ticker
 		AND swaps.ticker = 'RUNE'`
+
 	var totalVolume uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -184,7 +219,7 @@ func (s *Client) totalDepth() uint64 {
 
 func (s *Client) totalRuneStaked() uint64 {
 	stmnt := `
-		SELECT SUM(stakes.units) as rune_staked_total
+		SELECT SUM(coins.amount) as rune_staked_total
 			FROM coins
 				INNER JOIN stakes on coins.event_id = stakes.event_id
 			AND coins.ticker = 'RUNE'`
@@ -246,12 +281,29 @@ func (s *Client) bTotalEarned() uint64 {
 }
 
 func (s *Client) poolCount() uint64 {
-	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM stakes WHERE ticker != 'RUNE'`
 	var poolCount uint64
-	row := s.db.QueryRow(stmnt)
 
-	if err := row.Scan(&poolCount); err != nil {
-		return 0
+	stmnt := `
+		SELECT DISTINCT(CONCAT(stakes.chain,'.',stakes.symbol)) asset
+			FROM stakes
+		WHERE ticker != 'RUNE'`
+
+	rows, err := s.db.Queryx(stmnt)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	for rows.Next() {
+		var pool string
+		if err := rows.Scan(&pool); err != nil {
+			s.logger.Err(err).Msg("failed to scan for poolCount")
+		}
+
+		asset, _ := common.NewAsset(pool)
+		depth := s.runeDepth(asset)
+		if depth > 0 {
+			poolCount += 1
+		}
 	}
 
 	return poolCount
@@ -270,7 +322,7 @@ func (s *Client) totalAssetBuys() uint64 {
 }
 
 func (s *Client) totalAssetSells() uint64 {
-	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM swaps WHERE ticker == 'RUNE'`
+	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM swaps WHERE ticker = 'RUNE'`
 	var totalAssetSells uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -282,7 +334,11 @@ func (s *Client) totalAssetSells() uint64 {
 }
 
 func (s *Client) totalStakeTx() uint64 {
-	stmnt := `SELECT COUNT(event_id) FROM stakes`
+	stmnt := `
+		SELECT COUNT(stakes.event_id)
+			FROM stakes
+		WHERE stakes.units > 0`
+
 	var totalStakeTx uint64
 	row := s.db.QueryRow(stmnt)
 
