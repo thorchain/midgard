@@ -173,7 +173,12 @@ func (s *Client) GetPoolData(asset common.Asset) PoolData {
 }
 
 func (s *Client) GetPriceInRune(asset common.Asset) float64 {
-	return float64(s.runeDepth(asset) / s.assetDepth(asset))
+	assetDepth := s.assetDepth(asset)
+	if assetDepth > 0 {
+		return float64(s.runeDepth(asset) / s.assetDepth(asset))
+	}
+
+	return 0
 }
 
 func (s *Client) exists(asset common.Asset) bool {
@@ -224,10 +229,10 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) uint64 {
 
 func (s *Client) assetWithdrawnTotal(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COALESCE(SUM(stakes.units), 0) asset_withdrawn_total
+		SELECT COALESCE(SUM(ABS(stakes.units)), 0) asset_withdrawn_total
 		FROM stakes
 			INNER JOIN events ON stakes.event_id = events.id
-		WHERE events.type = 'stake'
+		WHERE events.type = 'unstake'
 		AND stakes.ticker = $1`
 
 	var assetWithdrawnTotal uint64
@@ -333,7 +338,6 @@ func (s *Client) runeDepth12m(asset common.Asset) uint64 {
 	stakes := s.runeStakedTotal12m(asset)
 	inSwap := s.incomingRuneSwapTotal12m(asset)
 	outSwap := s.outgoingRuneSwapTotal12m(asset)
-
 	depth := (stakes + inSwap) - outSwap
 	return depth
 }
@@ -502,7 +506,7 @@ func (s *Client) outgoingRuneSwapTotal12m(asset common.Asset) uint64 {
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
-			WHERE txs.direction = 'in'
+			WHERE txs.direction = 'out'
   			AND coins.ticker = 'RUNE'
   			AND txs.event_id IN (
 				SELECT event_id FROM swaps WHERE ticker = $1
@@ -581,7 +585,7 @@ func (s *Client) buyVolume(asset common.Asset) uint64 {
 			FROM coins
 				INNER JOIN swaps ON coins.event_id = swaps.event_id
 				INNER JOIN txs ON coins.tx_hash = txs.tx_hash
-			WHERE txs.direction = 'out'
+			WHERE txs.direction = 'in'
 			AND coins.ticker = $1
     		AND swaps.ticker = 'RUNE'`
 
@@ -894,7 +898,9 @@ func (s *Client) stakeTxCount(asset common.Asset) uint64 {
 		SELECT
 			COUNT(event_id) stake_tx_count 
 		FROM stakes
-			WHERE ticker = $1`
+			INNER JOIN events ON stakes.event_id = events.id
+			WHERE stakes.ticker = $1
+			AND events.type = 'stake'`
 
 	var stateTxCount uint64
 	row := s.db.QueryRow(stmnt, asset.Ticker.String())
@@ -977,7 +983,6 @@ func (s *Client) assetROI12(asset common.Asset) float64 {
 
 	return roi
 }
-
 
 func (s *Client) runeROI(asset common.Asset) float64 {
 	depth := float64(s.runeDepth(asset))

@@ -41,4 +41,3 @@ type TxDetails struct {
 	Date    uint64
 	Height  uint64
 }
-

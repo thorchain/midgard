@@ -19,7 +19,6 @@ type Client struct {
 	db     *sqlx.DB
 }
 
-
 func NewClient(cfg config.TimeScaleConfiguration) *Client {
 	time.Sleep(3* time.Second)
 	logger := log.With().Str("module", "timescale").Logger()
@@ -38,6 +37,7 @@ func NewClient(cfg config.TimeScaleConfiguration) *Client {
 	if err != nil {
 		logger.Err(err).Msg("Open")
 	}
+
 	if err := MigrationsUp(db, logger, cfg); err != nil {
 		logger.Err(err).Msg("MigrationsUp")
 	}
@@ -56,9 +56,11 @@ func (s *Client) Ping() error {
 func Open(cfg config.TimeScaleConfiguration) (*sqlx.DB, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v host=%v port=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password, cfg.Host, cfg.Port)
 	db, err := sqlx.Open("postgres", connStr)
+
 	if err != nil {
 		return &sqlx.DB{}, err
 	}
+
 	return db, nil
 }
 
@@ -67,11 +69,25 @@ func (s *Client) Open() (*sqlx.DB, error) {
 }
 
 func CreateDatabase(db *sqlx.DB, cfg config.TimeScaleConfiguration) error{
-	query := fmt.Sprintf(`CREATE DATABASE %v;`, cfg.Database)
-	_, err := db.Exec(query)
-	if err != nil {
+	query := fmt.Sprintf(`SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = '%v');`, cfg.Database)
+	row := db.QueryRow(query)
+
+	defer db.Close()
+
+	var exists bool
+
+	if err := row.Scan(&exists); err != nil {
 		return err
 	}
+
+	if !exists {
+		query = fmt.Sprintf(`CREATE DATABASE %v`, cfg.Database)
+		_, err := db.Exec(query)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -86,6 +102,7 @@ func MigrationsUp(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConfig
 		return err
 	}
 	logger.Debug().Int("Applied migrations", n)
+
 	return nil
 }
 
