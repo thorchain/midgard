@@ -28,6 +28,7 @@ RUN apt-get install -y jq apt-utils make
 # Generate config.
 RUN mkdir -p /etc/midgard
 RUN cat ./cmd/midgard/config.json | jq \
+  --arg RPC_HOST "$RPC_HOST" \
   --arg THORNODE_HOST "$THORNODE_HOST" \
   --arg PG_HOST "$PG_HOST" \
   '.timescale["host"] = $PG_HOST | \
