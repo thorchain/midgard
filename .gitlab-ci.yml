@@ -55,6 +55,24 @@ build:
     name: develop
   script: make docker-build
 
+
+# Build docker image
+build-gitlab-docker:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - apk update
+    - apk add python py-pip make git jq curl
+    - make docker-gitlab-login
+  script:
+    - make docker-gitlab-build
+    - make docker-gitlab-push
+
 deploy:develop:
   stage: deploy
   image: docker:stable
