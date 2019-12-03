@@ -33,7 +33,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("genesisMockedEndpoint Hit!")
 
-	content, err := ioutil.ReadFile("./test/mocks/thorNode/genesis.json")
+	content, err := ioutil.ReadFile("./genesis/genesis.json")
 	if err != nil {
 		log.Fatal(err)
 	}
