@@ -95,9 +95,6 @@ run:
 up:
 	@docker-compose up --build
 
-run-mocked-endpoint:
-	go run tools/mockServer/mockServer.go
-
 # ------------------------------------------- sql migrations ----------------------------------------------
 
 ${GOBIN}/sql-migrate:
@@ -111,3 +108,6 @@ create-database:
 
 drop-database:
 	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard;"
+
+drop-user:
+	PGPASSWORD=password psql -h localhost -U postgres -c "DROP USER midgard"
