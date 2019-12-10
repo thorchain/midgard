@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/labstack/echo/v4"
@@ -81,6 +82,7 @@ func New(cfgFile *string) (*Server, error) {
 	echoEngine := echo.New()
 	echoEngine.Use(middleware.Recover())
 
+
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
@@ -88,6 +90,31 @@ func New(cfgFile *string) (*Server, error) {
 
 	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, h)
+
+	// TODO refactoring into its own method with a whitelist array
+	// Setup proxied routes
+	url, err := url.Parse(cfg.ThorChain.Scheme + "://" +cfg.ThorChain.Host + "/thorchain/pool_addresses")
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to Parse url")
+		log.Fatal()
+	}
+
+	log.Printf("url: %s\n", url)
+	targets := []*middleware.ProxyTarget{
+		{
+			URL: url,
+		},
+	}
+	g := echoEngine.Group("/thorchain/pool_addresses")
+	g.Use(middleware.Logger())
+	g.Use(middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
+
+	g2 := echoEngine.Group("/test")
+	g2.Use(middleware.Logger())
+	g2.Use(func(handlerFunc echo.HandlerFunc) echo.HandlerFunc {
+		fmt.Println("TESTING!!!!!!!!!!!")
+		return handlerFunc
+	})
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%v", cfg.ListenPort),
