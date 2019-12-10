@@ -21,7 +21,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	content, err := ioutil.ReadFile("./events/events.json")
+	content, err := ioutil.ReadFile("./thorchain/events/events.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("genesisMockedEndpoint Hit!")
 
-	content, err := ioutil.ReadFile("./genesis/genesis.json")
+	content, err := ioutil.ReadFile("./thorchain/genesis/genesis.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,13 +47,25 @@ func welcome(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, "Welcome to thorMock")
 }
 
+func pool_addresses(writer http.ResponseWriter, request *http.Request) {
+	log.Println("pool_addresses Hit!")
+
+	content, err := ioutil.ReadFile("./thorchain/pool_addresses/pool_addresses.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(writer, string(content))
+}
 func main() {
 	addr := ":8081"
 	router := mux.NewRouter()
 
-	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/", welcome).Methods("GET")
 	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/pool_addresses", pool_addresses).Methods("GET")
 
 	// setup server
 	srv := &http.Server{

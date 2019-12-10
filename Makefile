@@ -92,6 +92,8 @@ run-in-docker:
 run:
 	@${GOBIN}/midgard -c cmd/midgard/config.json
 
+run-thormock:
+	cd ./tools/mockServer && go run mockServer.go
 up:
 	@docker-compose up --build
 

@@ -1,0 +1,14 @@
+{
+  "previous": null,
+  "current": [
+    {
+      "chain": "BNB",
+      "seq_no": "0",
+      "pub_key": "thorpub1addwnpepqf4fevaqm6fl22d24vtmek7aphkchls8ll78jt7dnvc9tgt0czmwc8awann",
+      "address": "tbnb1wcxy5znpy0z83cytn54cg9ka2k8adcekxtwvwx"
+    }
+  ],
+  "next": null,
+  "rotate_at": "28800",
+  "rotate_window_open_at": "27800"
+}
