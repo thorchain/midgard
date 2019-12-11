@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 
@@ -82,7 +83,6 @@ func New(cfgFile *string) (*Server, error) {
 	echoEngine := echo.New()
 	echoEngine.Use(middleware.Recover())
 
-
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
@@ -90,31 +90,6 @@ func New(cfgFile *string) (*Server, error) {
 
 	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, h)
-
-	// TODO refactoring into its own method with a whitelist array
-	// Setup proxied routes
-	url, err := url.Parse(cfg.ThorChain.Scheme + "://" +cfg.ThorChain.Host + "/thorchain/pool_addresses")
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to Parse url")
-		log.Fatal()
-	}
-
-	log.Printf("url: %s\n", url)
-	targets := []*middleware.ProxyTarget{
-		{
-			URL: url,
-		},
-	}
-	g := echoEngine.Group("/thorchain/pool_addresses")
-	g.Use(middleware.Logger())
-	g.Use(middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
-
-	g2 := echoEngine.Group("/test")
-	g2.Use(middleware.Logger())
-	g2.Use(func(handlerFunc echo.HandlerFunc) echo.HandlerFunc {
-		fmt.Println("TESTING!!!!!!!!!!!")
-		return handlerFunc
-	})
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%v", cfg.ListenPort),
@@ -132,6 +107,7 @@ func New(cfgFile *string) (*Server, error) {
 }
 
 func (s *Server) Start() error {
+	s.registerWhiteListedProxiedRoutes()
 	s.registerEchoWithLogger()
 	// Serve HTTP
 	go func() {
@@ -151,6 +127,42 @@ func (s *Server) Stop() error {
 
 func (s *Server) Log() *zerolog.Logger {
 	return &s.logger
+}
+
+func (s *Server) registerWhiteListedProxiedRoutes() {
+	for _, endpoint := range s.cfg.ThorChain.WhitelistedEndpoints {
+		url, err := url.Parse(s.cfg.ThorChain.Scheme + "://" + s.cfg.ThorChain.Host + "/thorchain/" + endpoint)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to Parse url")
+			continue
+		}
+		log.Info().Str("url", url.String()).Msg("Proxy url enabled")
+
+		path := fmt.Sprintf("/v1/thorchain/%s", endpoint)
+		log.Info().Str("path", path).Msg("Proxy route created")
+		s.echoEngine.GET(path, func(c echo.Context) error {
+			return nil
+		}, func(handlerFunc echo.HandlerFunc) echo.HandlerFunc {
+			return func(c echo.Context) error {
+				req := c.Request()
+				res := c.Response()
+				proxyHTTP(url).ServeHTTP(res, req)
+				return nil
+			}
+		})
+	}
+}
+
+func proxyHTTP(target *url.URL) http.Handler {
+	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy.Director = func(req *http.Request) {
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", target.Host)
+		req.URL.Scheme = target.Scheme
+		req.URL.Host = target.Host
+		req.URL.Path = target.Path
+	}
+	return proxy
 }
 
 func (s *Server) registerEchoWithLogger() {
