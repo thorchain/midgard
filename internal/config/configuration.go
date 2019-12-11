@@ -34,13 +34,13 @@ type TimeScaleConfiguration struct {
 }
 
 type ThorChainConfiguration struct {
-	Scheme               string        `json:"scheme" mapstructure:"scheme"`
-	Host                 string        `json:"host" mapstructure:"host"`
-	RPCHost              string        `json:"rpc_host" mapstructure:"rpc_host"`
-	ReadTimeout          time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
-	EnableScan           bool          `json:"enable_scan" mapstructure:"enable_scan"`
-	NoEventsBackoff      time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
-	WhitelistedEndpoints []string      `json:"whitelisted_endpoints" mapstructure:"whitelisted_endpoints"`
+	Scheme                      string        `json:"scheme" mapstructure:"scheme"`
+	Host                        string        `json:"host" mapstructure:"host"`
+	RPCHost                     string        `json:"rpc_host" mapstructure:"rpc_host"`
+	ReadTimeout                 time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
+	EnableScan                  bool          `json:"enable_scan" mapstructure:"enable_scan"`
+	NoEventsBackoff             time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
+	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
 }
 
 // BinanceConfiguration settings for binance client

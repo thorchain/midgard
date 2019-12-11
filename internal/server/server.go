@@ -130,7 +130,7 @@ func (s *Server) Log() *zerolog.Logger {
 }
 
 func (s *Server) registerWhiteListedProxiedRoutes() {
-	for _, endpoint := range s.cfg.ThorChain.WhitelistedEndpoints {
+	for _, endpoint := range s.cfg.ThorChain.ProxiedWhitelistedEndpoints {
 		url, err := url.Parse(s.cfg.ThorChain.Scheme + "://" + s.cfg.ThorChain.Host + "/thorchain/" + endpoint)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to Parse url")
