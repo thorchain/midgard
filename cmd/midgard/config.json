@@ -8,7 +8,7 @@
     "rpc_host": "localhost:8081",
     "enable_scan": true,
     "scan_start_pos": 1,
-    "whitelisted_endpoints": [
+    "proxied_whitelisted_endpoints": [
       "pool_addresses"
     ]
   },
