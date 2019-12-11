@@ -218,7 +218,7 @@ paths:
     get:
       operationId: GetThorchainProxiedEndpoints
       summary: Get the Proxied Pool Addresses
-      description: Returns a proxied endpoint for the pool_addresses endpoint on a thornode
+      description: Returns a proxied endpoint for the pool_addresses endpoint from a local thornode
       responses:
         "200":
           description: Get Return an object for the proxied pools_addresses endpoint.
