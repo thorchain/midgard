@@ -61,14 +61,12 @@ func pool_addresses(writer http.ResponseWriter, request *http.Request) {
 func main() {
 	addr := ":8081"
 	router := mux.NewRouter()
+	router.StrictSlash(true)
 
 	// router.HandleFunc("/", welcome).Methods("GET")
 	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
-	router.HandleFunc("/thorchain/pool_addresses", pool_addresses).Methods("GET")
-	router.PathPrefix("/").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		log.Println("Request: ", request.URL)
-	})
+	router.HandleFunc("/thorchain/pool_addresses/", pool_addresses).Methods("GET")
 
 	// setup server
 	srv := &http.Server{
