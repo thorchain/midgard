@@ -214,7 +214,18 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/StakersAssetDataResponse'
-  
+  "/v1/thorchain/pool_addresses":
+    get:
+      operationId: GetThorchainProxiedEndpoints
+      summary: Get the Proxied Pool Addresses
+      description: Returns a proxied endpoint for the pool_addresses endpoint from a local thornode
+      responses:
+        "200":
+          description: Get Return an object for the proxied pools_addresses endpoint.
+          content:
+            application/json:
+              schema:
+                type: object
 components:
   responses:
     PoolsDetailedResponse:

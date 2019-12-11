@@ -24,22 +24,23 @@ type Configuration struct {
 }
 
 type TimeScaleConfiguration struct {
-	Host     string `json:"host" mapstructure:"host"`
-	Port     int    `json:"port" mapstructure:"port"`
-	UserName string `json:"user_name" mapstructure:"user_name"`
-	Password string `json:"password" mapstructure:"password"`
-	Database string `json:"database" mapstructure:"database"`
-	Sslmode  string `json:"sslmode" mapstructure:"sslmode"`
+	Host          string `json:"host" mapstructure:"host"`
+	Port          int    `json:"port" mapstructure:"port"`
+	UserName      string `json:"user_name" mapstructure:"user_name"`
+	Password      string `json:"password" mapstructure:"password"`
+	Database      string `json:"database" mapstructure:"database"`
+	Sslmode       string `json:"sslmode" mapstructure:"sslmode"`
 	MigrationsDir string `json:"migrationsDir" mapstructure:"migrationsDir"`
 }
 
 type ThorChainConfiguration struct {
-	Scheme          string        `json:"scheme" mapstructure:"scheme"`
-	Host            string        `json:"host" mapstructure:"host"`
-	RPCHost         string        `json:"rpc_host" mapstructure:"rpc_host"`
-	ReadTimeout     time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
-	EnableScan      bool          `json:"enable_scan" mapstructure:"enable_scan"`
-	NoEventsBackoff time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
+	Scheme                      string        `json:"scheme" mapstructure:"scheme"`
+	Host                        string        `json:"host" mapstructure:"host"`
+	RPCHost                     string        `json:"rpc_host" mapstructure:"rpc_host"`
+	ReadTimeout                 time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
+	EnableScan                  bool          `json:"enable_scan" mapstructure:"enable_scan"`
+	NoEventsBackoff             time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
+	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
 }
 
 // BinanceConfiguration settings for binance client
@@ -50,8 +51,8 @@ type BinanceConfiguration struct {
 	MarketsCacheDuration time.Duration `json:"markets_cache_duration" mapstructure:"markets_cache_duration"`
 	TokensCacheDuration  time.Duration `json:"tokens_cache_duration" mapstructure:"tokens_cache_duration"`
 	// FullNodeHost         string        `json:"full_node_host" mapstructure:"full_node_host"`
-	FullNodeScheme       string        `json:"full_node_scheme" mapstructure:"full_node_scheme"`
-	IsTestNet            bool          `json:"is_testnet" mapstructure:"is_testnet"`
+	FullNodeScheme string `json:"full_node_scheme" mapstructure:"full_node_scheme"`
+	IsTestNet      bool   `json:"is_testnet" mapstructure:"is_testnet"`
 }
 
 func applyDefaultConfig() {
