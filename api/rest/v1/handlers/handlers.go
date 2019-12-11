@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/99designs/gqlgen/handler"
@@ -320,31 +319,8 @@ func (h *Handlers) PostGraphqlQuery(ctx echo.Context) error {
 	return nil
 }
 
-// var whitelistedEndpoints = []string{"pool_addresses"}
-
-// GetThorchainProxiedEndpoints returns responses for the proxies endpoints.
+// GetThorchainProxiedEndpoints is just here to meet the golang interface.
+// As the endpoints are generated dynamically the implemented is in server.go
 func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
-	log.Println("TESTING!!")
-	// path := ctx.Path()
-	//
-	// // Match path with whitelist array
-	// for _, endpoint := range whitelistedEndpoints {
-	// 	pattern := fmt.Sprintf(`^\/v1\/thorchain\/%s$`,endpoint)
-	// 	matched, err := regexp.MatchString(pattern, path)
-	// 	if err != nil {
-	// 		h.logger.Error().Err(err).Msg("failed to run regex")
-	// 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{
-	// 			Error: "Internal Server Error",
-	// 		})
-	// 	}
-	//
-	// 	if matched {
-	// 		path := fmt.Sprintf("thorchain/%s", endpoint)
-	//
-	//
-	// 	}
-	//
-	// }
-
 	return nil
 }
