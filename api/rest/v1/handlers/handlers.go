@@ -6,6 +6,7 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
+
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/resolvers"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
@@ -17,11 +18,6 @@ import (
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
 
 	"github.com/labstack/echo/v4"
-)
-
-const (
-// defaultLimit  int = 25
-// defaultOffset int = 0
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
@@ -320,5 +316,11 @@ func (h *Handlers) PostGraphqlQuery(ctx echo.Context) error {
 	req := ctx.Request()
 	res := ctx.Response()
 	handleFunc.ServeHTTP(res, req)
+	return nil
+}
+
+// GetThorchainProxiedEndpoints is just here to meet the golang interface.
+// As the endpoints are generated dynamically the implemented is in server.go
+func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 	return nil
 }

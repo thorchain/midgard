@@ -1,13 +1,16 @@
 {
   "listen_port": 8080,
   "is_testnet" : true,
-  "log_level": "debug",
+  "log_level": "info",
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
     "rpc_host": "localhost:8081",
     "enable_scan": true,
-    "scan_start_pos": 1
+    "scan_start_pos": 1,
+    "proxied_whitelisted_endpoints": [
+      "pool_addresses"
+    ]
   },
   "timescale": {
     "host": "localhost",
