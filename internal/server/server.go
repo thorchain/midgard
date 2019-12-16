@@ -83,6 +83,10 @@ func New(cfgFile *string) (*Server, error) {
 	echoEngine := echo.New()
 	echoEngine.Use(middleware.Recover())
 
+	// CORS default
+	// Allows requests from any origin wth GET, HEAD, PUT, POST or DELETE method.
+	echoEngine.Use(middleware.CORS())
+
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
