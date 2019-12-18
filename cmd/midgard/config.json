@@ -23,6 +23,6 @@
   },
   "binance": {
     "scheme": "https",
-    "dex_host": "testnet-dex.binance.org",
+    "dex_host": "testnet-dex.binance.org"
   }
 }
