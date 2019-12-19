@@ -634,9 +634,6 @@ components:
         priceRune:
           type: number
           format: double
-        priceUSD:
-          type: number
-          format: double
 
     Error:
       required:
