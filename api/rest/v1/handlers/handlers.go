@@ -137,7 +137,6 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
 		Name:        pointy.String(tokenData.Name),
 		PriceRune:   pointy.Float64(h.store.GetPriceInRune(pool)),
-		PriceUSD:    pointy.Float64(h.store.GetPriceInUSD(pool)),
 	}
 
 	return ctx.JSON(http.StatusOK, response)
