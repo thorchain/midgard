@@ -150,6 +150,10 @@ func (s *Server) registerWhiteListedProxiedRoutes() {
 			return func(c echo.Context) error {
 				req := c.Request()
 				res := c.Response()
+
+				// delete duplicate header
+				res.Header().Del("Access-Control-Allow-Origin")
+
 				proxyHTTP(url).ServeHTTP(res, req)
 				return nil
 			}
