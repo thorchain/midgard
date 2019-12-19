@@ -12,6 +12,7 @@ import (
 func (s *Client) GetMaxID() (int64, error) {
 	query := fmt.Sprintf("SELECT MAX(id) FROM %s", models.ModelEventsTable)
 	var maxId int64
+	// FIXME this code is giving an error when no data returned
 	err := s.db.Get(&maxId, query)
 	if err != nil {
 		return 0, errors.Wrap(err, "maxID query return null or failed")
