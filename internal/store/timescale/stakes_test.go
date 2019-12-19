@@ -18,7 +18,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	stakeUnits = s.Store.stakeUnits(address, asset)
@@ -27,7 +27,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	stakeUnits = s.Store.stakeUnits(address, asset)

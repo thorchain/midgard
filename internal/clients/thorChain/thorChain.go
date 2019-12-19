@@ -146,6 +146,15 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				api.logger.Err(err).Msg("processUnstakeEvent failed")
 				continue
 			}
+		case "rewards":
+			err = api.processRewardEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processUnstakeEvent failed")
+				continue
+			}
+		default:
+			api.logger.Info().Str("evt.Type",evt.Type).Msg("Unknown event type")
+			continue
 		}
 	}
 	return maxID, len(events), nil
@@ -192,6 +201,21 @@ func (api *API) processUnstakeEvent(evt types.Event) error {
 	err = api.store.CreateUnStakesRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create unstake record")
+	}
+	return nil
+}
+
+func (api *API) processRewardEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processRewardEvent")
+	var rewards types.EventRewards
+	err := json.Unmarshal(evt.Event, &rewards)
+	if err != nil {
+		return errors.Wrap(err, "fail to unmarshal rewards event")
+	}
+	record := models.NewRewardEvent(rewards, evt)
+	err = api.store.CreateRewardRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create rewards record")
 	}
 	return nil
 }
@@ -254,10 +278,6 @@ func (api *API) scan() {
 				}
 				continue
 			}
-			// if err := api.writePtsToStoreWithRetry(events); nil != err {
-			// 	api.logger.Error().Err(err).Msg("fail to write events to data store")
-			// 	continue //
-			// }
 			currentPos = maxID + 1
 		}
 	}

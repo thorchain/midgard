@@ -3,8 +3,9 @@ package types
 import (
 	"encoding/json"
 
-	"gitlab.com/thorchain/midgard/internal/common"
 	"time"
+
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type Event struct {
@@ -33,6 +34,16 @@ type EventSwap struct {
 type EventUnstake struct {
 	Pool       common.Asset `json:"pool"`
 	StakeUnits int64        `json:"stake_units,string"`
+}
+
+type EventRewards struct {
+	BondReward  uint64  `json:"bond_reward"` // we are ignoring bond rewards for now
+	PoolRewards []PoolAmt `json:"pool_rewards"`
+}
+
+type PoolAmt struct {
+	Asset  common.Asset `json:"assets"`
+	Amount int64        `json:"amount,string"`
 }
 
 type Genesis struct {
