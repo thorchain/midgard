@@ -34,7 +34,7 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 	)
 
 	if err != nil {
-		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
+		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")
 	}
 
 	return nil
