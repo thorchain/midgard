@@ -13,19 +13,21 @@ CREATE TABLE events (
     height bigint not null,
     type varchar not null,
     status varchar not null,
-    primary key (time, id)
+    primary key (id, time)
 );
 CREATE TABLE stakes (
     time        TIMESTAMPTZ       NOT NULL,
+    id SERIAL,
     event_id bigint not null,
     chain varchar not null,
     symbol varchar not null,
     ticker varchar not null,
     units bigint,
-    primary key (time, event_id)
+    primary key (id, time)
 );
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
+    id SERIAL,
     event_id bigint not null,
     chain varchar not null,
     symbol varchar not null,
@@ -33,7 +35,7 @@ CREATE TABLE swaps (
     price_target bigint,
     trade_slip real,
     liquidity_fee bigint,
-    primary key (time, event_id)
+    primary key (id, time)
 );
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
