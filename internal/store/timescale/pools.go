@@ -52,10 +52,13 @@ var USDPools = []string{
 	"BNB.BUSD-BD1",
 }
 
+// TODO the handler code to this method has been removed for now
+// leaving this code here for now in case needed again once we have USD pools up and running
 func (s *Client) GetPriceInUSD(asset common.Asset) float64 {
 	var totalPrice float64
 	totalPools := float64(len(USDPools))
 
+	// fixme we should check that the USD pool exists as part of this loop
 	for _, symbol := range USDPools {
 		usdAsset, _ := common.NewAsset(symbol)
 		usdRune := float64(s.assetDepth(usdAsset) / s.runeDepth(usdAsset))
