@@ -1,9 +1,11 @@
 package timescale
 
 import (
-	"log"
+  "fmt"
+  "github.com/davecgh/go-spew/spew"
+  "log"
 
-	"gitlab.com/thorchain/midgard/internal/common"
+  "gitlab.com/thorchain/midgard/internal/common"
 )
 
 type PoolData struct {
@@ -45,11 +47,6 @@ type PoolData struct {
 	SwappersCount    uint64
 	SwappingTxCount  uint64
 	WithdrawTxCount  uint64
-}
-
-var USDPools = []string{
-	"BNB.TUSD-000",
-	"BNB.BUSD-BD1",
 }
 
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
@@ -220,6 +217,26 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) uint64 {
 	return assetWithdrawnTotal
 }
 
+
+func (s *Client) runeStaked(asset common.Asset) uint64 {
+  stmt := `
+    SELECT SUM(c.amount) as rune_staked
+    FROM stakes
+    INNER JOIN coins c on stakes.event_id = c.event_id
+    WHERE stakes.ticker = $1 AND c.ticker = 'RUNE'
+  `
+
+  var runeStaked uint64
+  row := s.db.QueryRow(stmt, asset.Ticker.String())
+
+  if err := row.Scan(&runeStaked); err != nil {
+    return 0
+  }
+
+  return runeStaked
+}
+
+// FIXME this is incorrect as its based off stakes.units
 func (s *Client) runeStakedTotal(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT SUM(stakes.units) as rune_staked_total
@@ -229,7 +246,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) uint64 {
 				INNER JOIN events on coins.event_id = events.id
 			AND coins.event_id IN (
 				SELECT event_id FROM stakes WHERE ticker = $1
-        	)
+       	)
 			AND coins.ticker = 'RUNE'`
 
 	var runeStakedTotal uint64
@@ -301,10 +318,11 @@ func (s *Client) assetDepth12m(asset common.Asset) uint64 {
 }
 
 func (s *Client) runeDepth(asset common.Asset) uint64 {
-	stakes := s.runeStakedTotal(asset)
+	stakes := s.runeStaked(asset)
 	inSwap := s.incomingRuneSwapTotal(asset)
 	outSwap := s.outgoingRuneSwapTotal(asset)
-
+	fmt.Println("inSwap: ", spew.Sdump(inSwap))
+  fmt.Println("outSwap: ", spew.Sdump(outSwap))
 	depth := (stakes + inSwap) - outSwap
 	return depth
 }
@@ -833,7 +851,7 @@ func (s *Client) buyAssetCount(asset common.Asset) uint64 {
 func (s *Client) swappingTxCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT
-			COUNT(event_id) swapping_tx_count 
+			COUNT(event_id) swapping_tx_count
 		FROM swaps
 			WHERE ticker = $1`
 
@@ -849,13 +867,13 @@ func (s *Client) swappingTxCount(asset common.Asset) uint64 {
 
 func (s *Client) swappersCount(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(count) swappers_count 
-		FROM   (SELECT COUNT(from_address) AS count 
-        		FROM   txs 
-               		INNER JOIN swaps 
-                       		ON txs.event_id = swaps.event_id 
-        		WHERE  swaps.ticker = $1 
-               		AND txs.direction = 'in' 
+		SELECT SUM(count) swappers_count
+		FROM   (SELECT COUNT(from_address) AS count
+        		FROM   txs
+               		INNER JOIN swaps
+                       		ON txs.event_id = swaps.event_id
+        		WHERE  swaps.ticker = $1
+               		AND txs.direction = 'in'
         		GROUP  BY txs.from_address) x`
 
 	var swappersCount uint64
@@ -871,7 +889,7 @@ func (s *Client) swappersCount(asset common.Asset) uint64 {
 func (s *Client) stakeTxCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT
-			COUNT(event_id) stake_tx_count 
+			COUNT(event_id) stake_tx_count
 		FROM stakes
 			INNER JOIN events ON stakes.event_id = events.id
 			WHERE stakes.ticker = $1
@@ -890,10 +908,10 @@ func (s *Client) stakeTxCount(asset common.Asset) uint64 {
 func (s *Client) withdrawTxCount(asset common.Asset) uint64 {
 	stmnt := `
 		SELECT
-			COUNT(event_id) withdraw_tx_count 
+			COUNT(event_id) withdraw_tx_count
 		FROM stakes
 		INNER JOIN events ON events.id = stakes.event_id
-		WHERE events.type = 'unstake'		
+		WHERE events.type = 'unstake'
 		AND ticker = $1`
 
 	var withdrawTxCount uint64
@@ -916,13 +934,13 @@ func (s *Client) stakingTxCount(asset common.Asset) uint64 {
 
 func (s *Client) stakersCount(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(count) stakers_count 
-		FROM   (SELECT COUNT(from_address) AS count 
-        		FROM   txs 
-               		INNER JOIN stakes 
-                       		ON txs.event_id = stakes.event_id 
+		SELECT SUM(count) stakers_count
+		FROM   (SELECT COUNT(from_address) AS count
+        		FROM   txs
+               		INNER JOIN stakes
+                       		ON txs.event_id = stakes.event_id
         		WHERE  stakes.ticker = $1
-               		AND txs.direction = 'in' 
+               		AND txs.direction = 'in'
         		GROUP  BY txs.from_address) x`
 
 	var stakersCount uint64

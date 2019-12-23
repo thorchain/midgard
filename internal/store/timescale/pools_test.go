@@ -1,11 +1,11 @@
 package timescale
 
 import (
-	"log"
+  "log"
 
-	"gitlab.com/thorchain/midgard/internal/common"
+  "gitlab.com/thorchain/midgard/internal/common"
 
-	. "gopkg.in/check.v1"
+  . "gopkg.in/check.v1"
 )
 
 func (s *TimeScaleSuite) TestGetPool(c *C) {
@@ -308,19 +308,55 @@ func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneDepth(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	runeDepth := s.Store.runeDepth(asset)
 	c.Assert(runeDepth, Equals, uint64(0))
 
-	// Single stake
+	// stake event
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
+	runeDepth = s.Store.runeDepth(asset)
+	c.Assert(runeDepth,Equals, uint64(10))
 
-	runeDepth = s.Store.assetDepth(asset)
-	c.Assert(runeDepth, Equals, uint64(10))
+	// Another stake event
+	stakeEvent1 := stakeEvent0
+	stakeEvent1.ID = 2
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+		c.Fatal(err)
+	}
+	runeDepth = s.Store.runeDepth(asset)
+	c.Assert(runeDepth, Equals, uint64(20))
+
+	// An unstake event
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+  runeDepth = s.Store.runeDepth(asset)
+  c.Assert(runeDepth, Equals, uint64(10))
+
+  // A swap out event
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+  runeDepth = s.Store.runeDepth(asset)
+  c.Assert(runeDepth, Equals, uint64(9))
+
+  // A swap in event
+  if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+    c.Fatal(err)
+  }
+  runeDepth = s.Store.runeDepth(asset)
+  c.Assert(runeDepth, Equals, uint64(10))
+
+	// A block reward event
+  if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  runeDepth = s.Store.runeDepth(asset)
+  c.Assert(runeDepth, Equals, uint64(10))
 }
 
 func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {

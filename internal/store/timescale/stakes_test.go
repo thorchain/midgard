@@ -58,7 +58,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	asset, _ := common.NewAsset("BNB")
 
 	// No stakes
-	runeStaked := s.Store.runeStaked(address, asset)
+	runeStaked := s.Store.runeStakedForAssetFromAddress(address, asset)
 	c.Assert(runeStaked, Equals, uint64(0))
 
 	// Single stake
@@ -66,7 +66,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	runeStaked = s.Store.runeStaked(address, asset)
+	runeStaked = s.Store.runeStakedForAssetFromAddress(address, asset)
 	c.Assert(runeStaked, Equals, uint64(100))
 
 	// Additional stake
@@ -75,7 +75,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	runeStaked = s.Store.runeStaked(address, asset)
+	runeStaked = s.Store.runeStakedForAssetFromAddress(address, asset)
 	c.Assert(runeStaked, Equals, uint64(100))
 
 	// Unstake
@@ -83,7 +83,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	runeStaked = s.Store.runeStaked(address, asset)
+	runeStaked = s.Store.runeStakedForAssetFromAddress(address, asset)
 	c.Assert(runeStaked, Equals, uint64(0))
 
 	// Additional stake
@@ -94,7 +94,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	runeStaked = s.Store.runeStaked(address, asset)
+	runeStaked = s.Store.runeStakedForAssetFromAddress(address, asset)
 	c.Assert(runeStaked, Equals, uint64(50000000))
 }
 

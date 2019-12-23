@@ -1,24 +1,24 @@
 package thorChain
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"sort"
-	"strings"
+  "encoding/json"
+  "fmt"
+  "net/http"
+  "sort"
+  "strings"
 
-	"sync"
-	"time"
+  "sync"
+  "time"
 
-	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+  "github.com/pkg/errors"
+  "github.com/rs/zerolog"
+  "github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
-	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
-	"gitlab.com/thorchain/midgard/internal/config"
-	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
+  "gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
+  "gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
+  "gitlab.com/thorchain/midgard/internal/config"
+  "gitlab.com/thorchain/midgard/internal/models"
+  "gitlab.com/thorchain/midgard/internal/store/timescale"
 )
 
 // API to talk to thorchain
@@ -153,7 +153,7 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				continue
 			}
 		default:
-			api.logger.Info().Str("evt.Type",evt.Type).Msg("Unknown event type")
+			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
 		}
 	}
@@ -264,7 +264,7 @@ func (api *API) scan() {
 		case <-api.stopChan:
 			return
 		default:
-			api.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
+			api.logger.Info().Int64("currentPos", currentPos).Msg("request events")
 			maxID, events, err := api.processEvents(currentPos)
 			if err != nil {
 				api.logger.Error().Err(err).Msg("fail to get events from thorchain")

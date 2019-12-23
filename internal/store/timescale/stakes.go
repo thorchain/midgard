@@ -134,7 +134,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	details := StakerAddressAndAssetDetails{
 		Asset:           asset,
 		StakeUnits:      s.stakeUnits(address, asset),
-		RuneStaked:      s.runeStaked(address, asset),
+		RuneStaked:      s.runeStakedForAssetFromAddress(address, asset),
 		AssetStaked:     s.assetStaked(address, asset),
 		PoolStaked:      s.poolStaked(address, asset),
 		RuneEarned:      s.runeEarned(address, asset),
@@ -169,7 +169,7 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) uint64 {
 	return stakeUnits
 }
 
-func (s *Client) runeStaked(address common.Address, asset common.Asset) uint64 {
+func (s *Client) runeStakedForAssetFromAddress(address common.Address, asset common.Asset) uint64 {
 	query := `
 		select sum(amount)
 		FROM coins c
@@ -211,7 +211,7 @@ func (s *Client) assetStaked(address common.Address, asset common.Asset) uint64 
 }
 
 func (s *Client) poolStaked(address common.Address, asset common.Asset) uint64 {
-	runeStaked := float64(s.runeStaked(address, asset))
+	runeStaked := float64(s.runeStakedForAssetFromAddress(address, asset))
 	assetStaked := float64(s.assetStaked(address, asset))
 	assetPrice := s.GetPriceInRune(asset)
 	return uint64(runeStaked + (assetStaked * assetPrice))
@@ -243,9 +243,9 @@ func (s *Client) poolEarned(address common.Address, asset common.Asset) uint64 {
 }
 
 func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) float64 {
-	runeStaked := s.runeStaked(address, asset)
+	runeStaked := s.runeStakedForAssetFromAddress(address, asset)
 	if runeStaked > 0 {
-		return float64(s.runeEarned(address, asset) / s.runeStaked(address, asset))
+		return float64(s.runeEarned(address, asset) / s.runeStakedForAssetFromAddress(address, asset))
 	}
 
 	return 0
@@ -255,7 +255,7 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) uin
 	query := `
 		SELECT MIN(stakes.time) FROM stakes
     		INNER JOIN txs ON stakes.event_id = txs.event_id
-		WHERE txs.from_address = $1 
+		WHERE txs.from_address = $1
 		AND stakes.ticker = $2`
 
 	firstStaked := sql.NullTime{}
