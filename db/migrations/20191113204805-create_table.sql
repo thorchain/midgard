@@ -15,28 +15,34 @@ CREATE TABLE events (
     status varchar not null,
     primary key (id, time)
 );
+
 CREATE TABLE stakes (
     time        TIMESTAMPTZ       NOT NULL,
     id SERIAL,
     event_id bigint not null,
-    chain varchar not null,
-    symbol varchar not null,
-    ticker varchar not null,
+    from_address varchar not null,
+    pool varchar not null,
+    runeAmt bigint,
+    assetAmt bigint,
     units bigint,
     primary key (id, time)
 );
+
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
     id SERIAL,
     event_id bigint not null,
-    chain varchar not null,
-    symbol varchar not null,
-    ticker varchar not null,
+    from_address varchar not null,
+    to_address varchar not null,
+    pool varchar not null,
     price_target bigint,
     trade_slip real,
     liquidity_fee bigint,
+    runeAmt bigint,
+    assetAmt bigint,
     primary key (id, time)
 );
+
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
     time        TIMESTAMPTZ       NOT NULL,
@@ -50,6 +56,7 @@ CREATE TABLE txs (
     memo varchar,
     primary key (id, time, event_id)
 );
+
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
     id SERIAL,
@@ -61,6 +68,7 @@ CREATE TABLE coins (
     amount bigint not null,
     primary key (id, time, event_id)
 );
+
 CREATE TABLE gas (
     time        TIMESTAMPTZ       NOT NULL,
     event_id bigint not null,
