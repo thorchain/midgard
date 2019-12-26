@@ -285,7 +285,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(100))
+	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
@@ -293,7 +293,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, uint64(400))
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
@@ -301,7 +301,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(100))
+	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -311,7 +311,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(25025000000))
+	c.Assert(totalStaked, Equals, uint64(50000000), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {
@@ -388,62 +388,33 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 	c.Assert(totalRuneStaked, Equals, uint64(50000100))
 }
 
-func (s *TimeScaleSuite) TestRuneIncomingSwaps(c *C) {
+func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 
-	runeIncomingSwaps := s.Store.runeIncomingSwaps()
-	c.Assert(runeIncomingSwaps, Equals, uint64(0))
-
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
-		log.Fatal(err)
-	}
-
-	runeIncomingSwaps = s.Store.runeIncomingSwaps()
-	c.Assert(runeIncomingSwaps, Equals, uint64(0))
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
-		log.Fatal(err)
-	}
-
-	runeIncomingSwaps = s.Store.runeIncomingSwaps()
-	c.Assert(runeIncomingSwaps, Equals, uint64(0))
-
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
-		log.Fatal(err)
-	}
-
-	runeIncomingSwaps = s.Store.runeIncomingSwaps()
-	c.Assert(runeIncomingSwaps, Equals, uint64(0))
-}
-
-func (s *TimeScaleSuite) TestRuneOutgoingSwaps(c *C) {
-
-	runeOutgoingSwaps := s.Store.runeOutgoingSwaps()
-	c.Assert(runeOutgoingSwaps, Equals, uint64(0))
+	runeSwaps := s.Store.runeSwaps()
+	c.Assert(runeSwaps, Equals, uint64(0))
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	runeOutgoingSwaps = s.Store.runeOutgoingSwaps()
-	c.Assert(runeOutgoingSwaps, Equals, uint64(0))
+	runeSwaps = s.Store.runeSwaps()
+	c.Assert(runeSwaps, Equals, uint64(0))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		log.Fatal(err)
 	}
 
-	runeOutgoingSwaps = s.Store.runeOutgoingSwaps()
-	c.Assert(runeOutgoingSwaps, Equals, uint64(0))
+	runeSwaps = s.Store.runeSwaps()
+	c.Assert(runeSwaps, Equals, uint64(0))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	runeOutgoingSwaps = s.Store.runeOutgoingSwaps()
-	c.Assert(runeOutgoingSwaps, Equals, uint64(0))
+	runeSwaps = s.Store.runeSwaps()
+	c.Assert(runeSwaps, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestbTotalEarned(c *C) {

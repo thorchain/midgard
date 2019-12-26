@@ -1,6 +1,7 @@
 package timescale
 
 import (
+	"fmt"
 	"log"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -162,12 +163,11 @@ func (s *Client) totalTx() uint64 {
 
 func (s *Client) totalVolume24hr() uint64 {
 	stmnt := `
-		SELECT COALESCE(SUM(coins.amount), 0)
-			FROM swaps
-				INNER JOIN coins ON swaps.event_id = coins.event_id
-		WHERE coins.ticker = swaps.ticker
-		AND swaps.ticker = 'RUNE'
-		AND swaps.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()`
+		SELECT COUNT(runeAmt) 
+		FROM swaps
+		WHERE runeAmt > 0
+		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
+	`
 	var totalVolume uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -180,11 +180,10 @@ func (s *Client) totalVolume24hr() uint64 {
 
 func (s *Client) totalVolume() uint64 {
 	stmnt := `
-		SELECT COALESCE(SUM(coins.amount), 0)
-			FROM swaps
-				INNER JOIN coins ON swaps.event_id = coins.event_id
-		WHERE coins.ticker = swaps.ticker
-		AND swaps.ticker = 'RUNE'`
+		SELECT COUNT(runeAmt) 
+		FROM swaps
+		WHERE runeAmt > 0
+	`
 
 	var totalVolume uint64
 	row := s.db.QueryRow(stmnt)
@@ -197,32 +196,28 @@ func (s *Client) totalVolume() uint64 {
 }
 
 func (s *Client) bTotalStaked() uint64 {
-	stmnt := `SELECT COALESCE(SUM(units), 0) FROM stakes WHERE ticker = 'RUNE'`
 	var totalStaked uint64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalStaked); err != nil {
-		return 0
+	fmt.Println("bTotalStaked")
+	for _, pool := range s.GetPools() {
+		fmt.Printf("Pool: %s\n", pool.String())
+		totalStaked += s.poolStakedTotal(pool)
+		fmt.Printf("TotalStaked: %d\n", totalStaked)
 	}
-
 	return totalStaked
 }
 
 func (s *Client) totalDepth() uint64 {
 	stakes := s.totalRuneStaked()
-	inSwap := s.runeIncomingSwaps()
-	outSwap := s.runeOutgoingSwaps()
+	swaps := s.runeSwaps()
 
-	depth := (stakes + inSwap) - outSwap
+	depth := (stakes + swaps)
 	return depth
 }
 
 func (s *Client) totalRuneStaked() uint64 {
 	stmnt := `
-		SELECT SUM(coins.amount) as rune_staked_total
-			FROM coins
-				INNER JOIN stakes on coins.event_id = stakes.event_id
-			AND coins.ticker = 'RUNE'`
+		SELECT SUM(runeAmt) FROM stakes
+	`
 
 	var totalRuneStaked uint64
 	row := s.db.QueryRow(stmnt)
@@ -234,16 +229,10 @@ func (s *Client) totalRuneStaked() uint64 {
 	return totalRuneStaked
 }
 
-func (s *Client) runeIncomingSwaps() uint64 {
+func (s *Client) runeSwaps() uint64 {
 	stmnt := `
-		SELECT SUM(coins.amount) AS incoming_swap_total
-			FROM coins
-        		INNER JOIN swaps ON coins.event_id = swaps.event_id
-        		INNER JOIN txs ON coins.tx_hash = txs.tx_hash
-    		WHERE txs.direction = 'in'
-    		AND coins.ticker = 'RUNE'
-    		AND txs.event_id = swaps.event_id
-    		GROUP BY coins.tx_hash`
+		SELECT SUM(runeAmt) FROM swaps
+	`
 
 	var runeIncomingSwaps uint64
 	row := s.db.QueryRow(stmnt)
@@ -255,27 +244,6 @@ func (s *Client) runeIncomingSwaps() uint64 {
 	return runeIncomingSwaps
 }
 
-func (s *Client) runeOutgoingSwaps() uint64 {
-	stmnt := `
-		SELECT SUM(coins.amount) AS outgoing_swap_total
-			FROM coins
-        		INNER JOIN swaps ON coins.event_id = swaps.event_id
-        		INNER JOIN txs ON coins.tx_hash = txs.tx_hash
-    		WHERE txs.direction = 'out'
-    		AND coins.ticker = 'RUNE'
-    		AND txs.event_id = swaps.event_id
-    		GROUP BY coins.tx_hash`
-
-	var runeOutgoingSwaps uint64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&runeOutgoingSwaps); err != nil {
-		return 0
-	}
-
-	return runeOutgoingSwaps
-}
-
 func (s *Client) bTotalEarned() uint64 {
 	return 0
 }
@@ -284,9 +252,8 @@ func (s *Client) poolCount() uint64 {
 	var poolCount uint64
 
 	stmnt := `
-		SELECT DISTINCT(CONCAT(stakes.chain,'.',stakes.symbol)) asset
-			FROM stakes
-		WHERE ticker != 'RUNE'`
+		SELECT DISTINCT(pool) FROM stakes
+	`
 
 	rows, err := s.db.Queryx(stmnt)
 	if err != nil {
@@ -310,7 +277,7 @@ func (s *Client) poolCount() uint64 {
 }
 
 func (s *Client) totalAssetBuys() uint64 {
-	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM swaps WHERE ticker != 'RUNE'`
+	stmnt := `SELECT COUNT(pool) FROM swaps WHERE assetAmt > 0`
 	var totalAssetBuys uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -322,7 +289,7 @@ func (s *Client) totalAssetBuys() uint64 {
 }
 
 func (s *Client) totalAssetSells() uint64 {
-	stmnt := `SELECT COUNT(DISTINCT(ticker)) FROM swaps WHERE ticker = 'RUNE'`
+	stmnt := `SELECT COUNT(pool) FROM swaps WHERE runeAmt > 0`
 	var totalAssetSells uint64
 	row := s.db.QueryRow(stmnt)
 
@@ -335,9 +302,8 @@ func (s *Client) totalAssetSells() uint64 {
 
 func (s *Client) totalStakeTx() uint64 {
 	stmnt := `
-		SELECT COUNT(stakes.event_id)
-			FROM stakes
-		WHERE stakes.units > 0`
+		SELECT COUNT(event_id) FROM stakes WHERE units > 0
+	`
 
 	var totalStakeTx uint64
 	row := s.db.QueryRow(stmnt)
