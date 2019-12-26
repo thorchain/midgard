@@ -1,6 +1,7 @@
 package timescale
 
 import (
+	"fmt"
 	"log"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -77,7 +78,13 @@ func (s *Client) GetPools() []common.Asset {
 	var pools []common.Asset
 
 	query := `
-		SELECT DISTINCT(pool) FROM stakes
+		SELECT sub.pool 
+		From (
+			SELECT pool, SUM(units) AS total_units
+			FROM stakes
+			GROUP BY pool
+		) AS sub
+		WHERE sub.total_units > 0 
 	`
 
 	rows, err := s.db.Queryx(query)
@@ -207,21 +214,23 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) uint64 {
 }
 
 // assetWithdrawnTotal - total amount of asset withdrawn
-func (s *Client) assetWithdrawnTotal(asset common.Asset) uint64 {
+func (s *Client) assetWithdrawnTotal(asset common.Asset) int64 {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
+		AND units < 0
 		`
 
-	var assetWithdrawnTotal uint64
+	var assetWithdrawnTotal int64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetWithdrawnTotal); err != nil {
+		fmt.Errorf("Err: %s\n", err)
 		return 0
 	}
 
-	return assetWithdrawnTotal
+	return -assetWithdrawnTotal
 }
 
 // runeStakedTotal - total amount of rune staked on the network for given pool.

@@ -1,7 +1,6 @@
 package timescale
 
 import (
-	"fmt"
 	"log"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -23,7 +22,6 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 
 	pool = s.Store.GetPools()
 	c.Check(len(pool), Equals, 1)
-	fmt.Printf("Pool: %s\n", pool[0].String())
 	c.Assert(pool[0].Symbol.String(), Equals, "BNB")
 	c.Assert(pool[0].Ticker.String(), Equals, "BNB")
 	c.Assert(pool[0].Chain.String(), Equals, "BNB")
@@ -36,13 +34,8 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	pool = s.Store.GetPools()
 	c.Check(len(pool), Equals, 2)
 
-	c.Assert(pool[0].Symbol.String(), Equals, "TOML-4BC")
-	c.Assert(pool[0].Ticker.String(), Equals, "TOML")
-	c.Assert(pool[0].Chain.String(), Equals, "BNB")
-
-	c.Assert(pool[1].Symbol.String(), Equals, "BNB")
-	c.Assert(pool[1].Ticker.String(), Equals, "BNB")
-	c.Assert(pool[1].Chain.String(), Equals, "BNB")
+	c.Assert(pool[0].String(), Equals, "BNB.BNB")
+	c.Assert(pool[1].String(), Equals, "BNB.TOML-4BC")
 
 	// Test with an unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
@@ -116,28 +109,28 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	poolData = s.Store.GetPoolData(asset)
 
-	c.Assert(poolData.Asset, Equals, asset)
-	c.Assert(poolData.AssetDepth, Equals, uint64(729700000), Commentf("%d", poolData.AssetDepth))
-	c.Assert(poolData.AssetROI, Equals, 0.05972823652381663)
-	c.Assert(poolData.AssetStakedTotal, Equals, uint64(334850000))
-	c.Assert(poolData.PoolDepth, Equals, uint64(5368700000))
-	c.Assert(poolData.PoolSlipAverage, Equals, 0.06151196360588074)
-	c.Assert(poolData.PoolStakedTotal, Equals, uint64(5028300000))
-	c.Assert(poolData.PoolTxAverage, Equals, uint64(3))
-	c.Assert(poolData.PoolUnits, Equals, uint64(3019200000))
-	c.Assert(poolData.PoolVolume, Equals, uint64(21))
-	c.Assert(poolData.Price, Equals, float64(7))
-	c.Assert(poolData.RuneDepth, Equals, uint64(2684350000))
-	c.Assert(poolData.RuneStakedTotal, Equals, uint64(2684350000))
-	c.Assert(poolData.SellAssetCount, Equals, uint64(3))
-	c.Assert(poolData.SellSlipAverage, Equals, 0.12302392721176147)
-	c.Assert(poolData.SellTxAverage, Equals, uint64(1))
-	c.Assert(poolData.SellVolume, Equals, uint64(3))
-	c.Assert(poolData.StakeTxCount, Equals, uint64(2))
-	c.Assert(poolData.StakersCount, Equals, uint64(2))
-	c.Assert(poolData.StakingTxCount, Equals, uint64(2))
-	c.Assert(poolData.SwappersCount, Equals, uint64(3))
-	c.Assert(poolData.SwappingTxCount, Equals, uint64(3))
+	c.Check(poolData.Asset, Equals, asset)
+	c.Check(poolData.AssetDepth, Equals, uint64(729700000), Commentf("%d", poolData.AssetDepth))
+	c.Check(poolData.AssetROI, Equals, 0.08959235478572496)
+	c.Check(poolData.AssetStakedTotal, Equals, uint64(669700000), Commentf("%d", poolData.AssetStakedTotal))
+	c.Check(poolData.PoolDepth, Equals, uint64(9397999994), Commentf("%d", poolData.PoolDepth))
+	c.Check(poolData.PoolSlipAverage, Equals, 0.06151196360588074)
+	c.Check(poolData.PoolStakedTotal, Equals, uint64(8717200000), Commentf("%d", poolData.PoolStakedTotal))
+	c.Check(poolData.PoolTxAverage, Equals, uint64(60000000), Commentf("%d", poolData.PoolTxAverage))
+	c.Check(poolData.PoolUnits, Equals, uint64(2684350000), Commentf("%d", poolData.PoolUnits))
+	c.Check(poolData.PoolVolume, Equals, uint64(3))
+	c.Check(poolData.Price, Equals, float64(6), Commentf("%d", poolData.Price))
+	c.Check(poolData.RuneDepth, Equals, uint64(4698999997), Commentf("%d", poolData.RuneDepth))
+	c.Check(poolData.RuneStakedTotal, Equals, uint64(4699000000), Commentf("%d", poolData.RuneStakedTotal))
+	c.Check(poolData.SellAssetCount, Equals, uint64(3))
+	c.Check(poolData.SellSlipAverage, Equals, 0.12302392721176147)
+	c.Check(poolData.SellTxAverage, Equals, uint64(120000000), Commentf("%d", poolData.SellTxAverage))
+	c.Check(poolData.SellVolume, Equals, uint64(3))
+	c.Check(poolData.StakeTxCount, Equals, uint64(2))
+	c.Check(poolData.StakersCount, Equals, uint64(1))
+	c.Check(poolData.StakingTxCount, Equals, uint64(2))
+	c.Check(poolData.SwappersCount, Equals, uint64(3))
+	c.Check(poolData.SwappingTxCount, Equals, uint64(3))
 }
 
 func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
@@ -209,7 +202,7 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetWithdrawnTotal := s.Store.assetWithdrawnTotal(asset)
-	c.Assert(assetWithdrawnTotal, Equals, uint64(0))
+	c.Assert(assetWithdrawnTotal, Equals, int64(0))
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
@@ -218,7 +211,7 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
 	assetWithdrawnTotal = s.Store.assetWithdrawnTotal(asset)
-	c.Assert(assetWithdrawnTotal, Equals, uint64(0))
+	c.Assert(assetWithdrawnTotal, Equals, int64(0), Commentf("%d", assetWithdrawnTotal))
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
@@ -226,7 +219,7 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 	}
 
 	assetWithdrawnTotal = s.Store.assetWithdrawnTotal(asset)
-	c.Assert(assetWithdrawnTotal, Equals, uint64(100))
+	c.Assert(assetWithdrawnTotal, Equals, int64(10))
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
@@ -346,7 +339,7 @@ func (s *TimeScaleSuite) TestAssetSwapTotal(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	swapTotal := s.Store.assetSwapTotal(asset)
-	c.Assert(swapTotal, Equals, uint64(0))
+	c.Assert(swapTotal, Equals, int64(0))
 
 	// Stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
@@ -360,7 +353,7 @@ func (s *TimeScaleSuite) TestAssetSwapTotal(c *C) {
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	swapTotal = s.Store.assetSwapTotal(asset)
-	c.Assert(swapTotal, Equals, uint64(20000000))
+	c.Assert(swapTotal, Equals, int64(20000000))
 }
 
 func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
@@ -368,7 +361,7 @@ func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	swapTotal := s.Store.assetSwapTotal12m(asset)
-	c.Assert(swapTotal, Equals, uint64(0))
+	c.Assert(swapTotal, Equals, int64(0))
 
 	// Stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
@@ -382,7 +375,7 @@ func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	swapTotal = s.Store.assetSwapTotal(asset)
-	c.Assert(swapTotal, Equals, uint64(20000000))
+	c.Assert(swapTotal, Equals, int64(20000000))
 }
 
 func (s *TimeScaleSuite) TestRuneSwapTotal(c *C) {
@@ -991,7 +984,7 @@ func (s *TimeScaleSuite) TestAssetROI(c *C) {
 
 	asset, _ = common.NewAsset("BNB.BOLT-4DC")
 	roi = s.Store.assetROI(asset)
-	c.Assert(roi, Equals, 0.05972823652381663)
+	c.Assert(roi, Equals, 0.0) // because we're always sending asset in (not rune), there is no ROI
 }
 
 func (s *TimeScaleSuite) TestAssetROI12(c *C) {
@@ -1021,7 +1014,7 @@ func (s *TimeScaleSuite) TestAssetROI12(c *C) {
 
 	asset, _ = common.NewAsset("BNB.BOLT-4DC")
 	roi = s.Store.assetROI12(asset)
-	c.Assert(roi, Equals, 0.05972823652381663)
+	c.Assert(roi, Equals, 0.0) // because we're always sending asset in (not rune), there is no ROI
 }
 
 // TODO
