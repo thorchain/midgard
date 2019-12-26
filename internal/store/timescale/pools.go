@@ -1,7 +1,6 @@
 package timescale
 
 import (
-	"fmt"
 	"log"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -226,7 +225,6 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) int64 {
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetWithdrawnTotal); err != nil {
-		fmt.Errorf("Err: %s\n", err)
 		return 0
 	}
 
@@ -509,7 +507,7 @@ func (s *Client) sellTxAverage(asset common.Asset) uint64 {
 		return 0
 	}
 
-	return uint64(float64(avg) * s.GetPriceInRune(asset))
+	return uint64(avg * s.GetPriceInRune(asset))
 }
 
 func (s *Client) buyTxAverage(asset common.Asset) uint64 {
