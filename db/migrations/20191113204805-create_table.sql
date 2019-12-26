@@ -27,6 +27,7 @@ CREATE TABLE stakes (
     units bigint,
     primary key (id, time)
 );
+CREATE INDEX idx_stakes ON stakes (from_address, pool);
 
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
@@ -42,6 +43,7 @@ CREATE TABLE swaps (
     assetAmt bigint,
     primary key (id, time)
 );
+CREATE INDEX idx_swaps ON swaps (from_address, pool);
 
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
