@@ -118,14 +118,14 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 	c.Check(poolData.PoolStakedTotal, Equals, uint64(8717200000), Commentf("%d", poolData.PoolStakedTotal))
 	c.Check(poolData.PoolTxAverage, Equals, uint64(60000000), Commentf("%d", poolData.PoolTxAverage))
 	c.Check(poolData.PoolUnits, Equals, uint64(2684350000), Commentf("%d", poolData.PoolUnits))
-	c.Check(poolData.PoolVolume, Equals, uint64(3))
+	c.Check(poolData.PoolVolume, Equals, uint64(360000000), Commentf("%d", poolData.PoolVolume))
 	c.Check(poolData.Price, Equals, float64(6), Commentf("%d", poolData.Price))
 	c.Check(poolData.RuneDepth, Equals, uint64(4698999997), Commentf("%d", poolData.RuneDepth))
 	c.Check(poolData.RuneStakedTotal, Equals, uint64(4699000000), Commentf("%d", poolData.RuneStakedTotal))
 	c.Check(poolData.SellAssetCount, Equals, uint64(3))
 	c.Check(poolData.SellSlipAverage, Equals, 0.12302392721176147)
 	c.Check(poolData.SellTxAverage, Equals, uint64(120000000), Commentf("%d", poolData.SellTxAverage))
-	c.Check(poolData.SellVolume, Equals, uint64(3))
+	c.Check(poolData.SellVolume, Equals, uint64(360000000))
 	c.Check(poolData.StakeTxCount, Equals, uint64(2))
 	c.Check(poolData.StakersCount, Equals, uint64(1))
 	c.Check(poolData.StakingTxCount, Equals, uint64(2))
@@ -504,7 +504,7 @@ func (s *TimeScaleSuite) TestSellVolume(c *C) {
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	volume = s.Store.sellVolume(asset)
-	c.Assert(volume, Equals, uint64(1))
+	c.Assert(volume, Equals, uint64(120000000), Commentf("%d", volume))
 }
 
 func (s *TimeScaleSuite) TestSellVolume24hr(c *C) {
@@ -593,7 +593,7 @@ func (s *TimeScaleSuite) TestPoolVolume(c *C) {
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	volume = s.Store.poolVolume(asset)
-	c.Assert(volume, Equals, uint64(1))
+	c.Assert(volume, Equals, uint64(120000000))
 }
 
 func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {

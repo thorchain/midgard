@@ -412,7 +412,7 @@ func (s *Client) poolUnits(asset common.Asset) uint64 {
 
 func (s *Client) sellVolume(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COUNT(event_id) 
+		SELECT SUM(assetAmt) 
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -425,12 +425,12 @@ func (s *Client) sellVolume(asset common.Asset) uint64 {
 		return 0
 	}
 
-	return sellVolume
+	return uint64(float64(sellVolume) * s.GetPriceInRune(asset))
 }
 
 func (s *Client) sellVolume24hr(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COUNT(event_id) 
+		SELECT SUM(assetAmt) 
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -444,12 +444,12 @@ func (s *Client) sellVolume24hr(asset common.Asset) uint64 {
 		return 0
 	}
 
-	return sellVolume
+	return uint64(float64(sellVolume) * s.GetPriceInRune(asset))
 }
 
 func (s *Client) buyVolume(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COUNT(runeAmt) 
+		SELECT SUM(runeAmt) 
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -467,7 +467,7 @@ func (s *Client) buyVolume(asset common.Asset) uint64 {
 
 func (s *Client) buyVolume24hr(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COUNT(runeAmt) 
+		SELECT SUM(runeAmt) 
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
