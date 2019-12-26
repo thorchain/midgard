@@ -1,7 +1,6 @@
 package timescale
 
 import (
-	"fmt"
 	"log"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -197,11 +196,8 @@ func (s *Client) totalVolume() uint64 {
 
 func (s *Client) bTotalStaked() uint64 {
 	var totalStaked uint64
-	fmt.Println("bTotalStaked")
 	for _, pool := range s.GetPools() {
-		fmt.Printf("Pool: %s\n", pool.String())
 		totalStaked += s.poolStakedTotal(pool)
-		fmt.Printf("TotalStaked: %d\n", totalStaked)
 	}
 	return totalStaked
 }
