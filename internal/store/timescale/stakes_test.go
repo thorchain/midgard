@@ -348,7 +348,7 @@ func (s *TimeScaleSuite) TestDateFirstStaked(c *C) {
 	}
 
 	dateFirstStaked = s.Store.dateFirstStaked(address, asset)
-	expectedDate = genesis.GenesisTime.Add(time.Second*time.Duration(stakeEvent1.Height*blockSpeed)).Unix()
+	expectedDate = genesis.GenesisTime.Add(time.Second * time.Duration(stakeEvent1.Height*blockSpeed)).Unix()
 	c.Assert(dateFirstStaked, Equals, uint64(expectedDate))
 }
 
@@ -433,7 +433,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(100))
+	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
@@ -441,7 +441,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, uint64(400))
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
@@ -449,7 +449,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(100))
+	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -459,7 +459,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	}
 
 	totalStaked = s.Store.totalStaked(address)
-	c.Assert(totalStaked, Equals, uint64(25025000000))
+	c.Assert(totalStaked, Equals, uint64(50000000), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestGetPools(c *C) {

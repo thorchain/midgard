@@ -11,7 +11,7 @@ type EventReward struct {
 }
 
 type poolAmt struct {
-	Asset  common.Asset
+	Pool   common.Asset
 	Amount int64
 }
 
