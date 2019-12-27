@@ -17,22 +17,35 @@ func (s *Client) CreateStakeRecord(record models.EventStake) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
+	// get rune/asset amounts from Event.InTx.Coins
+	var runeAmt int64
+	var assetAmt int64
+	for _, coin := range record.Event.InTx.Coins {
+		if common.IsRuneAsset(coin.Asset) {
+			runeAmt = coin.Amount
+		} else {
+			assetAmt = coin.Amount
+		}
+	}
+
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
 			event_id,
-			chain,
-			symbol,
-			ticker,
+			from_address,
+			pool,
+			runeAmt,
+			assetAmt,
 			units
-		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelStakesTable)
+		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelStakesTable)
 
 	_, err = s.db.Exec(query,
 		record.Event.Time,
 		record.Event.ID,
-		record.Pool.Chain,
-		record.Pool.Symbol,
-		record.Pool.Ticker,
+		record.Event.InTx.FromAddress,
+		record.Pool.String(),
+		runeAmt,
+		assetAmt,
 		record.StakeUnits,
 	)
 
@@ -45,13 +58,9 @@ func (s *Client) CreateStakeRecord(record models.EventStake) error {
 // GetStakerAddresses returns am array of all the staker addresses seen by the api
 func (s *Client) GetStakerAddresses() []common.Address {
 	query := `
-		select from_address
-		from (
-			select txs.from_address, SUM(stakes.units) as units
-			from txs
-			inner join stakes on txs.event_id = stakes.event_id
-			group by from_address) as staker_address
-		where units > 0
+		SELECT from_address, SUM(units) AS units 
+		FROM stakes GROUP BY from_address 
+		WHERE units > 0
 	`
 
 	rows, err := s.db.Queryx(query)
@@ -148,20 +157,18 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	return details, nil
 }
 
+// stakeUnits - sums the total of staker units a specific address has for a
+// particular pool
 func (s *Client) stakeUnits(address common.Address, asset common.Asset) uint64 {
 	query := `
-		SELECT SUM(s.units)
-		FROM stakes s
-        	INNER JOIN  coins c on c.event_id = s.event_id
-         	INNER JOIN txs t on s.event_id = t.event_id
-         	INNER JOIN events e on s.event_id = e.id
-		WHERE t.from_address = ($1)
-  		AND c.symbol = ($2)
-  		AND t.direction = 'in'
+		SELECT SUM(units)
+		FROM stakes
+		WHERE from_address = ($1)
+		AND pool = ($2)
 	`
 
 	var stakeUnits uint64
-	err := s.db.Get(&stakeUnits, query, address, asset.Symbol.String())
+	err := s.db.Get(&stakeUnits, query, address, asset.String())
 	if err != nil {
 		// TODO error handle
 	}
@@ -169,20 +176,17 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) uint64 {
 	return stakeUnits
 }
 
+// runeStaked - sum of rune staked by a specific address and pool
 func (s *Client) runeStaked(address common.Address, asset common.Asset) uint64 {
 	query := `
-		select sum(amount)
-		FROM coins c
-			INNER JOIN stakes s on c.event_id = s.event_id
-			INNER JOIN txs t on c.event_id = t.event_id
-			INNER JOIN events e on c.event_id = e.id
-		WHERE t.from_address = ($1)
-		AND s.symbol = ($2)
-		AND c.ticker = 'RUNE'
+		SELECT SUM(runeAmt)
+		FROM stakes
+		WHERE from_address = ($1)
+		AND pool = ($2)
 	`
 
 	var runeStaked uint64
-	err := s.db.Get(&runeStaked, query, address, asset.Symbol.String())
+	err := s.db.Get(&runeStaked, query, address, asset.String())
 	if err != nil {
 		// TODO error handle
 	}
@@ -190,19 +194,17 @@ func (s *Client) runeStaked(address common.Address, asset common.Asset) uint64 {
 	return runeStaked
 }
 
+// runeStaked - sum of asset staked by a specific address and pool
 func (s *Client) assetStaked(address common.Address, asset common.Asset) uint64 {
 	query := `
-		select sum(amount)
-		FROM coins c
-			INNER JOIN stakes s on c.event_id = s.event_id
-			INNER JOIN txs t on c.event_id = t.event_id
-			INNER JOIN events e on c.event_id = e.id
-		WHERE t.from_address = ($1)
-		AND c.ticker = $2
+		SELECT SUM(assetAmt)
+		FROM stakes
+		WHERE from_address = $1
+		AND pool = $2
 	`
 
 	var assetStaked uint64
-	err := s.db.Get(&assetStaked, query, address, asset.Ticker.String())
+	err := s.db.Get(&assetStaked, query, address, asset.String())
 	if err != nil {
 		// TODO error handling
 	}
@@ -254,12 +256,12 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) floa
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) uint64 {
 	query := `
 		SELECT MIN(stakes.time) FROM stakes
-    		INNER JOIN txs ON stakes.event_id = txs.event_id
-		WHERE txs.from_address = $1 
-		AND stakes.ticker = $2`
+		WHERE from_address = $1 
+		AND pool = $2
+		`
 
 	firstStaked := sql.NullTime{}
-	err := s.db.Get(&firstStaked, query, address.String(), asset.Ticker.String())
+	err := s.db.Get(&firstStaked, query, address.String(), asset.String())
 	if err != nil {
 		s.logger.Err(err).Msg("Get dateFirstStaked failed")
 		return 0
@@ -286,26 +288,10 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) floa
 }
 
 func (s *Client) totalStaked(address common.Address) uint64 {
-	query := `
-		SELECT COALESCE(SUM(units), 0)
-		FROM (
-			SELECT c.chain, c.symbol, c.ticker, SUM(s.units) as units
-         	FROM coins c
-            	inner join stakes s on c.event_id = s.event_id
-                inner join txs t on c.event_id = t.event_id
-				inner join events e on c.event_id = e.id
-         	WHERE t.from_address = $1
-           	AND c.ticker != 'RUNE'
-         	GROUP BY c.chain, c.symbol, c.ticker
-     	) as pools
-		WHERE units > 0;
-		`
-
+	pools := s.getPools(address)
 	var totalStaked uint64
-	err := s.db.Get(&totalStaked, query, address.String())
-	if err != nil {
-		s.logger.Err(err).Msg("Get totalStaked failed")
-		return 0
+	for _, pool := range pools {
+		totalStaked += s.poolStaked(address, pool)
 	}
 
 	return totalStaked
@@ -313,20 +299,11 @@ func (s *Client) totalStaked(address common.Address) uint64 {
 
 func (s *Client) getPools(address common.Address) []common.Asset {
 	query := `
-		SELECT chain, symbol, ticker
-		FROM (
-			SELECT c.chain, c.symbol, c.ticker, SUM(s.units) as units
-	        FROM coins c
-		  		inner join stakes s on c.event_id = s.event_id
-	  			inner join txs t on c.event_id = t.event_id
-	  			inner join events e on c.event_id = e.id
-        	WHERE t.from_address = $1
-        		AND t.direction = 'in'
-        		AND c.ticker != 'RUNE'
-        	GROUP BY c.chain, c.symbol, c.ticker
-     	) as pools
-		WHERE units > 0;
-		`
+		SELECT pool, SUM(units) as units
+		FROM stakes
+		WHERE from_address = $1
+		GROUP BY pool
+	`
 
 	rows, err := s.db.Queryx(query, address.String())
 	if err != nil {
@@ -335,9 +312,8 @@ func (s *Client) getPools(address common.Address) []common.Asset {
 	}
 
 	type results struct {
-		Chain  string
-		Symbol string
-		Ticker string
+		Pool  string
+		Units int64
 	}
 
 	var pools []common.Asset
@@ -348,14 +324,15 @@ func (s *Client) getPools(address common.Address) []common.Asset {
 			s.logger.Err(err).Msg("structScan failed")
 			continue
 		}
-
-		asset, err := common.NewAsset(result.Chain + "." + result.Symbol)
-		if err != nil {
-			s.logger.Err(err).Msg("failed to NewAsset")
-			continue
+		if result.Units > 0 {
+			asset, err := common.NewAsset(result.Pool)
+			if err != nil {
+				continue
+			}
+			pools = append(pools, asset)
 		}
-		pools = append(pools, asset)
 	}
+
 	return pools
 }
 
