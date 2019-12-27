@@ -42,7 +42,7 @@ type EventRewards struct {
 }
 
 type PoolAmt struct {
-	Asset  common.Asset `json:"assets"`
+	Pool   common.Asset `json:"assets"`
 	Amount int64        `json:"amount,string"`
 }
 
