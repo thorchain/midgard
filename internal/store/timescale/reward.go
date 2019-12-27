@@ -18,20 +18,18 @@ func (s *Client) CreateRewardRecord(record models.EventReward) error {
 		INSERT INTO %v (
 			time,
 			event_id,
-			chain,
-			symbol,
-			ticker,
-			units
-		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelStakesTable)
+			pool,
+			units,
+      from_address
+		)  VALUES ( $1, $2, $3, $4, $5 ) RETURNING event_id`, models.ModelStakesTable)
 
 	for _, reward := range record.PoolRewards {
 		_, err := s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
-			reward.Asset.Chain,
-			reward.Asset.Symbol,
-			reward.Asset.Ticker,
+			reward.Pool.String(),
 			reward.Amount,
+			"BLOCK_REWARD",
 			)
 
 		if err != nil {
