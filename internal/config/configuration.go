@@ -53,6 +53,7 @@ type BinanceConfiguration struct {
 }
 
 func applyDefaultConfig() {
+  viper.SetDefault("log_level", "info")
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
 	viper.SetDefault("thorchain.read_timeout", "10s")
