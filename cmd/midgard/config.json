@@ -1,7 +1,6 @@
 {
   "listen_port": 8080,
   "is_testnet" : true,
-  "log_level": "info",
   "thorchain": {
     "scheme": "http",
     "host": "localhost:8081",
@@ -16,7 +15,7 @@
   "timescale": {
     "host": "localhost",
     "port": 5432,
-    "user_name": "midgard",
+    "user_name": "postgres",
     "password": "password",
     "database": "midgard",
     "sslmode": "disable",
