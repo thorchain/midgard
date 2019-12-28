@@ -1,22 +1,17 @@
 package timescale
 
 import (
-	"database/sql"
-	"fmt"
-	"math"
+  "database/sql"
+  "fmt"
+  "math"
 
-	"github.com/pkg/errors"
+  "github.com/pkg/errors"
 
-	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/models"
+  "gitlab.com/thorchain/midgard/internal/common"
+  "gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateStakeRecord(record models.EventStake) error {
-	err := s.CreateEventRecord(record.Event)
-	if err != nil {
-		return errors.Wrap(err, "Failed to create event record")
-	}
-
 	// get rune/asset amounts from Event.InTx.Coins
 	var runeAmt int64
 	var assetAmt int64
@@ -28,25 +23,73 @@ func (s *Client) CreateStakeRecord(record models.EventStake) error {
 		}
 	}
 
+	// Protect null pointers errors
+  var inGasChain string
+  var inGasAmount int64
+  if len(record.InTx.Gas) > 0 {
+    inGasChain = record.InTx.Gas[0].Asset.Chain.String()
+    inGasAmount = record.InTx.Gas[0].Amount
+  }
+
+  var outGasChain, outMemo, outHash string
+  var outGasAmount int64
+  if len(record.OutTxs) > 0  {
+    outMemo = record.OutTxs[0].Memo.String()
+    outHash = record.OutTxs[0].ID.String()
+
+    // Gas
+    if len(record.OutTxs[0].Gas) >0 {
+      outGasChain = record.OutTxs[0].Gas[0].Asset.Chain.String()
+      outGasAmount = record.OutTxs[0].Gas[0].Amount
+    }
+  }
+
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
-			time,
-			event_id,
-			from_address,
-			pool,
-			runeAmt,
-			assetAmt,
-			units
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelStakesTable)
+				time,
+				event_id,
+				height,
+				type,
+				status,
+        to_address,
+        from_address,
+        pool,
+        rune_amount,
+        asset_amount,
+        stake_units,
+        tx_in_memo,
+        tx_out_memo,
+        tx_in_hash,
+        tx_out_hash,
+        tx_in_gas_chain,
+        tx_out_gas_chain,
+        tx_in_gas_amount,
+        tx_out_gas_amount
+		)  VALUES
+          ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+    RETURNING id`, models.ModelEventsTable)
 
-	_, err = s.db.Exec(query,
-		record.Event.Time,
-		record.Event.ID,
-		record.Event.InTx.FromAddress,
+
+	_, err := s.db.Exec(query,
+		record.Time,
+		record.ID,
+		record.Height,
+		record.Type,
+		record.Status,
+		record.InTx.ToAddress,
+		record.InTx.FromAddress,
 		record.Pool.String(),
 		runeAmt,
 		assetAmt,
 		record.StakeUnits,
+    record.InTx.Memo,
+    outMemo,
+    record.InTx.ID,
+    outHash,
+    inGasChain,
+    outGasChain,
+    inGasAmount,
+    outGasAmount,
 	)
 
 	if err != nil {
@@ -59,9 +102,8 @@ func (s *Client) CreateStakeRecord(record models.EventStake) error {
 func (s *Client) GetStakerAddresses() []common.Address {
 	query := `
 		SELECT from_address, SUM(units) AS units
-		FROM stakes
+		FROM stakes GROUP BY from_address
 		WHERE units > 0
-    GROUP BY from_address
 	`
 
 	rows, err := s.db.Queryx(query)
@@ -72,7 +114,6 @@ func (s *Client) GetStakerAddresses() []common.Address {
 
 	type results struct {
 		From_address string
-		Units        int64
 	}
 
 	var addresses []common.Address

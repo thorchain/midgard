@@ -1,39 +1,40 @@
 package timescale
 
 import (
-	"fmt"
+  "fmt"
 
-	"github.com/pkg/errors"
-
-	"gitlab.com/thorchain/midgard/internal/models"
+  "gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateRewardRecord(record models.EventReward) error {
-	err := s.CreateEventRecord(record.Event)
-	if err != nil {
-		return errors.Wrap(err, "Failed to create event record")
-	}
-
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
 			event_id,
+      height,
+      type,
+      status,
 			pool,
-			units,
+			rune_amount,
       from_address
-		)  VALUES ( $1, $2, $3, $4, $5 ) RETURNING event_id`, models.ModelStakesTable)
+    )  VALUES
+        ( $1, $2, $3, $4, $5, $6, $7, $8 )
+    RETURNING id`, models.ModelEventsTable)
 
 	for _, reward := range record.PoolRewards {
 		_, err := s.db.Exec(query,
-			record.Event.Time,
-			record.Event.ID,
+			record.Time,
+			record.ID,
+			record.Height,
+			record.Type,
+			record.Status,
 			reward.Pool.String(),
 			reward.Amount,
 			"BLOCK_REWARD",
 			)
 
 		if err != nil {
-			s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
+			s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventReward")
 		}
 	}
 	return nil

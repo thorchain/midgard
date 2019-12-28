@@ -56,6 +56,7 @@ type Tx struct {
 	ToAddress   Address `json:"to_address"`
 	Coins       Coins   `json:"coins"`
 	Memo        Memo    `json:"memo"`
+	Gas         Coins   `json:"gas"`
 }
 
 type Txs []Tx
