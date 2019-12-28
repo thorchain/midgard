@@ -47,15 +47,10 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
-var USDPools = []string{
-	"BNB.TUSD-000",
-	"BNB.BUSD-BD1",
-}
-
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	query := `
-		SELECT sub.pool 
-		FROM ( 
+		SELECT sub.pool
+		FROM (
 			SELECT pool, SUM(units) AS total_units
 			FROM stakes
 			WHERE pool = $1
@@ -79,13 +74,13 @@ func (s *Client) GetPools() []common.Asset {
 	var pools []common.Asset
 
 	query := `
-		SELECT sub.pool 
+		SELECT sub.pool
 		From (
 			SELECT pool, SUM(units) AS total_units
 			FROM stakes
 			GROUP BY pool
 		) AS sub
-		WHERE sub.total_units > 0 
+		WHERE sub.total_units > 0
 	`
 
 	rows, err := s.db.Queryx(query)
@@ -397,7 +392,7 @@ func (s *Client) poolDepth(asset common.Asset) uint64 {
 
 func (s *Client) poolUnits(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(units) 
+		SELECT SUM(units)
 		FROM stakes
 		WHERE pool = $1
 	`
@@ -414,7 +409,7 @@ func (s *Client) poolUnits(asset common.Asset) uint64 {
 
 func (s *Client) sellVolume(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(assetAmt) 
+		SELECT SUM(assetAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -432,7 +427,7 @@ func (s *Client) sellVolume(asset common.Asset) uint64 {
 
 func (s *Client) sellVolume24hr(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(assetAmt) 
+		SELECT SUM(assetAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -451,7 +446,7 @@ func (s *Client) sellVolume24hr(asset common.Asset) uint64 {
 
 func (s *Client) buyVolume(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(runeAmt) 
+		SELECT SUM(runeAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -469,7 +464,7 @@ func (s *Client) buyVolume(asset common.Asset) uint64 {
 
 func (s *Client) buyVolume24hr(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(runeAmt) 
+		SELECT SUM(runeAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -496,7 +491,7 @@ func (s *Client) poolVolume24hr(asset common.Asset) uint64 {
 
 func (s *Client) sellTxAverage(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT AVG(assetAmt) 
+		SELECT AVG(assetAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -514,7 +509,7 @@ func (s *Client) sellTxAverage(asset common.Asset) uint64 {
 
 func (s *Client) buyTxAverage(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT AVG(runeAmt) 
+		SELECT AVG(runeAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -536,7 +531,7 @@ func (s *Client) poolTxAverage(asset common.Asset) uint64 {
 
 func (s *Client) sellSlipAverage(asset common.Asset) float64 {
 	stmnt := `
-		SELECT AVG(trade_slip) 
+		SELECT AVG(trade_slip)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -554,7 +549,7 @@ func (s *Client) sellSlipAverage(asset common.Asset) float64 {
 
 func (s *Client) buySlipAverage(asset common.Asset) float64 {
 	stmnt := `
-		SELECT AVG(trade_slip) 
+		SELECT AVG(trade_slip)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -576,7 +571,7 @@ func (s *Client) poolSlipAverage(asset common.Asset) float64 {
 
 func (s *Client) sellFeeAverage(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT AVG(liquidity_fee) 
+		SELECT AVG(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -594,7 +589,7 @@ func (s *Client) sellFeeAverage(asset common.Asset) uint64 {
 
 func (s *Client) buyFeeAverage(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT AVG(liquidity_fee) 
+		SELECT AVG(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -616,7 +611,7 @@ func (s *Client) poolFeeAverage(asset common.Asset) uint64 {
 
 func (s *Client) sellFeesTotal(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(liquidity_fee) 
+		SELECT SUM(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -634,7 +629,7 @@ func (s *Client) sellFeesTotal(asset common.Asset) uint64 {
 
 func (s *Client) buyFeesTotal(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT SUM(liquidity_fee) 
+		SELECT SUM(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt > 0
@@ -656,7 +651,7 @@ func (s *Client) poolFeesTotal(asset common.Asset) uint64 {
 
 func (s *Client) sellAssetCount(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COUNT(assetAmt) 
+		SELECT COUNT(assetAmt)
 		FROM swaps
 		WHERE pool = $1
 		AND assetAmt > 0
@@ -674,7 +669,7 @@ func (s *Client) sellAssetCount(asset common.Asset) uint64 {
 
 func (s *Client) buyAssetCount(asset common.Asset) uint64 {
 	stmnt := `
-		SELECT COUNT(liquidity_fee) 
+		SELECT COUNT(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
 		AND runeAmt < 0
@@ -749,7 +744,7 @@ func (s *Client) withdrawTxCount(asset common.Asset) uint64 {
 		SELECT COUNT(event_id)
 		FROM stakes
 		WHERE pool = $1
-		AND units < 0 
+		AND units < 0
 	`
 
 	var withdrawTxCount uint64
