@@ -1,0 +1,75 @@
+[
+  {
+    "id": "2",
+    "height": "6",
+    "type": "swap",
+    "in_tx": {
+      "id": "5TQVB1T5L5U8OAZAPRNE9AK6QZS6WCQMLOIO3H790EBLR1CDQ43BC36PD3VREKFJ",
+      "chain": "BNB",
+      "from_address": "tbnb1s3jmk2utv7g996hstxerfxpux3v7rg776d7qf5",
+      "to_address": "tbnb10xran5jhc2e7wkzhge0qpgyrj09vdnhystcnuc",
+      "coins": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "RUNE-A1F",
+            "ticker": "RUNE"
+          },
+          "amount": "100000000"
+        }
+      ],
+      "gas": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BNB",
+            "ticker": "BNB"
+          },
+          "amount": "37500"
+        }
+      ],
+      "memo": "SWAP:BNB.BNB"
+    },
+    "out_txs": [
+      {
+        "id": "OJINXXTYV1GVYV68L06O6HLAF57FT9H4K0E5SZ80IXJ7F7CL86LMJE2W0Z4BKO7H",
+        "chain": "BNB",
+        "from_address": "tbnb10xran5jhc2e7wkzhge0qpgyrj09vdnhystcnuc",
+        "to_address": "tbnb1s3jmk2utv7g996hstxerfxpux3v7rg776d7qf5",
+        "coins": [
+          {
+            "asset": {
+              "chain": "BNB",
+              "symbol": "BNB",
+              "ticker": "BNB"
+            },
+            "amount": "298803"
+          }
+        ],
+        "gas": [
+          {
+            "asset": {
+              "chain": "BNB",
+              "symbol": "BNB",
+              "ticker": "BNB"
+            },
+            "amount": "37500"
+          }
+        ],
+        "memo": "OUTBOUND:5TQVB1T5L5U8OAZAPRNE9AK6QZS6WCQMLOIO3H790EBLR1CDQ43BC36PD3VREKFJ"
+      }
+    ],
+    "gas": null,
+    "event": {
+      "pool": {
+        "chain": "BNB",
+        "symbol": "RUNE-A1F",
+        "ticker": "RUNE"
+      },
+      "price_target": "0",
+      "trade_slip": "40",
+      "liquidity_fee": "199000"
+    },
+    "status": "Success"
+  }
+]
