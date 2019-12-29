@@ -45,7 +45,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o midgard /tmp/midg
 #
 # Main
 #
-FROM golang:alpine
+FROM alpine
 
 ENV PATH="${PATH}:/go/bin"
 
