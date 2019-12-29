@@ -59,18 +59,20 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 			SELECT pool, SUM(units) AS total_units
 			FROM stakes
 			WHERE pool = $1
+			GROUP BY pool
 		) as sub
 		WHERE sub.total_units > 0
 	`
 
 	row := s.db.QueryRowx(query, asset.String())
 
-	var a common.Asset
+	var a string
 
-	if err := row.StructScan(&a); err != nil {
+	if err := row.Scan(&a); err != nil {
 		return common.Asset{}, err
 	}
-	return a, nil
+
+	return common.NewAsset(a)
 }
 
 func (s *Client) GetPools() []common.Asset {

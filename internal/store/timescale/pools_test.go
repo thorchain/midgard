@@ -10,44 +10,50 @@ import (
 
 func (s *TimeScaleSuite) TestGetPool(c *C) {
 
-	pool := s.Store.GetPools()
+	pools := s.Store.GetPools()
 
 	// Test No stakes
-	c.Check(len(pool), Equals, 0)
+	c.Check(len(pools), Equals, 0)
 
 	// Test with 1 stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	pool = s.Store.GetPools()
-	c.Check(len(pool), Equals, 1)
-	c.Assert(pool[0].Symbol.String(), Equals, "BNB")
-	c.Assert(pool[0].Ticker.String(), Equals, "BNB")
-	c.Assert(pool[0].Chain.String(), Equals, "BNB")
+	pools = s.Store.GetPools()
+	c.Check(len(pools), Equals, 1)
+	c.Assert(pools[0].Symbol.String(), Equals, "BNB")
+	c.Assert(pools[0].Ticker.String(), Equals, "BNB")
+	c.Assert(pools[0].Chain.String(), Equals, "BNB")
 
 	// Test with a another staked asset
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		log.Fatal(err)
 	}
 
-	pool = s.Store.GetPools()
-	c.Check(len(pool), Equals, 2)
+	pools = s.Store.GetPools()
+	c.Check(len(pools), Equals, 2)
 
-	c.Assert(pool[0].String(), Equals, "BNB.BNB")
-	c.Assert(pool[1].String(), Equals, "BNB.TOML-4BC")
+	c.Assert(pools[0].String(), Equals, "BNB.BNB")
+	c.Assert(pools[1].String(), Equals, "BNB.TOML-4BC")
 
 	// Test with an unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	pool = s.Store.GetPools()
-	c.Check(len(pool), Equals, 1)
+	pools = s.Store.GetPools()
+	c.Check(len(pools), Equals, 1)
 
-	c.Assert(pool[0].Symbol.String(), Equals, "BNB")
-	c.Assert(pool[0].Ticker.String(), Equals, "BNB")
-	c.Assert(pool[0].Chain.String(), Equals, "BNB")
+	c.Assert(pools[0].Symbol.String(), Equals, "BNB")
+	c.Assert(pools[0].Ticker.String(), Equals, "BNB")
+	c.Assert(pools[0].Chain.String(), Equals, "BNB")
+
+	asset, err := common.NewAsset("BNB.BNB")
+	c.Assert(err, IsNil)
+	pool, err := s.Store.GetPool(asset)
+	c.Assert(err, IsNil)
+	c.Check(pool.Equals(asset), Equals, true)
 }
 
 func (s *TimeScaleSuite) TestGetPoolData(c *C) {
