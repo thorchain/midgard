@@ -19,7 +19,9 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	}
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	txData := s.Store.GetTxData(address)
+	txData ,err := s.Store.GetTxData(address)
+	c.Assert(err,IsNil)
+
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -58,7 +60,8 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 		log.Fatal(err)
 	}
 
-	txData = s.Store.GetTxData(address)
+	txData , err = s.Store.GetTxData(address)
+	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[1].Height * 3)
 	c.Assert(txData[1].Pool.Chain.String(), Equals, "BNB")
@@ -106,7 +109,8 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
-	txData := s.Store.GetTxDataByAddressAsset(address, asset)
+	txData, err := s.Store.GetTxDataByAddressAsset(address, asset)
+	c.Assert(err,IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -147,7 +151,8 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 
 	address, _ = common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	txData = s.Store.GetTxDataByAddressAsset(address, asset)
+	txData , err = s.Store.GetTxDataByAddressAsset(address, asset)
+	c.Assert(err,IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -195,7 +200,8 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
-	txData := s.Store.GetTxDataByAddressTxId(address, txid)
+	txData ,err := s.Store.GetTxDataByAddressTxId(address, txid)
+  c.Assert(err,IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -235,7 +241,8 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	}
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
-	txData = s.Store.GetTxDataByAddressTxId(address, txid)
+	txData ,err = s.Store.GetTxDataByAddressTxId(address, txid)
+  c.Assert(err,IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -282,7 +289,8 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	}
 
 	asset, _ := common.NewAsset("BNB")
-	txData := s.Store.GetTxDataByAsset(asset)
+	txData ,err := s.Store.GetTxDataByAsset(asset)
+  c.Assert(err,IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -322,7 +330,8 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	}
 
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	txData = s.Store.GetTxDataByAsset(asset)
+	txData ,err = s.Store.GetTxDataByAsset(asset)
+  c.Assert(err,IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -369,7 +378,8 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 	}
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	eventsForAddress := s.Store.eventsForAddress(address)
+	eventsForAddress ,err := s.Store.eventsForAddress(address)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddress), Equals, 1)
 
 	// Additional stake
@@ -377,7 +387,8 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 		log.Fatal(err)
 	}
 
-	eventsForAddress = s.Store.eventsForAddress(address)
+	eventsForAddress ,err = s.Store.eventsForAddress(address)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddress), Equals, 2)
 
 	// Additional stake
@@ -387,7 +398,8 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 		log.Fatal(err)
 	}
 
-	eventsForAddress = s.Store.eventsForAddress(address)
+	eventsForAddress ,err = s.Store.eventsForAddress(address)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddress), Equals, 1)
 }
 
@@ -404,7 +416,8 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
-	eventsForAddressAsset := s.Store.eventsForAddressAsset(address, asset)
+	eventsForAddressAsset ,err := s.Store.eventsForAddressAsset(address, asset)
+  c.Assert(err,IsNil)
 
 	c.Assert(len(eventsForAddressAsset), Equals, 1)
 
@@ -414,7 +427,8 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 	}
 
 	asset, _ = common.NewAsset("TOML-4BC")
-	eventsForAddressAsset = s.Store.eventsForAddressAsset(address, asset)
+	eventsForAddressAsset ,err = s.Store.eventsForAddressAsset(address, asset)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddressAsset), Equals, 1)
 
 	// Additional stake
@@ -424,7 +438,8 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 	}
 
 	asset, _ = common.NewAsset("BNB.LOK-3C0")
-	eventsForAddressAsset = s.Store.eventsForAddressAsset(address, asset)
+	eventsForAddressAsset ,err = s.Store.eventsForAddressAsset(address, asset)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddressAsset), Equals, 1)
 }
 
@@ -441,7 +456,8 @@ func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
-	eventsForAddressTxId := s.Store.eventsForAddressTxId(address, txid)
+	eventsForAddressTxId ,err := s.Store.eventsForAddressTxId(address, txid)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddressTxId), Equals, 1)
 
 	// Additional stake
@@ -450,7 +466,8 @@ func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 	}
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
-	eventsForAddressTxId = s.Store.eventsForAddressTxId(address, txid)
+	eventsForAddressTxId ,err = s.Store.eventsForAddressTxId(address, txid)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddressTxId), Equals, 1)
 
 	// Additional stake
@@ -461,7 +478,8 @@ func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 	}
 
 	txid = "67C9MZZS1WOMM05S0RBTTDIFFLV3RQAZPJFD9V82EBPMG3P3HFUU3PBT3C18DV1E"
-	eventsForAddressTxId = s.Store.eventsForAddressTxId(address, txid)
+	eventsForAddressTxId ,err = s.Store.eventsForAddressTxId(address, txid)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddressTxId), Equals, 1)
 }
 
@@ -477,7 +495,8 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	}
 
 	asset, _ := common.NewAsset("BNB")
-	eventsForAsset := s.Store.eventsForAsset(asset)
+	eventsForAsset ,err := s.Store.eventsForAsset(asset)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAsset), Equals, 1)
 
 	// Additional stake
@@ -486,7 +505,8 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	}
 
 	asset, _ = common.NewAsset("TOML-4BC")
-	eventsForAsset = s.Store.eventsForAsset(asset)
+	eventsForAsset ,err = s.Store.eventsForAsset(asset)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAsset), Equals, 1)
 
 	// Additional stake
@@ -495,7 +515,8 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	}
 
 	asset, _ = common.NewAsset("LOK-3C0")
-	eventsForAsset = s.Store.eventsForAsset(asset)
+	eventsForAsset ,err = s.Store.eventsForAsset(asset)
+  c.Assert(err,IsNil)
 	c.Assert(len(eventsForAsset), Equals, 1)
 }
 
@@ -511,7 +532,8 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 	}
 
 	eventId := uint64(1)
-	eventPool := s.Store.eventPool(eventId)
+	eventPool ,err := s.Store.eventPool(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(eventPool.Chain.String(), Equals, "BNB")
 	c.Assert(eventPool.Symbol.String(), Equals, "BNB")
@@ -523,7 +545,8 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 	}
 
 	eventId = uint64(2)
-	eventPool = s.Store.eventPool(eventId)
+	eventPool ,err = s.Store.eventPool(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(eventPool.Chain.String(), Equals, "BNB")
 	c.Assert(eventPool.Symbol.String(), Equals, "TOML-4BC")
@@ -542,7 +565,8 @@ func (s *TimeScaleSuite) TestInTx(c *C) {
 	}
 
 	eventId := uint64(1)
-	inTx := s.Store.inTx(eventId)
+	inTx ,err := s.Store.inTx(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(inTx.Coin[0].Asset.Chain.String(), Equals, "BNB")
@@ -562,7 +586,8 @@ func (s *TimeScaleSuite) TestInTx(c *C) {
 	}
 
 	eventId = uint64(2)
-	inTx = s.Store.inTx(eventId)
+	inTx ,err = s.Store.inTx(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(inTx.Coin[0].Asset.Chain.String(), Equals, "BNB")
@@ -589,7 +614,8 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 	}
 
 	eventId := uint64(1)
-	outTx := s.Store.outTx(eventId)
+	outTx ,err := s.Store.outTx(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(outTx.Address, Equals, "")
 	c.Assert(outTx.Memo, Equals, "")
@@ -601,7 +627,8 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 	}
 
 	eventId = uint64(2)
-	outTx = s.Store.outTx(eventId)
+	outTx ,err = s.Store.outTx(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(outTx.Address, Equals, "")
 	c.Assert(outTx.Memo, Equals, "")
@@ -620,13 +647,15 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	}
 
 	eventId := uint64(1)
-	inTx := s.Store.txForDirection(eventId, "in")
+	inTx ,err := s.Store.txForDirection(eventId, "in")
+  c.Assert(err,IsNil)
 
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(inTx.Memo, Equals, "stake:BNB")
 	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
-	outTx := s.Store.txForDirection(eventId, "out")
+	outTx ,err := s.Store.txForDirection(eventId, "out")
+  c.Assert(err,IsNil)
 	c.Assert(outTx.Address, Equals, "")
 	c.Assert(outTx.Memo, Equals, "")
 	c.Assert(outTx.TxID, Equals, "")
@@ -637,13 +666,15 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	}
 
 	eventId = uint64(2)
-	inTx = s.Store.txForDirection(eventId, "in")
+	inTx ,err = s.Store.txForDirection(eventId, "in")
+  c.Assert(err,IsNil)
 
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(inTx.Memo, Equals, "stake:TOML")
 	c.Assert(inTx.TxID, Equals, "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
 
-	outTx = s.Store.txForDirection(eventId, "out")
+	outTx ,err = s.Store.txForDirection(eventId, "out")
+  c.Assert(err,IsNil)
 	c.Assert(outTx.Address, Equals, "")
 	c.Assert(outTx.Memo, Equals, "")
 	c.Assert(outTx.TxID, Equals, "")
@@ -661,7 +692,8 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	}
 
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
-	coinsForTxHash := s.Store.coinsForTxHash(txid)
+	coinsForTxHash ,err := s.Store.coinsForTxHash(txid)
+  c.Assert(err,IsNil)
 
 	c.Assert(coinsForTxHash[0].Asset.Chain.String(), Equals, "BNB")
 	c.Assert(coinsForTxHash[0].Asset.Symbol.String(), Equals, "RUNE-B1A")
@@ -673,7 +705,8 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	}
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
-	coinsForTxHash = s.Store.coinsForTxHash(txid)
+	coinsForTxHash ,err = s.Store.coinsForTxHash(txid)
+  c.Assert(err,IsNil)
 
 	c.Assert(coinsForTxHash[1].Asset.Chain.String(), Equals, "BNB")
 	c.Assert(coinsForTxHash[1].Asset.Symbol.String(), Equals, "TOML-4BC")
@@ -685,7 +718,8 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	}
 
 	txid = "67C9MZZS1WOMM05S0RBTTDIFFLV3RQAZPJFD9V82EBPMG3P3HFUU3PBT3C18DV1E"
-	coinsForTxHash = s.Store.coinsForTxHash(txid)
+	coinsForTxHash ,err = s.Store.coinsForTxHash(txid)
+  c.Assert(err,IsNil)
 
 	c.Assert(coinsForTxHash[1].Asset.Chain.String(), Equals, "BNB")
 	c.Assert(coinsForTxHash[1].Asset.Symbol.String(), Equals, "LOK-3C0")
@@ -704,7 +738,8 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 	}
 
 	eventId := uint64(1)
-	gas := s.Store.gas(eventId)
+	gas ,err := s.Store.gas(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(gas.Asset.Chain.IsEmpty(), Equals, true)
 	c.Assert(gas.Asset.Symbol.IsEmpty(), Equals, true)
@@ -716,7 +751,8 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 	}
 
 	eventId = uint64(2)
-	gas = s.Store.gas(eventId)
+	gas ,err = s.Store.gas(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(gas.Asset.Chain.IsEmpty(), Equals, true)
 	c.Assert(gas.Asset.Symbol.IsEmpty(), Equals, true)
@@ -728,7 +764,8 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 	}
 
 	eventId = uint64(4)
-	gas = s.Store.gas(eventId)
+	gas ,err = s.Store.gas(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(gas.Asset.Chain.String(), Equals, "BNB")
 	c.Assert(gas.Asset.Symbol.String(), Equals, "BNB")
@@ -748,7 +785,8 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 	}
 
 	eventId := uint64(1)
-	options := s.Store.options(eventId, "stake")
+	options ,err := s.Store.options(eventId, "stake")
+  c.Assert(err,IsNil)
 
 	c.Assert(options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(options.PriceTarget, Equals, uint64(0))
@@ -760,7 +798,8 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 	}
 
 	eventId = uint64(2)
-	options = s.Store.options(eventId, "stake")
+	options ,err = s.Store.options(eventId, "stake")
+  c.Assert(err,IsNil)
 
 	c.Assert(options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(options.PriceTarget, Equals, uint64(0))
@@ -779,7 +818,8 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 	}
 
 	eventId := uint64(1)
-	events := s.Store.events(eventId, "stake")
+	events ,err := s.Store.events(eventId, "stake")
+  c.Assert(err,IsNil)
 
 	c.Assert(events.StakeUnits, Equals, uint64(100))
 	c.Assert(events.Slip, Equals, float64(0))
@@ -791,7 +831,8 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 	}
 
 	eventId = uint64(2)
-	events = s.Store.events(eventId, "stake")
+	events ,err = s.Store.events(eventId, "stake")
+  c.Assert(err,IsNil)
 
 	c.Assert(events.StakeUnits, Equals, uint64(100))
 	c.Assert(events.Slip, Equals, float64(0))
@@ -812,7 +853,8 @@ func (s *TimeScaleSuite) TestTxDate(c *C) {
 	eventId := uint64(1)
 	date := uint64(genesis.GenesisTime.Unix()) + 3
 
-	txDate := s.Store.txDate(eventId)
+	txDate ,err := s.Store.txDate(eventId)
+  c.Assert(err,IsNil)
 	c.Assert(txDate, Equals, date)
 
 	// Additional stake
@@ -823,7 +865,8 @@ func (s *TimeScaleSuite) TestTxDate(c *C) {
 	eventId = uint64(2)
 	date = uint64(genesis.GenesisTime.Unix()) + 6
 
-	txDate = s.Store.txDate(eventId)
+	txDate ,err = s.Store.txDate(eventId)
+  c.Assert(err,IsNil)
 	c.Assert(txDate, Equals, date)
 }
 
@@ -839,7 +882,8 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 	}
 
 	eventId := uint64(1)
-	txHeight := s.Store.txHeight(eventId)
+	txHeight ,err := s.Store.txHeight(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(txHeight, Equals, uint64(1))
 
@@ -849,7 +893,8 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 	}
 
 	eventId = uint64(2)
-	txHeight = s.Store.txHeight(eventId)
+	txHeight ,err = s.Store.txHeight(eventId)
+  c.Assert(err,IsNil)
 
 	c.Assert(txHeight, Equals, uint64(2))
 }

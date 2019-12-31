@@ -1,34 +1,45 @@
 package timescale
 
 import (
-	"database/sql"
 	"github.com/jmoiron/sqlx"
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetTxData(address common.Address) []models.TxDetails {
-	events := s.eventsForAddress(address)
+func (s *Client) GetTxData(address common.Address) ([]models.TxDetails, error) {
+	events, err := s.eventsForAddress(address)
+	if err != nil {
+		return nil, err
+	}
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) []models.TxDetails {
-	events := s.eventsForAddressAsset(address, asset)
+func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) ([]models.TxDetails, error) {
+	events, err := s.eventsForAddressAsset(address, asset)
+	if err != nil {
+		return nil, err
+	}
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) []models.TxDetails {
-	events := s.eventsForAddressTxId(address, txid)
+func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) ([]models.TxDetails, error) {
+	events, err := s.eventsForAddressTxId(address, txid)
+	if err != nil {
+		return nil, err
+	}
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAsset(asset common.Asset) []models.TxDetails {
-	events := s.eventsForAsset(asset)
+func (s *Client) GetTxDataByAsset(asset common.Asset) ([]models.TxDetails, error) {
+	events, err := s.eventsForAsset(asset)
+	if err != nil {
+		return nil, err
+	}
 	return s.processEvents(events)
 }
 
-func (s *Client) eventsForAddress(address common.Address) []uint64 {
+func (s *Client) eventsForAddress(address common.Address) ([]uint64, error) {
 	stmnt := `
 		SELECT DISTINCT(event_id)
 			FROM txs
@@ -36,13 +47,18 @@ func (s *Client) eventsForAddress(address common.Address) []uint64 {
 
 	rows, err := s.db.Queryx(stmnt, address.String())
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+		return nil, err
 	}
 
-	return s.eventsResults(rows)
+	results, err := s.eventsResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
-func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asset) []uint64 {
+func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asset) ([]uint64, error) {
 	stmnt := `
 		SELECT DISTINCT(txs.event_id)
 			FROM txs
@@ -52,13 +68,18 @@ func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asse
 
 	rows, err := s.db.Queryx(stmnt, asset.Ticker.String(), address.String())
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+		return nil, err
 	}
 
-	return s.eventsResults(rows)
+	results, err := s.eventsResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
-func (s *Client) eventsForAddressTxId(address common.Address, txid string) []uint64 {
+func (s *Client) eventsForAddressTxId(address common.Address, txid string) ([]uint64, error) {
 	stmnt := `
 		SELECT DISTINCT(txs.event_id)
 			FROM txs
@@ -67,13 +88,18 @@ func (s *Client) eventsForAddressTxId(address common.Address, txid string) []uin
 
 	rows, err := s.db.Queryx(stmnt, txid, address.String())
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+		return nil, err
 	}
 
-	return s.eventsResults(rows)
+	results, err := s.eventsResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
-func (s *Client) eventsForAsset(asset common.Asset) []uint64 {
+func (s *Client) eventsForAsset(asset common.Asset) ([]uint64, error) {
 	stmnt := `
 		SELECT DISTINCT(txs.event_id)
 			FROM txs
@@ -82,54 +108,92 @@ func (s *Client) eventsForAsset(asset common.Asset) []uint64 {
 
 	rows, err := s.db.Queryx(stmnt, asset.Ticker.String())
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+		return nil, err
 	}
 
-	return s.eventsResults(rows)
+	results, err := s.eventsResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
-func (s *Client) eventsResults(rows *sqlx.Rows) []uint64 {
+func (s *Client) eventsResults(rows *sqlx.Rows) ([]uint64, error) {
 	var events []uint64
 
 	for rows.Next() {
 		results := make(map[string]interface{})
 		err := rows.MapScan(results)
 		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
+			return nil, err
 		}
 
 		eventId, _ := results["event_id"].(int64)
 		events = append(events, uint64(eventId))
 	}
 
-	return events
+	return events, nil
 }
 
-func (s *Client) processEvents(events []uint64) []models.TxDetails {
+func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 	var txData []models.TxDetails
 
 	for _, eventId := range events {
 
-		eventDate, height, eventType, status := s.eventBasic(eventId)
+		eventDate, height, eventType, status, err := s.eventBasic(eventId)
+		if err != nil {
+			return nil, err
+		}
+
+		eventPool, err := s.eventPool(eventId)
+		if err != nil {
+			return nil, err
+		}
+
+		gas, err := s.gas(eventId)
+		if err != nil {
+			return nil, err
+		}
+
+		inTx, err := s.inTx(eventId)
+		if err != nil {
+			return nil, err
+		}
+
+		outTx, err := s.outTx(eventId)
+		if err != nil {
+			return nil, err
+		}
+
+		options, err := s.options(eventId, eventType)
+		if err != nil {
+			return nil, err
+		}
+
+		events, err := s.events(eventId, eventType)
+		if err != nil {
+			return nil, err
+		}
+
 		txData = append(txData, models.TxDetails{
-			Pool:    s.eventPool(eventId),
+			Pool:    eventPool,
 			Type:    eventType,
 			Status:  status,
-			In:      s.inTx(eventId),
-			Out:     s.outTx(eventId),
-			Gas:     s.gas(eventId),
-			Options: s.options(eventId, eventType),
-			Events:  s.events(eventId, eventType),
+			In:      inTx,
+			Out:     outTx,
+			Gas:     gas,
+			Options: options,
+			Events:  events,
 			Date:    eventDate,
 			Height:  height,
 		})
 	}
 
-	return txData
+	return txData, nil
 }
 
-func (s *Client) eventPool(eventId uint64) common.Asset {
+func (s *Client) eventPool(eventId uint64) (common.Asset, error) {
 	stmnt := `
 		SELECT coins.chain, coins.symbol, coins.ticker
 			FROM coins
@@ -138,8 +202,7 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 
 	rows, err := s.db.Queryx(stmnt, eventId)
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
-		return common.Asset{}
+		return common.Asset{}, err
 	}
 
 	var asset common.Asset
@@ -147,8 +210,7 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 		results := make(map[string]interface{})
 		err := rows.MapScan(results)
 		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
+			return common.Asset{}, err
 		}
 
 		c, _ := results["chain"].(string)
@@ -165,24 +227,36 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 		asset.Ticker = ticker
 	}
 
-	return asset
+	return asset, nil
 }
 
-func (s *Client) inTx(eventId uint64) models.TxData {
-	tx := s.txForDirection(eventId, "in")
-	tx.Coin = s.coinsForTxHash(tx.TxID)
+func (s *Client) inTx(eventId uint64) (models.TxData, error) {
+	tx, err := s.txForDirection(eventId, "in")
+	if err != nil {
+		return models.TxData{}, err
+	}
+	tx.Coin, err = s.coinsForTxHash(tx.TxID)
+	if err != nil {
+		return models.TxData{}, err
+	}
 
-	return tx
+	return tx, nil
 }
 
-func (s *Client) outTx(eventId uint64) models.TxData {
-	tx := s.txForDirection(eventId, "out")
-	tx.Coin = s.coinsForTxHash(tx.TxID)
+func (s *Client) outTx(eventId uint64) (models.TxData, error) {
+	tx, err := s.txForDirection(eventId, "out")
+	if err != nil {
+		return models.TxData{}, err
+	}
+	tx.Coin, err = s.coinsForTxHash(tx.TxID)
+	if err != nil {
+		return models.TxData{}, err
+	}
 
-	return tx
+	return tx, nil
 }
 
-func (s *Client) txForDirection(eventId uint64, direction string) models.TxData {
+func (s *Client) txForDirection(eventId uint64, direction string) (models.TxData, error) {
 	stmnt := `
 		SELECT txs.tx_hash AS tx_id, txs.memo, txs.from_address AS address
 			FROM txs
@@ -192,17 +266,12 @@ func (s *Client) txForDirection(eventId uint64, direction string) models.TxData 
 	tx := models.TxData{}
 	row := s.db.QueryRow(stmnt, eventId, direction)
 	if err := row.Scan(&tx.TxID, &tx.Memo, &tx.Address); err != nil {
-		if err == sql.ErrNoRows {
-			return tx
-		}
-
-		s.logger.Err(err).Msg("Scan error")
+		return models.TxData{}, err
 	}
-
-	return tx
+	return tx, nil
 }
 
-func (s *Client) coinsForTxHash(txHash string) common.Coins {
+func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
 	stmnt := `
 		SELECT coins.chain, coins.symbol, coins.ticker, coins.amount
 			FROM coins
@@ -210,8 +279,7 @@ func (s *Client) coinsForTxHash(txHash string) common.Coins {
 
 	rows, err := s.db.Queryx(stmnt, txHash)
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
-		return nil
+		return nil, err
 	}
 
 	var coins common.Coins
@@ -219,8 +287,7 @@ func (s *Client) coinsForTxHash(txHash string) common.Coins {
 		results := make(map[string]interface{})
 		err = rows.MapScan(results)
 		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
+			return nil, err
 		}
 
 		ch, _ := results["chain"].(string)
@@ -242,10 +309,10 @@ func (s *Client) coinsForTxHash(txHash string) common.Coins {
 		})
 	}
 
-	return coins
+	return coins, nil
 }
 
-func (s *Client) gas(eventId uint64) models.TxGas {
+func (s *Client) gas(eventId uint64) (models.TxGas, error) {
 	stmnt := `
 		SELECT gas.chain, gas.symbol, gas.ticker, gas.amount
 			FROM gas
@@ -258,27 +325,31 @@ func (s *Client) gas(eventId uint64) models.TxGas {
 
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&chain, &symbol, &ticker, &amount); err != nil {
-		return models.TxGas{}
+		return models.TxGas{}, err
 	}
 
 	asset, _ := common.NewAsset(symbol)
 	return models.TxGas{
 		Asset:  asset,
 		Amount: amount,
-	}
+	}, nil
 }
 
-func (s *Client) options(eventId uint64, eventType string) models.Options {
+func (s *Client) options(eventId uint64, eventType string) (models.Options, error) {
 	var options models.Options
+	var err error
 
 	if eventType == "stake" {
-		options.PriceTarget = s.priceTarget(eventId)
+		options.PriceTarget, err = s.priceTarget(eventId)
+		if err != nil {
+			return models.Options{}, err
+		}
 	}
 
-	return options
+	return options, nil
 }
 
-func (s *Client) events(eventId uint64, eventType string) models.Events {
+func (s *Client) events(eventId uint64, eventType string) (models.Events, error) {
 	switch eventType {
 	case "swap":
 		return s.swapEvents(eventId)
@@ -288,10 +359,10 @@ func (s *Client) events(eventId uint64, eventType string) models.Events {
 		return s.stakeEvents(eventId)
 	}
 
-	return models.Events{}
+	return models.Events{}, nil
 }
 
-func (s *Client) swapEvents(eventId uint64) models.Events {
+func (s *Client) swapEvents(eventId uint64) (models.Events, error) {
 	stmnt := `
 		SELECT swaps.trade_slip, swaps.liquidity_fee
 			FROM swaps
@@ -300,13 +371,13 @@ func (s *Client) swapEvents(eventId uint64) models.Events {
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&events.Slip, &events.Fee); err != nil {
-		return models.Events{}
+		return models.Events{}, err
 	}
 
-	return events
+	return events, nil
 }
 
-func (s *Client) stakeEvents(eventId uint64) models.Events {
+func (s *Client) stakeEvents(eventId uint64) (models.Events, error) {
 	stmnt := `
 		SELECT stakes.units
 			FROM stakes
@@ -315,46 +386,52 @@ func (s *Client) stakeEvents(eventId uint64) models.Events {
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&events.StakeUnits); err != nil {
-		return models.Events{}
+		return models.Events{}, err
 	}
 
-	return events
+	return events, nil
 }
 
-func (s *Client) txDate(eventId uint64) uint64 {
-	txHeight := s.txHeight(eventId)
-	timeOfBlock := s.getTimeOfBlock(txHeight)
+func (s *Client) txDate(eventId uint64) (uint64, error) {
+	txHeight, err := s.txHeight(eventId)
+	if err != nil {
+		return 0, err
+	}
+	timeOfBlock, err := s.getTimeOfBlock(txHeight)
+	if err != nil {
+		return 0, err
+	}
 
-	return timeOfBlock
+	return timeOfBlock, nil
 }
 
-func (s *Client) txHeight(eventId uint64) uint64 {
+func (s *Client) txHeight(eventId uint64) (uint64, error) {
 	stmnt := `SELECT height FROM events WHERE id = $1`
 	var txHeight uint64
 	row := s.db.QueryRow(stmnt, eventId)
 
 	if err := row.Scan(&txHeight); err != nil {
-		return 0
+		return 0, err
 	}
 
-	return txHeight
+	return txHeight, nil
 }
 
-func (s *Client) priceTarget(eventId uint64) uint64 {
+func (s *Client) priceTarget(eventId uint64) (uint64, error) {
 	stmnt := `SELECT price_target FROM swaps WHERE event_id = $1`
 	var priceTarget uint64
 	row := s.db.QueryRow(stmnt, eventId)
 
 	if err := row.Scan(&priceTarget); err != nil {
-		return 0
+		return 0, err
 	}
 
-	return priceTarget
+	return priceTarget, nil
 }
 
-func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string) {
+func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, error) {
 	stmnt := `
-		SELECT height, type, status 
+		SELECT height, type, status
 			FROM events
 		WHERE id = $1`
 
@@ -365,10 +442,13 @@ func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string) {
 
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&height, &eventType, &status); err != nil {
-		return 0, 0, "", ""
+		return 0, 0, "", "", err
 	}
 
-	eventTime := s.txDate(height)
+	eventTime, err := s.txDate(height)
+	if err != nil {
+		return 0, 0, "", "", err
+	}
 
-	return eventTime, height, eventType, status
+	return eventTime, height, eventType, status, nil
 }

@@ -21,7 +21,8 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	}
 
 	asset, _ := common.NewAsset("BNB.BNB")
-	dateCreated := s.Store.GetDateCreated(asset)
+	dateCreated,err := s.Store.GetDateCreated(asset)
+	c.Assert(err, IsNil)
 
 	// 3 seconds per block.
 	expectedDate := genesis.GenesisTime.Add(time.Second * blockSpeed).Unix()
@@ -35,7 +36,8 @@ func (s *TimeScaleSuite) TestGetTimeOfBlock(c *C) {
 		log.Fatal(err)
 	}
 
-	timeOfBlock := s.Store.getTimeOfBlock(1)
+	timeOfBlock, err := s.Store.getTimeOfBlock(1)
+	c.Assert(err, IsNil)
 
 	// 3 seconds per block.
 	expectedTimeOfBlock := genesis.GenesisTime.Add(time.Second * blockSpeed).Unix()
@@ -55,6 +57,7 @@ func (s *TimeScaleSuite) TestGetBlockHeight(c *C) {
 	}
 
 	asset, _ := common.NewAsset("BNB.BNB")
-	height := s.Store.getBlockHeight(asset)
+	height, err := s.Store.getBlockHeight(asset)
+	c.Assert(err, IsNil)
 	c.Assert(height, Equals, uint64(1))
 }
