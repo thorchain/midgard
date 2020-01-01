@@ -49,10 +49,10 @@ test-short:
 
 # pg docker required
 test-internal:
-	PG_HOST=pg go test -cover ./...
+	go test -cover ./...
 
 test:
-	@./scripts/run.sh testcode make test-internal
+	PG_HOST=pg ./scripts/run.sh testcode make test-internal
 
 test-docker:
 	@docker-compose run --rm --no-deps test --build
@@ -106,10 +106,13 @@ create-user:
 	PGPASSWORD=password psql -h localhost -U postgres -c "CREATE USER midgard WITH CREATEDB CREATEROLE PASSWORD 'password';"
 
 create-database:
-	 PGPASSWORD=password psql -h localhost -U postgres -c "CREATE DATABASE midgard OWNER midgard;"
+	 PGPASSWORD=password psql -h localhost -U postgres -c "CREATE DATABASE midgard;"
 
 drop-database:
 	PGPASSWORD=password psql -h localhost -U postgres -c "drop database midgard;"
 
 drop-user:
 	PGPASSWORD=password psql -h localhost -U postgres -c "DROP USER midgard"
+
+truncate:
+	PGPASSWORD=password psql -h localhost -U postgres -d midgard -c "TRUNCATE TABLE events, txs RESTART IDENTITY"
