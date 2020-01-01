@@ -10,6 +10,10 @@ import (
 )
 
 func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
+  if err := s.CreateTxRecords(record.Event); err != nil {
+   return err
+  }
+
 	// get rune/asset amounts from Event.InTx.Coins
 	var runeAmt int64
 	var assetAmt int64
@@ -20,27 +24,6 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 			assetAmt = coin.Amount
 		}
 	}
-
-	// Protect null pointers errors
-  var inGasChain string
-  var inGasAmount int64
-  if len(record.InTx.Gas) > 0 {
-    inGasChain = record.InTx.Gas[0].Asset.Chain.String()
-    inGasAmount = record.InTx.Gas[0].Amount
-  }
-
-  var outGasChain, outMemo, outHash string
-  var outGasAmount int64
-  if len(record.OutTxs) > 0  {
-    outMemo = record.OutTxs[0].Memo.String()
-    outHash = record.OutTxs[0].ID.String()
-
-    // Gas
-    if len(record.OutTxs[0].Gas) >0 {
-      outGasChain = record.OutTxs[0].Gas[0].Asset.Chain.String()
-      outGasAmount = record.OutTxs[0].Gas[0].Amount
-    }
-  }
 
   query := fmt.Sprintf(`
 		INSERT INTO %v (
@@ -54,19 +37,10 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
         pool,
         rune_amount,
         asset_amount,
-        stake_units,
-        tx_in_memo,
-        tx_out_memo,
-        tx_in_hash,
-        tx_out_hash,
-        tx_in_gas_chain,
-        tx_out_gas_chain,
-        tx_in_gas_amount,
-        tx_out_gas_amount
+        stake_units
 		)  VALUES
-          ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+          ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING id`, models.ModelEventsTable)
-
 
   _, err := s.db.Exec(query,
     record.Time,
@@ -80,19 +54,10 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
     -runeAmt,
     -assetAmt,
     -record.StakeUnits,
-    record.InTx.Memo,
-    outMemo,
-    record.InTx.ID,
-    outHash,
-    inGasChain,
-    outGasChain,
-    inGasAmount,
-    outGasAmount,
   )
 
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")
 	}
-
 	return nil
 }

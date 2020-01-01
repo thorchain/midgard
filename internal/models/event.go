@@ -10,9 +10,8 @@ import (
 const (
 	// Table / Measurement name
 	ModelEventsTable  = "events"
-	ModelTxsTable     = "txs"
-	ModelGasTable     = "gas"
 	ModelGenesisTable = "genesis"
+  ModelTxsTable     = "txs"
 )
 
 type Event struct {
