@@ -372,20 +372,22 @@ func (s *Client) exists(asset common.Asset) (bool, error) {
 
 // assetStakedTotal - total amount of asset staked in given pool
 func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM stakes
+  stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		`
+    AND type = 'stake'
+    OR type = 'unstake'
+		`, models.ModelEventsTable)
 
-	var assetStakedTotal uint64
+	var assetStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, err
 	}
 
-	return assetStakedTotal, nil
+	return uint64(assetStakedTotal.Int64), nil
 }
 
 // assetStakedTotal12 - total amount of asset staked in given pool in the last
