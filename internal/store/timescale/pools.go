@@ -881,22 +881,20 @@ func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
 	return uint64(float64(sellFeeAverage) * priceInRune), nil
 }
 
-func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT AVG(liquidity_fee)
-		FROM swaps
+func (s *Client) buyFeeAverage(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT AVG(swap_liquidity_fee)
+		FROM %v
 		WHERE pool = $1
-		AND runeAmt > 0
-	`
+		AND rune_amount < 0
+	`, models.ModelEventsTable)
 
-	var buyFeeAverage uint64
-	row := s.db.QueryRow(stmnt, asset.String())
+	var buyFeeAverage sql.NullFloat64
+	if err := s.db.Get(&buyFeeAverage, stmnt, pool.String()); err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&buyFeeAverage); err != nil {
-		return 0, err
-	}
-
-	return buyFeeAverage, nil
+	return uint64(buyFeeAverage.Float64), nil
 }
 
 func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {

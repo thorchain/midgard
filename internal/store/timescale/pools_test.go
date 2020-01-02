@@ -1105,14 +1105,40 @@ func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 	}
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feeAverage, err := s.Store.buyFeeAverage(asset)
   c.Assert(err, IsNil)
 	c.Assert(feeAverage, Equals, uint64(0))
+
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
+  }
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  feeAverage, err = s.Store.buyFeeAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(feeAverage, Equals, uint64(10000), Commentf("feeAverage: %v", feeAverage))
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  feeAverage, err = s.Store.buyFeeAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(feeAverage, Equals, uint64(10000), Commentf("feeAverage: %v", feeAverage))
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  feeAverage, err = s.Store.buyFeeAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(feeAverage, Equals, uint64(10000), Commentf("feeAverage: %v", feeAverage))
 }
 
 // TODO More data requested

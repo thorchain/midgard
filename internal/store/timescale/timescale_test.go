@@ -748,7 +748,7 @@ var (
     },
     PriceTarget:  1,
     TradeSlip:    0.123023930000000000,
-    LiquidityFee: 7463556,
+    LiquidityFee: 10000,
   }
 
   // swap: In: 1RUNE, Out 1BNB
@@ -804,7 +804,7 @@ var (
     },
     PriceTarget:  124958592,
     TradeSlip:    0.123023930000000000,
-    LiquidityFee: 7463556,
+    LiquidityFee: 10000,
   }
 
   // reward 1 RUNE to BNB pool.
