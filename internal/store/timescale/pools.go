@@ -3,11 +3,10 @@ package timescale
 import (
   "database/sql"
   "fmt"
+  "github.com/pkg/errors"
+  "gitlab.com/thorchain/midgard/internal/models"
 
-	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/internal/models"
-
-	"gitlab.com/thorchain/midgard/internal/common"
+  "gitlab.com/thorchain/midgard/internal/common"
 )
 
 type PoolData struct {
@@ -486,7 +485,8 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 	return stakedTotal, nil
 }
 
-func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
+// assetDepth return the asset depth (sum) of a given pool
+func (s *Client) assetDepth(pool common.Asset) (uint64, error) {
 	stmnt := fmt.Sprintf(`
 		SELECT SUM(asset_amount)
 		FROM %v
@@ -494,12 +494,11 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 		`, models.ModelEventsTable)
 
 	var assetDepth sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, pool.String())
 
 	if err := row.Scan(&assetDepth); err != nil {
-		return 0, errors.Wrap(err, "row.Scan failed")
+		return 0, err
 	}
-
 	return uint64(assetDepth.Int64), nil
 }
 
@@ -514,18 +513,21 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	return uint64(depth), nil
 }
 
-func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
-	stakes, err := s.runeStakedTotal(asset)
-	if err != nil {
-		return 0, err
-	}
-	swaps, err := s.runeSwapTotal(asset)
-	if err != nil {
-		return 0, err
-	}
+// runeDepth returns the rune depth (sum) of a given pool
+func (s *Client) runeDepth(pool common.Asset) (uint64, error) {
+  stmnt := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+		FROM %v
+		WHERE pool = $1
+		`, models.ModelEventsTable)
 
-	depth := int64(stakes) + swaps
-	return uint64(depth), nil
+  var runeDepth sql.NullInt64
+  row := s.db.QueryRow(stmnt, pool.String())
+
+  if err := row.Scan(&runeDepth); err != nil {
+    return 0, err
+  }
+  return uint64(runeDepth.Int64), nil
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) uint64 {

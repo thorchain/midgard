@@ -362,40 +362,153 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 
 }
 
+// TODO come back and review...
 func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
+  // No stake
+  asset, _ := common.NewAsset("BNB.BNB")
+  assetDepth, err := s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetDepth, Equals, uint64(0))
 
-	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	assetDepth, err := s.Store.assetDepth12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetDepth, Equals, uint64(0))
+  // stake
+  stakeEvent0 := stakeEvent0
+  stakeEvent0.ID = 1
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
+  assetDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetDepth, Equals, uint64(1))
 
-	assetDepth, err = s.Store.assetDepth12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetDepth, Equals, uint64(10))
+  // stake a different asset
+  stakeEvent1 := stakeEvent1
+  stakeEvent1.ID = 2
+  if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    c.Fatal(err)
+  }
+
+  assetDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetDepth, Equals, uint64(1))
+
+  // Another stake with original asset
+  stakeEvent2 := stakeEvent0
+  stakeEvent2.ID = 3
+  if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+    c.Fatal(err)
+  }
+
+  assetDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetDepth, Equals, uint64(2))
+
+  // unstake
+  unstakeEvent0 := unstakeEvent0
+  unstakeEvent0.ID = 4
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  assetDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetDepth, Equals, uint64(1))
+
+  // swap
+  swapInEvent0 := swapInEvent0
+  swapInEvent0.ID = 5
+  if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+    c.Fatal(err)
+  }
+  assetDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Check(assetDepth, Equals, uint64(0))
+
+  // reward
+  rewardEvent0 := rewardEvent0
+  rewardEvent0.ID = 6
+  if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  assetDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Check(assetDepth, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 
-	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	runeDepth, err := s.Store.runeDepth(asset)
+  // No stake
+  asset, _ := common.NewAsset("BNB.BNB")
+  runeDepth, err := s.Store.runeDepth(asset)
   c.Assert(err, IsNil)
-	c.Assert(runeDepth, Equals, uint64(0))
+  c.Assert(runeDepth, Equals, uint64(0))
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
+  // stake
+  stakeEvent0 := stakeEvent0
+  stakeEvent0.ID = 1
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	runeDepth, err = s.Store.runeDepth(asset)
+  runeDepth, err = s.Store.runeDepth(asset)
   c.Assert(err, IsNil)
-	c.Assert(runeDepth, Equals, uint64(10))
+  c.Assert(runeDepth, Equals, uint64(10))
+
+  // stake a different asset
+  stakeEvent1 := stakeEvent1
+  stakeEvent1.ID = 2
+  if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    c.Fatal(err)
+  }
+
+  runeDepth, err = s.Store.runeDepth(asset)
+  c.Assert(err, IsNil)
+  c.Assert(runeDepth, Equals, uint64(10))
+
+  // Another stake with original asset
+  stakeEvent2 := stakeEvent0
+  stakeEvent2.ID = 3
+  if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+    c.Fatal(err)
+  }
+
+  runeDepth, err = s.Store.runeDepth(asset)
+  c.Assert(err, IsNil)
+  c.Assert(runeDepth, Equals, uint64(20))
+
+  // unstake
+  unstakeEvent0 := unstakeEvent0
+  unstakeEvent0.ID = 4
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  runeDepth, err = s.Store.runeDepth(asset)
+  c.Assert(err, IsNil)
+  c.Assert(runeDepth, Equals, uint64(10))
+
+  // swap
+  swapEvent0 := swapOutEvent0
+  swapEvent0.ID = 5
+  if err := s.Store.CreateSwapRecord(swapEvent0); err != nil {
+    c.Fatal(err)
+  }
+  runeDepth, err = s.Store.runeDepth(asset)
+  c.Assert(err, IsNil)
+  c.Check(runeDepth, Equals, uint64(9))
+
+  // reward
+  rewardEvent0 := rewardEvent0
+  rewardEvent0.ID = 6
+  if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  runeDepth, err = s.Store.runeDepth(asset)
+  c.Assert(err, IsNil)
+  c.Check(runeDepth, Equals, uint64(10))
+
 }
 
 func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
