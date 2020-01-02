@@ -276,21 +276,21 @@ func (s *Client) runeStaked(address common.Address, asset common.Asset) (uint64,
 }
 
 // runeStaked - sum of asset staked by a specific address and pool
-func (s *Client) assetStaked(address common.Address, asset common.Asset) (uint64, error) {
-	query := `
-		SELECT SUM(assetAmt)
-		FROM stakes
+func (s *Client) assetStaked(from_address common.Address, pool common.Asset) (uint64, error) {
+  query := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE from_address = $1
-		AND pool = $2
-	`
+    AND pool = $2
+		`, models.ModelEventsTable)
 
-	var assetStaked uint64
-	err := s.db.Get(&assetStaked, query, address, asset.String())
+	var assetStaked sql.NullInt64
+	err := s.db.Get(&assetStaked, query, from_address, pool.String())
 	if err != nil {
-		// TODO error handling
+    return 0, err
 	}
 
-	return assetStaked, nil
+	return uint64(assetStaked.Int64), nil
 }
 
 func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64, error) {

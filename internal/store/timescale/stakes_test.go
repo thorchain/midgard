@@ -1,7 +1,8 @@
 package timescale
 
 import (
-	"time"
+  "github.com/davecgh/go-spew/spew"
+  "time"
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
@@ -109,52 +110,78 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	asset, _ := common.NewAsset("BNB")
 
-	// No stakes
-	assetStaked, err := s.Store.assetStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(0))
+  // No stake
+  asset, _ := common.NewAsset("BNB.BNB")
+  assetStaked, err := s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetStaked, Equals, uint64(0))
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		c.Fatal(err)
-	}
+  // stake
+  stakeEvent0 := stakeEvent0
+  stakeEvent0.ID = 1
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	assetStaked, err = s.Store.assetStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(10))
+  assetStaked, err = s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  spew.Dump(assetStaked)
+  c.Assert(assetStaked, Equals, uint64(1))
 
-	// Additional stake
-	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		c.Fatal(err)
-	}
+  // stake a different asset
+  stakeEvent1 := stakeEvent1
+  stakeEvent1.ID = 2
+  if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    c.Fatal(err)
+  }
 
-	assetStaked, err = s.Store.assetStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(10))
+  assetStaked, err = s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetStaked, Equals, uint64(1))
 
-	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		c.Fatal(err)
-	}
+  // Another stake with original asset
+  stakeEvent2 := stakeEvent0
+  stakeEvent2.ID = 3
+  if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+    c.Fatal(err)
+  }
 
-	assetStaked, err = s.Store.assetStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(0))
+  assetStaked, err = s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetStaked, Equals, uint64(2))
 
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
+  // unstake
+  unstakeEvent0 := unstakeEvent0
+  unstakeEvent0.ID = 4
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		c.Fatal(err)
-	}
+  assetStaked, err = s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetStaked, Equals, uint64(1))
 
-	assetStaked, err = s.Store.assetStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(50000000000))
+  // swap
+  swapEvent0 := swapInEvent0
+  swapEvent0.ID = 5
+  if err := s.Store.CreateSwapRecord(swapEvent0); err != nil {
+    c.Fatal(err)
+  }
+  assetStaked, err = s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  c.Check(assetStaked, Equals, uint64(0))
+
+  // reward
+  rewardEvent0 := rewardEvent0
+  rewardEvent0.ID = 6
+  if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  assetStaked, err = s.Store.assetStaked(address, asset)
+  c.Assert(err, IsNil)
+  c.Check(assetStaked, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestPoolStaked(c *C) {
