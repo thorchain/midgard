@@ -50,4 +50,5 @@ CREATE INDEX idx_txs ON txs (to_address, from_address, event_id);
 
 DROP TABLE genesis;
 DROP TABLE events;
-
+DROP TABLE txs;
+DROP TYPE tx_direction;
