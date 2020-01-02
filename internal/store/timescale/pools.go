@@ -1,12 +1,13 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
-  "github.com/pkg/errors"
-  "gitlab.com/thorchain/midgard/internal/models"
+	"database/sql"
+	"fmt"
 
-  "gitlab.com/thorchain/midgard/internal/common"
+	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/models"
+
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type PoolData struct {
@@ -372,7 +373,7 @@ func (s *Client) exists(asset common.Asset) (bool, error) {
 
 // assetStakedTotal - total amount of asset staked in given pool
 func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
-  stmnt := fmt.Sprintf(`
+	stmnt := fmt.Sprintf(`
 		SELECT SUM(asset_amount)
 		FROM %v
 		WHERE pool = $1
@@ -510,7 +511,10 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	swaps := s.assetSwapTotal12m(asset)
+	swaps, err := s.assetSwapTotal12m(asset)
+	if err != nil {
+		return 0, err
+	}
 
 	depth := int64(stakes) + swaps
 	return uint64(depth), nil
@@ -518,19 +522,19 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 
 // runeDepth returns the rune depth (sum) of a given pool
 func (s *Client) runeDepth(pool common.Asset) (uint64, error) {
-  stmnt := fmt.Sprintf(`
+	stmnt := fmt.Sprintf(`
 		SELECT SUM(rune_amount)
 		FROM %v
 		WHERE pool = $1
 		`, models.ModelEventsTable)
 
-  var runeDepth sql.NullInt64
-  row := s.db.QueryRow(stmnt, pool.String())
+	var runeDepth sql.NullInt64
+	row := s.db.QueryRow(stmnt, pool.String())
 
-  if err := row.Scan(&runeDepth); err != nil {
-    return 0, err
-  }
-  return uint64(runeDepth.Int64), nil
+	if err := row.Scan(&runeDepth); err != nil {
+		return 0, err
+	}
+	return uint64(runeDepth.Int64), nil
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) uint64 {
@@ -596,22 +600,23 @@ func (s *Client) assetSwapTotal(asset common.Asset) int64 {
 	return total
 }
 
-func (s *Client) assetSwapTotal12m(asset common.Asset) int64 {
+func (s *Client) assetSwapTotal12m(pool common.Asset) (int64, error) {
 	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM swaps
+		SELECT SUM(asset_amount)
+		FROM events
 		WHERE pool = $1
+		AND type = 'swap'
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
-	var total int64
-	row := s.db.QueryRow(stmnt, asset.String())
+	var total sql.NullInt64
+	row := s.db.QueryRow(stmnt, pool.String())
 
 	if err := row.Scan(&total); err != nil {
-		return 0
+		return 0, err
 	}
 
-	return total
+	return total.Int64, nil
 }
 
 func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
@@ -621,7 +626,7 @@ func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) poolUnits(pool common.Asset) (uint64, error) {
-  stmnt := fmt.Sprintf(`
+	stmnt := fmt.Sprintf(`
 		SELECT SUM(stake_units)
 		FROM %v
 		WHERE pool = $1
