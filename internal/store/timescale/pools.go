@@ -616,21 +616,21 @@ func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
 	return 0, nil
 }
 
-func (s *Client) poolUnits(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(units)
-		FROM stakes
+func (s *Client) poolUnits(pool common.Asset) (uint64, error) {
+  stmnt := fmt.Sprintf(`
+		SELECT SUM(stake_units)
+		FROM %v
 		WHERE pool = $1
-	`
+		`, models.ModelEventsTable)
 
-	var units uint64
-	row := s.db.QueryRow(stmnt, asset.String())
+	var units sql.NullInt64
+	row := s.db.QueryRow(stmnt, pool.String())
 
 	if err := row.Scan(&units); err != nil {
-		return 0, errors.Wrap(err, "row.Scan failed")
+		return 0, err
 	}
 
-	return units, nil
+	return uint64(units.Int64), nil
 }
 
 func (s *Client) sellVolume(asset common.Asset) (uint64, error) {

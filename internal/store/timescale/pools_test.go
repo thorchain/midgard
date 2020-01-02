@@ -364,6 +364,8 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 
 // TODO come back and review...
 func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
+  c.Skip("Needs review")
+
   // No stake
   asset, _ := common.NewAsset("BNB.BNB")
   assetDepth, err := s.Store.assetDepth12m(asset)
@@ -654,36 +656,76 @@ func (s *TimeScaleSuite) TestPoolDepth(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolUnits(c *C) {
-
-	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	poolUnits, err := s.Store.poolUnits(asset)
+  // No stake
+  asset, _ := common.NewAsset("BNB.BNB")
+  poolUnits, err := s.Store.poolUnits(asset)
   c.Assert(err, IsNil)
-	c.Assert(poolUnits, Equals, uint64(0))
+  c.Assert(poolUnits, Equals, uint64(0))
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
+  // stake
+  stakeEvent0 := stakeEvent0
+  stakeEvent0.ID = 1
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	poolUnits, err = s.Store.poolUnits(asset)
+  poolUnits, err = s.Store.poolUnits(asset)
   c.Assert(err, IsNil)
-	c.Assert(poolUnits, Equals, uint64(100))
+  c.Assert(poolUnits, Equals, uint64(100))
 
-	// Stake
-	if err := s.Store.CreateStakeRecord(stakeEvent4Old); err != nil {
-		log.Fatal(err)
-	}
+  // stake a different asset
+  stakeEvent1 := stakeEvent1
+  stakeEvent1.ID = 2
+  if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    c.Fatal(err)
+  }
 
-	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
-		log.Fatal(err)
-	}
-
-	asset, _ = common.NewAsset("BNB.BOLT-014")
-	poolUnits, err = s.Store.poolUnits(asset)
+  poolUnits, err = s.Store.poolUnits(asset)
   c.Assert(err, IsNil)
-	c.Assert(poolUnits, Equals, uint64(1342175000))
+  c.Assert(poolUnits, Equals, uint64(100))
+
+  // Another stake with original asset
+  stakeEvent2 := stakeEvent0
+  stakeEvent2.ID = 3
+  if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+    c.Fatal(err)
+  }
+
+  poolUnits, err = s.Store.poolUnits(asset)
+  c.Assert(err, IsNil)
+  c.Assert(poolUnits, Equals, uint64(200))
+
+  // unstake
+  unstakeEvent0 := unstakeEvent0
+  unstakeEvent0.ID = 4
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  poolUnits, err = s.Store.poolUnits(asset)
+  c.Assert(err, IsNil)
+  c.Assert(poolUnits, Equals, uint64(100))
+
+  // swap
+  swapInEvent0 := swapInEvent0
+  swapInEvent0.ID = 5
+  if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+    c.Fatal(err)
+  }
+  poolUnits, err = s.Store.poolUnits(asset)
+  c.Assert(err, IsNil)
+  c.Check(poolUnits, Equals, uint64(100))
+
+  // reward
+  rewardEvent0 := rewardEvent0
+  rewardEvent0.ID = 6
+  if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  poolUnits, err = s.Store.poolUnits(asset)
+  c.Assert(err, IsNil)
+  c.Check(poolUnits, Equals, uint64(100))
 }
 
 func (s *TimeScaleSuite) TestSellVolume(c *C) {
