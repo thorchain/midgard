@@ -240,21 +240,21 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 
 // stakeUnits - sums the total of staker units a specific address has for a
 // particular pool
-func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64, error) {
-	query := `
-		SELECT SUM(units)
-		FROM stakes
-		WHERE from_address = ($1)
-		AND pool = ($2)
-	`
+func (s *Client) stakeUnits(from_address common.Address, pool common.Asset) (uint64, error) {
+	query := fmt.Sprintf(`
+		SELECT SUM(stake_units)
+		FROM %v
+		WHERE from_address = $1
+    AND pool = $2
+		`, models.ModelEventsTable)
 
-	var stakeUnits uint64
-	err := s.db.Get(&stakeUnits, query, address, asset.String())
+	var stakeUnits sql.NullInt64
+	err := s.db.Get(&stakeUnits, query, from_address, pool.String())
 	if err != nil {
 		return 0, err
 	}
 
-	return stakeUnits, nil
+	return uint64(stakeUnits.Int64), nil
 }
 
 // runeStaked - sum of rune staked by a specific address and pool

@@ -9,53 +9,77 @@ import (
 )
 
 func (s *TimeScaleSuite) TestStakeUnits(c *C) {
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	asset, _ := common.NewAsset("BNB")
+  address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+  // No stake
+  asset, _ := common.NewAsset("BNB.BNB")
+  stakedUnits, err := s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakedUnits, Equals, uint64(0))
 
-	// No stakes
-	stakeUnits, err := s.Store.stakeUnits(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(stakeUnits, Equals, uint64(0))
+  // stake
+  stakeEvent0 := stakeEvent0
+  stakeEvent0.ID = 1
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		c.Fatal(err)
-	}
+  stakedUnits, err = s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakedUnits, Equals, uint64(100))
 
-	stakeUnits, err = s.Store.stakeUnits(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(stakeUnits, Equals, uint64(100))
+  // stake a different asset
+  stakeEvent1 := stakeEvent1
+  stakeEvent1.ID = 2
+  if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    c.Fatal(err)
+  }
 
-	// Additional stake
-	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		c.Fatal(err)
-	}
+  stakedUnits, err = s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakedUnits, Equals, uint64(100))
 
-	stakeUnits, err = s.Store.stakeUnits(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(stakeUnits, Equals, uint64(100))
+  // Another stake with original asset
+  stakeEvent2 := stakeEvent0
+  stakeEvent2.ID = 3
+  if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+    c.Fatal(err)
+  }
 
-	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		c.Fatal(err)
-	}
+  stakedUnits, err = s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakedUnits, Equals, uint64(200))
 
-	stakeUnits, err = s.Store.stakeUnits(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(stakeUnits, Equals, uint64(0))
+  // unstake
+  unstakeEvent0 := unstakeEvent0
+  unstakeEvent0.ID = 4
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
 
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
+  stakedUnits, err = s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakedUnits, Equals, uint64(100))
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		c.Fatal(err)
-	}
+  // swap
+  swapEvent0 := swapInEvent0
+  swapEvent0.ID = 5
+  if err := s.Store.CreateSwapRecord(swapEvent0); err != nil {
+    c.Fatal(err)
+  }
+  stakedUnits, err = s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Check(stakedUnits, Equals, uint64(100))
 
-	stakeUnits, err = s.Store.stakeUnits(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(stakeUnits, Equals, uint64(25025000000))
+  // reward
+  rewardEvent0 := rewardEvent0
+  rewardEvent0.ID = 6
+  if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  stakedUnits, err = s.Store.stakeUnits(address, asset)
+  c.Assert(err, IsNil)
+  c.Check(stakedUnits, Equals, uint64(100))
 }
 
 func (s *TimeScaleSuite) TestRuneStaked(c *C) {
