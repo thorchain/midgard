@@ -413,22 +413,23 @@ func (s *Client) assetStakedTotal12m(pool common.Asset) (uint64, error) {
 }
 
 // assetWithdrawnTotal - total amount of asset withdrawn
-func (s *Client) assetWithdrawnTotal(asset common.Asset) int64 {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM stakes
+func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND units < 0
-		`
+		AND type = 'unstake'
+		AND stake_units < 0
+		`, models.ModelEventsTable)
 
-	var assetWithdrawnTotal int64
+	var assetWithdrawnTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetWithdrawnTotal); err != nil {
-		return 0
+		return 0, err
 	}
 
-	return -assetWithdrawnTotal
+	return -assetWithdrawnTotal.Int64, nil
 }
 
 // runeStakedTotal - total amount of rune staked on the network for given pool.

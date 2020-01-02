@@ -320,28 +320,29 @@ func (s *TimeScaleSuite) TestAssetStakedTotal12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	assetWithdrawnTotal := s.Store.assetWithdrawnTotal(asset)
+	assetWithdrawnTotal, err := s.Store.assetWithdrawnTotal(asset)
+	c.Assert(err, IsNil)
 	c.Assert(assetWithdrawnTotal, Equals, int64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	assetWithdrawnTotal = s.Store.assetWithdrawnTotal(asset)
+	assetWithdrawnTotal, err = s.Store.assetWithdrawnTotal(asset)
+  c.Assert(err, IsNil)
 	c.Assert(assetWithdrawnTotal, Equals, int64(0), Commentf("%d", assetWithdrawnTotal))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
 
-	assetWithdrawnTotal = s.Store.assetWithdrawnTotal(asset)
-	c.Assert(assetWithdrawnTotal, Equals, int64(10))
+	assetWithdrawnTotal, err = s.Store.assetWithdrawnTotal(asset)
+  c.Assert(err, IsNil)
+	c.Assert(assetWithdrawnTotal, Equals, int64(1))
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
