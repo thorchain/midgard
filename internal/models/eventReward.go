@@ -7,20 +7,20 @@ import (
 
 type EventReward struct {
 	Event
-	PoolRewards []poolAmt `json:"pool_rewards"`
+	PoolRewards []PoolAmt `json:"pool_rewards"`
 }
 
-type poolAmt struct {
+type PoolAmt struct {
 	Pool   common.Asset
 	Amount int64
 }
 
 func NewRewardEvent(reward types.EventRewards, event types.Event) EventReward {
-	var pool_amt []poolAmt
+	var pool_amt []PoolAmt
 
 	// convert similar types
 	for _, r := range reward.PoolRewards {
-		pool_amt = append(pool_amt, poolAmt(r))
+		pool_amt = append(pool_amt, PoolAmt(r))
 	}
 
 	return EventReward{
