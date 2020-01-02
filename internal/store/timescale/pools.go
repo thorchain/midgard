@@ -392,22 +392,23 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 
 // assetStakedTotal12 - total amount of asset staked in given pool in the last
 // 12 months
-func (s *Client) assetStakedTotal12m(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM stakes
+func (s *Client) assetStakedTotal12m(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
+		AND type = 'stake' OR type = 'unstake'
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
-	`
+`, models.ModelEventsTable)
 
-	var assetStakedTotal uint64
-	row := s.db.QueryRow(stmnt, asset.String())
+	var assetStakedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, pool.String())
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, err
 	}
 
-	return assetStakedTotal, nil
+	return uint64(assetStakedTotal.Int64), nil
 }
 
 // assetWithdrawnTotal - total amount of asset withdrawn
@@ -577,6 +578,7 @@ func (s *Client) runeSwapTotal12m(asset common.Asset) int64 {
 	return total
 }
 
+// assetSwapTotal returns the sum of asset_amont for all
 func (s *Client) assetSwapTotal(asset common.Asset) int64 {
 	stmnt := `
 		SELECT SUM(assetAmt)
