@@ -987,10 +987,10 @@ func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
 
 func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT COUNT(liquidity_fee)
-		FROM swaps
+		SELECT COUNT(swap_liquidity_fee)
+		FROM events
 		WHERE pool = $1
-		AND runeAmt < 0
+		AND rune_amount < 0
 	`
 
 	var buyAssetCount uint64

@@ -1190,6 +1190,7 @@ func (s *TimeScaleSuite) TestSellAssetCount(c *C) {
 	c.Assert(assetCount, Equals, uint64(1))
 }
 
+// TODO this needs to be reviewed and expanded on once clear on formula.
 func (s *TimeScaleSuite) TestBuyAssetCount(c *C) {
 
 	// No stake
