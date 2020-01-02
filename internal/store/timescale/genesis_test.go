@@ -16,7 +16,7 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		log.Fatal(err)
 	}
 
@@ -52,7 +52,7 @@ func (s *TimeScaleSuite) TestGetBlockHeight(c *C) {
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		log.Fatal(err)
 	}
 

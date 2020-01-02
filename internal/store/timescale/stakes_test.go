@@ -17,7 +17,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 	c.Assert(stakeUnits, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -27,7 +27,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -36,7 +36,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 	c.Assert(stakeUnits, Equals, uint64(100))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -48,7 +48,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 	asset, _ = common.NewAsset("LOK-3C0")
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -67,7 +67,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	c.Assert(runeStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -77,7 +77,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -86,7 +86,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	c.Assert(runeStaked, Equals, uint64(100))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -98,7 +98,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 	asset, _ = common.NewAsset("LOK-3C0")
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -117,7 +117,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	c.Assert(assetStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -127,7 +127,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -136,7 +136,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	c.Assert(assetStaked, Equals, uint64(10))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -148,7 +148,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 	asset, _ = common.NewAsset("LOK-3C0")
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -167,7 +167,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 	c.Assert(poolStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -177,7 +177,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -186,7 +186,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 	c.Assert(poolStaked, Equals, uint64(200))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -198,7 +198,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 	asset, _ = common.NewAsset("LOK-3C0")
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -217,7 +217,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 	c.Assert(runeEarned, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -227,7 +227,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -236,7 +236,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 	c.Assert(runeEarned, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -255,7 +255,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 	c.Assert(assetEarned, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -265,7 +265,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -274,7 +274,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 	c.Assert(assetEarned, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -293,7 +293,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 	c.Assert(poolEarned, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -303,7 +303,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -312,7 +312,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 	c.Assert(poolEarned, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -331,7 +331,7 @@ func (s *TimeScaleSuite) TestStakersRuneROI(c *C) {
 	c.Assert(runeROI, Equals, float64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -341,7 +341,7 @@ func (s *TimeScaleSuite) TestStakersRuneROI(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -350,7 +350,7 @@ func (s *TimeScaleSuite) TestStakersRuneROI(c *C) {
 	c.Assert(runeROI, Equals, float64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -369,7 +369,7 @@ func (s *TimeScaleSuite) TestDateFirstStaked(c *C) {
 	c.Assert(dateFirstStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -380,13 +380,13 @@ func (s *TimeScaleSuite) TestDateFirstStaked(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
 	dateFirstStaked, err = s.Store.dateFirstStaked(address, asset)
 	c.Assert(err, IsNil)
-	expectedDate = genesis.GenesisTime.Add(time.Second * time.Duration(stakeEvent1.Height*blockSpeed)).Unix()
+	expectedDate = genesis.GenesisTime.Add(time.Second * time.Duration(stakeEvent1Old.Height*blockSpeed)).Unix()
 	c.Assert(dateFirstStaked, Equals, uint64(expectedDate))
 }
 
@@ -400,7 +400,7 @@ func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {
 	c.Assert(assetROI, Equals, float64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -410,7 +410,7 @@ func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -419,7 +419,7 @@ func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {
 	c.Assert(assetROI, Equals, float64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -438,7 +438,7 @@ func (s *TimeScaleSuite) TestStakersPoolROI(c *C) {
 	c.Assert(poolROI, Equals, float64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -448,7 +448,7 @@ func (s *TimeScaleSuite) TestStakersPoolROI(c *C) {
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -457,7 +457,7 @@ func (s *TimeScaleSuite) TestStakersPoolROI(c *C) {
 	c.Assert(poolROI, Equals, float64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -475,7 +475,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -484,7 +484,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -493,7 +493,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(400))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -504,7 +504,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -522,7 +522,7 @@ func (s *TimeScaleSuite) TestGetPools(c *C) {
 	c.Assert(len(pools), Equals, 0)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -531,7 +531,7 @@ func (s *TimeScaleSuite) TestGetPools(c *C) {
 	c.Assert(len(pools), Equals, 1)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -540,7 +540,7 @@ func (s *TimeScaleSuite) TestGetPools(c *C) {
 	c.Assert(len(pools), Equals, 2)
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -559,7 +559,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 	c.Assert(totalEarned, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -573,7 +573,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
 	assets = append(assets, asset)
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -582,7 +582,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 	c.Assert(totalEarned, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -600,7 +600,7 @@ func (s *TimeScaleSuite) TestTotalROI(c *C) {
 	c.Assert(totalROI, Equals, float64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -609,7 +609,7 @@ func (s *TimeScaleSuite) TestTotalROI(c *C) {
 	c.Assert(totalROI, Equals, float64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
 		c.Fatal(err)
 	}
 
@@ -618,7 +618,7 @@ func (s *TimeScaleSuite) TestTotalROI(c *C) {
 	c.Assert(totalROI, Equals, float64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 

@@ -33,7 +33,9 @@ var (
 	genesis = models.Genesis{
 		GenesisTime: time.Now().AddDate(0, 0, -21),
 	}
-	stakeEvent0 = models.EventStake{
+
+	// TODO delete
+	stakeEvent0Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (1*blockSpeed)),
 			ID:     1,
@@ -75,7 +77,7 @@ var (
 		},
 		StakeUnits: 100,
 	}
-	stakeEvent1 = models.EventStake{
+	stakeEvent1Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (2*blockSpeed)),
 			ID:     2,
@@ -117,7 +119,7 @@ var (
 		},
 		StakeUnits: 100,
 	}
-	stakeEvent2 = models.EventStake{
+	stakeEvent2Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (4*blockSpeed)),
 			ID:     4,
@@ -172,7 +174,7 @@ var (
 		},
 		StakeUnits: 25025000000,
 	}
-	stakeEvent3 = models.EventStake{
+	stakeEvent3Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (5*blockSpeed)),
 			ID:     5,
@@ -218,7 +220,7 @@ var (
 		},
 		StakeUnits: 1342175000,
 	}
-	stakeEvent4 = models.EventStake{
+	stakeEvent4Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (6*blockSpeed)),
 			ID:     6,
@@ -264,7 +266,7 @@ var (
 		},
 		StakeUnits: 1342175000,
 	}
-	stakeEvent5 = models.EventStake{
+	stakeEvent5Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (8*blockSpeed)),
 			ID:     8,
@@ -310,7 +312,7 @@ var (
 		},
 		StakeUnits: 1342175000,
 	}
-	unstakeEvent0 = models.EventUnstake{
+	unstakeEvent0Old = models.EventUnstake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (3*blockSpeed)),
 			ID:     3,
@@ -352,7 +354,7 @@ var (
 		},
 		StakeUnits: 100,
 	}
-	swapEvent1 = models.EventSwap{
+	swapEvent1Old = models.EventSwap{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (7*blockSpeed)),
 			ID:     7,
@@ -406,7 +408,7 @@ var (
 		TradeSlip: 0.123023930000000000,
 		LiquidityFee: 7463556,
 	}
-	swapEvent2 = models.EventSwap{
+	swapEvent2Old = models.EventSwap{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (9*blockSpeed)),
 			ID:     9,
@@ -460,7 +462,7 @@ var (
 		TradeSlip: 0.123023930000000000,
 		LiquidityFee: 7463556,
 	}
-	swapEvent3 = models.EventSwap{
+	swapEvent3Old = models.EventSwap{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (10*blockSpeed)),
 			ID:     10,
@@ -514,6 +516,319 @@ var (
 		TradeSlip: 0.123023930000000000,
 		LiquidityFee: 7463556,
 	}
+
+	// -------------- New test data
+
+  // stake:BNB (10RUNE/1BNB)=100
+  stakeEvent0 = models.EventStake{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (1 * blockSpeed)),
+      ID:     1,
+      Status: "Success",
+      Height: 1,
+      Type:   "stake",
+      InTx: common.Tx{
+        ID:          "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+        Chain:       "BNB",
+        FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+        Coins: []common.Coin{
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "RUNE-B1A",
+              Ticker: "RUNE",
+            },
+            Amount: 10,
+          },
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "BNB",
+              Ticker: "BNB",
+            },
+            Amount: 1,
+          },
+        },
+        Memo: "stake:BNB",
+      },
+      OutTxs: nil,
+      Gas:    nil,
+    },
+    Pool: common.Asset{
+      Chain:  "BNB",
+      Symbol: "BNB",
+      Ticker: "BNB",
+    },
+    StakeUnits: 100,
+  }
+
+  // stake:BOTH (10RUNE/1BOLT)=100
+  stakeEvent1 = models.EventStake{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (1 * blockSpeed)),
+      ID:     1,
+      Status: "Success",
+      Height: 1,
+      Type:   "stake",
+      InTx: common.Tx{
+        ID:          "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+        Chain:       "BNB",
+        FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+        Coins: []common.Coin{
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "RUNE-B1A",
+              Ticker: "RUNE",
+            },
+            Amount: 10,
+          },
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "BOLT-014",
+              Ticker: "BOLT",
+            },
+            Amount: 1,
+          },
+        },
+        Memo: "stake:BOLT",
+      },
+      OutTxs: nil,
+      Gas:    nil,
+    },
+    Pool: common.Asset{
+      Chain:  "BNB",
+      Symbol: "BOLT-014",
+      Ticker: "BOLT",
+    },
+    StakeUnits: 100,
+  }
+
+  // withdraw:BNB  (10RUNE/1BNB)=100
+  unstakeEvent0 = models.EventUnstake{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (3 * blockSpeed)),
+      ID:     2,
+      Status: "Success",
+      Height: 2,
+      Type:   "unstake",
+      InTx: common.Tx{
+        ID:          "24F5D0CF0DC1B1F1E3DA0DEC19E13252072F8E1F1CFB2839937C9DE38378E57C",
+        Chain:       "BNB",
+        FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+        Coins: []common.Coin{
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "RUNE-B1A",
+              Ticker: "RUNE",
+            },
+            Amount: 10,
+          },
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "BNB",
+              Ticker: "BNB",
+            },
+            Amount: 1,
+          },
+        },
+        Memo: "withdraw:BNB",
+      },
+      OutTxs: nil,
+      Gas:    nil,
+    },
+    Pool: common.Asset{
+      Chain:  "BNB",
+      Symbol: "BNB",
+      Ticker: "BNB",
+    },
+    StakeUnits: 100,
+  }
+
+  // withdraw:BNB  (10RUNE/1BNB)=100
+  unstakeEvent1 = models.EventUnstake{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (3 * blockSpeed)),
+      ID:     2,
+      Status: "Success",
+      Height: 2,
+      Type:   "unstake",
+      InTx: common.Tx{
+        ID:          "24F5D0CF0DC1B1F1E3DA0DEC19E13252072F8E1F1CFB2839937C9DE38378E57C",
+        Chain:       "BNB",
+        FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+        Coins: []common.Coin{
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "RUNE-B1A",
+              Ticker: "RUNE",
+            },
+            Amount: 10,
+          },
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "BOLT-014",
+              Ticker: "BOLT",
+            },
+            Amount: 1,
+          },
+        },
+        Memo: "withdraw:BNB",
+      },
+      OutTxs: nil,
+      Gas:    nil,
+    },
+    Pool: common.Asset{
+      Chain:  "BNB",
+      Symbol: "BOLT-014",
+      Ticker: "BOLT",
+    },
+    StakeUnits: 100,
+  }
+
+  // swap:  In: 1BNB, Out: 1RUNE
+  swapOutEvent0 = models.EventSwap{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (7 * blockSpeed)),
+      ID:     3,
+      Status: "Success",
+      Height: 3,
+      Type:   "swap",
+      InTx: common.Tx{
+        ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+        Chain:       "BNB",
+        FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+        Coins: []common.Coin{
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "BNB",
+              Ticker: "BNB",
+            },
+            Amount: 1,
+          },
+        },
+        Memo: "swap:RUNE-B1A::1",
+      },
+      OutTxs: []common.Tx{
+        common.Tx{
+          ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+          Chain:       "BNB",
+          FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+          ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+          Coins: []common.Coin{
+            {
+              Asset: common.Asset{
+                Chain:  "BNB",
+                Symbol: "RUNE-B1A",
+                Ticker: "RUNE",
+              },
+              Amount: 1,
+            },
+          },
+          Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+        },
+      },
+      Gas: nil,
+    },
+    Pool: common.Asset{
+      Chain:  "BNB",
+      Symbol: "BNB",
+      Ticker: "BNB",
+    },
+    PriceTarget:  1,
+    TradeSlip:    0.123023930000000000,
+    LiquidityFee: 7463556,
+  }
+
+  // swap: In: 1RUNE, Out 1BNB
+  swapInEvent0 = models.EventSwap{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (7 * blockSpeed)),
+      ID:     4,
+      Status: "Success",
+      Height: 4,
+      Type:   "swap",
+      InTx: common.Tx{
+        ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+        Chain:       "BNB",
+        FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+        ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+        Coins: []common.Coin{
+          {
+            Asset: common.Asset{
+              Chain:  "BNB",
+              Symbol: "RUNE-B1A",
+              Ticker: "RUNE",
+            },
+            Amount: 1,
+          },
+        },
+        Memo: "swap:RUNE-B1A::1",
+      },
+      OutTxs: []common.Tx{
+        common.Tx{
+          ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+          Chain:       "BNB",
+          FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+          ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+          Coins: []common.Coin{
+            {
+              Asset: common.Asset{
+                Chain:  "BNB",
+                Symbol: "BNB",
+                Ticker: "BNB",
+              },
+              Amount: 1,
+            },
+          },
+          Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+        },
+      },
+      Gas: nil,
+    },
+    Pool: common.Asset{
+      Chain:  "BNB",
+      Symbol: "BNB",
+      Ticker: "BNB",
+    },
+    PriceTarget:  124958592,
+    TradeSlip:    0.123023930000000000,
+    LiquidityFee: 7463556,
+  }
+
+  // reward 1 RUNE to BNB pool.
+  rewardEvent0 = models.EventReward{
+    Event: models.Event{
+      Time:   genesis.GenesisTime.Add(time.Second * (4 * blockSpeed)),
+      ID:     5,
+      Status: "Success",
+      Height: 5,
+      Type:   "rewards",
+      Gas:    nil,
+    },
+    PoolRewards: []models.PoolAmt{
+      {
+        Amount: 1,
+        Pool: common.Asset{
+          Chain:  "BNB",
+          Symbol: "BNB",
+          Ticker: "BNB",
+        },
+      },
+    },
+  }
+
 )
 
 type TimeScaleSuite struct {
@@ -579,6 +894,7 @@ func DbCleaner(c *C, store *Client) {
 		_, err := store.db.Exec(query)
 		if err != nil {
 			c.Fatal(err.Error())
+			//c.Log(err.Error())
 		}
 	}
 }

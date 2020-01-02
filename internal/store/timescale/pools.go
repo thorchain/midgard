@@ -1,7 +1,8 @@
 package timescale
 
 import (
-	"fmt"
+  "database/sql"
+  "fmt"
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -492,14 +493,14 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 		WHERE pool = $1
 		`, models.ModelEventsTable)
 
-	var assetDepth uint64
+	var assetDepth sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetDepth); err != nil {
 		return 0, errors.Wrap(err, "row.Scan failed")
 	}
 
-	return assetDepth, nil
+	return uint64(assetDepth.Int64), nil
 }
 
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
