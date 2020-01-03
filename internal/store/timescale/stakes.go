@@ -403,11 +403,13 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 }
 
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (uint64, error) {
-	query := `
-		SELECT MIN(stakes.time) FROM stakes
+	query := fmt.Sprintf(`
+		SELECT MIN(time)
+    FROM %v
 		WHERE from_address = $1
 		AND pool = $2
-		`
+    AND type = 'stake'
+		`, models.ModelEventsTable)
 
 	firstStaked := sql.NullTime{}
 	err := s.db.Get(&firstStaked, query, address.String(), asset.String())

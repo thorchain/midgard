@@ -4,8 +4,8 @@ import (
   "github.com/davecgh/go-spew/spew"
   "time"
 
-	"gitlab.com/thorchain/midgard/internal/common"
-	. "gopkg.in/check.v1"
+  "gitlab.com/thorchain/midgard/internal/common"
+  . "gopkg.in/check.v1"
 )
 
 func (s *TimeScaleSuite) TestStakeUnits(c *C) {
@@ -420,25 +420,24 @@ func (s *TimeScaleSuite) TestDateFirstStaked(c *C) {
 	c.Assert(dateFirstStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	stakeEvent0 := stakeEvent0
+	stakeEvent0.Time = time.Now()
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	dateFirstStaked, err = s.Store.dateFirstStaked(address, asset)
 	c.Assert(err, IsNil)
-	expectedDate := genesis.GenesisTime.Add(time.Second * blockSpeed).Unix()
-	c.Assert(dateFirstStaked, Equals, uint64(expectedDate))
+	c.Assert(dateFirstStaked, Equals, uint64(stakeEvent0.Time.Unix()))
 
 	// Additional stake
-	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		c.Fatal(err)
 	}
 
 	dateFirstStaked, err = s.Store.dateFirstStaked(address, asset)
 	c.Assert(err, IsNil)
-	expectedDate = genesis.GenesisTime.Add(time.Second * time.Duration(stakeEvent1Old.Height*blockSpeed)).Unix()
-	c.Assert(dateFirstStaked, Equals, uint64(expectedDate))
+	c.Assert(dateFirstStaked, Equals, uint64(stakeEvent0.Time.Unix()))
 }
 
 func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {
