@@ -353,13 +353,22 @@ func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
 	c.Assert(runeStakedTotal, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
 
 	runeStakedTotal, err = s.Store.runeStakedTotal(asset)
   c.Assert(err, IsNil)
-	c.Assert(runeStakedTotal, Equals, uint64(100))
+	c.Assert(runeStakedTotal, Equals, uint64(10))
+
+	// unstake
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	  c.Fatal(err)
+  }
+
+  runeStakedTotal, err = s.Store.runeStakedTotal(asset)
+  c.Assert(err, IsNil)
+  c.Assert(runeStakedTotal, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {

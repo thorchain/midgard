@@ -118,7 +118,7 @@ func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 	}
 
 	if !exists {
-		return PoolData{}, errors.New("asset does not exist")
+		return PoolData{}, errors.New("pool does not exist")
 	}
 
 	assetDepth, err := s.assetDepth(asset)
@@ -359,15 +359,14 @@ func (s *Client) GetPriceInRune(asset common.Asset) (float64, error) {
 	return 0, nil
 }
 
-func (s *Client) exists(asset common.Asset) (bool, error) {
-	staked, err := s.stakeTxCount(asset)
+func (s *Client) exists(pool common.Asset) (bool, error) {
+	staked, err := s.stakeTxCount(pool)
 	if err != nil {
 		return false, err
 	}
 	if staked > 0 {
 		return true, nil
 	}
-
 	return false, nil
 }
 
@@ -434,20 +433,18 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
 
 // runeStakedTotal - total amount of rune staked on the network for given pool.
 func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM stakes
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+		FROM %v
 		WHERE pool = $1
-	`
+    AND type = 'stake' OR type = 'unstake'
+	`, models.ModelEventsTable)
 
-	var runeStakedTotal uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&runeStakedTotal); err != nil {
-		return 0, err
-	}
-
-	return runeStakedTotal, nil
+	var runeStakedTotal sql.NullInt64
+	if err:= s.db.Get(&runeStakedTotal, stmnt, asset.String()); err != nil {
+    return 0, err
+  }
+	return uint64(runeStakedTotal.Int64), nil
 }
 
 // runeStakedTotal12m - total amount of rune staked on the network for given
