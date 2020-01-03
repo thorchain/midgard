@@ -1028,21 +1028,19 @@ func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 
 // stakeTxCount - number of stakes that occurred on a given pool
 func (s *Client) stakeTxCount(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT COUNT(event_id)
-		FROM stakes
+	stmnt := fmt.Sprintf(`
+		SELECT COUNT(id)
+		FROM %v
 		WHERE pool = $1
-		AND units > 0
-	`
+    AND type = 'stake'
+		AND stake_units > 0
+	`, models.ModelEventsTable)
 
-	var stateTxCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&stateTxCount); err != nil {
-		return 0, err
-	}
-
-	return stateTxCount, nil
+	var stateTxCount sql.NullInt64
+	if err := s.db.Get(&stateTxCount, stmnt, asset.String()); err != nil {
+    return 0, err
+  }
+	return uint64(stateTxCount.Int64), nil
 }
 
 // withdrawTxCount - number of unstakes that occurred on a given pool

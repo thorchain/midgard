@@ -146,7 +146,7 @@ func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
 	c.Assert(priceRune, Equals, 0.0)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -156,7 +156,6 @@ func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
 }
 
 func (s *TimeScaleSuite) TestExists(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	exists, err := s.Store.exists(asset)
@@ -164,7 +163,7 @@ func (s *TimeScaleSuite) TestExists(c *C) {
 	c.Assert(exists, Equals, false)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -1343,7 +1342,6 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestStakeTxCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	stakeCount, err := s.Store.stakeTxCount(asset)
@@ -1351,18 +1349,30 @@ func (s *TimeScaleSuite) TestStakeTxCount(c *C) {
 	c.Assert(stakeCount, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
 
+  stakeCount, err = s.Store.stakeTxCount(asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakeCount, Equals, uint64(1))
+
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
 	}
 
 	stakeCount, err = s.Store.stakeTxCount(asset)
   c.Assert(err, IsNil)
-	c.Assert(stakeCount, Equals, uint64(1))
+	c.Assert(stakeCount, Equals, uint64(2))
+
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	  c.Fatal(err)
+  }
+
+  stakeCount, err = s.Store.stakeTxCount(asset)
+  c.Assert(err, IsNil)
+  c.Assert(stakeCount, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestWithdrawTxCount(c *C) {
