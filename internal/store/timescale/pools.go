@@ -465,16 +465,16 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 	return uint64(runeStakedTotal.Int64), nil
 }
 
-func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
-	assetTotal, err := s.assetStakedTotal(asset)
+func (s *Client) poolStakedTotal(pool common.Asset) (uint64, error) {
+	assetTotal, err := s.assetStakedTotal(pool)
 	if err != nil {
 		return 0, err
 	}
-	runeTotal, err := s.runeStakedTotal(asset)
+	runeTotal, err := s.runeStakedTotal(pool)
 	if err != nil {
 		return 0, err
 	}
-	price, err := s.GetPriceInRune(asset)
+	price, err := s.GetPriceInRune(pool)
 	if err != nil {
 		return 0, err
 	}
@@ -688,22 +688,20 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 	return uint64(float64(sellVolume) * price), nil
 }
 
-func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM swaps
+func (s *Client) buyVolume(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND runeAmt > 0
-	`
+		AND type = 'swap'
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var buyVolume uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&buyVolume); err != nil {
-		return 0, err
-	}
-
-	return buyVolume, nil
+	var buyVolume sql.NullInt64
+	if err := s.db.Get(&buyVolume, stmnt, pool.String()); err != nil {
+    return 0, err
+  }
+	return uint64(buyVolume.Int64), nil
 }
 
 func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {

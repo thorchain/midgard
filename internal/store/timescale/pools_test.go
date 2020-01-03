@@ -913,7 +913,6 @@ func (s *TimeScaleSuite) TestSellVolume24hr(c *C) {
 }
 
 func (s *TimeScaleSuite) TestBuyVolume(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.buyVolume(asset)
@@ -921,19 +920,27 @@ func (s *TimeScaleSuite) TestBuyVolume(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeEvent4Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Assert(err, IsNil)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Assert(err, IsNil)
 	}
 
-	asset, _ = common.NewAsset("BNB.RUNE-B1A")
 	volume, err = s.Store.buyVolume(asset)
   c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(0))
+	c.Assert(volume, Equals, uint64(1))
+
+	// Swap
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Assert(err, IsNil)
+  }
+
+  volume, err = s.Store.buyVolume(asset)
+  c.Assert(err, IsNil)
+  c.Assert(volume, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestBuyVolume24hr(c *C) {
@@ -946,7 +953,7 @@ func (s *TimeScaleSuite) TestBuyVolume24hr(c *C) {
 
 	// Stake
 	if err := s.Store.CreateStakeRecord(stakeEvent4Old); err != nil {
-		log.Fatal(err)
+    c.Assert(err, IsNil)
 	}
 
 	// Swap
