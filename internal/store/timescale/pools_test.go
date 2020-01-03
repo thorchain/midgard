@@ -1152,19 +1152,31 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 	c.Assert(slipAverage, Equals, 0.06151196360588074)
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feeAverage, err := s.Store.sellFeeAverage(asset)
   c.Assert(err, IsNil)
 	c.Assert(feeAverage, Equals, uint64(0))
 
+	// stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
+  }
+
+  // stake
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	  c.Fatal(err)
 	}
+
+	feeAverage, err = s.Store.sellFeeAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(feeAverage, Equals, uint64(210000), Commentf("%v", feeAverage))
 }
 
 func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {

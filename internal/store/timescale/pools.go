@@ -1,13 +1,12 @@
 package timescale
 
 import (
-	"database/sql"
-	"fmt"
+  "database/sql"
+  "fmt"
+  "github.com/pkg/errors"
+  "gitlab.com/thorchain/midgard/internal/models"
 
-	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/internal/models"
-
-	"gitlab.com/thorchain/midgard/internal/common"
+  "gitlab.com/thorchain/midgard/internal/common"
 )
 
 type PoolData struct {
@@ -847,27 +846,25 @@ func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
 	return (sellSlipAverage + buySlipAverage) / 2, nil
 }
 
-func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT AVG(liquidity_fee)
-		FROM swaps
+func (s *Client) sellFeeAverage(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf( `
+		SELECT AVG(swap_liquidity_fee)
+		FROM %v
 		WHERE pool = $1
-		AND assetAmt > 0
-	`
+		AND asset_amount < 0
+	`, models.ModelEventsTable)
 
-	var sellFeeAverage uint64
-	row := s.db.QueryRow(stmnt, asset.String())
+	var sellFeeAverage sql.NullFloat64
+	if err := s.db.Get(&sellFeeAverage, stmnt, pool.String()); err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&sellFeeAverage); err != nil {
-		return 0, err
-	}
-
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.GetPriceInRune(pool)
 	if err != nil {
 		return 0, err
 	}
 
-	return uint64(float64(sellFeeAverage) * priceInRune), nil
+	return uint64(sellFeeAverage.Float64 * priceInRune), nil
 }
 
 func (s *Client) buyFeeAverage(pool common.Asset) (uint64, error) {
