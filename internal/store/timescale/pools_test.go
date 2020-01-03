@@ -407,13 +407,12 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 	c.Assert(poolStakedTotal, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
-
-	poolStakedTotal, err = s.Store.runeStakedTotal(asset)
+	poolStakedTotal, err = s.Store.poolStakedTotal(asset)
   c.Assert(err, IsNil)
-	c.Assert(poolStakedTotal, Equals, uint64(100))
+	c.Assert(poolStakedTotal, Equals, uint64(20))
 }
 
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
@@ -490,7 +489,6 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 
 }
 
-// TODO come back and review...
 func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
   // No stake
   asset, _ := common.NewAsset("BNB.BNB")
