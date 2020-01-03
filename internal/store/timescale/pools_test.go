@@ -375,17 +375,27 @@ func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {
 
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	runeStakedTotal := s.Store.runeStakedTotal12m(asset)
+	runeStakedTotal, err := s.Store.runeStakedTotal12m(asset)
+	c.Assert(err, IsNil)
 	c.Assert(runeStakedTotal, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Error(err)
 	}
 
-	runeStakedTotal, err := s.Store.runeStakedTotal(asset)
+	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStakedTotal, Equals, uint64(100))
+	c.Assert(runeStakedTotal, Equals, uint64(10))
+
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Error(err)
+  }
+
+  runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(runeStakedTotal, Equals, uint64(20))
+
 }
 
 func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
@@ -629,20 +639,28 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	runeDepth := s.Store.runeDepth12m(asset)
+	runeDepth, err := s.Store.runeDepth12m(asset)
+	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	runeDepth, err := s.Store.assetDepth12m(asset)
+	runeDepth, err = s.Store.assetDepth12m(asset)
   c.Assert(err, IsNil)
-	c.Assert(runeDepth, Equals, uint64(10))
+	c.Assert(runeDepth, Equals, uint64(1))
+
+	// Another stake
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+  runeDepth, err = s.Store.assetDepth12m(asset)
+  c.Assert(err, IsNil)
+  c.Assert(runeDepth, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestAssetSwapTotal(c *C) {

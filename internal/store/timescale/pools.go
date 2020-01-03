@@ -441,30 +441,28 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 	`, models.ModelEventsTable)
 
 	var runeStakedTotal sql.NullInt64
-	if err:= s.db.Get(&runeStakedTotal, stmnt, asset.String()); err != nil {
-    return 0, err
-  }
+	if err := s.db.Get(&runeStakedTotal, stmnt, asset.String()); err != nil {
+		return 0, err
+	}
 	return uint64(runeStakedTotal.Int64), nil
 }
 
 // runeStakedTotal12m - total amount of rune staked on the network for given
 // pool in the last 12 months.
-func (s *Client) runeStakedTotal12m(asset common.Asset) uint64 {
-	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM stakes
+func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+    FROM %v
 		WHERE pool = $1
+		AND type = 'stake'
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
-		`
+		`, models.ModelEventsTable)
 
-	var runeStakedTotal uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&runeStakedTotal); err != nil {
-		return 0
+	var runeStakedTotal sql.NullInt64
+	if err := s.db.Get(&runeStakedTotal, stmnt, asset.String()); err != nil {
+		return 0, err
 	}
-
-	return runeStakedTotal
+	return uint64(runeStakedTotal.Int64), nil
 }
 
 func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
@@ -535,11 +533,14 @@ func (s *Client) runeDepth(pool common.Asset) (uint64, error) {
 	return uint64(runeDepth.Int64), nil
 }
 
-func (s *Client) runeDepth12m(asset common.Asset) uint64 {
-	stakes := s.runeStakedTotal12m(asset)
+func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
+	stakes, err := s.runeStakedTotal12m(asset)
+	if err != nil {
+		return 0, err
+	}
 	swaps := s.runeSwapTotal12m(asset)
 	depth := int64(stakes) + swaps
-	return uint64(depth)
+	return uint64(depth), nil
 }
 
 // runeSwapTotal - total amount rune swapped through the pool
@@ -786,8 +787,8 @@ func (s *Client) buyTxAverage(pool common.Asset) (uint64, error) {
 
 	var avg sql.NullFloat64
 	if err := s.db.Get(&avg, stmnt, pool.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 	return uint64(avg.Float64), nil
 }
 
@@ -832,8 +833,8 @@ func (s *Client) buySlipAverage(pool common.Asset) (float64, error) {
 
 	var buySlipAverage sql.NullFloat64
 	if err := s.db.Get(&buySlipAverage, stmnt, pool.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 	return buySlipAverage.Float64, nil
 }
 
@@ -1035,8 +1036,8 @@ func (s *Client) stakeTxCount(asset common.Asset) (uint64, error) {
 
 	var stateTxCount sql.NullInt64
 	if err := s.db.Get(&stateTxCount, stmnt, asset.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 	return uint64(stateTxCount.Int64), nil
 }
 
@@ -1153,16 +1154,22 @@ func (s *Client) runeROI(asset common.Asset) (float64, error) {
 	return roi, nil
 }
 
-func (s *Client) runeROI12(asset common.Asset) float64 {
-	depth := float64(s.runeDepth12m(asset))
-	staked := float64(s.runeStakedTotal12m(asset))
+func (s *Client) runeROI12(asset common.Asset) (float64, error) {
+	depth, err := s.runeDepth12m(asset)
+	if err != nil {
+		return 0, err
+	}
+	staked, err := s.runeStakedTotal12m(asset)
+	if err != nil {
+		return 0, err
+	}
 
 	var roi float64
 	if staked > 0 {
-		roi = (depth - staked) / staked
+		roi = float64((depth - staked) / staked)
 	}
 
-	return roi
+	return roi, nil
 }
 
 func (s *Client) poolROI(asset common.Asset) (float64, error) {
@@ -1188,7 +1195,10 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	runeRoi := s.runeROI12(asset)
+	runeRoi, err := s.runeROI12(asset)
+	if err != nil {
+		return 0, err
+	}
 
 	var roi float64
 	if runeRoi > 0 {
