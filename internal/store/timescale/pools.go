@@ -886,13 +886,13 @@ func (s *Client) buyFeeAverage(pool common.Asset) (uint64, error) {
 		SELECT AVG(swap_liquidity_fee)
 		FROM %v
 		WHERE pool = $1
-		AND rune_amount < 0
+		AND asset_amount > 0
 	`, models.ModelEventsTable)
 
 	var buyFeeAverage sql.NullFloat64
 	if err := s.db.Get(&buyFeeAverage, stmnt, pool.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 
 	return uint64(buyFeeAverage.Float64), nil
 }
@@ -934,22 +934,19 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(float64(sellFeesTotal) * priceInRune), nil
 }
 
-func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(liquidity_fee)
-		FROM swaps
+func (s *Client) buyFeesTotal(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(swap_liquidity_fee)
+		FROM %v
 		WHERE pool = $1
-		AND runeAmt > 0
-	`
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var buyFeesTotal uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&buyFeesTotal); err != nil {
+	var buyFeesTotal sql.NullInt64
+	if err := s.db.Get(&buyFeesTotal, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
-
-	return buyFeesTotal, nil
+	return uint64(buyFeesTotal.Int64), nil
 }
 
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
@@ -984,21 +981,20 @@ func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT COUNT(swap_liquidity_fee)
-		FROM events
-		WHERE pool = $1
-		AND rune_amount < 0
-	`
+	stmnt := fmt.Sprintf(`
+    SELECT COUNT(swap_liquidity_fee)
+    FROM %v
+    WHERE type = 'swap'
+    AND pool = $1
+    AND asset_amount > 0
+  `, models.ModelEventsTable)
 
-	var buyAssetCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&buyAssetCount); err != nil {
+	var buyAssetCount sql.NullInt64
+	if err := s.db.Get(&buyAssetCount, stmnt, asset.String()); err != nil {
 		return 0, err
 	}
 
-	return buyAssetCount, nil
+	return uint64(buyAssetCount.Int64), nil
 }
 
 func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {

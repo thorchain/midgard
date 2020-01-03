@@ -1171,15 +1171,34 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 	}
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feesTotal, err := s.Store.buyFeesTotal(asset)
   c.Assert(err, IsNil)
-
 	c.Assert(feesTotal, Equals, uint64(0))
+
+  // stake
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  // swap RUNE in, asset out
+  if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  feesTotal, err = s.Store.buyFeesTotal(asset)
+  c.Assert(err, IsNil)
+  c.Assert(feesTotal, Equals, uint64(0))
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  feesTotal, err = s.Store.buyFeesTotal(asset)
+  c.Assert(err, IsNil)
+  c.Assert(feesTotal, Equals, uint64(10000))
 }
 
 // TODO More data requested
@@ -1216,14 +1235,32 @@ func (s *TimeScaleSuite) TestSellAssetCount(c *C) {
 	c.Assert(assetCount, Equals, uint64(1))
 }
 
-// TODO this needs to be reviewed and expanded on once clear on formula.
 func (s *TimeScaleSuite) TestBuyAssetCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetCount, err := s.Store.buyAssetCount(asset)
   c.Assert(err, IsNil)
 	c.Assert(assetCount, Equals, uint64(0))
+
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  assetCount, err = s.Store.buyAssetCount(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetCount, Equals, uint64(0))
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  assetCount, err = s.Store.buyAssetCount(asset)
+  c.Assert(err, IsNil)
+  c.Assert(assetCount, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestSwappingTxCount(c *C) {
