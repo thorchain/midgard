@@ -705,22 +705,20 @@ func (s *Client) buyVolume(pool common.Asset) (uint64, error) {
 }
 
 func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM swaps
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND runeAmt > 0
+    AND type = 'swap'
+		AND asset_amount > 0
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-	`
+	`, models.ModelEventsTable)
 
-	var buyVolume uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&buyVolume); err != nil {
-		return 0, err
-	}
-
-	return buyVolume, nil
+	var buyVolume sql.NullInt64
+	if err := s.db.Get(&buyVolume, stmnt, asset.String()); err != nil {
+    return 0, err
+  }
+	return uint64(buyVolume.Int64), nil
 }
 
 func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
