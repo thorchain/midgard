@@ -747,7 +747,7 @@ var (
       Ticker: "BNB",
     },
     PriceTarget:  1,
-    TradeSlip:    0.123023930000000000,
+    TradeSlip:    0.123,
     LiquidityFee: 10000,
   }
 
@@ -803,7 +803,7 @@ var (
       Ticker: "BNB",
     },
     PriceTarget:  124958592,
-    TradeSlip:    0.123023930000000000,
+    TradeSlip:    0.123,
     LiquidityFee: 10000,
   }
 

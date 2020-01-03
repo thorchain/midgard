@@ -1069,6 +1069,21 @@ func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
 	slipAverage, err := s.Store.buySlipAverage(asset)
   c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.0)
+
+  // stake
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  // swap Out RUNE In BNB
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  slipAverage, err = s.Store.buySlipAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(slipAverage > 0.123 && slipAverage < 0.1234,Equals , true, Commentf("%v", slipAverage))
+
 }
 
 func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {

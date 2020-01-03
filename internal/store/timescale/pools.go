@@ -17,7 +17,7 @@ type PoolData struct {
 	AssetROI         float64
 	AssetStakedTotal uint64
 	BuyAssetCount    uint64
-	BuyFeeAverage    uint64
+	BuyFeeAverage    uint64 // TODO should this be a float.
 	BuyFeesTotal     uint64
 	BuySlipAverage   float64
 	BuyTxAverage     uint64
@@ -827,22 +827,19 @@ func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
 	return sellSlipAverage, nil
 }
 
-func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
-	stmnt := `
-		SELECT AVG(trade_slip)
-		FROM swaps
+func (s *Client) buySlipAverage(pool common.Asset) (float64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT AVG(swap_trade_slip)
+		FROM %v
 		WHERE pool = $1
-		AND runeAmt > 0
-	`
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var buySlipAverage float64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&buySlipAverage); err != nil {
-		return 0, err
-	}
-
-	return buySlipAverage, nil
+	var buySlipAverage sql.NullFloat64
+	if err := s.db.Get(&buySlipAverage, stmnt, pool.String()); err != nil {
+    return 0, err
+  }
+	return buySlipAverage.Float64, nil
 }
 
 func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
