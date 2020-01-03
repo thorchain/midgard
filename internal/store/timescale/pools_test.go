@@ -15,31 +15,29 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	c.Check(len(pool), Equals, 0)
 
 	// Test with 1 stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
 	pool, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
 	c.Check(len(pool), Equals, 1)
-	c.Assert(pool[0].Symbol.String(), Equals, "BNB")
-	c.Assert(pool[0].Ticker.String(), Equals, "BNB")
-	c.Assert(pool[0].Chain.String(), Equals, "BNB")
+	c.Assert(pool[0].String(), Equals, "BNB.BNB")
 
 	// Test with a another staked asset
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	  c.Assert(err, IsNil)
 	}
 
 	pool, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
 	c.Check(len(pool), Equals, 2)
 
-	c.Assert(pool[0].String(), Equals, "BNB.BNB")
-	c.Assert(pool[1].String(), Equals, "BNB.TOML-4BC")
+	c.Assert(pool[1].String(), Equals, "BNB.BNB")
+	c.Assert(pool[0].String(), Equals, "BNB.BOLT-014")
 
 	// Test with an unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -47,9 +45,7 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(len(pool), Equals, 1)
 
-	c.Assert(pool[0].Symbol.String(), Equals, "BNB")
-	c.Assert(pool[0].Ticker.String(), Equals, "BNB")
-	c.Assert(pool[0].Chain.String(), Equals, "BNB")
+	c.Assert(pool[0].String(), Equals, "BNB.BOLT-014")
 }
 
 func (s *TimeScaleSuite) TestGetPoolData(c *C) {

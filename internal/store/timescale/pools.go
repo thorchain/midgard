@@ -76,17 +76,17 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 func (s *Client) GetPools() ([]common.Asset, error) {
 	var pools []common.Asset
 
-	query := `
+	stmnt := fmt.Sprintf(`
 		SELECT sub.pool
 		From (
-			SELECT pool, SUM(units) AS total_units
-			FROM stakes
+			SELECT pool, SUM(stake_units) AS total_units
+			FROM %v
 			GROUP BY pool
 		) AS sub
 		WHERE sub.total_units > 0
-	`
+	`, models.ModelEventsTable)
 
-	rows, err := s.db.Queryx(query)
+	rows, err := s.db.Queryx(stmnt)
 	if err != nil {
 		return nil, err
 	}
