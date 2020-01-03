@@ -573,31 +573,34 @@ func (s *TimeScaleSuite) TestGetPools(c *C) {
 	c.Assert(len(pools), Equals, 0)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	pools, err = s.Store.getPools(address)
   c.Assert(err, IsNil)
 	c.Assert(len(pools), Equals, 1)
+	c.Assert(pools[0].String(), Equals, "BNB.BNB")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		c.Fatal(err)
 	}
 
 	pools, err = s.Store.getPools(address)
   c.Assert(err, IsNil)
 	c.Assert(len(pools), Equals, 2)
+	c.Assert(pools[1].String(), Equals, "BNB.BOLT-014")
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	pools, err = s.Store.getPools(address)
   c.Assert(err, IsNil)
 	c.Assert(len(pools), Equals, 1)
+  c.Assert(pools[0].String(), Equals, "BNB.BOLT-014")
 }
 
 func (s *TimeScaleSuite) TestTotalEarned(c *C) {

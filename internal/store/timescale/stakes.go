@@ -471,12 +471,12 @@ func (s *Client) totalStaked(address common.Address) (uint64, error) {
 }
 
 func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
-	query := `
-		SELECT pool, SUM(units) as units
-		FROM stakes
+	query := fmt.Sprintf(`
+		SELECT pool, SUM(stake_units) as units
+		FROM %v
 		WHERE from_address = $1
 		GROUP BY pool
-	`
+	`, models.ModelEventsTable)
 
 	rows, err := s.db.Queryx(query, address.String())
 	if err != nil {
