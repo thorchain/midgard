@@ -778,22 +778,20 @@ func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
 	return uint64(avg * price), nil
 }
 
-func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT AVG(runeAmt)
-		FROM swaps
+func (s *Client) buyTxAverage(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT AVG(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND runeAmt > 0
-	`
+    AND type = 'swap'
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var avg uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&avg); err != nil {
-		return 0, errors.Wrap(err, "failed to row.Scan")
-	}
-
-	return avg, nil
+	var avg sql.NullFloat64
+	if err := s.db.Get(&avg, stmnt, pool.String()); err != nil {
+    return 0, err
+  }
+	return uint64(avg.Float64), nil
 }
 
 func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {

@@ -1010,13 +1010,31 @@ func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestBuyTxAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	txAverage, err := s.Store.buyTxAverage(asset)
   c.Assert(err, IsNil)
-
 	c.Assert(txAverage, Equals, uint64(0))
+
+  if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  txAverage, err = s.Store.buyTxAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(txAverage, Equals, uint64(1))
+
+  if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  txAverage, err = s.Store.buyTxAverage(asset)
+  c.Assert(err, IsNil)
+  c.Assert(txAverage, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
