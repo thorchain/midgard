@@ -45,19 +45,23 @@ func (s *TimeScaleSuite) TestGetTimeOfBlock(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetBlockHeight(c *C) {
-	// Create Genesis
-	_, err := s.Store.CreateGenesis(genesis)
-	if err != nil {
+  asset, _ := common.NewAsset("BNB.BNB")
+
+  // Single stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	asset, _ := common.NewAsset("BNB.BNB")
 	height, err := s.Store.getBlockHeight(asset)
 	c.Assert(err, IsNil)
-	c.Assert(height, Equals, uint64(1))
+	c.Assert(height, Equals, uint64(1), Commentf("%v", height))
+
+	// Another stake
+  if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    log.Fatal(err)
+  }
+
+  height, err = s.Store.getBlockHeight(asset)
+  c.Assert(err, IsNil)
+  c.Assert(height, Equals, uint64(1), Commentf("%v", height))
 }

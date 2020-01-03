@@ -1,7 +1,8 @@
 package timescale
 
 import (
-	"fmt"
+  "database/sql"
+  "fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -53,23 +54,19 @@ func (s *Client) getGenesis() (time.Time, error) {
 	return genesisTime, nil
 }
 
-func (s *Client) getBlockHeight(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT MAX(events.height)
-			FROM events
-		WHERE events.id = (
-		    SELECT MAX(event_id)
-		    	FROM coins
-		    WHERE coins.ticker = $1)`
+func (s *Client) getBlockHeight(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+    SELECT MAX(height)
+    FROM %v
+    WHERE pool = $1
+  `, models.ModelEventsTable)
 
-	var blockHeight uint64
-	row := s.db.QueryRow(stmnt, asset.Ticker.String())
+	var blockHeight sql.NullInt64
+	if err := s.db.Get(&blockHeight, stmnt, pool.String()); err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&blockHeight); err != nil {
-		return 0, err
-	}
-
-	return blockHeight, nil
+	return uint64(blockHeight.Int64), nil
 }
 
 func (s *Client) CreateGenesis(genesis models.Genesis) (int64, error) {
