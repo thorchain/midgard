@@ -367,40 +367,29 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 }
 
 func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
-	}
+  address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+
+  // no stakes
+  eventsForAddress ,err := s.Store.eventsForAddress(address)
+  c.Assert(err,IsNil)
+  c.Assert(len(eventsForAddress), Equals, 0)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
-
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	eventsForAddress ,err := s.Store.eventsForAddress(address)
+	eventsForAddress ,err = s.Store.eventsForAddress(address)
   c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddress), Equals, 1)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+    c.Fatal(err)
 	}
 
 	eventsForAddress ,err = s.Store.eventsForAddress(address)
   c.Assert(err,IsNil)
 	c.Assert(len(eventsForAddress), Equals, 2)
-
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		log.Fatal(err)
-	}
-
-	eventsForAddress ,err = s.Store.eventsForAddress(address)
-  c.Assert(err,IsNil)
-	c.Assert(len(eventsForAddress), Equals, 1)
 }
 
 func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
