@@ -802,36 +802,63 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 }
 
 func (s *TimeScaleSuite) TestEvents(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
-	}
+  // no stake
+  eventId := uint64(1)
+  events ,err := s.Store.events(eventId, "stake")
+  c.Assert(err,IsNil)
+  c.Assert(events.StakeUnits, Equals, int64(0))
+  c.Assert(events.Slip, Equals, float64(0))
+  c.Assert(events.Fee, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
 	}
 
-	eventId := uint64(1)
-	events ,err := s.Store.events(eventId, "stake")
+	eventId = uint64(1)
+	events ,err = s.Store.events(eventId, "stake")
   c.Assert(err,IsNil)
-
-	c.Assert(events.StakeUnits, Equals, uint64(100))
+	c.Assert(events.StakeUnits, Equals, int64(100))
 	c.Assert(events.Slip, Equals, float64(0))
 	c.Assert(events.Fee, Equals, uint64(0))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+    c.Fatal(err)
 	}
 
 	eventId = uint64(2)
 	events ,err = s.Store.events(eventId, "stake")
   c.Assert(err,IsNil)
-
-	c.Assert(events.StakeUnits, Equals, uint64(100))
+	c.Assert(events.StakeUnits, Equals, int64(100))
 	c.Assert(events.Slip, Equals, float64(0))
 	c.Assert(events.Fee, Equals, uint64(0))
+
+	// swap
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	  c.Fatal(err)
+  }
+
+  eventId = uint64(4)
+  events ,err = s.Store.events(eventId, "swap")
+  c.Assert(err,IsNil)
+  c.Assert(events.StakeUnits, Equals, int64(0))
+  c.Assert(events.Slip, Equals, float64(0.123))
+  c.Assert(events.Fee, Equals, uint64(10000))
+
+  // unstake
+  unstakeEvent0 := unstakeEvent0
+  unstakeEvent0.ID = 5
+  if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
+  }
+
+  eventId = uint64(5)
+  events ,err = s.Store.events(eventId, "unstake")
+  c.Assert(err,IsNil)
+  c.Assert(events.StakeUnits, Equals, int64(-100))
+  c.Assert(events.Slip, Equals, float64(0))
+  c.Assert(events.Fee, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestTxDate(c *C) {

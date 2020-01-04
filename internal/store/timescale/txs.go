@@ -414,6 +414,7 @@ func (s *Client) options(eventId uint64, eventType string) (models.Options, erro
 	return options, nil
 }
 
+// todo add reward?
 func (s *Client) events(eventId uint64, eventType string) (models.Events, error) {
 	switch eventType {
 	case "swap":
@@ -427,30 +428,38 @@ func (s *Client) events(eventId uint64, eventType string) (models.Events, error)
 	return models.Events{}, nil
 }
 
+// todo write direct test
 func (s *Client) swapEvents(eventId uint64) (models.Events, error) {
-	stmnt := `
-		SELECT swaps.trade_slip, swaps.liquidity_fee
-			FROM swaps
-		WHERE event_id = $1`
+	stmnt := fmt.Sprintf(`
+		SELECT swap_trade_slip, swap_liquidity_fee
+			FROM %v
+		WHERE event_id = $1`, models.ModelEventsTable)
 
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&events.Slip, &events.Fee); err != nil {
+	  if err == sql.ErrNoRows {
+      return models.Events{}, nil
+    }
 		return models.Events{}, err
 	}
 
 	return events, nil
 }
 
+// TODO write direct tests
 func (s *Client) stakeEvents(eventId uint64) (models.Events, error) {
-	stmnt := `
-		SELECT stakes.units
-			FROM stakes
-		WHERE event_id = $1`
+	stmnt := fmt.Sprintf(`
+		SELECT stake_units
+			FROM %v
+		WHERE event_id = $1`,models.ModelEventsTable)
 
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&events.StakeUnits); err != nil {
+	  if err == sql.ErrNoRows {
+      return models.Events{}, nil
+    }
 		return models.Events{}, err
 	}
 
