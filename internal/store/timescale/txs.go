@@ -1,60 +1,60 @@
 package timescale
 
 import (
+  "database/sql"
   "fmt"
   "github.com/jmoiron/sqlx"
   "github.com/pkg/errors"
 
   "gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/models"
+  "gitlab.com/thorchain/midgard/internal/models"
 )
 
-
 func (s *Client) CreateTxRecords(record models.Event) error {
-  // Ingest InTx
-  err := s.processTxRecord("in", record, record.InTx)
-  if err != nil {
-    return err
-  }
+	// Ingest InTx
+	err := s.processTxRecord("in", record, record.InTx)
+	if err != nil {
+		return err
+	}
 
-  // Ingest OutTxs
-  err = s.processTxsRecord("out", record, record.OutTxs)
-  if err != nil {
-    return err
-  }
-  return nil
+	// Ingest OutTxs
+	err = s.processTxsRecord("out", record, record.OutTxs)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Client) processTxsRecord(direction string, parent models.Event, records common.Txs) error {
-  for _, record := range records {
-    if err := record.IsValid(); err == nil {
-      _, err := s.createTxRecord(parent, record, direction)
-      if err != nil {
-        return err
-      }
-    }
-  }
-  return nil
+	for _, record := range records {
+		if err := record.IsValid(); err == nil {
+			_, err := s.createTxRecord(parent, record, direction)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (s *Client) processTxRecord(direction string, parent models.Event, record common.Tx) error {
-  // Ingest InTx
-  if err := record.IsValid(); err == nil {
-    _, err := s.createTxRecord(parent, record, direction)
-    if err != nil {
-      return err
-    }
-  }
-  return nil
+	// Ingest InTx
+	if err := record.IsValid(); err == nil {
+		_, err := s.createTxRecord(parent, record, direction)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
-  var gasAmount int64
-  if len(record.Gas) > 0 {
-    gasAmount = record.Gas[0].Amount
-  }
+	var gasAmount int64
+	if len(record.Gas) > 0 {
+		gasAmount = record.Gas[0].Amount
+	}
 
-  query := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
 			tx_hash,
@@ -67,23 +67,23 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
       gas_amount
 		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING event_id`, models.ModelTxsTable)
 
-  results, err := s.db.Exec(query,
-    parent.Time,
-    record.ID,
-    parent.ID,
-    direction,
-    record.Chain,
-    record.FromAddress,
-    record.ToAddress,
-    record.Memo,
-    gasAmount,
-  )
+	results, err := s.db.Exec(query,
+		parent.Time,
+		record.ID,
+		parent.ID,
+		direction,
+		record.Chain,
+		record.FromAddress,
+		record.ToAddress,
+		record.Memo,
+		gasAmount,
+	)
 
-  if err != nil {
-    return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")
-  }
+	if err != nil {
+		return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")
+	}
 
-  return results.RowsAffected()
+	return results.RowsAffected()
 }
 
 func (s *Client) GetTxData(address common.Address) ([]models.TxDetails, error) {
@@ -273,40 +273,26 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 }
 
 func (s *Client) eventPool(eventId uint64) (common.Asset, error) {
-	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.ticker
-			FROM coins
+	stmnt := fmt.Sprintf(`
+		SELECT pool
+    FROM %v
 		WHERE event_id = $1
-		AND ticker != 'RUNE'`
+		`, models.ModelEventsTable)
 
-	rows, err := s.db.Queryx(stmnt, eventId)
-	if err != nil {
-		return common.Asset{}, err
-	}
+	var p sql.NullString
+	if err := s.db.Get(&p, stmnt, eventId); err != nil {
+	  if err == sql.ErrNoRows {
+      return common.Asset{}, nil
+    }
+    return common.Asset{}, err
+  }
 
-	var asset common.Asset
-	for rows.Next() {
-		results := make(map[string]interface{})
-		err := rows.MapScan(results)
-		if err != nil {
-			return common.Asset{}, err
-		}
+	pool, err := common.NewAsset(p.String)
+  if err != nil {
+    return common.Asset{}, err
+  }
 
-		c, _ := results["chain"].(string)
-		chain, _ := common.NewChain(c)
-
-		sy, _ := results["symbol"].(string)
-		symbol, _ := common.NewSymbol(sy)
-
-		t, _ := results["ticker"].(string)
-		ticker, _ := common.NewTicker(t)
-
-		asset.Chain = chain
-		asset.Symbol = symbol
-		asset.Ticker = ticker
-	}
-
-	return asset, nil
+	return pool, nil
 }
 
 func (s *Client) inTx(eventId uint64) (models.TxData, error) {

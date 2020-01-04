@@ -567,7 +567,7 @@ var (
 	stakeEvent1 = models.EventStake{
 		Event: models.Event{
 			Time:   time.Now(),
-			ID:     1,
+			ID:     2,
 			Status: "Success",
 			Height: 1,
 			Type:   "stake",

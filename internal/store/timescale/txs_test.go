@@ -1,10 +1,10 @@
 package timescale
 
 import (
-	"log"
+  "log"
 
-	"gitlab.com/thorchain/midgard/internal/common"
-	. "gopkg.in/check.v1"
+  "gitlab.com/thorchain/midgard/internal/common"
+  . "gopkg.in/check.v1"
 )
 
 func (s *TimeScaleSuite) TestGetTxData(c *C) {
@@ -521,36 +521,31 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 }
 
 func (s *TimeScaleSuite) TestEventPool(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
-	}
+  // no stakes
+  eventId := uint64(1)
+  eventPool ,err := s.Store.eventPool(eventId)
+  c.Assert(err,IsNil)
+  c.Assert(eventPool.String(), Equals, "")
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
 
-	eventId := uint64(1)
-	eventPool ,err := s.Store.eventPool(eventId)
+	eventId = uint64(1)
+	eventPool ,err = s.Store.eventPool(eventId)
   c.Assert(err,IsNil)
-
-	c.Assert(eventPool.Chain.String(), Equals, "BNB")
-	c.Assert(eventPool.Symbol.String(), Equals, "BNB")
-	c.Assert(eventPool.Ticker.String(), Equals, "BNB")
+	c.Assert(eventPool.String(), Equals, "BNB.BNB")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+		c.Fatal(err)
 	}
 
 	eventId = uint64(2)
 	eventPool ,err = s.Store.eventPool(eventId)
   c.Assert(err,IsNil)
-
-	c.Assert(eventPool.Chain.String(), Equals, "BNB")
-	c.Assert(eventPool.Symbol.String(), Equals, "TOML-4BC")
-	c.Assert(eventPool.Ticker.String(), Equals, "TOML")
+	c.Assert(eventPool.String(), Equals, "BNB.BOLT-014")
 }
 
 func (s *TimeScaleSuite) TestInTx(c *C) {
