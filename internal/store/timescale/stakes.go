@@ -66,11 +66,13 @@ func (s *Client) CreateStakeRecord(record models.EventStake) error {
 
 // GetStakerAddresses returns am array of all the staker addresses seen by the api
 func (s *Client) GetStakerAddresses() ([]common.Address, error) {
-	query := `
-		SELECT from_address, SUM(units) AS units
-		FROM stakes GROUP BY from_address
-		WHERE units > 0
-	`
+	query := fmt.Sprintf(`
+		SELECT from_address
+		FROM %v
+		WHERE stake_units > 0
+    AND type = 'stake'
+    GROUP BY from_address
+	`, models.ModelEventsTable)
 
 	rows, err := s.db.Queryx(query)
 	if err != nil {

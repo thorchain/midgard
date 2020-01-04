@@ -679,3 +679,21 @@ func (s *TimeScaleSuite) TestTotalROI(c *C) {
   c.Assert(err, IsNil)
 	c.Assert(totalROI, Equals, float64(0))
 }
+
+func (s *TimeScaleSuite) TestGetStakerAddresses(c *C) {
+  // no stakers
+  addresses, err := s.Store.GetStakerAddresses()
+  c.Assert(err,IsNil)
+  c.Assert(len(addresses), Equals, 0)
+
+  // stake
+  if err := s.Store.CreateStakeRecord(stakeEvent0);err !=nil {
+    c.Fatal(err)
+  }
+
+  addresses, err = s.Store.GetStakerAddresses()
+  c.Assert(err,IsNil)
+  c.Assert(len(addresses), Equals, 1)
+  c.Assert(addresses[0].String(),Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+}
+
