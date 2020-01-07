@@ -229,15 +229,14 @@ func (s *Client) monthlyTx() (uint64, error) {
 }
 
 func (s *Client) totalTx() (uint64, error) {
-	stmnt := `SELECT COALESCE(COUNT(tx_hash), 0) FROM txs`
-	var totalTx uint64
-	row := s.db.QueryRow(stmnt)
+	stmnt := fmt.Sprintf(`SELECT COALESCE(COUNT(tx_hash), 0) FROM %v`, models.ModelTxsTable)
+	var totalTx sql.NullInt64
+	err := s.db.Get(&totalTx, stmnt)
+  if err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&totalTx); err != nil {
-		return 0, err
-	}
-
-	return totalTx, nil
+	return uint64(totalTx.Int64), nil
 }
 
 func (s *Client) totalVolume24hr() (uint64, error) {
