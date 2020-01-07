@@ -9,13 +9,14 @@
     "enable_scan": true,
     "scan_start_pos": 1,
     "proxied_whitelisted_endpoints": [
-      "pool_addresses"
+      "pool_addresses",
+      "events/tx/:id"
     ]
   },
   "timescale": {
     "host": "localhost",
     "port": 5432,
-    "user_name": "midgard",
+    "user_name": "postgres",
     "password": "password",
     "database": "midgard",
     "sslmode": "disable",
