@@ -581,21 +581,20 @@ func (s *Client) runeSwapTotal12m(asset common.Asset) int64 {
 }
 
 // assetSwapTotal returns the sum of asset_amont for all
-func (s *Client) assetSwapTotal(asset common.Asset) int64 {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM swaps
+func (s *Client) assetSwapTotal(asset common.Asset) (int64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-	`
+    AND type = 'swap'
+	`, models.ModelEventsTable)
 
-	var total int64
-	row := s.db.QueryRow(stmnt, asset.String())
+	var total sql.NullInt64
+	if err := s.db.Get(&total, stmnt, asset.String()); err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&total); err != nil {
-		return 0
-	}
-
-	return total
+	return total.Int64, nil
 }
 
 func (s *Client) assetSwapTotal12m(pool common.Asset) (int64, error) {

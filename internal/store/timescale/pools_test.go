@@ -659,26 +659,25 @@ func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
 
 func (s *TimeScaleSuite) TestAssetSwapTotal(c *C) {
 
-  c.Skip("Not sure if this is needed anymore")
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	swapTotal := s.Store.assetSwapTotal(asset)
+	swapTotal, err := s.Store.assetSwapTotal(asset)
+	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
-	swapTotal = s.Store.assetSwapTotal(asset)
-	c.Assert(swapTotal, Equals, int64(20000000))
+	swapTotal, err = s.Store.assetSwapTotal(asset)
+  c.Assert(err, IsNil)
+	c.Assert(swapTotal, Equals, int64(1))
 }
 
 func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
