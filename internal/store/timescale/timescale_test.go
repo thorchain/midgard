@@ -551,6 +551,16 @@ var (
 					},
 				},
 				Memo: "stake:BNB",
+				Gas: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BNB",
+							Ticker: "BNB",
+						},
+						Amount: 1,
+					},
+				},
 			},
 			OutTxs: nil,
 			Gas:    nil,

@@ -1,10 +1,9 @@
 package timescale
 
 import (
-  "log"
-
   "gitlab.com/thorchain/midgard/internal/common"
   . "gopkg.in/check.v1"
+  "log"
 )
 
 func (s *TimeScaleSuite) TestGetTxData(c *C) {
@@ -45,9 +44,7 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -85,9 +82,7 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	c.Assert(txData[1].Out.Address, Equals, "")
 	c.Assert(txData[1].Out.Memo, Equals, "")
 	c.Assert(txData[1].Out.TxID, Equals, "")
-	c.Assert(txData[1].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[1].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[1].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[1].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[1].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[1].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[1].Options.Asymmetry, Equals, float64(0))
@@ -134,9 +129,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -176,9 +169,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -225,9 +216,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -266,9 +255,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -314,9 +301,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -355,9 +340,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
 	c.Assert(txData[0].Out.TxID, Equals, "")
-	c.Assert(txData[0].Gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(txData[0].Gas.Asset.Ticker.IsEmpty(), Equals, true)
+	c.Assert(txData[0].Gas.Chain.IsEmpty(), Equals, true)
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
@@ -711,50 +694,23 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGas(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
-	}
-
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	eventId := uint64(1)
-	gas ,err := s.Store.gas(eventId)
+  // no stakes
+  eventId := uint64(0)
+  gas ,err := s.Store.gas(eventId)
   c.Assert(err,IsNil)
+  c.Assert(gas.Chain.IsEmpty(), Equals, true)
 
-	c.Assert(gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Ticker.IsEmpty(), Equals, true)
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+  // Single stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	eventId = uint64(2)
+	eventId = uint64(1)
 	gas ,err = s.Store.gas(eventId)
   c.Assert(err,IsNil)
+	c.Assert(gas.Chain.IsEmpty(), Equals, false)
+  c.Assert(gas.Amount, Equals, uint64(1))
 
-	c.Assert(gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Ticker.IsEmpty(), Equals, true)
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		log.Fatal(err)
-	}
-
-	eventId = uint64(4)
-	gas ,err = s.Store.gas(eventId)
-  c.Assert(err,IsNil)
-
-	c.Assert(gas.Asset.Chain.String(), Equals, "BNB")
-	c.Assert(gas.Asset.Symbol.String(), Equals, "BNB")
-	c.Assert(gas.Asset.Ticker.String(), Equals, "BNB")
-	c.Assert(gas.Amount, Equals, uint64(37500))
 }
 
 func (s *TimeScaleSuite) TestOptions(c *C) {

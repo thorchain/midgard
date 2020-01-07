@@ -1,13 +1,14 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
-  "github.com/jmoiron/sqlx"
-  "github.com/pkg/errors"
+	"database/sql"
+	"fmt"
 
-  "gitlab.com/thorchain/midgard/internal/common"
-  "gitlab.com/thorchain/midgard/internal/models"
+	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
+
+	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateTxRecords(record models.Event) error {
@@ -281,16 +282,16 @@ func (s *Client) eventPool(eventId uint64) (common.Asset, error) {
 
 	var p sql.NullString
 	if err := s.db.Get(&p, stmnt, eventId); err != nil {
-	  if err == sql.ErrNoRows {
-      return common.Asset{}, nil
-    }
-    return common.Asset{}, err
-  }
+		if err == sql.ErrNoRows {
+			return common.Asset{}, nil
+		}
+		return common.Asset{}, err
+	}
 
 	pool, err := common.NewAsset(p.String)
-  if err != nil {
-    return common.Asset{}, err
-  }
+	if err != nil {
+		return common.Asset{}, err
+	}
 
 	return pool, nil
 }
@@ -378,24 +379,30 @@ func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
 }
 
 func (s *Client) gas(eventId uint64) (models.TxGas, error) {
-	stmnt := `
-		SELECT gas.chain, gas.symbol, gas.ticker, gas.amount
-			FROM gas
-		WHERE event_id = $1;`
+	stmnt := fmt.Sprintf(`
+		SELECT chain, gas_amount
+    FROM %v
+		WHERE event_id = $1
+    AND gas_amount > 0;
+  `, models.ModelTxsTable)
+
 
 	var (
-		chain, symbol, ticker string
-		amount                uint64
+		chain  string
+		amount uint64
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
-	if err := row.Scan(&chain, &symbol, &ticker, &amount); err != nil {
+	if err := row.Scan(&chain, &amount); err != nil {
+	  if err == sql.ErrNoRows {
+      return models.TxGas{}, nil
+    }
 		return models.TxGas{}, err
 	}
 
-	asset, _ := common.NewAsset(symbol)
+	c, _ := common.NewChain(chain)
 	return models.TxGas{
-		Asset:  asset,
+		Chain:  c,
 		Amount: amount,
 	}, nil
 }
@@ -438,9 +445,9 @@ func (s *Client) swapEvents(eventId uint64) (models.Events, error) {
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&events.Slip, &events.Fee); err != nil {
-	  if err == sql.ErrNoRows {
-      return models.Events{}, nil
-    }
+		if err == sql.ErrNoRows {
+			return models.Events{}, nil
+		}
 		return models.Events{}, err
 	}
 
@@ -452,14 +459,14 @@ func (s *Client) stakeEvents(eventId uint64) (models.Events, error) {
 	stmnt := fmt.Sprintf(`
 		SELECT stake_units
 			FROM %v
-		WHERE event_id = $1`,models.ModelEventsTable)
+		WHERE event_id = $1`, models.ModelEventsTable)
 
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&events.StakeUnits); err != nil {
-	  if err == sql.ErrNoRows {
-      return models.Events{}, nil
-    }
+		if err == sql.ErrNoRows {
+			return models.Events{}, nil
+		}
 		return models.Events{}, err
 	}
 
