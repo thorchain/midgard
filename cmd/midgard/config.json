@@ -9,7 +9,8 @@
     "enable_scan": true,
     "scan_start_pos": 1,
     "proxied_whitelisted_endpoints": [
-      "pool_addresses"
+      "pool_addresses",
+      "events/tx/:id"
     ]
   },
   "timescale": {
