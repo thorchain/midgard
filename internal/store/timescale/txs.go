@@ -51,8 +51,11 @@ func (s *Client) processTxRecord(direction string, parent models.Event, record c
 
 func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
 	var gasAmount int64
+	var gasAsset string
+	// So far all tx records only have contained one gas record when it exist.
 	if len(record.Gas) > 0 {
 		gasAmount = record.Gas[0].Amount
+		gasAsset  = record.Gas[0].Asset.String()
 	}
 
 	query := fmt.Sprintf(`
@@ -65,8 +68,9 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 			from_address,
 			to_address,
 			memo,
-      gas_amount
-		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING event_id`, models.ModelTxsTable)
+      gas_amount,
+      gas_asset
+		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING event_id`, models.ModelTxsTable)
 
 	results, err := s.db.Exec(query,
 		parent.Time,
@@ -78,6 +82,7 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 		record.ToAddress,
 		record.Memo,
 		gasAmount,
+    gasAsset,
 	)
 
 	if err != nil {
@@ -380,29 +385,28 @@ func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
 
 func (s *Client) gas(eventId uint64) (models.TxGas, error) {
 	stmnt := fmt.Sprintf(`
-		SELECT chain, gas_amount
+		SELECT gas_asset as asset, gas_amount
     FROM %v
 		WHERE event_id = $1
     AND gas_amount > 0;
   `, models.ModelTxsTable)
 
-
 	var (
-		chain  string
+		asset  string
 		amount uint64
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
-	if err := row.Scan(&chain, &amount); err != nil {
-	  if err == sql.ErrNoRows {
-      return models.TxGas{}, nil
-    }
+	if err := row.Scan(&asset, &amount); err != nil {
+		if err == sql.ErrNoRows {
+			return models.TxGas{}, nil
+		}
 		return models.TxGas{}, err
 	}
 
-	c, _ := common.NewChain(chain)
+	a, _ := common.NewAsset(asset)
 	return models.TxGas{
-		Chain:  c,
+		Asset:  a,
 		Amount: amount,
 	}, nil
 }

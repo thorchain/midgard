@@ -17,7 +17,7 @@ type Options struct {
 }
 
 type TxGas struct {
-	Chain common.Chain
+	Asset common.Asset
 	Amount  uint64
 	Options Options
 }

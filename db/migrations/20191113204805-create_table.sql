@@ -38,6 +38,7 @@ CREATE TABLE txs (
     to_address varchar,
     memo varchar,
     gas_amount bigint,
+    gas_asset varchar,
     primary key(id, time)
 );
 
