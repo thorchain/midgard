@@ -1,9 +1,10 @@
 package timescale
 
 import (
-	"log"
+  "database/sql"
+  "fmt"
 
-	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 type StatsData struct {
@@ -341,34 +342,24 @@ func (s *Client) bTotalEarned() (uint64, error) {
 }
 
 func (s *Client) poolCount() (uint64, error) {
-	var poolCount uint64
+	var poolCount sql.NullInt64
 
-	stmnt := `
-		SELECT DISTINCT(pool) FROM stakes
-	`
+	stmnt := fmt.Sprintf(`
+      SELECT COUNT(pools)
+      FROM (
+               SELECT pool, SUM(asset_amount)
+               from %v
+               GROUP BY pool
+               ) as pools
+      WHERE pools.sum > 0
+	`, models.ModelEventsTable)
 
-	rows, err := s.db.Queryx(stmnt)
+	err := s.db.Get(&poolCount, stmnt)
 	if err != nil {
-		log.Fatal(err.Error())
+		return 0, err
 	}
 
-	for rows.Next() {
-		var pool string
-		if err := rows.Scan(&pool); err != nil {
-			return 0, err
-		}
-
-		asset, _ := common.NewAsset(pool)
-		depth, err := s.runeDepth(asset)
-		if err != nil {
-			return 0, err
-		}
-		if depth > 0 {
-			poolCount += 1
-		}
-	}
-
-	return poolCount, nil
+	return uint64(poolCount.Int64), nil
 }
 
 func (s *Client) totalAssetBuys() (uint64, error) {

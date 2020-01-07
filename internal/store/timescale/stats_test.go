@@ -511,8 +511,8 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	c.Assert(poolCount, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
 	}
 
 	poolCount , err = s.Store.poolCount()
@@ -520,8 +520,8 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	c.Assert(poolCount, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	  c.Fatal(err)
 	}
 
 	poolCount , err = s.Store.poolCount()
@@ -529,8 +529,8 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	c.Assert(poolCount, Equals, uint64(2))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+    c.Fatal(err)
 	}
 
 	poolCount , err = s.Store.poolCount()
