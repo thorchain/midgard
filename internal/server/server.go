@@ -1,31 +1,31 @@
 package server
 
 import (
-  "context"
-  "fmt"
-  "io"
-  "net/http"
-  "net/http/httputil"
-  "net/url"
-  "os"
-  "strings"
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
+	"strings"
 
-  "github.com/labstack/echo/v4"
-  "github.com/labstack/echo/v4/middleware"
-  "github.com/pkg/errors"
-  "github.com/rs/zerolog"
-  "github.com/rs/zerolog/log"
-  "github.com/ziflex/lecho/v2"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"github.com/ziflex/lecho/v2"
 
-  api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
-  "gitlab.com/thorchain/midgard/api/rest/v1/handlers"
-  "gitlab.com/thorchain/midgard/internal/store/timescale"
+	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
+	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
+	"gitlab.com/thorchain/midgard/internal/store/timescale"
 
-  "gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
-  "gitlab.com/thorchain/midgard/internal/clients/thorChain"
+	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
+	"gitlab.com/thorchain/midgard/internal/clients/thorChain"
 
-  "gitlab.com/thorchain/midgard/internal/config"
-  "gitlab.com/thorchain/midgard/internal/logo"
+	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/internal/logo"
 )
 
 // Server
@@ -160,16 +160,16 @@ func (s *Server) registerWhiteListedProxiedRoutes() {
 					}
 					// Handle endpoints with path parameters
 				} else {
-          reqUrlParts := strings.Split(req.URL.EscapedPath(), "/")
-          u, err = url.Parse(s.cfg.ThorChain.Scheme + "://" + s.cfg.ThorChain.Host + "/thorchain/" + endpointParts[0] + reqUrlParts[len(reqUrlParts) - 1])
-          if err != nil {
-            log.Error().Err(err).Msg("Failed to Parse url")
-            return nil
-          }
-        }
+					reqUrlParts := strings.Split(req.URL.EscapedPath(), "/")
+					u, err = url.Parse(s.cfg.ThorChain.Scheme + "://" + s.cfg.ThorChain.Host + "/thorchain/" + endpointParts[0] + reqUrlParts[len(reqUrlParts)-1])
+					if err != nil {
+						log.Error().Err(err).Msg("Failed to Parse url")
+						return nil
+					}
+				}
 
-        log.Info().Str("url", u.String()).Msg("Proxied url")
-        proxyHTTP(u).ServeHTTP(res, req)
+				log.Info().Str("url", u.String()).Msg("Proxied url")
+				proxyHTTP(u).ServeHTTP(res, req)
 				return nil
 			}
 		})
