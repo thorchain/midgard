@@ -156,7 +156,7 @@ func (s *Server) registerWhiteListedProxiedRoutes() {
 					u, err = url.Parse(s.cfg.ThorChain.Scheme + "://" + s.cfg.ThorChain.Host + "/thorchain/" + endpointParts[0])
 					if err != nil {
 						log.Error().Err(err).Msg("Failed to Parse url")
-						return nil
+						return err
 					}
 					// Handle endpoints with path parameters
 				} else {
@@ -164,7 +164,7 @@ func (s *Server) registerWhiteListedProxiedRoutes() {
 					u, err = url.Parse(s.cfg.ThorChain.Scheme + "://" + s.cfg.ThorChain.Host + "/thorchain/" + endpointParts[0] + reqUrlParts[len(reqUrlParts)-1])
 					if err != nil {
 						log.Error().Err(err).Msg("Failed to Parse url")
-						return nil
+						return err
 					}
 				}
 
