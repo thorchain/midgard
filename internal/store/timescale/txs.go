@@ -328,11 +328,11 @@ func (s *Client) outTx(eventId uint64) (models.TxData, error) {
 }
 
 func (s *Client) txForDirection(eventId uint64, direction string) (models.TxData, error) {
-	stmnt := `
-		SELECT txs.tx_hash AS tx_id, txs.memo, txs.from_address AS address
-			FROM txs
+	stmnt := fmt.Sprintf(`
+		SELECT tx_hash AS tx_id, memo, from_address AS address
+			FROM %v
 		WHERE txs.event_id = $1
-		AND txs.direction = $2`
+		AND txs.direction = $2`, models.ModelTxsTable)
 
 	tx := models.TxData{}
 	row := s.db.QueryRow(stmnt, eventId, direction)

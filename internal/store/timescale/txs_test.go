@@ -603,33 +603,27 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTxForDirection(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
-	}
-
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
 	}
 
 	eventId := uint64(1)
 	inTx, err := s.Store.txForDirection(eventId, "in")
 	c.Assert(err, IsNil)
-
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(inTx.Memo, Equals, "stake:BNB")
 	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
 	outTx, err := s.Store.txForDirection(eventId, "out")
-	c.Assert(err, IsNil)
+	c.Assert(err, NotNil)
 	c.Assert(outTx.Address, Equals, "")
 	c.Assert(outTx.Memo, Equals, "")
 	c.Assert(outTx.TxID, Equals, "")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+		c.Fatal(err)
 	}
 
 	eventId = uint64(2)
@@ -637,11 +631,11 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	c.Assert(err, IsNil)
 
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	c.Assert(inTx.Memo, Equals, "stake:TOML")
-	c.Assert(inTx.TxID, Equals, "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
+	c.Assert(inTx.Memo, Equals, "stake:BOLT")
+	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
 	outTx, err = s.Store.txForDirection(eventId, "out")
-	c.Assert(err, IsNil)
+	c.Assert(err, NotNil)
 	c.Assert(outTx.Address, Equals, "")
 	c.Assert(outTx.Memo, Equals, "")
 	c.Assert(outTx.TxID, Equals, "")
