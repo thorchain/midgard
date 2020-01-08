@@ -1,12 +1,13 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
-  "github.com/pkg/errors"
-  "gitlab.com/thorchain/midgard/internal/models"
+	"database/sql"
+	"fmt"
 
-  "gitlab.com/thorchain/midgard/internal/common"
+	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/models"
+
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type PoolData struct {
@@ -590,8 +591,8 @@ func (s *Client) assetSwapTotal(asset common.Asset) (int64, error) {
 
 	var total sql.NullInt64
 	if err := s.db.Get(&total, stmnt, asset.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 
 	return total.Int64, nil
 }
@@ -696,8 +697,8 @@ func (s *Client) buyVolume(pool common.Asset) (uint64, error) {
 
 	var buyVolume sql.NullInt64
 	if err := s.db.Get(&buyVolume, stmnt, pool.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 	return uint64(buyVolume.Int64), nil
 }
 
@@ -713,8 +714,8 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 
 	var buyVolume sql.NullInt64
 	if err := s.db.Get(&buyVolume, stmnt, asset.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 	return uint64(buyVolume.Int64), nil
 }
 
@@ -845,7 +846,7 @@ func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) sellFeeAverage(pool common.Asset) (uint64, error) {
-	stmnt := fmt.Sprintf( `
+	stmnt := fmt.Sprintf(`
 		SELECT AVG(swap_liquidity_fee)
 		FROM %v
 		WHERE pool = $1
@@ -854,8 +855,8 @@ func (s *Client) sellFeeAverage(pool common.Asset) (uint64, error) {
 
 	var sellFeeAverage sql.NullFloat64
 	if err := s.db.Get(&sellFeeAverage, stmnt, pool.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 
 	priceInRune, err := s.GetPriceInRune(pool)
 	if err != nil {
@@ -1033,22 +1034,21 @@ func (s *Client) stakeTxCount(asset common.Asset) (uint64, error) {
 }
 
 // withdrawTxCount - number of unstakes that occurred on a given pool
-func (s *Client) withdrawTxCount(asset common.Asset) (uint64, error) {
-	stmnt := `
+func (s *Client) withdrawTxCount(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
 		SELECT COUNT(event_id)
-		FROM stakes
+		FROM %v
 		WHERE pool = $1
-		AND units < 0
-	`
+		AND stake_units < 0
+    AND type = 'stake'
+	`, models.ModelEventsTable)
 
-	var withdrawTxCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&withdrawTxCount); err != nil {
+	var withdrawTxCount sql.NullInt64
+	if err := s.db.Get(&withdrawTxCount, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
 
-	return withdrawTxCount, nil
+	return uint64(withdrawTxCount.Int64), nil
 }
 
 func (s *Client) stakingTxCount(asset common.Asset) (uint64, error) {
