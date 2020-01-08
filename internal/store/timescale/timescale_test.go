@@ -579,7 +579,7 @@ var (
 			Time:   time.Now(),
 			ID:     2,
 			Status: "Success",
-			Height: 1,
+			Height: 2,
 			Type:   "stake",
 			InTx: common.Tx{
 				ID:          "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",

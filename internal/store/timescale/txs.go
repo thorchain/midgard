@@ -55,7 +55,7 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 	// So far all tx records only have contained one gas record when it exist.
 	if len(record.Gas) > 0 {
 		gasAmount = record.Gas[0].Amount
-		gasAsset  = record.Gas[0].Asset.String()
+		gasAsset = record.Gas[0].Asset.String()
 	}
 
 	query := fmt.Sprintf(`
@@ -82,7 +82,7 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 		record.ToAddress,
 		record.Memo,
 		gasAmount,
-    gasAsset,
+		gasAsset,
 	)
 
 	if err != nil {
@@ -491,15 +491,16 @@ func (s *Client) txDate(eventId uint64) (uint64, error) {
 }
 
 func (s *Client) txHeight(eventId uint64) (uint64, error) {
-	stmnt := `SELECT height FROM events WHERE id = $1`
-	var txHeight uint64
-	row := s.db.QueryRow(stmnt, eventId)
-
-	if err := row.Scan(&txHeight); err != nil {
+	stmnt := fmt.Sprintf(`
+      SELECT height
+      FROM %v
+      WHERE id = $1`, models.ModelEventsTable)
+	var txHeight sql.NullInt64
+	if err := s.db.Get(&txHeight, stmnt, eventId); err != nil {
 		return 0, err
 	}
 
-	return txHeight, nil
+	return uint64(txHeight.Int64), nil
 }
 
 func (s *Client) priceTarget(eventId uint64) (uint64, error) {
