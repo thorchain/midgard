@@ -494,7 +494,8 @@ func (s *Client) txHeight(eventId uint64) (uint64, error) {
 	stmnt := fmt.Sprintf(`
       SELECT height
       FROM %v
-      WHERE id = $1`, models.ModelEventsTable)
+      WHERE event_id = $1`, models.ModelEventsTable)
+
 	var txHeight sql.NullInt64
 	if err := s.db.Get(&txHeight, stmnt, eventId); err != nil {
 		return 0, err

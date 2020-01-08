@@ -847,7 +847,7 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	eventId = uint64(1)
@@ -857,7 +857,7 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	eventId = uint64(2)
