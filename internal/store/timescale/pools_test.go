@@ -1342,19 +1342,18 @@ func (s *TimeScaleSuite) TestSwappingTxCount(c *C) {
 	c.Assert(swappingCount, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapEvent2Old); err != nil {
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapEvent3Old); err != nil {
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
 	swappingCount, err = s.Store.swappingTxCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swappingCount, Equals, uint64(3))

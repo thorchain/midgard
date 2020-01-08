@@ -982,19 +982,20 @@ func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 	return uint64(buyAssetCount.Int64), nil
 }
 
-func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT COUNT(event_id) FROM swaps WHERE pool = $1
-	`
+func (s *Client) swappingTxCount(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT COUNT(id)
+    FROM %v
+    WHERE pool = $1
+    AND type = 'swap'
+	`, models.ModelEventsTable)
 
-	var swappingTxCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&swappingTxCount); err != nil {
+	var swappingTxCount sql.NullInt64
+	if err := s.db.Get(&swappingTxCount, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
 
-	return swappingTxCount, nil
+	return uint64(swappingTxCount.Int64), nil
 }
 
 // swappersCount - number of unique swappers on the network
