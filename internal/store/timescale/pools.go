@@ -376,7 +376,6 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'stake'
-    OR type = 'unstake'
 		`, models.ModelEventsTable)
 
 	var assetStakedTotal sql.NullInt64
@@ -396,7 +395,7 @@ func (s *Client) assetStakedTotal12m(pool common.Asset) (uint64, error) {
 		SELECT SUM(asset_amount)
 		FROM %v
 		WHERE pool = $1
-		AND type = 'stake' OR type = 'unstake'
+		AND type = 'stake'
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 `, models.ModelEventsTable)
 
@@ -416,7 +415,7 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
 		SELECT SUM(asset_amount)
 		FROM %v
 		WHERE pool = $1
-		AND type = 'unstake'
+		AND type = 'stake'
 		AND stake_units < 0
 		`, models.ModelEventsTable)
 
@@ -436,7 +435,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 		SELECT SUM(rune_amount)
 		FROM %v
 		WHERE pool = $1
-    AND type = 'stake' OR type = 'unstake'
+    AND type = 'stake'
 	`, models.ModelEventsTable)
 
 	var runeStakedTotal sql.NullInt64
