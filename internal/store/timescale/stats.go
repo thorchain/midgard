@@ -376,15 +376,18 @@ func (s *Client) totalAssetBuys() (uint64, error) {
 }
 
 func (s *Client) totalAssetSells() (uint64, error) {
-	stmnt := `SELECT COUNT(pool) FROM swaps WHERE runeAmt > 0`
-	var totalAssetSells uint64
-	row := s.db.QueryRow(stmnt)
+	stmnt := fmt.Sprintf(`
+          SELECT COUNT(pool)
+          FROM %v
+          WHERE rune_amount > 0
+          AND type = 'swap'
+  `, models.ModelEventsTable)
 
-	if err := row.Scan(&totalAssetSells); err != nil {
+	var totalAssetSells sql.NullInt64
+	if err := s.db.Get(&totalAssetSells, stmnt); err != nil {
 		return 0, err
 	}
-
-	return totalAssetSells, nil
+	return uint64(totalAssetSells.Int64), nil
 }
 
 // totalStakeTx returns the total number of stake events

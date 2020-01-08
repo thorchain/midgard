@@ -562,7 +562,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -570,23 +570,14 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	// swap
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+		c.Fatal(err)
 	}
 
 	totalAssetSells, err = s.Store.totalAssetSells()
 	c.Assert(err, IsNil)
-	c.Assert(totalAssetSells, Equals, uint64(0))
-
-	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalAssetSells, err = s.Store.totalAssetSells()
-	c.Assert(err, IsNil)
-	c.Assert(totalAssetSells, Equals, uint64(0))
+	c.Assert(totalAssetSells, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
