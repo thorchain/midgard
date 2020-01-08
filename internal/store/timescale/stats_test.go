@@ -540,27 +540,28 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 
 func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 
+  // no stake
 	totalAssetBuys , err := s.Store.totalAssetBuys()
   c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+    c.Fatal(err)
 	}
 
 	totalAssetBuys , err = s.Store.totalAssetBuys()
   c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
-	}
+	// swap
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+	  c.Fatal(err)
+  }
 
 	totalAssetBuys , err = s.Store.totalAssetBuys()
   c.Assert(err, IsNil)
-	c.Assert(totalAssetBuys, Equals, uint64(0))
+	c.Assert(totalAssetBuys, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
