@@ -630,16 +630,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalWithdrawTx, err = s.Store.totalWithdrawTx()
-	c.Assert(err, IsNil)
-	c.Assert(totalWithdrawTx, Equals, uint64(0))
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -648,7 +639,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 

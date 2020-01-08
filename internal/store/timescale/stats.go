@@ -405,13 +405,17 @@ func (s *Client) totalStakeTx() (uint64, error) {
 }
 
 func (s *Client) totalWithdrawTx() (uint64, error) {
-	stmnt := `SELECT COUNT(event_id) FROM stakes WHERE units < 0`
-	var totalStakeTx uint64
-	row := s.db.QueryRow(stmnt)
+	stmnt := fmt.Sprintf(`
+    SELECT COUNT(event_id)
+    FROM %v
+    WHERE stake_units < 0
+    AND type = 'stake'
+  `, models.ModelEventsTable)
 
-	if err := row.Scan(&totalStakeTx); err != nil {
+	var totalStakeTx sql.NullInt64
+	if err := s.db.Get(&totalStakeTx, stmnt); err != nil {
 		return 0, err
 	}
 
-	return totalStakeTx, nil
+	return uint64(totalStakeTx.Int64), nil
 }
