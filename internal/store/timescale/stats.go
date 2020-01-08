@@ -385,19 +385,21 @@ func (s *Client) totalAssetSells() (uint64, error) {
 	return totalAssetSells, nil
 }
 
+// totalStakeTx returns the total number of stake events
 func (s *Client) totalStakeTx() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(event_id) FROM stakes WHERE units > 0
-	`
+	stmnt := fmt.Sprintf(`
+		SELECT COUNT(event_id)
+    FROM %v
+    WHERE stake_units > 0
+    AND type = 'stake'
+	`, models.ModelEventsTable)
 
-	var totalStakeTx uint64
-	row := s.db.QueryRow(stmnt)
+	var totalStakeTx sql.NullInt64
+	if err := s.db.Get(&totalStakeTx, stmnt); err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&totalStakeTx); err != nil {
-		return 0, err
-	}
-
-	return totalStakeTx, nil
+	return uint64(totalStakeTx.Int64), nil
 }
 
 func (s *Client) totalWithdrawTx() (uint64, error) {
