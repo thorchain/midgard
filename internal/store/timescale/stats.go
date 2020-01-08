@@ -306,18 +306,17 @@ func (s *Client) totalDepth() (uint64, error) {
 }
 
 func (s *Client) totalRuneStaked() (uint64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt) FROM stakes
-	`
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+    FROM %v
+	`, models.ModelEventsTable)
 
-	var totalRuneStaked uint64
-	row := s.db.QueryRow(stmnt)
+	var totalRuneStaked sql.NullInt64
+	if err := s.db.Get(&totalRuneStaked, stmnt); err != nil {
+    return 0, err
+  }
 
-	if err := row.Scan(&totalRuneStaked); err != nil {
-		return 0, err
-	}
-
-	return totalRuneStaked, nil
+	return uint64(totalRuneStaked.Int64), nil
 }
 
 func (s *Client) runeSwaps() (uint64, error) {

@@ -403,39 +403,30 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 	c.Assert(totalRuneStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
 	totalRuneStaked , err = s.Store.totalRuneStaked()
   c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(100))
+	c.Assert(totalRuneStaked, Equals, uint64(10))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	totalRuneStaked , err = s.Store.totalRuneStaked()
   c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(200))
+	c.Assert(totalRuneStaked, Equals, uint64(20))
 
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	  c.Fatal(err)
 	}
 
 	totalRuneStaked , err = s.Store.totalRuneStaked()
   c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(100))
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalRuneStaked , err = s.Store.totalRuneStaked()
-  c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(50000100))
+	c.Assert(totalRuneStaked, Equals, uint64(10))
 }
 
 func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
