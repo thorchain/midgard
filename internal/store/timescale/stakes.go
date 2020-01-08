@@ -1,14 +1,14 @@
 package timescale
 
 import (
-	"database/sql"
-	"fmt"
-	"math"
+  "database/sql"
+  "fmt"
+  "math"
 
-	"github.com/pkg/errors"
+  "github.com/pkg/errors"
 
-	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/models"
+  "gitlab.com/thorchain/midgard/internal/common"
+  "gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateStakeRecord(record models.EventStake) error {
@@ -260,21 +260,22 @@ func (s *Client) stakeUnits(from_address common.Address, pool common.Asset) (uin
 }
 
 // runeStaked - sum of rune staked by a specific address and pool
-func (s *Client) runeStaked(address common.Address, asset common.Asset) (uint64, error) {
-	query := `
-		SELECT SUM(runeAmt)
-		FROM stakes
+func (s *Client) runeStaked(address common.Address, pool common.Asset) (uint64, error) {
+	query := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+		FROM %v
 		WHERE from_address = ($1)
 		AND pool = ($2)
-	`
+    AND type = 'stake'
+	`, models.ModelEventsTable)
 
-	var runeStaked uint64
-	err := s.db.Get(&runeStaked, query, address, asset.String())
+	var runeStaked sql.NullInt64
+	err := s.db.Get(&runeStaked, query, address, pool.String())
 	if err != nil {
 		return 0, err
 	}
 
-	return runeStaked, nil
+	return uint64(runeStaked.Int64), nil
 }
 
 // runeStaked - sum of asset staked by a specific address and pool

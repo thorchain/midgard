@@ -46,7 +46,7 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
     record.Time,
     record.ID,
     record.Height,
-    record.Type,
+    "stake", // using the same type, just with negative values. For easier/better query creation
     record.Status,
     record.InTx.ToAddress,
     record.InTx.FromAddress,

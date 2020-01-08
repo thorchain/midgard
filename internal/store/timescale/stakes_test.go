@@ -1,12 +1,12 @@
 package timescale
 
 import (
-	"time"
+  "time"
 
-	"github.com/davecgh/go-spew/spew"
+  "github.com/davecgh/go-spew/spew"
 
-	"gitlab.com/thorchain/midgard/internal/common"
-	. "gopkg.in/check.v1"
+  "gitlab.com/thorchain/midgard/internal/common"
+  . "gopkg.in/check.v1"
 )
 
 func (s *TimeScaleSuite) TestStakeUnits(c *C) {
@@ -93,44 +93,31 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	c.Assert(runeStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	runeStaked, err = s.Store.runeStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(100))
+	c.Assert(runeStaked, Equals, uint64(10))
 
 	// Additional stake
-	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		c.Fatal(err)
 	}
 
 	runeStaked, err = s.Store.runeStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(100))
+	c.Assert(runeStaked, Equals, uint64(10))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	runeStaked, err = s.Store.runeStaked(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, uint64(0))
-
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
-
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		c.Fatal(err)
-	}
-
-	runeStaked, err = s.Store.runeStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(50000000))
 }
 
 func (s *TimeScaleSuite) TestAssetStaked(c *C) {
