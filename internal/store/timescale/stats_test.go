@@ -356,110 +356,45 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 
-	totalDepth, err := s.Store.totalDepth()
+	// no stakes
+	totalDepth, err := s.Store.totalRuneDepth()
 	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalDepth, err = s.Store.totalDepth()
-	c.Assert(err, IsNil)
-	c.Assert(totalDepth, Equals, uint64(100))
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalDepth, err = s.Store.totalDepth()
-	c.Assert(err, IsNil)
-	c.Assert(totalDepth, Equals, uint64(200))
-
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalDepth, err = s.Store.totalDepth()
-	c.Assert(err, IsNil)
-	c.Assert(totalDepth, Equals, uint64(100))
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalDepth, err = s.Store.totalDepth()
-	c.Assert(err, IsNil)
-	c.Assert(totalDepth, Equals, uint64(50000100))
-}
-
-func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
-
-	totalRuneStaked, err := s.Store.totalRuneStaked()
-	c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(0))
-
-	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
-	totalRuneStaked, err = s.Store.totalRuneStaked()
+	totalDepth, err = s.Store.totalRuneDepth()
 	c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(10))
+	c.Assert(totalDepth, Equals, uint64(10))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
-	totalRuneStaked, err = s.Store.totalRuneStaked()
+	totalDepth, err = s.Store.totalRuneDepth()
 	c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(20))
+	c.Assert(totalDepth, Equals, uint64(20))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	totalRuneStaked, err = s.Store.totalRuneStaked()
+	totalDepth, err = s.Store.totalRuneDepth()
 	c.Assert(err, IsNil)
-	c.Assert(totalRuneStaked, Equals, uint64(10))
-}
+	c.Assert(totalDepth, Equals, uint64(10))
 
-func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
-
-	runeSwaps, err := s.Store.runeSwaps()
-	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
-
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	// block reward
+	if err := s.Store.CreateRewardRecord(rewardEvent0); err != nil {
+		c.Fatal(err)
 	}
 
-	runeSwaps, err = s.Store.runeSwaps()
+	totalDepth, err = s.Store.totalRuneDepth()
 	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
-	}
-
-	runeSwaps, err = s.Store.runeSwaps()
-	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
-
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	runeSwaps, err = s.Store.runeSwaps()
-	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
+	c.Assert(totalDepth, Equals, uint64(11))
 }
 
 func (s *TimeScaleSuite) TestbTotalEarned(c *C) {

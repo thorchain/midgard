@@ -73,7 +73,7 @@ func (s *Client) GetStatsData() (StatsData, error) {
 		return StatsData{}, err
 	}
 
-	totalDepth, err := s.totalDepth()
+	totalDepth, err := s.totalRuneDepth()
 	if err != nil {
 		return StatsData{}, err
 	}
@@ -289,48 +289,18 @@ func (s *Client) bTotalStaked() (uint64, error) {
 	return totalStaked, nil
 }
 
-func (s *Client) totalDepth() (uint64, error) {
-	stakes, err := s.totalRuneStaked()
-	if err != nil {
-		return 0, err
-	}
-
-	swaps, err := s.runeSwaps()
-	if err != nil {
-		return 0, err
-	}
-
-	depth := (stakes + swaps)
-	return depth, nil
-}
-
-func (s *Client) totalRuneStaked() (uint64, error) {
+func (s *Client) totalRuneDepth() (uint64, error) {
 	stmnt := fmt.Sprintf(`
-		SELECT SUM(rune_amount)
+    SELECT SUM(rune_amount)
     FROM %v
-	`, models.ModelEventsTable)
+  `, models.ModelEventsTable)
 
-	var totalRuneStaked sql.NullInt64
-	if err := s.db.Get(&totalRuneStaked, stmnt); err != nil {
+	var depth sql.NullInt64
+	if err := s.db.Get(&depth, stmnt); err != nil {
 		return 0, err
 	}
 
-	return uint64(totalRuneStaked.Int64), nil
-}
-
-func (s *Client) runeSwaps() (uint64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt) FROM swaps
-	`
-
-	var runeIncomingSwaps uint64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&runeIncomingSwaps); err != nil {
-		return 0, err
-	}
-
-	return runeIncomingSwaps, nil
+	return uint64(depth.Int64), nil
 }
 
 // TODO whats this?
