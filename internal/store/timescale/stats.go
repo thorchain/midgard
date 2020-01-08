@@ -1,8 +1,8 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
+	"database/sql"
+	"fmt"
 
 	"gitlab.com/thorchain/midgard/internal/models"
 )
@@ -232,9 +232,9 @@ func (s *Client) totalTx() (uint64, error) {
 	stmnt := fmt.Sprintf(`SELECT COALESCE(COUNT(tx_hash), 0) FROM %v`, models.ModelTxsTable)
 	var totalTx sql.NullInt64
 	err := s.db.Get(&totalTx, stmnt)
-  if err != nil {
-    return 0, err
-  }
+	if err != nil {
+		return 0, err
+	}
 
 	return uint64(totalTx.Int64), nil
 }
@@ -257,20 +257,19 @@ func (s *Client) totalVolume24hr() (uint64, error) {
 }
 
 func (s *Client) totalVolume() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(runeAmt)
-		FROM swaps
-		WHERE runeAmt > 0
-	`
+	stmnt := fmt.Sprintf(`
+		SELECT COUNT(rune_amount)
+		FROM %v
+		WHERE rune_amount > 0
+    AND type = 'swap'
+	`, models.ModelEventsTable)
 
-	var totalVolume uint64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalVolume); err != nil {
+	var totalVolume sql.NullInt64
+	if err := s.db.Get(&totalVolume, stmnt); err != nil {
 		return 0, err
 	}
 
-	return totalVolume, nil
+	return uint64(totalVolume.Int64), nil
 }
 
 func (s *Client) bTotalStaked() (uint64, error) {
@@ -313,8 +312,8 @@ func (s *Client) totalRuneStaked() (uint64, error) {
 
 	var totalRuneStaked sql.NullInt64
 	if err := s.db.Get(&totalRuneStaked, stmnt); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 
 	return uint64(totalRuneStaked.Int64), nil
 }
@@ -369,9 +368,9 @@ func (s *Client) totalAssetBuys() (uint64, error) {
   `, models.ModelEventsTable)
 
 	var totalAssetBuys sql.NullInt64
-	if err := s.db.Get(&totalAssetBuys,stmnt); err != nil {
-    return 0, err
-  }
+	if err := s.db.Get(&totalAssetBuys, stmnt); err != nil {
+		return 0, err
+	}
 
 	return uint64(totalAssetBuys.Int64), nil
 }
@@ -399,8 +398,8 @@ func (s *Client) totalStakeTx() (uint64, error) {
 
 	var totalStakeTx sql.NullInt64
 	if err := s.db.Get(&totalStakeTx, stmnt); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 
 	return uint64(totalStakeTx.Int64), nil
 }
