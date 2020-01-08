@@ -245,32 +245,23 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
-		log.Fatal(err)
+	// swap
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+		c.Fatal(err)
 	}
 
 	totalVolume24hr, err = s.Store.totalVolume24hr()
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
+	c.Assert(totalVolume24hr, Equals, uint64(1))
 
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		log.Fatal(err)
+	// another swap
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+		c.Fatal(err)
 	}
 
 	totalVolume24hr, err = s.Store.totalVolume24hr()
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
-
-	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
-		log.Fatal(err)
-	}
-
-	totalVolume24hr, err = s.Store.totalVolume24hr()
-	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
+	c.Assert(totalVolume24hr, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestTotalVolume(c *C) {

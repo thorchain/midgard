@@ -240,20 +240,19 @@ func (s *Client) totalTx() (uint64, error) {
 }
 
 func (s *Client) totalVolume24hr() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(runeAmt)
-		FROM swaps
-		WHERE runeAmt > 0
+	stmnt := fmt.Sprintf(`
+		SELECT COUNT(rune_amount)
+		FROM %v
+    WHERE type = 'swap'
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-	`
-	var totalVolume uint64
-	row := s.db.QueryRow(stmnt)
+	`, models.ModelEventsTable)
 
-	if err := row.Scan(&totalVolume); err != nil {
+	var totalVolume sql.NullInt64
+	if err := s.db.Get(&totalVolume, stmnt); err != nil {
 		return 0, err
 	}
 
-	return totalVolume, nil
+	return uint64(totalVolume.Int64), nil
 }
 
 func (s *Client) totalVolume() (uint64, error) {
