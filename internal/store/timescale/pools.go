@@ -342,14 +342,14 @@ func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 	}, nil
 }
 
-func (s *Client) GetPriceInRune(asset common.Asset) (float64, error) {
-	assetDepth, err := s.assetDepth(asset)
+func (s *Client) GetPriceInRune(pool common.Asset) (float64, error) {
+	assetDepth, err := s.assetDepth(pool)
 	if err != nil {
 		return 0, err
 	}
 
 	if assetDepth > 0 {
-		runeDepth, err := s.runeDepth(asset)
+		runeDepth, err := s.runeDepth(pool)
 		if err != nil {
 			return 0, err
 		}
@@ -493,11 +493,10 @@ func (s *Client) assetDepth(pool common.Asset) (uint64, error) {
 		`, models.ModelEventsTable)
 
 	var assetDepth sql.NullInt64
-	row := s.db.QueryRow(stmnt, pool.String())
-
-	if err := row.Scan(&assetDepth); err != nil {
+	if err := s.db.Get(&assetDepth, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
+
 	return uint64(assetDepth.Int64), nil
 }
 
@@ -524,11 +523,10 @@ func (s *Client) runeDepth(pool common.Asset) (uint64, error) {
 		`, models.ModelEventsTable)
 
 	var runeDepth sql.NullInt64
-	row := s.db.QueryRow(stmnt, pool.String())
-
-	if err := row.Scan(&runeDepth); err != nil {
+	if err := s.db.Get(&runeDepth, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
+
 	return uint64(runeDepth.Int64), nil
 }
 
@@ -746,27 +744,26 @@ func (s *Client) poolVolume24hr(asset common.Asset) (uint64, error) {
 	return buyVol24 + sellVol24, nil
 }
 
-func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT AVG(assetAmt)
-		FROM swaps
+func (s *Client) sellTxAverage(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT AVG(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND assetAmt > 0
-	`
+    AND type = 'swap'
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var avg float64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&avg); err != nil {
+	var avg sql.NullFloat64
+	if err := s.db.Get(&avg, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
 
-	price, err := s.GetPriceInRune(asset)
+	price, err := s.GetPriceInRune(pool)
 	if err != nil {
 		return 0, err
 	}
 
-	return uint64(avg * price), nil
+	return uint64(avg.Float64 * price), nil
 }
 
 func (s *Client) buyTxAverage(pool common.Asset) (uint64, error) {
