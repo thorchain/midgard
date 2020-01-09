@@ -796,21 +796,20 @@ func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
-	stmnt := `
-		SELECT AVG(trade_slip)
-		FROM swaps
+	stmnt := fmt.Sprintf(`
+		SELECT AVG(swap_trade_slip)
+		FROM %v
 		WHERE pool = $1
-		AND assetAmt > 0
-	`
+    AND type = 'swap'
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var sellSlipAverage float64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&sellSlipAverage); err != nil {
+	var sellSlipAverage sql.NullFloat64
+	if err := s.db.Get(&sellSlipAverage, stmnt, asset.String()); err != nil {
 		return 0, err
 	}
 
-	return sellSlipAverage, nil
+	return sellSlipAverage.Float64, nil
 }
 
 func (s *Client) buySlipAverage(pool common.Asset) (float64, error) {
