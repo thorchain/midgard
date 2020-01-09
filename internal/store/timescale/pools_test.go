@@ -144,7 +144,7 @@ func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	priceRune, err = s.Store.GetPriceInRune(asset)
@@ -1222,19 +1222,27 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 	}
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	feesTotal, err := s.Store.sellFeesTotal(asset)
+	pool, _ := common.NewAsset("BNB.BNB")
+	feesTotal, err := s.Store.sellFeesTotal(pool)
 	c.Assert(err, IsNil)
 	c.Assert(feesTotal, Equals, uint64(0))
 
-	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
-		log.Fatal(err)
+	// stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
 	}
+
+	// Swap
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	feesTotal, err = s.Store.sellFeesTotal(pool)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(40000), Commentf("%d", feesTotal))
 }
 
 func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
