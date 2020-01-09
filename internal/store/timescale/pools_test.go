@@ -1368,11 +1368,10 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	c.Assert(swappersCount, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+		c.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
 	swappersCount, err = s.Store.swappersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swappersCount, Equals, uint64(1))

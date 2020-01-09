@@ -999,22 +999,24 @@ func (s *Client) swappingTxCount(pool common.Asset) (uint64, error) {
 }
 
 // swappersCount - number of unique swappers on the network
-func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
-	stmnt := `
+func (s *Client) swappersCount(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
 		SELECT COUNT(from_address)
-		FROM swaps
+		FROM %v
 		WHERE pool = $1
+    AND type = 'swap'
 		GROUP BY from_address
-	`
+	`, models.ModelEventsTable)
 
-	var swappersCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&swappersCount); err != nil {
+	var swappersCount sql.NullInt64
+	if err := s.db.Get(&swappersCount, stmnt, pool.String()); err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
 		return 0, err
 	}
 
-	return swappersCount, nil
+	return uint64(swappersCount.Int64), nil
 }
 
 // stakeTxCount - number of stakes that occurred on a given pool
