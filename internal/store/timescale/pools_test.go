@@ -862,26 +862,25 @@ func (s *TimeScaleSuite) TestPoolUnits(c *C) {
 func (s *TimeScaleSuite) TestSellVolume(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	volume, err := s.Store.sellVolume(asset)
+	pool, _ := common.NewAsset("BNB.BNB")
+	volume, err := s.Store.sellVolume(pool)
 	c.Assert(err, IsNil)
 
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeEvent4Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
-		log.Fatal(err)
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+		c.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
-	volume, err = s.Store.sellVolume(asset)
+	volume, err = s.Store.sellVolume(pool)
 	c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(120000000), Commentf("%d", volume))
+	c.Assert(volume, Equals, uint64(4), Commentf("%d", volume))
 }
 
 func (s *TimeScaleSuite) TestSellVolume24hr(c *C) {

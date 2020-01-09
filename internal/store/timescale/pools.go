@@ -639,27 +639,26 @@ func (s *Client) poolUnits(pool common.Asset) (uint64, error) {
 	return uint64(units.Int64), nil
 }
 
-func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM swaps
+func (s *Client) sellVolume(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND assetAmt > 0
-	`
+    AND type = 'swap'
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var sellVolume uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&sellVolume); err != nil {
+	var sellVolume sql.NullInt64
+	if err := s.db.Get(&sellVolume, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
 
-	price, err := s.GetPriceInRune(asset)
+	price, err := s.GetPriceInRune(pool)
 	if err != nil {
 		return 0, err
 	}
 
-	return uint64(float64(sellVolume) * price), nil
+	return uint64(float64(sellVolume.Int64) * price), nil
 }
 
 func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
