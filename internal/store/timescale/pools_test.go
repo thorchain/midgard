@@ -1481,7 +1481,7 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	c.Assert(stakersCount, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -1490,7 +1490,7 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	c.Assert(stakersCount, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		log.Fatal(err)
 	}
 

@@ -1069,26 +1069,25 @@ func (s *Client) stakingTxCount(asset common.Asset) (uint64, error) {
 }
 
 // stakersCount - number of addresses staking on a given pool
-func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
-	stmnt := `
+func (s *Client) stakersCount(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
 		SELECT COUNT(sub.from_address)
 		FROM (
-			SELECT from_address, SUM(units) AS total_units
-			FROM stakes
+			SELECT from_address, SUM(stake_units) AS total_units
+			FROM %v
 			WHERE pool = $1
+      AND type = 'stake'
 			GROUP BY from_address
 		) AS sub
 		WHERE sub.total_units > 0
-	`
+	`, models.ModelEventsTable)
 
-	var stakersCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&stakersCount); err != nil {
+	var stakersCount sql.NullInt64
+	if err := s.db.Get(&stakersCount, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
 
-	return stakersCount, nil
+	return uint64(stakersCount.Int64), nil
 }
 
 func (s *Client) assetROI(asset common.Asset) (float64, error) {
