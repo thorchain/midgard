@@ -535,47 +535,48 @@ func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	swaps := s.runeSwapTotal12m(asset)
+	swaps, err := s.runeSwapTotal12m(asset)
+	if err != nil {
+		return 0, err
+	}
 	depth := int64(stakes) + swaps
 	return uint64(depth), nil
 }
 
 // runeSwapTotal - total amount rune swapped through the pool
 func (s *Client) runeSwapTotal(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM swaps
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+		FROM %v
 		WHERE pool = $1
-	`
+    AND type = 'swap'
+	`, models.ModelEventsTable)
 
-	var total int64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&total); err != nil {
+	var total sql.NullInt64
+	if err := s.db.Get(&total, stmnt, asset.String()); err != nil {
 		return 0, err
 	}
 
-	return total, nil
+	return total.Int64, nil
 }
 
 // runeSwapTotal12m - total amount rune swapped through the pool in the last 12
 // months
-func (s *Client) runeSwapTotal12m(asset common.Asset) int64 {
-	stmnt := `
-		SELECT SUM(runeAmt)
-		FROM swaps
+func (s *Client) runeSwapTotal12m(asset common.Asset) (int64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(rune_amount)
+		FROM %v
 		WHERE pool = $1
+    AND type = 'swap'
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
-	`
+	`, models.ModelEventsTable)
 
-	var total int64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&total); err != nil {
-		return 0
+	var total sql.NullInt64
+	if err := s.db.Get(&total, stmnt, asset.String()); err != nil {
+		return 0, err
 	}
 
-	return total
+	return total.Int64, nil
 }
 
 // assetSwapTotal returns the sum of asset_amont for all
@@ -596,13 +597,13 @@ func (s *Client) assetSwapTotal(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) assetSwapTotal12m(pool common.Asset) (int64, error) {
-	stmnt := `
+	stmnt := fmt.Sprintf(`
 		SELECT SUM(asset_amount)
-		FROM events
+		FROM %v
 		WHERE pool = $1
 		AND type = 'swap'
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
-	`
+	`, models.ModelEventsTable)
 
 	var total sql.NullInt64
 	row := s.db.QueryRow(stmnt, pool.String())
@@ -615,9 +616,11 @@ func (s *Client) assetSwapTotal12m(pool common.Asset) (int64, error) {
 }
 
 func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
-	//runeDepth := s.runeDepth(asset)
-	//return 2 * runeDepth
-	return 0, nil
+	runeDepth, err := s.runeDepth(asset)
+	if err != nil {
+		return 0, err
+	}
+	return 2 * runeDepth, nil
 }
 
 func (s *Client) poolUnits(pool common.Asset) (uint64, error) {
@@ -660,19 +663,18 @@ func (s *Client) sellVolume(pool common.Asset) (uint64, error) {
 }
 
 func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM swaps
+	stmnt := fmt.Sprintf(`
+		SELECT SUM(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND asset_amount > 0
+		AND type = 'swap'
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-	`
+	`, models.ModelEventsTable)
 
-	var sellVolume uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&sellVolume); err != nil {
-		return 0, nil
+	var sellVolume sql.NullInt64
+	if err := s.db.Get(&sellVolume, stmnt, asset.String()); err != nil {
+		return 0, err
 	}
 
 	price, err := s.GetPriceInRune(asset)
@@ -680,7 +682,7 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 		return 0, err
 	}
 
-	return uint64(float64(sellVolume) * price), nil
+	return uint64(float64(sellVolume.Int64) * price), nil
 }
 
 func (s *Client) buyVolume(pool common.Asset) (uint64, error) {
@@ -941,22 +943,21 @@ func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
 	return buyFeesTotal + sellFeesTotal, nil
 }
 
-func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT COUNT(assetAmt)
-		FROM swaps
+func (s *Client) sellAssetCount(pool common.Asset) (uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT COUNT(asset_amount)
+		FROM %v
 		WHERE pool = $1
-		AND assetAmt > 0
-	`
+    AND type = 'swap'
+		AND asset_amount > 0
+	`, models.ModelEventsTable)
 
-	var sellAssetCount uint64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&sellAssetCount); err != nil {
+	var sellAssetCount sql.NullInt64
+	if err := s.db.Get(&sellAssetCount, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
 
-	return sellAssetCount, nil
+	return uint64(sellAssetCount.Int64), nil
 }
 
 func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {

@@ -184,14 +184,15 @@ func (s *Client) eventsForAddressTxId(address common.Address, txid string) ([]ui
 	return results, nil
 }
 
-func (s *Client) eventsForAsset(asset common.Asset) ([]uint64, error) {
-	stmnt := `
-		SELECT DISTINCT(txs.event_id)
-			FROM txs
-				LEFT JOIN coins ON txs.tx_hash = coins.tx_hash
-		WHERE coins.ticker = $1`
+func (s *Client) eventsForAsset(pool common.Asset) ([]uint64, error) {
+	stmnt := fmt.Sprintf(`
+		SELECT DISTINCT(txs.id)
+			FROM %v
+				LEFT JOIN %v ON txs.event_id = events.event_id
+		WHERE events.pool = $1
+  `, models.ModelTxsTable, models.ModelEventsTable)
 
-	rows, err := s.db.Queryx(stmnt, asset.Ticker.String())
+	rows, err := s.db.Queryx(stmnt, pool.String())
 	if err != nil {
 		return nil, err
 	}
@@ -343,10 +344,12 @@ func (s *Client) txForDirection(eventId uint64, direction string) (models.TxData
 }
 
 func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
-	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.ticker, coins.amount
-			FROM coins
-		WHERE coins.tx_hash = $1`
+	stmnt := fmt.Sprintf(`
+		SELECT pool, asset_amount
+    FROM %v
+      LEFT JOIN %v ON txs.event_id = events.event_id
+		WHERE txs.tx_hash = $1
+  `, models.ModelTxsTable, models.ModelEventsTable)
 
 	rows, err := s.db.Queryx(stmnt, txHash)
 	if err != nil {
@@ -361,22 +364,14 @@ func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
 			return nil, err
 		}
 
-		ch, _ := results["chain"].(string)
-		chain, _ := common.NewChain(ch)
-
-		sym, _ := results["symbol"].(string)
-		symbol, _ := common.NewSymbol(sym)
-
-		t, _ := results["ticker"].(string)
-		ticker, _ := common.NewTicker(t)
+		asset, err := common.NewAsset(results["pool"].(string))
+		if err != nil {
+			return nil, err
+		}
 
 		coins = append(coins, common.Coin{
-			Asset: common.Asset{
-				Chain:  chain,
-				Symbol: symbol,
-				Ticker: ticker,
-			},
-			Amount: results["amount"].(int64),
+			Asset:  asset,
+			Amount: results["asset_amount"].(int64),
 		})
 	}
 
