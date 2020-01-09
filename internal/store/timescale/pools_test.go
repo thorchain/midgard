@@ -1556,8 +1556,8 @@ func (s *TimeScaleSuite) TestAssetROI(c *C) {
 func (s *TimeScaleSuite) TestAssetROI12(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	roi, err := s.Store.assetROI12(asset)
+	pool, _ := common.NewAsset("BNB.BNB")
+	roi, err := s.Store.assetROI12(pool)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
 
@@ -1579,9 +1579,9 @@ func (s *TimeScaleSuite) TestAssetROI12(c *C) {
 		c.Fatal(err)
 	}
 
-	roi, err = s.Store.assetROI12(asset)
+	roi, err = s.Store.assetROI12(pool)
 	c.Assert(err, IsNil)
-	c.Assert(roi, Equals, 0.0) // because we're always sending asset in (not rune), there is no ROI
+	c.Assert(roi, Equals, 3.0)
 }
 
 // TODO
@@ -1599,7 +1599,7 @@ func (s *TimeScaleSuite) TestRuneROI12(c *C) {
 
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	roi, err := s.Store.runeROI(asset)
+	roi, err := s.Store.runeROI12(asset)
 	c.Assert(err, IsNil)
 
 	c.Assert(roi, Equals, 0.0)

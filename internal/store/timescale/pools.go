@@ -1104,13 +1104,13 @@ func (s *Client) assetROI(asset common.Asset) (float64, error) {
 	return roi, nil
 }
 
-func (s *Client) assetROI12(asset common.Asset) (float64, error) {
-	depth, err := s.assetDepth12m(asset)
+func (s *Client) assetROI12(pool common.Asset) (float64, error) {
+	depth, err := s.assetDepth12m(pool)
 	if err != nil {
 		return 0, err
 	}
 
-	staked, err := s.assetStakedTotal12m(asset)
+	staked, err := s.assetStakedTotal12m(pool)
 	if err != nil {
 		return 0, err
 	}
