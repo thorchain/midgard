@@ -144,14 +144,15 @@ func (s *Client) eventsForAddress(address common.Address) ([]uint64, error) {
 }
 
 func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asset) ([]uint64, error) {
-	stmnt := `
-		SELECT DISTINCT(txs.event_id)
-			FROM txs
-				LEFT JOIN coins ON txs.tx_hash = coins.tx_hash
-		WHERE coins.ticker = $1
-		AND (txs.from_address = $2 OR txs.to_address = $2)`
+	stmnt := fmt.Sprintf(`
+		SELECT DISTINCT(txs.id)
+			FROM %v
+				LEFT JOIN %v ON txs.event_id = events.event_id
+		WHERE events.pool = $1
+		AND (txs.from_address = $2 OR txs.to_address = $2)
+    `, models.ModelTxsTable, models.ModelEventsTable)
 
-	rows, err := s.db.Queryx(stmnt, asset.Ticker.String(), address.String())
+	rows, err := s.db.Queryx(stmnt, asset.String(), address.String())
 	if err != nil {
 		return nil, err
 	}

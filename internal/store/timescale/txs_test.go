@@ -374,43 +374,41 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 }
 
 func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		c.Fatal(err)
-	}
+
+	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+	asset, _ := common.NewAsset("BNB")
+	eventsForAddressAsset, err := s.Store.eventsForAddressAsset(address, asset)
+	c.Assert(err, IsNil)
+	c.Assert(len(eventsForAddressAsset), Equals, 0)
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	asset, _ := common.NewAsset("BNB")
-	eventsForAddressAsset, err := s.Store.eventsForAddressAsset(address, asset)
-	c.Assert(err, IsNil)
-
-	c.Assert(len(eventsForAddressAsset), Equals, 1)
-
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
-		c.Fatal(err)
-	}
-
-	asset, _ = common.NewAsset("TOML-4BC")
 	eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(len(eventsForAddressAsset), Equals, 1)
 
 	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.LOK-3C0")
 	eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(len(eventsForAddressAsset), Equals, 1)
+	c.Assert(len(eventsForAddressAsset), Equals, 2)
+
+	//// Additional stake
+	//address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
+	//if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
+	//	c.Fatal(err)
+	//}
+	//
+	//asset, _ = common.NewAsset("BNB.LOK-3C0")
+	//eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
+	//c.Assert(err, IsNil)
+	//c.Assert(len(eventsForAddressAsset), Equals, 1)
 }
 
 func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
