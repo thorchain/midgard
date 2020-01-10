@@ -350,11 +350,11 @@ func (s *Client) txForDirection(eventId uint64, direction string) (models.TxData
 
 func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
 	stmnt := fmt.Sprintf(`
-		SELECT pool, asset_amount
+    SELECT pool, asset_amount, rune_amount
     FROM %v
-      LEFT JOIN %v ON txs.event_id = events.event_id
-		WHERE txs.tx_hash = $1
-  `, models.ModelTxsTable, models.ModelEventsTable)
+    LEFT JOIN %v t on events.event_id = t.event_id
+    WHERE t.tx_hash = $1
+  `, models.ModelEventsTable, models.ModelTxsTable)
 
 	rows, err := s.db.Queryx(stmnt, txHash)
 	if err != nil {
@@ -369,14 +369,31 @@ func (s *Client) coinsForTxHash(txHash string) (common.Coins, error) {
 			return nil, err
 		}
 
+		rune := common.RuneAsset()
+		runeAmount := results["rune_amount"].(int64)
+
+		if runeAmount < 0 {
+			runeAmount = -runeAmount
+		}
+
+		coins = append(coins, common.Coin{
+			Asset:  rune,
+			Amount: runeAmount,
+		})
+
 		asset, err := common.NewAsset(results["pool"].(string))
 		if err != nil {
 			return nil, err
 		}
 
+		assetAmount := results["asset_amount"].(int64)
+		if assetAmount < 0 {
+			assetAmount = -assetAmount
+		}
+
 		coins = append(coins, common.Coin{
 			Asset:  asset,
-			Amount: results["asset_amount"].(int64),
+			Amount: assetAmount,
 		})
 	}
 

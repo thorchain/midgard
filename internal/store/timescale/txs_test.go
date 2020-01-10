@@ -641,21 +641,55 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 		c.Fatal(err)
 	}
 
-	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
+	txid := stakeEvent0.Event.InTx.ID.String()
 	coinsForTxHash, err := s.Store.coinsForTxHash(txid)
 	c.Assert(err, IsNil)
-	c.Assert(len(coinsForTxHash), Equals, 1)
-	c.Assert(coinsForTxHash[0].Asset.String(), Equals, "BNB.BNB")
-	c.Assert(coinsForTxHash[0].Amount, Equals, int64(1))
+	c.Assert(len(coinsForTxHash), Equals, 2)
+	c.Assert(coinsForTxHash[0].Asset.String(), Equals, "BNB.RUNE-B1A")
+	c.Assert(coinsForTxHash[0].Amount, Equals, int64(10))
+	c.Assert(coinsForTxHash[1].Asset.String(), Equals, "BNB.BNB")
+	c.Assert(coinsForTxHash[1].Amount, Equals, int64(1))
 
+	// another stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		c.Fatal(err)
 	}
 
+	txid = stakeEvent1.Event.InTx.ID.String()
 	coinsForTxHash, err = s.Store.coinsForTxHash(txid)
 	c.Assert(err, IsNil)
 	c.Assert(len(coinsForTxHash), Equals, 2)
+	c.Assert(coinsForTxHash[0].Asset.String(), Equals, "BNB.RUNE-B1A")
+	c.Assert(coinsForTxHash[0].Amount, Equals, int64(10))
 	c.Assert(coinsForTxHash[1].Asset.String(), Equals, "BNB.BOLT-014")
+	c.Assert(coinsForTxHash[1].Amount, Equals, int64(1))
+
+	// swap
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	txid = swapInEvent0.Event.InTx.ID.String()
+	coinsForTxHash, err = s.Store.coinsForTxHash(txid)
+	c.Assert(err, IsNil)
+	c.Assert(len(coinsForTxHash), Equals, 2)
+	c.Assert(coinsForTxHash[0].Asset.String(), Equals, "BNB.RUNE-B1A")
+	c.Assert(coinsForTxHash[0].Amount, Equals, int64(1))
+	c.Assert(coinsForTxHash[1].Asset.String(), Equals, "BNB.BNB")
+	c.Assert(coinsForTxHash[1].Amount, Equals, int64(1))
+
+	// swap
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	txid = swapOutEvent0.Event.InTx.ID.String()
+	coinsForTxHash, err = s.Store.coinsForTxHash(txid)
+	c.Assert(err, IsNil)
+	c.Assert(len(coinsForTxHash), Equals, 2)
+	c.Assert(coinsForTxHash[0].Asset.String(), Equals, "BNB.RUNE-B1A")
+	c.Assert(coinsForTxHash[0].Amount, Equals, int64(1))
+	c.Assert(coinsForTxHash[1].Asset.String(), Equals, "BNB.BNB")
 	c.Assert(coinsForTxHash[1].Amount, Equals, int64(1))
 }
 

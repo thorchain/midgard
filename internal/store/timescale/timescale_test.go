@@ -582,7 +582,7 @@ var (
 			Height: 2,
 			Type:   "stake",
 			InTx: common.Tx{
-				ID:          "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+				ID:          "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB6",
 				Chain:       "BNB",
 				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
 				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -715,7 +715,7 @@ var (
 			Height: 3,
 			Type:   "swap",
 			InTx: common.Tx{
-				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				ID:          "04C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
 				Chain:       "BNB",
 				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
 				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
