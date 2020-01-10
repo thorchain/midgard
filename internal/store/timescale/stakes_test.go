@@ -1,12 +1,10 @@
 package timescale
 
 import (
-  "time"
+	"time"
 
-  "github.com/davecgh/go-spew/spew"
-
-  "gitlab.com/thorchain/midgard/internal/common"
-  . "gopkg.in/check.v1"
+	"gitlab.com/thorchain/midgard/internal/common"
+	. "gopkg.in/check.v1"
 )
 
 func (s *TimeScaleSuite) TestStakeUnits(c *C) {
@@ -138,7 +136,6 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 
 	assetStaked, err = s.Store.assetStaked(address, asset)
 	c.Assert(err, IsNil)
-	spew.Dump(assetStaked)
 	c.Assert(assetStaked, Equals, uint64(1))
 
 	// stake a different asset
@@ -702,11 +699,11 @@ func (s *TimeScaleSuite) TestGetStakerAddressDetails(c *C) {
 		c.Fatal(err)
 	}
 
-  addressDetails, err = s.Store.GetStakerAddressDetails(address)
-  c.Assert(err, IsNil)
-  c.Assert(addressDetails, NotNil)
-  c.Assert(addressDetails.PoolsDetails, IsNil)
-  c.Assert(addressDetails.TotalEarned, Equals, uint64(0))
-  c.Assert(addressDetails.TotalStaked, Equals, uint64(0))
-  c.Assert(addressDetails.TotalROI, Equals, float64(0))
+	addressDetails, err = s.Store.GetStakerAddressDetails(address)
+	c.Assert(err, IsNil)
+	c.Assert(addressDetails, NotNil)
+	c.Assert(addressDetails.PoolsDetails, IsNil)
+	c.Assert(addressDetails.TotalEarned, Equals, uint64(0))
+	c.Assert(addressDetails.TotalStaked, Equals, uint64(0))
+	c.Assert(addressDetails.TotalROI, Equals, float64(0))
 }

@@ -353,7 +353,8 @@ func (s *Client) GetPriceInRune(pool common.Asset) (float64, error) {
 		if err != nil {
 			return 0, err
 		}
-		return float64(runeDepth / assetDepth), nil
+
+		return float64(runeDepth) / float64(assetDepth), nil
 	}
 
 	return 0, nil
@@ -691,14 +692,15 @@ func (s *Client) buyVolume(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
 		AND type = 'swap'
-		AND asset_amount > 0
+		AND asset_amount < 0
 	`, models.ModelEventsTable)
 
 	var buyVolume sql.NullInt64
 	if err := s.db.Get(&buyVolume, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
-	return uint64(buyVolume.Int64), nil
+
+	return uint64(-buyVolume.Int64), nil
 }
 
 func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
@@ -718,18 +720,23 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 	return uint64(buyVolume.Int64), nil
 }
 
-func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
-	buyVol, err := s.buyVolume(asset)
+func (s *Client) poolVolume(pool common.Asset) (uint64, error) {
+	buyVol, err := s.buyVolume(pool)
 	if err != nil {
 		return 0, err
 	}
 
-	sellVol, err := s.sellVolume(asset)
+	sellVol, err := s.sellVolume(pool)
 	if err != nil {
 		return 0, err
 	}
 
-	return buyVol + sellVol, nil
+	price, err := s.GetPriceInRune(pool)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(float64(sellVol) + (float64(buyVol) * price)), nil
 }
 
 func (s *Client) poolVolume24hr(asset common.Asset) (uint64, error) {

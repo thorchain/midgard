@@ -706,7 +706,7 @@ var (
 	}
 
 	// swap:  In: 1BNB, Out: 1RUNE
-	// ASSET > RUNE
+	// ASSET > RUNE (Sell)
 	swapOutEvent0 = models.EventSwap{
 		Event: models.Event{
 			Time:   time.Now(),
@@ -763,6 +763,7 @@ var (
 	}
 
 	// swap: In: 1RUNE, Out 1BNB
+	// RUNE > ASSET (Buy)
 	swapInEvent0 = models.EventSwap{
 		Event: models.Event{
 			Time:   time.Now(),
