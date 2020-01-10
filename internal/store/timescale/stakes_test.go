@@ -203,44 +203,31 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 	c.Assert(poolStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(200))
+	c.Assert(poolStaked, Equals, uint64(20), Commentf("%v", poolStaked))
 
 	// Additional stake
-	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(200))
+	c.Assert(poolStaked, Equals, uint64(40))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(0))
-
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
-
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		c.Fatal(err)
-	}
-
-	poolStaked, err = s.Store.poolStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(50000000))
+	c.Assert(poolStaked, Equals, uint64(20))
 }
 
 func (s *TimeScaleSuite) TestRuneEarned(c *C) {
@@ -510,7 +497,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
