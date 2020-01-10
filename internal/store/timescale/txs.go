@@ -334,11 +334,15 @@ func (s *Client) txForDirection(eventId uint64, direction string) (models.TxData
 		SELECT tx_hash AS tx_id, memo, from_address AS address
 			FROM %v
 		WHERE txs.event_id = $1
-		AND txs.direction = $2`, models.ModelTxsTable)
+		AND txs.direction = $2
+  `, models.ModelTxsTable)
 
 	tx := models.TxData{}
 	row := s.db.QueryRow(stmnt, eventId, direction)
 	if err := row.Scan(&tx.TxID, &tx.Memo, &tx.Address); err != nil {
+		if err == sql.ErrNoRows {
+			return models.TxData{}, nil
+		}
 		return models.TxData{}, err
 	}
 	return tx, nil
@@ -411,7 +415,7 @@ func (s *Client) options(eventId uint64, eventType string) (models.Options, erro
 	var options models.Options
 	var err error
 
-	if eventType == "stake" {
+	if eventType == "swap" {
 		options.PriceTarget, err = s.priceTarget(eventId)
 		if err != nil {
 			return models.Options{}, err

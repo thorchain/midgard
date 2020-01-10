@@ -681,11 +681,6 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 }
 
 func (s *TimeScaleSuite) TestOptions(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		c.Fatal(err)
-	}
-
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
@@ -694,22 +689,20 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 	eventId := uint64(1)
 	options, err := s.Store.options(eventId, "stake")
 	c.Assert(err, IsNil)
-
 	c.Assert(options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(options.PriceTarget, Equals, uint64(0))
 	c.Assert(options.Asymmetry, Equals, float64(0))
 
-	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	// Swap
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(2)
-	options, err = s.Store.options(eventId, "stake")
+	eventId = uint64(4)
+	options, err = s.Store.options(eventId, "swap")
 	c.Assert(err, IsNil)
-
 	c.Assert(options.WithdrawBasisPoints, Equals, float64(0))
-	c.Assert(options.PriceTarget, Equals, uint64(0))
+	c.Assert(options.PriceTarget, Equals, uint64(123456789))
 	c.Assert(options.Asymmetry, Equals, float64(0))
 }
 
