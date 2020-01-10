@@ -503,36 +503,25 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, uint64(20), Commentf("%v", totalStaked))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(400))
+	c.Assert(totalStaked, Equals, uint64(40))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
-
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		c.Fatal(err)
-	}
-
-	totalStaked, err = s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(50000000), Commentf("%d", totalStaked))
+	c.Assert(totalStaked, Equals, uint64(20))
 }
 
 func (s *TimeScaleSuite) TestGetPools(c *C) {
