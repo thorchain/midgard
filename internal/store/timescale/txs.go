@@ -501,15 +501,19 @@ func (s *Client) txHeight(eventId uint64) (uint64, error) {
 }
 
 func (s *Client) priceTarget(eventId uint64) (uint64, error) {
-	stmnt := `SELECT price_target FROM swaps WHERE event_id = $1`
-	var priceTarget uint64
-	row := s.db.QueryRow(stmnt, eventId)
+	stmnt := fmt.Sprintf(`
+    SELECT swap_price_target
+    FROM %v
+    WHERE event_id = $1
+    AND type = 'swap'
+  `, models.ModelEventsTable)
 
-	if err := row.Scan(&priceTarget); err != nil {
+	var priceTarget sql.NullInt64
+	if err := s.db.Get(&priceTarget, stmnt, eventId); err != nil {
 		return 0, err
 	}
 
-	return priceTarget, nil
+	return uint64(priceTarget.Int64), nil
 }
 
 func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, error) {

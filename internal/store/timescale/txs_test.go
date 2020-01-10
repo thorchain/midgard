@@ -831,3 +831,18 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(txHeight, Equals, uint64(2))
 }
+
+func (s *TimeScaleSuite) TestPriceTarget(c *C) {
+	priceTarget, err := s.Store.priceTarget(uint64(0))
+	c.Assert(err, NotNil)
+	c.Assert(priceTarget, Equals, uint64(0))
+
+	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	priceTarget, err = s.Store.priceTarget(uint64(4))
+	c.Assert(err, IsNil)
+	c.Assert(priceTarget, Equals, uint64(123456789))
+
+}

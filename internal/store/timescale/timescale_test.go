@@ -814,7 +814,7 @@ var (
 			Symbol: "BNB",
 			Ticker: "BNB",
 		},
-		PriceTarget:  124958592,
+		PriceTarget:  123456789,
 		TradeSlip:    0.123,
 		LiquidityFee: 10000,
 	}
