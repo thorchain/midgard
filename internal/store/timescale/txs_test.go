@@ -597,23 +597,31 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTxForDirection(c *C) {
+	// no stake
+	eventId := uint64(0)
+	tx, err := s.Store.txForDirection(eventId, "in")
+	c.Assert(err, IsNil)
+	c.Assert(tx.Address, Equals, "")
+	c.Assert(tx.Memo, Equals, "")
+	c.Assert(tx.TxID, Equals, "")
+
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	eventId := uint64(1)
-	inTx, err := s.Store.txForDirection(eventId, "in")
+	eventId = uint64(1)
+	tx, err = s.Store.txForDirection(eventId, "in")
 	c.Assert(err, IsNil)
-	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	c.Assert(inTx.Memo, Equals, "stake:BNB")
-	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
+	c.Assert(tx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+	c.Assert(tx.Memo, Equals, "stake:BNB")
+	c.Assert(tx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
-	outTx, err := s.Store.txForDirection(eventId, "out")
-	c.Assert(err, NotNil)
-	c.Assert(outTx.Address, Equals, "")
-	c.Assert(outTx.Memo, Equals, "")
-	c.Assert(outTx.TxID, Equals, "")
+	tx, err = s.Store.txForDirection(eventId, "out")
+	c.Assert(err, IsNil)
+	c.Assert(tx.Address, Equals, "")
+	c.Assert(tx.Memo, Equals, "")
+	c.Assert(tx.TxID, Equals, "")
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
@@ -621,18 +629,38 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	}
 
 	eventId = uint64(2)
-	inTx, err = s.Store.txForDirection(eventId, "in")
+	tx, err = s.Store.txForDirection(eventId, "in")
 	c.Assert(err, IsNil)
 
-	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	c.Assert(inTx.Memo, Equals, "stake:BOLT")
-	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
+	c.Assert(tx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+	c.Assert(tx.Memo, Equals, "stake:BOLT")
+	c.Assert(tx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB6")
 
-	outTx, err = s.Store.txForDirection(eventId, "out")
-	c.Assert(err, NotNil)
-	c.Assert(outTx.Address, Equals, "")
-	c.Assert(outTx.Memo, Equals, "")
-	c.Assert(outTx.TxID, Equals, "")
+	tx, err = s.Store.txForDirection(eventId, "out")
+	c.Assert(err, IsNil)
+	c.Assert(tx.Address, Equals, "")
+	c.Assert(tx.Memo, Equals, "")
+	c.Assert(tx.TxID, Equals, "")
+
+	// swap event
+	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	eventId = uint64(3)
+	tx, err = s.Store.txForDirection(eventId, "in")
+	c.Assert(err, IsNil)
+
+	c.Assert(tx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+	c.Assert(tx.Memo, Equals, "swap:RUNE-B1A::1")
+	c.Assert(tx.TxID, Equals, "04C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7")
+
+	tx, err = s.Store.txForDirection(eventId, "out")
+	c.Assert(err, IsNil)
+	c.Assert(tx.Address, Equals, "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr") // Note: Not sure if this is correct as its the from_address on an outTx, not the to_address
+	c.Assert(tx.Memo, Equals, "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67")
+	c.Assert(tx.TxID, Equals, "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96")
+
 }
 
 func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
