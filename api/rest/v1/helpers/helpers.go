@@ -20,7 +20,7 @@ func ConvertEventDataForAPI(events models.Events) *api.Event {
 	return &api.Event{
 		Fee:        pointy.Int64(int64(events.Fee)),
 		Slip:       pointy.Float64(events.Slip),
-		StakeUnits: pointy.Int64(int64(events.StakeUnits)),
+		StakeUnits: pointy.Int64(events.StakeUnits),
 	}
 }
 
