@@ -17,7 +17,7 @@ type PoolData struct {
 	AssetROI         float64
 	AssetStakedTotal uint64
 	BuyAssetCount    uint64
-	BuyFeeAverage    uint64 // TODO should this be a float.
+	BuyFeeAverage    uint64
 	BuyFeesTotal     uint64
 	BuySlipAverage   float64
 	BuyTxAverage     uint64

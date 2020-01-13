@@ -34,7 +34,7 @@ var (
 		GenesisTime: time.Now().AddDate(0, 0, -21),
 	}
 
-	// TODO delete
+	// TODO Deprecate using these tes fixtures as some part of there structure have changed.
 	stakeEvent0Old = models.EventStake{
 		Event: models.Event{
 			Time:   genesis.GenesisTime.Add(time.Second * (1 * blockSpeed)),

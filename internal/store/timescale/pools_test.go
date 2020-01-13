@@ -75,7 +75,7 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 	poolData, err = s.Store.GetPoolData(asset)
 	c.Assert(err, IsNil)
 
-	c.Assert(poolData.Status, Equals, "") // TODO Review
+	c.Assert(poolData.Status, Equals, "")
 	c.Assert(poolData.Asset, Equals, asset)
 	c.Assert(poolData.AssetDepth, Equals, uint64(1))
 	c.Assert(poolData.AssetStakedTotal, Equals, uint64(1))
