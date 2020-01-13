@@ -1,8 +1,8 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -16,23 +16,23 @@ const blockSpeed = 3
 // timeOfBlock = ((currentTime - genesisTime) / (currentBlockheight))*blockHeight + genesisTime (edited)
 func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
 	assetBlockHeight, err := s.getBlockHeight(asset)
-  if err != nil {
-    return 0, err
-  }
+	if err != nil {
+		return 0, err
+	}
 	dateCreated, err := s.getTimeOfBlock(assetBlockHeight)
-  if err != nil {
-    return 0, err
-  }
+	if err != nil {
+		return 0, err
+	}
 
 	return dateCreated, nil
 }
 
 func (s *Client) getTimeOfBlock(assetBlockHeight uint64) (uint64, error) {
 	currentTime := uint64(time.Now().Unix())
-  getGenesis, err := s.getGenesis()
-  if err != nil {
-    return 0, err
-  }
+	getGenesis, err := s.getGenesis()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to getGenesis")
+	}
 	genesisTime := uint64(getGenesis.Unix())
 	currentBlockHeight := (currentTime - genesisTime) / blockSpeed
 
@@ -63,8 +63,8 @@ func (s *Client) getBlockHeight(pool common.Asset) (uint64, error) {
 
 	var blockHeight sql.NullInt64
 	if err := s.db.Get(&blockHeight, stmnt, pool.String()); err != nil {
-    return 0, err
-  }
+		return 0, err
+	}
 
 	return uint64(blockHeight.Int64), nil
 }
