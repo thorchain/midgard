@@ -36,6 +36,8 @@ services:
       - pg
       - thormock
     command: make install test
+    environment:
+      - PG_HOST=pg
   pg:
     image: timescale/timescaledb:latest-pg11
     ports:

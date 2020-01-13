@@ -52,7 +52,7 @@ test-internal:
 	go test -cover ./...
 
 test:
-	PG_HOST=pg ./scripts/run.sh testcode make test-internal
+	./scripts/run.sh testcode make test-internal
 
 test-docker:
 	@docker-compose run --rm --no-deps test --build
