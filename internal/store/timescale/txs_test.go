@@ -738,8 +738,7 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 
 func (s *TimeScaleSuite) TestGas(c *C) {
 	// no stakes
-	eventId := uint64(0)
-	gas, err := s.Store.gas(eventId)
+	gas, err := s.Store.gas(uint64(0))
 	c.Assert(err, IsNil)
 	c.Assert(gas.Asset.IsEmpty(), Equals, true)
 
@@ -748,8 +747,7 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(1)
-	gas, err = s.Store.gas(eventId)
+	gas, err = s.Store.gas(uint64(stakeEvent0.ID))
 	c.Assert(err, IsNil)
 	c.Assert(gas.Asset.IsEmpty(), Equals, false)
 	c.Assert(gas.Asset.String(), Equals, "BNB.BNB")
