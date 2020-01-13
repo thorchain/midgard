@@ -171,7 +171,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 }
@@ -613,69 +613,72 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 
 func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	// no stake
-	eventId := uint64(0)
-	tx, err := s.Store.txForDirection(eventId, "in")
+	tx, err := s.Store.txForDirection(uint64(0), "in")
 	c.Assert(err, IsNil)
 	c.Assert(tx.Address, Equals, "")
 	c.Assert(tx.Memo, Equals, "")
 	c.Assert(tx.TxID, Equals, "")
 
 	// Single stake
+	event0 := stakeEvent0
+	event0.ID = 1
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(1)
-	tx, err = s.Store.txForDirection(eventId, "in")
+	tx, err = s.Store.txForDirection(uint64(event0.ID), "in")
 	c.Assert(err, IsNil)
 	c.Assert(tx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(tx.Memo, Equals, "stake:BNB")
 	c.Assert(tx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
-	tx, err = s.Store.txForDirection(eventId, "out")
+	event1 := stakeEvent0
+	event1.ID = 2
+	tx, err = s.Store.txForDirection(uint64(event1.ID), "out")
 	c.Assert(err, IsNil)
 	c.Assert(tx.Address, Equals, "")
 	c.Assert(tx.Memo, Equals, "")
 	c.Assert(tx.TxID, Equals, "")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	event2 := stakeEvent1
+	event2.ID = 3
+	if err := s.Store.CreateStakeRecord(event2); err != nil {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(2)
-	tx, err = s.Store.txForDirection(eventId, "in")
+	tx, err = s.Store.txForDirection(uint64(event2.ID), "in")
 	c.Assert(err, IsNil)
 
 	c.Assert(tx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(tx.Memo, Equals, "stake:BOLT")
 	c.Assert(tx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB6")
 
-	tx, err = s.Store.txForDirection(eventId, "out")
+	tx, err = s.Store.txForDirection(uint64(event2.ID), "out")
 	c.Assert(err, IsNil)
 	c.Assert(tx.Address, Equals, "")
 	c.Assert(tx.Memo, Equals, "")
 	c.Assert(tx.TxID, Equals, "")
 
 	// swap event
-	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+	event3 := swapOutEvent0
+	event3.ID = 4
+	if err := s.Store.CreateSwapRecord(event3); err != nil {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(3)
-	tx, err = s.Store.txForDirection(eventId, "in")
+	tx, err = s.Store.txForDirection(uint64(event3.ID), "in")
 	c.Assert(err, IsNil)
 
 	c.Assert(tx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(tx.Memo, Equals, "swap:RUNE-B1A::1")
 	c.Assert(tx.TxID, Equals, "04C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7")
 
-	tx, err = s.Store.txForDirection(eventId, "out")
+	tx, err = s.Store.txForDirection(uint64(event3.ID), "out")
 	c.Assert(err, IsNil)
 	c.Assert(tx.Address, Equals, "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr") // Note: Not sure if this is correct as its the from_address on an outTx, not the to_address
 	c.Assert(tx.Memo, Equals, "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67")
 	c.Assert(tx.TxID, Equals, "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96")
-
 }
 
 func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
@@ -874,8 +877,7 @@ func (s *TimeScaleSuite) TestTxDate(c *C) {
 
 func (s *TimeScaleSuite) TestTxHeight(c *C) {
 	// no stake
-	eventId := uint64(10)
-	txHeight, err := s.Store.txHeight(eventId)
+	txHeight, err := s.Store.txHeight(uint64(0))
 	c.Assert(err, NotNil)
 	c.Assert(txHeight, Equals, uint64(0))
 
@@ -884,8 +886,7 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(1)
-	txHeight, err = s.Store.txHeight(eventId)
+	txHeight, err = s.Store.txHeight(uint64(stakeEvent0.ID))
 	c.Assert(err, IsNil)
 	c.Assert(txHeight, Equals, uint64(1))
 
@@ -894,8 +895,7 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 		c.Fatal(err)
 	}
 
-	eventId = uint64(2)
-	txHeight, err = s.Store.txHeight(eventId)
+	txHeight, err = s.Store.txHeight(uint64(stakeEvent1.ID))
 	c.Assert(err, IsNil)
 	c.Assert(txHeight, Equals, uint64(2))
 }
