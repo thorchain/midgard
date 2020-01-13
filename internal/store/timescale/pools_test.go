@@ -1213,19 +1213,14 @@ func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 		c.Fatal(err)
 	}
 
-	// stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
-		c.Fatal(err)
-	}
-
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	feeAverage, err = s.Store.sellFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(210000), Commentf("%v", feeAverage))
+	c.Assert(feeAverage, Equals, uint64(45000), Commentf("%v", feeAverage))
 }
 
 func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
