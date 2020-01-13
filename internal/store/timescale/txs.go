@@ -132,7 +132,7 @@ func (s *Client) eventsForAddress(address common.Address) ([]uint64, error) {
 
 	rows, err := s.db.Queryx(stmnt, address.String())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to Queryx for eventsForAddress")
 	}
 
 	results, err := s.eventsResults(rows)
@@ -145,7 +145,7 @@ func (s *Client) eventsForAddress(address common.Address) ([]uint64, error) {
 
 func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asset) ([]uint64, error) {
 	stmnt := fmt.Sprintf(`
-		SELECT DISTINCT(txs.id)
+		SELECT DISTINCT(txs.event_id)
 			FROM %v
 				LEFT JOIN %v ON txs.event_id = events.event_id
 		WHERE events.pool = $1
@@ -187,7 +187,7 @@ func (s *Client) eventsForAddressTxId(address common.Address, txid string) ([]ui
 
 func (s *Client) eventsForAsset(pool common.Asset) ([]uint64, error) {
 	stmnt := fmt.Sprintf(`
-		SELECT DISTINCT(txs.id)
+		SELECT DISTINCT(txs.event_id)
 			FROM %v
 				LEFT JOIN %v ON txs.event_id = events.event_id
 		WHERE events.pool = $1
@@ -195,7 +195,7 @@ func (s *Client) eventsForAsset(pool common.Asset) ([]uint64, error) {
 
 	rows, err := s.db.Queryx(stmnt, pool.String())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to QueryX for eventsForAsset")
 	}
 
 	results, err := s.eventsResults(rows)
@@ -515,7 +515,7 @@ func (s *Client) txHeight(eventId uint64) (uint64, error) {
 
 	var txHeight sql.NullInt64
 	if err := s.db.Get(&txHeight, stmnt, eventId); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "failed to Get txHeight")
 	}
 
 	return uint64(txHeight.Int64), nil
@@ -538,10 +538,11 @@ func (s *Client) priceTarget(eventId uint64) (uint64, error) {
 }
 
 func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, error) {
-	stmnt := `
+	stmnt := fmt.Sprintf(`
 		SELECT height, type, status
-			FROM events
-		WHERE id = $1`
+    FROM %v
+		WHERE event_id = $1
+  `, models.ModelEventsTable)
 
 	var (
 		height            uint64
@@ -550,7 +551,7 @@ func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, err
 
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&height, &eventType, &status); err != nil {
-		return 0, 0, "", "", err
+		return 0, 0, "", "", errors.Wrap(err, "failed to QueryRow for eventBasic")
 	}
 
 	eventTime, err := s.txDate(height)

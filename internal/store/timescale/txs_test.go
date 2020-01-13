@@ -46,7 +46,7 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
@@ -84,7 +84,7 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	c.Assert(txData[1].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[1].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[1].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[1].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[1].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[1].Events.Slip, Equals, float64(0))
 	c.Assert(txData[1].Events.Fee, Equals, uint64(0))
 }
@@ -131,7 +131,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
@@ -218,7 +218,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
@@ -257,24 +257,29 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
+	asset, _ := common.NewAsset("BNB")
+
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
 		c.Fatal(err)
 	}
+
+	// No stake
+	txData, err := s.Store.GetTxDataByAsset(asset)
+	c.Assert(err, IsNil)
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
 		c.Fatal(err)
 	}
 
-	asset, _ := common.NewAsset("BNB")
-	txData, err := s.Store.GetTxDataByAsset(asset)
+	txData, err = s.Store.GetTxDataByAsset(asset)
 	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
@@ -303,7 +308,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
@@ -342,7 +347,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	c.Assert(txData[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(txData[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(txData[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(txData[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(txData[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(txData[0].Events.Slip, Equals, float64(0))
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 }
@@ -375,6 +380,7 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 
 func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 
+	// no stake
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
 	eventsForAddressAsset, err := s.Store.eventsForAddressAsset(address, asset)
@@ -382,15 +388,18 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 	c.Assert(len(eventsForAddressAsset), Equals, 0)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	stakeEvent0.ID = 1
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
 	eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(len(eventsForAddressAsset), Equals, 1)
+	c.Assert(eventsForAddressAsset[0], Equals, uint64(1))
 
 	// Additional stake
+	stakeEvent0.ID = 2
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
@@ -398,17 +407,18 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 	eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(len(eventsForAddressAsset), Equals, 2)
+	c.Assert(eventsForAddressAsset[1], Equals, uint64(2))
 
-	//// Additional stake
-	//address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	//if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-	//	c.Fatal(err)
-	//}
-	//
-	//asset, _ = common.NewAsset("BNB.LOK-3C0")
-	//eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
-	//c.Assert(err, IsNil)
-	//c.Assert(len(eventsForAddressAsset), Equals, 1)
+	// Additional stake
+	stakeEvent0.ID = 3
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	eventsForAddressAsset, err = s.Store.eventsForAddressAsset(address, asset)
+	c.Assert(err, IsNil)
+	c.Assert(len(eventsForAddressAsset), Equals, 3)
+	c.Assert(eventsForAddressAsset[2], Equals, uint64(3))
 }
 
 func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
@@ -459,6 +469,8 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	c.Assert(len(eventsForAsset), Equals, 0)
 
 	// Single stake
+	stakeEvent0 := stakeEvent0
+	stakeEvent0.ID = 1
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
@@ -466,8 +478,10 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	eventsForAsset, err = s.Store.eventsForAsset(pool)
 	c.Assert(err, IsNil)
 	c.Assert(len(eventsForAsset), Equals, 1)
+	c.Assert(eventsForAsset[0], Equals, uint64(1), Commentf("%v", eventsForAsset[0]))
 
 	// Additional stake
+	stakeEvent0.ID = 2
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
@@ -477,6 +491,7 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	c.Assert(len(eventsForAsset), Equals, 2)
 
 	// Additional stake
+	stakeEvent0.ID = 3
 	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
