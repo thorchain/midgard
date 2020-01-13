@@ -995,13 +995,13 @@ func (s *TimeScaleSuite) TestBuyVolume24hr(c *C) {
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Assert(err, IsNil)
 	}
 
 	volume, err = s.Store.buyVolume24hr(asset)
 	c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(1))
+	c.Assert(volume, Equals, uint64(1), Commentf("vol: %v", volume))
 }
 
 func (s *TimeScaleSuite) TestPoolVolume(c *C) {
@@ -1172,8 +1172,8 @@ func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
 		c.Fatal(err)
 	}
 
-	// swap Out RUNE In BNB
-	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
+	// swap (buy)
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -1192,11 +1192,10 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 	c.Assert(slipAverage, Equals, 0.0)
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapEvent1Old); err != nil {
+	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.06151196360588074)
@@ -1240,15 +1239,7 @@ func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
 		c.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
-		c.Fatal(err)
-	}
-
-	feeAverage, err = s.Store.buyFeeAverage(asset)
-	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(10000), Commentf("feeAverage: %v", feeAverage))
-
-	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -1322,7 +1313,7 @@ func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.buyFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(0))
+	c.Assert(feesTotal, Equals, uint64(10000), Commentf("feesTotal: %v", feesTotal))
 
 	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)
@@ -1392,7 +1383,7 @@ func (s *TimeScaleSuite) TestBuyAssetCount(c *C) {
 
 	assetCount, err = s.Store.buyAssetCount(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetCount, Equals, uint64(0))
+	c.Assert(assetCount, Equals, uint64(1), Commentf("assetCount: %v", assetCount))
 
 	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)

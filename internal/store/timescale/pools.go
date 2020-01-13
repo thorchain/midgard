@@ -647,7 +647,7 @@ func (s *Client) sellVolume(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount < 0
 	`, models.ModelEventsTable)
 
 	var sellVolume sql.NullInt64
@@ -668,7 +668,7 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 		SELECT SUM(asset_amount)
 		FROM %v
 		WHERE pool = $1
-		AND asset_amount > 0
+		AND rune_amount < 0
 		AND type = 'swap'
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`, models.ModelEventsTable)
@@ -692,7 +692,7 @@ func (s *Client) buyVolume(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
 		AND type = 'swap'
-		AND asset_amount < 0
+		AND rune_amount > 0
 	`, models.ModelEventsTable)
 
 	var buyVolume sql.NullInt64
@@ -709,7 +709,7 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount > 0
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`, models.ModelEventsTable)
 
@@ -717,7 +717,7 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 	if err := s.db.Get(&buyVolume, stmnt, asset.String()); err != nil {
 		return 0, err
 	}
-	return uint64(buyVolume.Int64), nil
+	return uint64(-buyVolume.Int64), nil
 }
 
 func (s *Client) poolVolume(pool common.Asset) (uint64, error) {
@@ -810,7 +810,7 @@ func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount < 0
 	`, models.ModelEventsTable)
 
 	var sellSlipAverage sql.NullFloat64
@@ -826,7 +826,7 @@ func (s *Client) buySlipAverage(pool common.Asset) (float64, error) {
 		SELECT AVG(swap_trade_slip)
 		FROM %v
 		WHERE pool = $1
-		AND asset_amount > 0
+		AND rune_amount > 0
 	`, models.ModelEventsTable)
 
 	var buySlipAverage sql.NullFloat64
@@ -854,7 +854,7 @@ func (s *Client) sellFeeAverage(pool common.Asset) (uint64, error) {
 		SELECT AVG(swap_liquidity_fee)
 		FROM %v
 		WHERE pool = $1
-		AND asset_amount < 0
+		AND rune_amount < 0
 	`, models.ModelEventsTable)
 
 	var sellFeeAverage sql.NullFloat64
@@ -875,7 +875,7 @@ func (s *Client) buyFeeAverage(pool common.Asset) (uint64, error) {
 		SELECT AVG(swap_liquidity_fee)
 		FROM %v
 		WHERE pool = $1
-		AND asset_amount > 0
+		AND rune_amount > 0
 	`, models.ModelEventsTable)
 
 	var buyFeeAverage sql.NullFloat64
@@ -906,7 +906,7 @@ func (s *Client) sellFeesTotal(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount < 0
 	`, models.ModelEventsTable)
 
 	var sellFeesTotal sql.NullFloat64
@@ -927,7 +927,7 @@ func (s *Client) buyFeesTotal(pool common.Asset) (uint64, error) {
 		SELECT SUM(swap_liquidity_fee)
 		FROM %v
 		WHERE pool = $1
-		AND asset_amount > 0
+		AND rune_amount > 0
 	`, models.ModelEventsTable)
 
 	var buyFeesTotal sql.NullInt64
@@ -956,7 +956,7 @@ func (s *Client) sellAssetCount(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount < 0
 	`, models.ModelEventsTable)
 
 	var sellAssetCount sql.NullInt64
@@ -973,7 +973,7 @@ func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
     FROM %v
     WHERE type = 'swap'
     AND pool = $1
-    AND asset_amount > 0
+    AND rune_amount > 0
   `, models.ModelEventsTable)
 
 	var buyAssetCount sql.NullInt64
