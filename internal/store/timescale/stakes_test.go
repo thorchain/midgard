@@ -60,7 +60,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 	c.Assert(stakedUnits, Equals, uint64(100))
 
 	// swap
-	swapEvent0 := swapInEvent0
+	swapEvent0 := swapBuyEvent0
 	swapEvent0.ID = 5
 	if err := s.Store.CreateSwapRecord(swapEvent0); err != nil {
 		c.Fatal(err)
@@ -172,7 +172,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	c.Assert(assetStaked, Equals, uint64(1))
 
 	// swap
-	swapEvent0 := swapInEvent0
+	swapEvent0 := swapBuyEvent0
 	swapEvent0.ID = 5
 	if err := s.Store.CreateSwapRecord(swapEvent0); err != nil {
 		c.Fatal(err)

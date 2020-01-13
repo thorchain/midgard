@@ -244,7 +244,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -253,7 +253,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 	c.Assert(totalVolume24hr, Equals, uint64(1))
 
 	// another swap
-	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -287,7 +287,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -469,7 +469,7 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -494,7 +494,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 

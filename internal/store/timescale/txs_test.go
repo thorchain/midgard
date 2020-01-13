@@ -622,7 +622,7 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	// Single stake
 	event0 := stakeEvent0
 	event0.ID = 1
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(event0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -661,7 +661,7 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	c.Assert(tx.TxID, Equals, "")
 
 	// swap event
-	event3 := swapOutEvent0
+	event3 := swapSellEvent0
 	event3.ID = 4
 	if err := s.Store.CreateSwapRecord(event3); err != nil {
 		c.Fatal(err)
@@ -711,11 +711,11 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(coinsForTxHash[1].Amount, Equals, int64(1))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	txid = swapInEvent0.Event.InTx.ID.String()
+	txid = swapBuyEvent0.Event.InTx.ID.String()
 	coinsForTxHash, err = s.Store.coinsForTxHash(txid)
 	c.Assert(err, IsNil)
 	c.Assert(len(coinsForTxHash), Equals, 2)
@@ -725,11 +725,11 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(coinsForTxHash[1].Amount, Equals, int64(1))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapOutEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	txid = swapOutEvent0.Event.InTx.ID.String()
+	txid = swapSellEvent0.Event.InTx.ID.String()
 	coinsForTxHash, err = s.Store.coinsForTxHash(txid)
 	c.Assert(err, IsNil)
 	c.Assert(len(coinsForTxHash), Equals, 2)
@@ -772,7 +772,7 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 	c.Assert(options.Asymmetry, Equals, float64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -818,7 +818,7 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 	c.Assert(events.Fee, Equals, uint64(0))
 
 	// swap
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -905,7 +905,7 @@ func (s *TimeScaleSuite) TestPriceTarget(c *C) {
 	c.Assert(err, NotNil)
 	c.Assert(priceTarget, Equals, uint64(0))
 
-	if err := s.Store.CreateSwapRecord(swapInEvent0); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
 		c.Fatal(err)
 	}
 

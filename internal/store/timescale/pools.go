@@ -759,7 +759,7 @@ func (s *Client) sellTxAverage(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount < 0
 	`, models.ModelEventsTable)
 
 	var avg sql.NullFloat64
@@ -781,14 +781,14 @@ func (s *Client) buyTxAverage(pool common.Asset) (uint64, error) {
 		FROM %v
 		WHERE pool = $1
     AND type = 'swap'
-		AND asset_amount > 0
+		AND rune_amount > 0
 	`, models.ModelEventsTable)
 
 	var avg sql.NullFloat64
 	if err := s.db.Get(&avg, stmnt, pool.String()); err != nil {
 		return 0, err
 	}
-	return uint64(avg.Float64), nil
+	return uint64(-avg.Float64), nil
 }
 
 func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
