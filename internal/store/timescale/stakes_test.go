@@ -678,8 +678,24 @@ func (s *TimeScaleSuite) TestGetStakerAddressDetails(c *C) {
 	addressDetails, err = s.Store.GetStakerAddressDetails(address)
 	c.Assert(err, IsNil)
 	c.Assert(addressDetails, NotNil)
-	c.Assert(addressDetails.PoolsDetails, IsNil)
+	c.Assert(len(addressDetails.PoolsDetails), Equals, 1)
+	c.Assert(addressDetails.PoolsDetails[0].String(), Equals, "BNB.BNB")
 	c.Assert(addressDetails.TotalEarned, Equals, uint64(0))
-	c.Assert(addressDetails.TotalStaked, Equals, uint64(0))
+	c.Assert(addressDetails.TotalStaked, Equals, uint64(20))
 	c.Assert(addressDetails.TotalROI, Equals, float64(0))
+
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+		c.Fatal(err)
+	}
+
+	addressDetails, err = s.Store.GetStakerAddressDetails(address)
+	c.Assert(err, IsNil)
+	c.Assert(addressDetails, NotNil)
+	c.Assert(len(addressDetails.PoolsDetails), Equals, 2)
+	c.Assert(addressDetails.PoolsDetails[0].String(), Equals, "BNB.BNB")
+	c.Assert(addressDetails.PoolsDetails[1].String(), Equals, "BNB.BOLT-014")
+	c.Assert(addressDetails.TotalEarned, Equals, uint64(0))
+	c.Assert(addressDetails.TotalStaked, Equals, uint64(40))
+	c.Assert(addressDetails.TotalROI, Equals, float64(0))
+
 }
