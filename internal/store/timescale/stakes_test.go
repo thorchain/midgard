@@ -488,11 +488,11 @@ func (s *TimeScaleSuite) TestStakersPoolROI(c *C) {
 	c.Assert(poolROI, Equals, float64(0))
 }
 
-func (s *TimeScaleSuite) TestTotalStaked(c *C) {
+func (s *TimeScaleSuite) TestTotalStakedForAddress(c *C) {
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 
 	// No stakes
-	totalStaked, err := s.Store.totalStaked(address)
+	totalStaked, err := s.Store.totalStakedForAddress(address)
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(0))
 
@@ -501,7 +501,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 		c.Fatal(err)
 	}
 
-	totalStaked, err = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStakedForAddress(address)
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(20), Commentf("%v", totalStaked))
 
@@ -510,7 +510,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 		c.Fatal(err)
 	}
 
-	totalStaked, err = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStakedForAddress(address)
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(40))
 
@@ -519,7 +519,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 		c.Fatal(err)
 	}
 
-	totalStaked, err = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStakedForAddress(address)
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(20))
 }

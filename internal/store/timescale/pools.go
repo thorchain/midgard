@@ -897,7 +897,7 @@ func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
 		return 0, err
 	}
 
-	return (sellFeeAverage + buyFeeAverage) / 2, nil
+	return sellFeeAverage + buyFeeAverage, nil
 }
 
 func (s *Client) sellFeesTotal(pool common.Asset) (uint64, error) {

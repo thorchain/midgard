@@ -2,8 +2,6 @@ package timescale
 
 import (
 	. "gopkg.in/check.v1"
-
-	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
@@ -296,50 +294,39 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 	c.Assert(totalVolume, Equals, uint64(1))
 }
 
-func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
+func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	totalStaked, err := s.Store.totalStaked(address)
+	// no stakes
+	totalStaked, err := s.Store.totalStaked()
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	totalStaked, err = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked()
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, uint64(20), Commentf("%v", totalStaked))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		c.Fatal(err)
 	}
 
-	totalStaked, err = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked()
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(400))
+	c.Assert(totalStaked, Equals, uint64(40), Commentf("%v", totalStaked))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
-	totalStaked, err = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked()
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
-
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-
-	if err := s.Store.CreateStakeRecord(stakeEvent2Old); err != nil {
-		c.Fatal(err)
-	}
-
-	totalStaked, err = s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(50000000), Commentf("%d", totalStaked))
+	c.Assert(totalStaked, Equals, uint64(20), Commentf("%v", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {

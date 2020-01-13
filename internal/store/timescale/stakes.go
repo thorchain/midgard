@@ -1,22 +1,22 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
-  "math"
+	"database/sql"
+	"fmt"
+	"math"
 
-  "github.com/pkg/errors"
+	"github.com/pkg/errors"
 
-  "gitlab.com/thorchain/midgard/internal/common"
-  "gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateStakeRecord(record models.EventStake) error {
-  if err := s.CreateTxRecords(record.Event); err != nil {
-    return err
-  }
+	if err := s.CreateTxRecords(record.Event); err != nil {
+		return err
+	}
 
-  // get rune/asset amounts from Event.InTx.Coins
+	// get rune/asset amounts from Event.InTx.Coins
 	var runeAmt int64
 	var assetAmt int64
 	for _, coin := range record.Event.InTx.Coins {
@@ -123,7 +123,7 @@ func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressD
 		return StakerAddressDetails{}, err
 	}
 
-	totalStaked, err := s.totalStaked(address)
+	totalStaked, err := s.totalStakedForAddress(address)
 	if err != nil {
 		return StakerAddressDetails{}, err
 	}
@@ -280,7 +280,7 @@ func (s *Client) runeStaked(address common.Address, pool common.Asset) (uint64, 
 
 // runeStaked - sum of asset staked by a specific address and pool
 func (s *Client) assetStaked(from_address common.Address, pool common.Asset) (uint64, error) {
-  query := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		SELECT SUM(asset_amount)
 		FROM %v
 		WHERE from_address = $1
@@ -290,7 +290,7 @@ func (s *Client) assetStaked(from_address common.Address, pool common.Asset) (ui
 	var assetStaked sql.NullInt64
 	err := s.db.Get(&assetStaked, query, from_address, pool.String())
 	if err != nil {
-    return 0, err
+		return 0, err
 	}
 
 	return uint64(assetStaked.Int64), nil
@@ -458,7 +458,7 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (flo
 	return (stakerAssetROI + stakersRuneROI) / 2, nil
 }
 
-func (s *Client) totalStaked(address common.Address) (uint64, error) {
+func (s *Client) totalStakedForAddress(address common.Address) (uint64, error) {
 	pools, err := s.getPools(address)
 	if err != nil {
 		return 0, err

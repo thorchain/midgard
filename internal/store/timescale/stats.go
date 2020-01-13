@@ -68,7 +68,7 @@ func (s *Client) GetStatsData() (StatsData, error) {
 		return StatsData{}, err
 	}
 
-	bTotalStaked, err := s.bTotalStaked()
+	bTotalStaked, err := s.totalStaked()
 	if err != nil {
 		return StatsData{}, err
 	}
@@ -271,7 +271,7 @@ func (s *Client) totalVolume() (uint64, error) {
 	return uint64(totalVolume.Int64), nil
 }
 
-func (s *Client) bTotalStaked() (uint64, error) {
+func (s *Client) totalStaked() (uint64, error) {
 	var totalStaked uint64
 	pools, err := s.GetPools()
 	if err != nil {
