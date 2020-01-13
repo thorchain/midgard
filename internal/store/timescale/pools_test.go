@@ -1198,7 +1198,7 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.06151196360588074)
+	c.Assert(slipAverage, Equals, 0.061500001698732376)
 }
 
 func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
