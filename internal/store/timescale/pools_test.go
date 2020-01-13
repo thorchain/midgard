@@ -1286,7 +1286,7 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.sellFeesTotal(pool)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(40000), Commentf("%d", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(45000), Commentf("%d", feesTotal))
 }
 
 func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
