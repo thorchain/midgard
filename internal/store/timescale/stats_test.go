@@ -45,7 +45,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -54,7 +54,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1Old); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
 		c.Fatal(err)
 	}
 
@@ -63,7 +63,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0Old); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
 		c.Fatal(err)
 	}
 
@@ -547,4 +547,43 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	totalWithdrawTx, err = s.Store.totalWithdrawTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(1))
+}
+
+func (s *TimeScaleSuite) TestGetStatsData(c *C) {
+	// no stakes / swaps
+	data, err := s.Store.GetStatsData()
+	c.Assert(err, IsNil)
+
+	// stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	// swap
+	if err := s.Store.CreateSwapRecord(swapBuyEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	// swap
+	if err := s.Store.CreateSwapRecord(swapSellEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	data, err = s.Store.GetStatsData()
+	c.Assert(data.DailyActiveUsers, Equals, uint64(1))
+	c.Assert(data.MonthlyActiveUsers, Equals, uint64(1))
+	c.Assert(data.TotalUsers, Equals, uint64(1))
+	c.Assert(data.DailyTx, Equals, uint64(5))
+	c.Assert(data.MonthlyTx, Equals, uint64(5))
+	c.Assert(data.TotalTx, Equals, uint64(5))
+	c.Assert(data.TotalVolume24hr, Equals, uint64(2))
+	c.Assert(data.TotalVolume, Equals, uint64(1))
+	c.Assert(data.TotalStaked, Equals, uint64(20))
+	c.Assert(data.TotalDepth, Equals, uint64(10))
+	c.Assert(data.TotalEarned, Equals, uint64(0))
+	c.Assert(data.PoolCount, Equals, uint64(1))
+	c.Assert(data.TotalAssetBuys, Equals, uint64(1))
+	c.Assert(data.TotalAssetSells, Equals, uint64(1))
+	c.Assert(data.TotalStakeTx, Equals, uint64(1))
+	c.Assert(data.TotalWithdrawTx, Equals, uint64(0))
 }

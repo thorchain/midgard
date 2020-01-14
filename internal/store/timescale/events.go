@@ -1,14 +1,14 @@
 package timescale
 
 import (
-  "database/sql"
-  "fmt"
+	"database/sql"
+	"fmt"
 
-  "gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) GetMaxID() (int64, error) {
-	query := fmt.Sprintf("SELECT MAX(id) FROM %s", models.ModelEventsTable)
+	query := fmt.Sprintf("SELECT MAX(event_id) FROM %s", models.ModelEventsTable)
 	var maxId sql.NullInt64
 	err := s.db.Get(&maxId, query)
 	if err != nil {
