@@ -656,6 +656,15 @@ func (s *TimeScaleSuite) TestGetStakerAddresses(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(len(addresses), Equals, 1)
 	c.Assert(addresses[0].String(), Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+
+	// unstake
+	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	addresses, err = s.Store.GetStakerAddresses()
+	c.Assert(err, IsNil)
+	c.Assert(len(addresses), Equals, 0)
 }
 
 func (s *TimeScaleSuite) TestGetStakerAddressDetails(c *C) {
