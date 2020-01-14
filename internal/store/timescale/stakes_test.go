@@ -699,3 +699,25 @@ func (s *TimeScaleSuite) TestGetStakerAddressDetails(c *C) {
 	c.Assert(addressDetails.TotalROI, Equals, float64(0))
 
 }
+
+func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
+	asset, _ := common.NewAsset("BNB.BNB")
+	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
+
+	// no stakes
+	stakerAddressAndAssetDetails, err := s.Store.GetStakersAddressAndAssetDetails(address, asset)
+	c.Assert(err, NotNil)
+
+	// stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	stakerAddressAndAssetDetails, err = s.Store.GetStakersAddressAndAssetDetails(address, asset)
+	c.Assert(err, IsNil)
+
+	c.Assert(stakerAddressAndAssetDetails.StakeUnits, Equals, uint64(100))
+	c.Assert(stakerAddressAndAssetDetails.RuneStaked, Equals, uint64(10))
+	c.Assert(stakerAddressAndAssetDetails.AssetStaked, Equals, uint64(1))
+	c.Assert(stakerAddressAndAssetDetails.PoolStaked, Equals, uint64(20))
+}
