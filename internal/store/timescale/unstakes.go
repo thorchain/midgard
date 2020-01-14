@@ -10,9 +10,9 @@ import (
 )
 
 func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
-  if err := s.CreateTxRecords(record.Event); err != nil {
-   return err
-  }
+	if err := s.CreateTxRecords(record.Event); err != nil {
+		return err
+	}
 
 	// get rune/asset amounts from Event.InTx.Coins
 	var runeAmt int64
@@ -25,7 +25,7 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 		}
 	}
 
-  query := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		INSERT INTO %v (
 				time,
 				event_id,
@@ -42,19 +42,19 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
           ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING id`, models.ModelEventsTable)
 
-  _, err := s.db.Exec(query,
-    record.Time,
-    record.ID,
-    record.Height,
-    "stake", // using the same type, just with negative values. For easier/better query creation
-    record.Status,
-    record.InTx.ToAddress,
-    record.InTx.FromAddress,
-    record.Pool.String(),
-    -runeAmt,
-    -assetAmt,
-    -record.StakeUnits,
-  )
+	_, err := s.db.Exec(query,
+		record.Time,
+		record.ID,
+		record.Height,
+		"stake", // using the same type, just with negative values. For easier/better query creation
+		record.Status,
+		record.InTx.ToAddress,
+		record.InTx.FromAddress,
+		record.Pool.String(),
+		-runeAmt,
+		-assetAmt,
+		-record.StakeUnits,
+	)
 
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")

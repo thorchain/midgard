@@ -153,7 +153,7 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				continue
 			}
 		default:
-			api.logger.Info().Str("evt.Type",evt.Type).Msg("Unknown event type")
+			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
 		}
 	}

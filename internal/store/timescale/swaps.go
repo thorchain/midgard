@@ -10,9 +10,9 @@ import (
 )
 
 func (s *Client) CreateSwapRecord(record models.EventSwap) error {
-  if err := s.CreateTxRecords(record.Event); err != nil {
-    return err
-  }
+	if err := s.CreateTxRecords(record.Event); err != nil {
+		return err
+	}
 
 	// get rune/asset amounts from Event.InTx/OutTxs.Coins
 	var runeAmt int64
@@ -32,7 +32,7 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 		}
 	}
 
-  query := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		INSERT INTO %v (
       time,
       event_id,
@@ -63,8 +63,8 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 		record.PriceTarget,
 		record.TradeSlip,
 		record.LiquidityFee,
-    runeAmt,
-    assetAmt,
+		runeAmt,
+		assetAmt,
 	)
 
 	if err != nil {

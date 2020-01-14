@@ -1,9 +1,9 @@
 package timescale
 
 import (
-  "fmt"
+	"fmt"
 
-  "gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateRewardRecord(record models.EventReward) error {
@@ -31,7 +31,7 @@ func (s *Client) CreateRewardRecord(record models.EventReward) error {
 			reward.Pool.String(),
 			reward.Amount,
 			"BLOCK_REWARD",
-			)
+		)
 
 		if err != nil {
 			s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventReward")

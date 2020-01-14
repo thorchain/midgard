@@ -11,7 +11,7 @@ const (
 	// Table / Measurement name
 	ModelEventsTable  = "events"
 	ModelGenesisTable = "genesis"
-  ModelTxsTable     = "txs"
+	ModelTxsTable     = "txs"
 )
 
 type Event struct {

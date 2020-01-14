@@ -58,9 +58,9 @@ func (a Asset) IsEmpty() bool {
 }
 
 func (a Asset) String() string {
-  if a.IsEmpty(){
-    return ""
-  }
+	if a.IsEmpty() {
+		return ""
+	}
 	return fmt.Sprintf("%s.%s", a.Chain.String(), a.Symbol.String())
 }
 
