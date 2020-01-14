@@ -524,7 +524,7 @@ func (s *TimeScaleSuite) TestTotalStakedForAddress(c *C) {
 	c.Assert(totalStaked, Equals, uint64(20))
 }
 
-func (s *TimeScaleSuite) TestGetPools(c *C) {
+func (s *TimeScaleSuite) TestGetPoolsForAddress(c *C) {
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 
 	// No stakes

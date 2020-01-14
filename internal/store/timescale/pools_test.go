@@ -7,7 +7,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *TimeScaleSuite) TestGetPool(c *C) {
+func (s *TimeScaleSuite) TestGetPools(c *C) {
 
 	pool, err := s.Store.GetPools()
 	c.Assert(err, IsNil)
@@ -1647,4 +1647,21 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 	roi, err := s.Store.poolROI12(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
+}
+
+func (s *TimeScaleSuite) TestGetPool(c *C) {
+	// no stake
+	asset, _ := common.NewAsset("BNB.BNB")
+	pool, err := s.Store.GetPool(asset)
+	c.Assert(err, NotNil)
+	c.Assert(pool.IsEmpty(), Equals, true)
+
+	// stake
+	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+		c.Fatal(err)
+	}
+
+	pool, err = s.Store.GetPool(asset)
+	c.Assert(err, IsNil)
+	c.Assert(pool.String(), Equals, "BNB.BNB")
 }

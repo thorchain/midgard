@@ -51,27 +51,20 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
-func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
-	query := `
-		SELECT sub.pool
-		FROM (
-			SELECT pool, SUM(units) AS total_units
-			FROM stakes
-			WHERE pool = $1
-			GROUP BY pool
-		) as sub
-		WHERE sub.total_units > 0
-	`
+func (s *Client) GetPool(pool common.Asset) (common.Asset, error) {
+	stmnt := fmt.Sprintf(`
+    SELECT DISTINCT pool
+    FROM %v
+    WHERE pool = $1
+    AND stake_units > 0
+  `, models.ModelEventsTable)
 
-	row := s.db.QueryRowx(query, asset.String())
-
-	var a string
-
-	if err := row.Scan(&a); err != nil {
+	var asset string
+	if err := s.db.Get(&asset, stmnt, pool.String()); err != nil {
 		return common.Asset{}, err
 	}
 
-	return common.NewAsset(a)
+	return common.NewAsset(asset)
 }
 
 func (s *Client) GetPools() ([]common.Asset, error) {
