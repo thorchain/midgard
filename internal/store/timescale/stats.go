@@ -141,9 +141,7 @@ func (s *Client) dailyActiveUsers() (uint64, error) {
 			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 			) x;`
 	var dailyActiveUsers uint64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&dailyActiveUsers); err != nil {
+	if err := s.db.Get(&dailyActiveUsers, stmnt); err != nil {
 		return 0, err
 	}
 
