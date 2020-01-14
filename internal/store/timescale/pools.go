@@ -51,12 +51,16 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
+// GetPool will return the pool if it exists
 func (s *Client) GetPool(pool common.Asset) (common.Asset, error) {
 	stmnt := fmt.Sprintf(`
-    SELECT DISTINCT pool
-    FROM %v
-    WHERE pool = $1
-    AND stake_units > 0
+        SELECT sub.pool
+        FROM (
+          SELECT pool, SUM(stake_units)
+          FROM %v
+          WHERE pool = $1
+          GROUP BY pool
+        ) as sub
   `, models.ModelEventsTable)
 
 	var asset string
