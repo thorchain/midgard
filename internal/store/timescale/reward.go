@@ -30,7 +30,7 @@ func (s *Client) CreateRewardRecord(record models.EventReward) error {
 			reward.Pool.String(),
 			reward.Amount,
 			"BLOCK_REWARD",
-			)
+		)
 
 		if err != nil {
 			s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
