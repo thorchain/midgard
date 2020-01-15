@@ -21,11 +21,11 @@ func Test(t *testing.T) {
 }
 
 const (
-	port     = 5432
-	userName = "postgres"
-	password = "password"
-	database = "midgard_test"
-	sslMode  = "disable"
+	port          = 5432
+	userName      = "postgres"
+	password      = "password"
+	database      = "midgard_test"
+	sslMode       = "disable"
 	migrationsDir = "../../../db/migrations/"
 )
 
@@ -33,9 +33,9 @@ var (
 	genesis = models.Genesis{
 		GenesisTime: time.Now().AddDate(0, 0, -21),
 	}
-	stakeEvent0 = models.EventStake{
+	stakeBnbEvent0 = models.EventStake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (1*blockSpeed)),
+			Time:   time.Now(),
 			ID:     1,
 			Status: "Success",
 			Height: 1,
@@ -66,7 +66,6 @@ var (
 				Memo: "stake:BNB",
 			},
 			OutTxs: nil,
-			Gas:    nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -75,9 +74,9 @@ var (
 		},
 		StakeUnits: 100,
 	}
-	stakeEvent1 = models.EventStake{
+	stakeTomlEvent1 = models.EventStake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (2*blockSpeed)),
+			Time:   time.Now(),
 			ID:     2,
 			Status: "Success",
 			Height: 2,
@@ -108,7 +107,6 @@ var (
 				Memo: "stake:TOML",
 			},
 			OutTxs: nil,
-			Gas:    nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -117,9 +115,9 @@ var (
 		},
 		StakeUnits: 100,
 	}
-	stakeEvent2 = models.EventStake{
+	stakeBnbEvent2 = models.EventStake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (4*blockSpeed)),
+			Time:   time.Now(),
 			ID:     4,
 			Status: "Success",
 			Height: 4,
@@ -141,8 +139,8 @@ var (
 					{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "LOK-3C0",
-							Ticker: "LOK",
+							Symbol: "BNB",
+							Ticker: "BNB",
 						},
 						Amount: 50000000000,
 					},
@@ -154,7 +152,8 @@ var (
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
-			Gas:    []common.Coin{
+			// FIXME Gas is at the transaction
+			Gas: []common.Coin{
 				{
 					Asset: common.Asset{
 						Chain:  "BNB",
@@ -167,14 +166,14 @@ var (
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
-			Symbol: "LOK-3C0",
-			Ticker: "LOK",
+			Symbol: "BNB",
+			Ticker: "BNB",
 		},
 		StakeUnits: 25025000000,
 	}
-	stakeEvent3 = models.EventStake{
+	stakeTCANEvent3 = models.EventStake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (5*blockSpeed)),
+			Time:   time.Now(),
 			ID:     5,
 			Status: "Success",
 			Height: 5,
@@ -209,7 +208,6 @@ var (
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
-			Gas: nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -218,9 +216,9 @@ var (
 		},
 		StakeUnits: 1342175000,
 	}
-	stakeEvent4 = models.EventStake{
+	stakeTCANEvent4 = models.EventStake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (6*blockSpeed)),
+			Time:   time.Now(),
 			ID:     6,
 			Status: "Success",
 			Height: 6,
@@ -242,8 +240,8 @@ var (
 					{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "BOLT-014",
-							Ticker: "BOLT",
+							Symbol: "TCAN-014",
+							Ticker: "TCAN",
 						},
 						Amount: 334850000,
 					},
@@ -255,18 +253,17 @@ var (
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
-			Gas: nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
-			Symbol: "BOLT-014",
-			Ticker: "BOLT",
+			Symbol: "TCAN-014",
+			Ticker: "TCAN",
 		},
 		StakeUnits: 1342175000,
 	}
-	stakeEvent5 = models.EventStake{
+	stakeTCANEvent5 = models.EventStake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (8*blockSpeed)),
+			Time:   time.Now(),
 			ID:     8,
 			Status: "Success",
 			Height: 8,
@@ -301,7 +298,6 @@ var (
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
-			Gas: nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -310,9 +306,9 @@ var (
 		},
 		StakeUnits: 1342175000,
 	}
-	unstakeEvent0 = models.EventUnstake{
+	unstakeTOMLEvent0 = models.EventUnstake{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (3*blockSpeed)),
+			Time:   time.Now(),
 			ID:     3,
 			Status: "Success",
 			Height: 3,
@@ -343,7 +339,6 @@ var (
 				Memo: "withdraw:TOML",
 			},
 			OutTxs: nil,
-			Gas:    nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -352,9 +347,9 @@ var (
 		},
 		StakeUnits: 100,
 	}
-	swapEvent1 = models.EventSwap{
+	swapBoltBuyRuneEvent1 = models.EventSwap{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (7*blockSpeed)),
+			Time:   time.Now(),
 			ID:     7,
 			Status: "Success",
 			Height: 7,
@@ -378,14 +373,14 @@ var (
 			},
 			OutTxs: []common.Tx{
 				common.Tx{
-					ID: "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
-					Chain: "BNB",
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
-					ToAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
 					Coins: []common.Coin{
 						{
 							Asset: common.Asset{
-								Chain: "BNB",
+								Chain:  "BNB",
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
@@ -395,20 +390,19 @@ var (
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
 				},
 			},
-			Gas: nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
 			Symbol: "BOLT-014",
 			Ticker: "BOLT",
 		},
-		PriceTarget: 124958592,
-		TradeSlip: 0.123023930000000000,
+		PriceTarget:  124958592,
+		TradeSlip:    0.123023930000000000,
 		LiquidityFee: 7463556,
 	}
-	swapEvent2 = models.EventSwap{
+	swapBoltBuyRuneEvent2 = models.EventSwap{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (9*blockSpeed)),
+			Time:   time.Now(),
 			ID:     9,
 			Status: "Success",
 			Height: 9,
@@ -432,14 +426,14 @@ var (
 			},
 			OutTxs: []common.Tx{
 				common.Tx{
-					ID: "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF98",
-					Chain: "BNB",
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF98",
+					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
-					ToAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
 					Coins: []common.Coin{
 						{
 							Asset: common.Asset{
-								Chain: "BNB",
+								Chain:  "BNB",
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
@@ -449,20 +443,19 @@ var (
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E68",
 				},
 			},
-			Gas: nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
 			Symbol: "BOLT-014",
 			Ticker: "BOLT",
 		},
-		PriceTarget: 124958592,
-		TradeSlip: 0.123023930000000000,
+		PriceTarget:  124958592,
+		TradeSlip:    0.123023930000000000,
 		LiquidityFee: 7463556,
 	}
-	swapEvent3 = models.EventSwap{
+	swapBoltBuyRuneEvent3 = models.EventSwap{
 		Event: models.Event{
-			Time:   genesis.GenesisTime.Add(time.Second * (10*blockSpeed)),
+			Time:   time.Now(),
 			ID:     10,
 			Status: "Success",
 			Height: 10,
@@ -486,14 +479,14 @@ var (
 			},
 			OutTxs: []common.Tx{
 				common.Tx{
-					ID: "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF99",
-					Chain: "BNB",
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF99",
+					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
-					ToAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
 					Coins: []common.Coin{
 						{
 							Asset: common.Asset{
-								Chain: "BNB",
+								Chain:  "BNB",
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
@@ -503,15 +496,14 @@ var (
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E69",
 				},
 			},
-			Gas: nil,
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
 			Symbol: "BOLT-014",
 			Ticker: "BOLT",
 		},
-		PriceTarget: 124958592,
-		TradeSlip: 0.123023930000000000,
+		PriceTarget:  124958592,
+		TradeSlip:    0.123023930000000000,
 		LiquidityFee: 7463556,
 	}
 )
@@ -526,7 +518,6 @@ func (s *TimeScaleSuite) SetUpSuite(c *C) {
 	s.Store = NewTestStore(c)
 }
 
-
 func (s *TimeScaleSuite) TearDownSuite(c *C) {
 	MigrationDown(c, s.Store)
 }
@@ -537,12 +528,12 @@ func NewTestStore(c *C) *Client {
 	}
 
 	cfg := config.TimeScaleConfiguration{
-		Host:     getVar("PG_HOST", "localhost"),
-		Port:     port,
-		UserName: userName,
-		Password: password,
-		Database: database,
-		Sslmode:  sslMode,
+		Host:          getVar("PG_HOST", "localhost"),
+		Port:          port,
+		UserName:      userName,
+		Password:      password,
+		Database:      database,
+		Sslmode:       sslMode,
 		MigrationsDir: migrationsDir,
 	}
 	return NewClient(cfg)
