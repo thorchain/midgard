@@ -133,14 +133,14 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
+	asset, _ = common.NewAsset("BNB")
 
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
 	assetStaked = s.Store.assetStaked(address, asset)
-	c.Assert(assetStaked, Equals, uint64(50000000000))
+	c.Assert(assetStaked, Equals, uint64(50000000000), Commentf("%v", assetStaked))
 }
 
 func (s *TimeScaleSuite) TestPoolStaked(c *C) {
