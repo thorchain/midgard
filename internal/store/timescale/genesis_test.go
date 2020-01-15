@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-
 func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
@@ -16,7 +15,7 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -50,7 +49,7 @@ func (s *TimeScaleSuite) TestGetBlockHeight(c *C) {
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
