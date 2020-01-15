@@ -423,9 +423,9 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 		log.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("BNB.LOK-3C0")
+	asset, _ = common.NewAsset("BNB.BNB")
 	eventsForAddressAsset = s.Store.eventsForAddressAsset(address, asset)
-	c.Assert(len(eventsForAddressAsset), Equals, 1)
+	c.Assert(len(eventsForAddressAsset), Equals, 1, Commentf("%v", eventsForAddressAsset))
 }
 
 func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
@@ -478,7 +478,7 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 
 	asset, _ := common.NewAsset("BNB")
 	eventsForAsset := s.Store.eventsForAsset(asset)
-	c.Assert(len(eventsForAsset), Equals, 1)
+	c.Assert(len(eventsForAsset), Equals, 1, Commentf("%v", eventsForAsset))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
@@ -494,9 +494,9 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 		log.Fatal(err)
 	}
 
-	asset, _ = common.NewAsset("LOK-3C0")
+	asset, _ = common.NewAsset("BNB.BNB")
 	eventsForAsset = s.Store.eventsForAsset(asset)
-	c.Assert(len(eventsForAsset), Equals, 1)
+	c.Assert(len(eventsForAsset), Equals, 2, Commentf("%v", eventsForAsset))
 }
 
 func (s *TimeScaleSuite) TestEventPool(c *C) {
@@ -688,8 +688,8 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	coinsForTxHash = s.Store.coinsForTxHash(txid)
 
 	c.Assert(coinsForTxHash[1].Asset.Chain.String(), Equals, "BNB")
-	c.Assert(coinsForTxHash[1].Asset.Symbol.String(), Equals, "LOK-3C0")
-	c.Assert(coinsForTxHash[1].Asset.Ticker.String(), Equals, "LOK")
+	c.Assert(coinsForTxHash[1].Asset.Symbol.String(), Equals, "BNB")
+	c.Assert(coinsForTxHash[1].Asset.Ticker.String(), Equals, "BNB")
 }
 
 func (s *TimeScaleSuite) TestGas(c *C) {
