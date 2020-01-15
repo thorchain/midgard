@@ -14,7 +14,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -22,7 +22,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -30,7 +30,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -44,7 +44,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -52,7 +52,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -60,7 +60,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -74,7 +74,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 	c.Assert(totalUsers, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -82,7 +82,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 	c.Assert(totalUsers, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -90,7 +90,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 	c.Assert(totalUsers, Equals, uint64(1))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -98,7 +98,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 	c.Assert(totalUsers, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -112,7 +112,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 	c.Assert(dailyTx, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -120,7 +120,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 	c.Assert(dailyTx, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -128,7 +128,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 	c.Assert(dailyTx, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -142,7 +142,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 	c.Assert(monthlyTx, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -150,7 +150,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 	c.Assert(monthlyTx, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -158,7 +158,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 	c.Assert(monthlyTx, Equals, uint64(2))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -166,7 +166,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 	c.Assert(monthlyTx, Equals, uint64(3))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -180,7 +180,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 	c.Assert(totalTx, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -188,7 +188,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 	c.Assert(totalTx, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -196,7 +196,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 	c.Assert(totalTx, Equals, uint64(2))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -204,7 +204,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 	c.Assert(totalTx, Equals, uint64(3))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -218,7 +218,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -226,7 +226,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -234,7 +234,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -248,7 +248,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -256,7 +256,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -264,7 +264,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -280,7 +280,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -288,7 +288,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -296,7 +296,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(400))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -306,7 +306,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -320,7 +320,7 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 	c.Assert(totalDepth, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -328,14 +328,14 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 	c.Assert(totalDepth, Equals, uint64(100))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	totalDepth = s.Store.totalDepth()
 	c.Assert(totalDepth, Equals, uint64(200))
 
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -343,7 +343,7 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 	c.Assert(totalDepth, Equals, uint64(100))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -357,7 +357,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 	c.Assert(totalRuneStaked, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -365,14 +365,14 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 	c.Assert(totalRuneStaked, Equals, uint64(100))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	totalRuneStaked = s.Store.totalRuneStaked()
 	c.Assert(totalRuneStaked, Equals, uint64(200))
 
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -380,7 +380,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 	c.Assert(totalRuneStaked, Equals, uint64(100))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -394,7 +394,7 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 	c.Assert(runeSwaps, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -402,14 +402,14 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 	c.Assert(runeSwaps, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	runeSwaps = s.Store.runeSwaps()
 	c.Assert(runeSwaps, Equals, uint64(0))
 
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -423,7 +423,7 @@ func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
 	c.Assert(bTotalEarned, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -431,14 +431,14 @@ func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
 	c.Assert(bTotalEarned, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	bTotalEarned = s.Store.bTotalEarned()
 	c.Assert(bTotalEarned, Equals, uint64(0))
 
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -452,7 +452,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	c.Assert(poolCount, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -460,7 +460,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	c.Assert(poolCount, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -468,7 +468,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	c.Assert(poolCount, Equals, uint64(2))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -482,7 +482,7 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -490,7 +490,7 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -504,7 +504,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -512,7 +512,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -520,7 +520,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -534,7 +534,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	c.Assert(totalStakeTx, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -542,7 +542,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	c.Assert(totalStakeTx, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -550,7 +550,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	c.Assert(totalStakeTx, Equals, uint64(2))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -558,19 +558,19 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	c.Assert(totalStakeTx, Equals, uint64(2))
 
 	// More stakes
-	if err := s.Store.CreateStakeRecord(stakeEvent2); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeEvent3); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTCANEvent3); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeEvent5); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTCANEvent5); err != nil {
 		log.Fatal(err)
 	}
 
@@ -584,7 +584,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeEvent0); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
 		log.Fatal(err)
 	}
 
@@ -592,7 +592,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -600,7 +600,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Unstake
-	if err := s.Store.CreateUnStakesRecord(unstakeEvent0); err != nil {
+	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
