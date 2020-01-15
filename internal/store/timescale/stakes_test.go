@@ -43,14 +43,14 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
+	asset, _ = common.NewAsset("BNB.BNB")
 
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
 	stakeUnits = s.Store.stakeUnits(address, asset)
-	c.Assert(stakeUnits, Equals, uint64(25025000000))
+	c.Assert(stakeUnits, Equals, uint64(25025000000), Commentf("%v", stakeUnits))
 }
 
 func (s *TimeScaleSuite) TestRuneStaked(c *C) {
@@ -88,14 +88,14 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
+	asset, _ = common.NewAsset("BNB.BNB")
 
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
 	runeStaked = s.Store.runeStaked(address, asset)
-	c.Assert(runeStaked, Equals, uint64(50000000))
+	c.Assert(runeStaked, Equals, uint64(50000000), Commentf("%v", runeStaked))
 }
 
 func (s *TimeScaleSuite) TestAssetStaked(c *C) {
@@ -178,14 +178,14 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	asset, _ = common.NewAsset("LOK-3C0")
+	asset, _ = common.NewAsset("BNB.BNB")
 
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
 		log.Fatal(err)
 	}
 
 	poolStaked = s.Store.poolStaked(address, asset)
-	c.Assert(poolStaked, Equals, uint64(50000000))
+	c.Assert(poolStaked, Equals, uint64(50000000), Commentf("%v", poolStaked))
 }
 
 func (s *TimeScaleSuite) TestRuneEarned(c *C) {
@@ -332,24 +332,27 @@ func (s *TimeScaleSuite) TestDateFirstStaked(c *C) {
 	dateFirstStaked := s.Store.dateFirstStaked(address, asset)
 	c.Assert(dateFirstStaked, Equals, uint64(0))
 
-	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
+	// Single stake0
+	expectedDate := genesis.GenesisTime.Add(time.Second * blockSpeed)
+	stake0 := stakeBnbEvent0
+	stake0.Time = expectedDate
+	if err := s.Store.CreateStakeRecord(stake0); err != nil {
 		log.Fatal(err)
 	}
 
 	dateFirstStaked = s.Store.dateFirstStaked(address, asset)
-	expectedDate := genesis.GenesisTime.Add(time.Second * blockSpeed).Unix()
-	c.Assert(dateFirstStaked, Equals, uint64(expectedDate))
+	c.Assert(dateFirstStaked, Equals, uint64(expectedDate.Unix()), Commentf("%v", expectedDate))
 
-	// Additional stake
+	// Additional stake0
+	stake1 := stakeTomlEvent1
+	stake1.Time = expectedDate
 	asset, _ = common.NewAsset("TOML-4BC")
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
+	if err := s.Store.CreateStakeRecord(stake1); err != nil {
 		log.Fatal(err)
 	}
 
 	dateFirstStaked = s.Store.dateFirstStaked(address, asset)
-	expectedDate = genesis.GenesisTime.Add(time.Second * time.Duration(stakeTomlEvent1.Height*blockSpeed)).Unix()
-	c.Assert(dateFirstStaked, Equals, uint64(expectedDate))
+	c.Assert(dateFirstStaked, Equals, uint64(expectedDate.Unix()))
 }
 
 func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {

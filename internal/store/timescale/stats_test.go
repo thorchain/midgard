@@ -19,7 +19,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 	}
 
 	dailyActiveUsers = s.Store.dailyActiveUsers()
-	c.Assert(dailyActiveUsers, Equals, uint64(0))
+	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
@@ -27,7 +27,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 	}
 
 	dailyActiveUsers = s.Store.dailyActiveUsers()
-	c.Assert(dailyActiveUsers, Equals, uint64(0))
+	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
@@ -35,7 +35,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 	}
 
 	dailyActiveUsers = s.Store.dailyActiveUsers()
-	c.Assert(dailyActiveUsers, Equals, uint64(0))
+	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
 }
 
 func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
@@ -117,7 +117,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 	}
 
 	dailyTx = s.Store.dailyTx()
-	c.Assert(dailyTx, Equals, uint64(0))
+	c.Assert(dailyTx, Equals, uint64(1), Commentf("%v", dailyTx))
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
@@ -125,7 +125,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 	}
 
 	dailyTx = s.Store.dailyTx()
-	c.Assert(dailyTx, Equals, uint64(0))
+	c.Assert(dailyTx, Equals, uint64(2), Commentf("%v", dailyTx))
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
@@ -133,7 +133,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 	}
 
 	dailyTx = s.Store.dailyTx()
-	c.Assert(dailyTx, Equals, uint64(0))
+	c.Assert(dailyTx, Equals, uint64(3), Commentf("%v", dailyTx))
 }
 
 func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
@@ -562,15 +562,15 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent3); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent3); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent4); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent5); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 

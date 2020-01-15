@@ -71,28 +71,28 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent3); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent3); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent4); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent5); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swaps
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent2); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent2); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent3); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent3); err != nil {
 		log.Fatal(err)
 	}
 
@@ -100,43 +100,43 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 	poolData := s.Store.GetPoolData(asset)
 
 	c.Assert(poolData.Asset, Equals, asset)
-	c.Assert(poolData.AssetDepth, Equals, uint64(10))
-	c.Assert(poolData.AssetStakedTotal, Equals, uint64(10))
-	c.Assert(poolData.PoolDepth, Equals, uint64(200))
-	c.Assert(poolData.PoolStakedTotal, Equals, uint64(200))
-	c.Assert(poolData.PoolUnits, Equals, uint64(100))
-	c.Assert(poolData.Price, Equals, float64(10))
-	c.Assert(poolData.RuneDepth, Equals, uint64(100))
-	c.Assert(poolData.RuneStakedTotal, Equals, uint64(100))
-	c.Assert(poolData.StakeTxCount, Equals, uint64(1))
-	c.Assert(poolData.StakersCount, Equals, uint64(1))
-	c.Assert(poolData.StakingTxCount, Equals, uint64(1))
+	c.Assert(poolData.AssetDepth, Equals, uint64(50000000010), Commentf("%v", poolData.AssetDepth))
+	c.Assert(poolData.AssetStakedTotal, Equals, uint64(50000000010), Commentf("%v", poolData.AssetStakedTotal))
+	c.Assert(poolData.PoolDepth, Equals, uint64(100000200), Commentf("%v", poolData.PoolDepth))
+	c.Assert(poolData.PoolStakedTotal, Equals, uint64(50000100), Commentf("%v", poolData.PoolStakedTotal))
+	c.Assert(poolData.PoolUnits, Equals, uint64(25025000100), Commentf("%v", poolData.PoolUnits))
+	c.Assert(poolData.Price, Equals, float64(0), Commentf("%v", poolData.Price))
+	c.Assert(poolData.RuneDepth, Equals, uint64(50000100), Commentf("%v", poolData.RuneDepth))
+	c.Assert(poolData.RuneStakedTotal, Equals, uint64(50000100), Commentf("%v", poolData.RuneStakedTotal))
+	c.Assert(poolData.StakeTxCount, Equals, uint64(2), Commentf("%v", poolData.StakeTxCount))
+	c.Assert(poolData.StakersCount, Equals, uint64(2), Commentf("%v", poolData.StakersCount))
+	c.Assert(poolData.StakingTxCount, Equals, uint64(2), Commentf("%v", poolData.StakingTxCount))
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	poolData = s.Store.GetPoolData(asset)
 
 	c.Check(poolData.Asset, Equals, asset)
-	c.Check(poolData.AssetDepth, Equals, uint64(729700000), Commentf("%d", poolData.AssetDepth))
-	c.Check(poolData.AssetROI, Equals, 0.08959235478572496)
-	c.Check(poolData.AssetStakedTotal, Equals, uint64(669700000), Commentf("%d", poolData.AssetStakedTotal))
-	c.Check(poolData.PoolDepth, Equals, uint64(9397999994), Commentf("%d", poolData.PoolDepth))
+	c.Check(poolData.AssetDepth, Equals, uint64(394850000), Commentf("%d", poolData.AssetDepth))
+	c.Check(poolData.AssetROI, Equals, 0.1791847095714499, Commentf("%v", poolData.AssetROI))
+	c.Check(poolData.AssetStakedTotal, Equals, uint64(334850000), Commentf("%d", poolData.AssetStakedTotal))
+	c.Check(poolData.PoolDepth, Equals, uint64(4698999994), Commentf("%d", poolData.PoolDepth))
 	c.Check(poolData.PoolSlipAverage, Equals, 0.06151196360588074)
-	c.Check(poolData.PoolStakedTotal, Equals, uint64(8717200000), Commentf("%d", poolData.PoolStakedTotal))
-	c.Check(poolData.PoolTxAverage, Equals, uint64(60000000), Commentf("%d", poolData.PoolTxAverage))
-	c.Check(poolData.PoolUnits, Equals, uint64(2684350000), Commentf("%d", poolData.PoolUnits))
-	c.Check(poolData.PoolVolume, Equals, uint64(360000000), Commentf("%d", poolData.PoolVolume))
-	c.Check(poolData.Price, Equals, float64(6), Commentf("%d", poolData.Price))
-	c.Check(poolData.RuneDepth, Equals, uint64(4698999997), Commentf("%d", poolData.RuneDepth))
-	c.Check(poolData.RuneStakedTotal, Equals, uint64(4699000000), Commentf("%d", poolData.RuneStakedTotal))
+	c.Check(poolData.PoolStakedTotal, Equals, uint64(4023750000), Commentf("%d", poolData.PoolStakedTotal))
+	c.Check(poolData.PoolTxAverage, Equals, uint64(50000000), Commentf("%d", poolData.PoolTxAverage))
+	c.Check(poolData.PoolUnits, Equals, uint64(1342175000), Commentf("%d", poolData.PoolUnits))
+	c.Check(poolData.PoolVolume, Equals, uint64(300000000), Commentf("%d", poolData.PoolVolume))
+	c.Check(poolData.Price, Equals, float64(5), Commentf("%d", poolData.Price))
+	c.Check(poolData.RuneDepth, Equals, uint64(2349499997), Commentf("%d", poolData.RuneDepth))
+	c.Check(poolData.RuneStakedTotal, Equals, uint64(2349500000), Commentf("%d", poolData.RuneStakedTotal))
 	c.Check(poolData.SellAssetCount, Equals, uint64(3))
 	c.Check(poolData.SellSlipAverage, Equals, 0.12302392721176147)
-	c.Check(poolData.SellTxAverage, Equals, uint64(120000000), Commentf("%d", poolData.SellTxAverage))
-	c.Check(poolData.SellVolume, Equals, uint64(360000000))
-	c.Check(poolData.StakeTxCount, Equals, uint64(2))
-	c.Check(poolData.StakersCount, Equals, uint64(1))
-	c.Check(poolData.StakingTxCount, Equals, uint64(2))
-	c.Check(poolData.SwappersCount, Equals, uint64(3))
-	c.Check(poolData.SwappingTxCount, Equals, uint64(3))
+	c.Check(poolData.SellTxAverage, Equals, uint64(100000000), Commentf("%d", poolData.SellTxAverage))
+	c.Check(poolData.SellVolume, Equals, uint64(300000000), Commentf("%v", poolData.SellVolume))
+	c.Check(poolData.StakeTxCount, Equals, uint64(1), Commentf("%v", poolData.StakeTxCount))
+	c.Check(poolData.StakersCount, Equals, uint64(1), Commentf("%v", poolData.StakersCount))
+	c.Check(poolData.StakingTxCount, Equals, uint64(1), Commentf("%v", poolData.StakingTxCount))
+	c.Check(poolData.SwappersCount, Equals, uint64(3), Commentf("%v", poolData.SwappersCount))
+	c.Check(poolData.SwappingTxCount, Equals, uint64(3), Commentf("%v", poolData.SwappingTxCount))
 }
 
 func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
@@ -353,7 +353,7 @@ func (s *TimeScaleSuite) TestAssetSwapTotal(c *C) {
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -375,7 +375,7 @@ func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -398,7 +398,7 @@ func (s *TimeScaleSuite) TestRuneSwapTotal(c *C) {
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -421,7 +421,7 @@ func (s *TimeScaleSuite) TestRuneSwapTotal12m(c *C) {
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -446,18 +446,13 @@ func (s *TimeScaleSuite) TestPoolDepth(c *C) {
 	c.Assert(poolDepth, Equals, uint64(10))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent4); err != nil {
 		log.Fatal(err)
 	}
 
-	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
-		log.Fatal(err)
-	}
-
-	asset, _ = common.NewAsset("BNB.BOLT-014")
+	asset, _ = common.NewAsset("BNB.TCAN-014")
 	poolDepth = s.Store.poolDepth(asset)
-	c.Assert(poolDepth, Equals, uint64(4698999998), Commentf("%d", poolDepth))
+	c.Assert(poolDepth, Equals, uint64(4699000000), Commentf("%d", poolDepth))
 }
 
 func (s *TimeScaleSuite) TestPoolUnits(c *C) {
@@ -476,18 +471,18 @@ func (s *TimeScaleSuite) TestPoolUnits(c *C) {
 	c.Assert(poolUnits, Equals, uint64(100))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	poolUnits = s.Store.poolUnits(asset)
-	c.Assert(poolUnits, Equals, uint64(1342175000))
+	c.Assert(poolUnits, Equals, uint64(1342175000), Commentf("%v", poolUnits))
 }
 
 func (s *TimeScaleSuite) TestSellVolume(c *C) {
@@ -499,12 +494,12 @@ func (s *TimeScaleSuite) TestSellVolume(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -521,18 +516,18 @@ func (s *TimeScaleSuite) TestSellVolume24hr(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapSellRune2BoltEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	volume = s.Store.sellVolume24hr(asset)
-	c.Assert(volume, Equals, uint64(0))
+	c.Assert(volume, Equals, uint64(0), Commentf("%v", volume))
 }
 
 func (s *TimeScaleSuite) TestBuyVolume(c *C) {
@@ -543,12 +538,12 @@ func (s *TimeScaleSuite) TestBuyVolume(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent4); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -566,12 +561,12 @@ func (s *TimeScaleSuite) TestBuyVolume24hr(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeTcanEvent4); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent2); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent2); err != nil {
 		log.Fatal(err)
 	}
 
@@ -588,18 +583,18 @@ func (s *TimeScaleSuite) TestPoolVolume(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	volume = s.Store.poolVolume(asset)
-	c.Assert(volume, Equals, uint64(120000000))
+	c.Assert(volume, Equals, uint64(120000000), Commentf("%v", volume))
 }
 
 func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
@@ -610,18 +605,18 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 	c.Assert(volume, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	volume = s.Store.poolVolume24hr(asset)
-	c.Assert(volume, Equals, uint64(0))
+	c.Assert(volume, Equals, uint64(120000000), Commentf("%v", volume))
 }
 
 func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
@@ -629,22 +624,21 @@ func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	txAverage := s.Store.sellTxAverage(asset)
-
 	c.Assert(txAverage, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
 	txAverage = s.Store.sellTxAverage(asset)
-	c.Assert(txAverage, Equals, uint64(120000000))
+	c.Assert(txAverage, Equals, uint64(120000000), Commentf("%d", txAverage))
 }
 
 func (s *TimeScaleSuite) TestBuyTxAverage(c *C) {
@@ -664,12 +658,12 @@ func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	c.Assert(txAverage, Equals, uint64(0))
 
 	// Stake
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent4); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -686,7 +680,7 @@ func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
 	c.Assert(slipAverage, Equals, 0.0)
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -711,7 +705,7 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 	c.Assert(slipAverage, Equals, 0.0)
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -729,7 +723,7 @@ func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 	c.Assert(feeAverage, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -752,7 +746,7 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 	c.Assert(feeAverage, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -766,7 +760,7 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 	c.Assert(feesTotal, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -790,7 +784,7 @@ func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
 	c.Assert(feesTotal, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -803,7 +797,7 @@ func (s *TimeScaleSuite) TestSellAssetCount(c *C) {
 	c.Assert(assetCount, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -828,15 +822,15 @@ func (s *TimeScaleSuite) TestSwappingTxCount(c *C) {
 	c.Assert(swappingCount, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent2); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent2); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent3); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent3); err != nil {
 		log.Fatal(err)
 	}
 
@@ -853,7 +847,7 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	c.Assert(swappersCount, Equals, uint64(0))
 
 	// Swap
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
@@ -971,20 +965,20 @@ func (s *TimeScaleSuite) TestAssetROI(c *C) {
 	c.Assert(roi, Equals, 0.0)
 
 	// Stakes
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent5); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swaps
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent2); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent2); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent3); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent3); err != nil {
 		log.Fatal(err)
 	}
 
@@ -1001,20 +995,20 @@ func (s *TimeScaleSuite) TestAssetROI12(c *C) {
 	c.Assert(roi, Equals, 0.0)
 
 	// Stakes
-	if err := s.Store.CreateStakeRecord(stakeTCANEvent5); err != nil {
+	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
 		log.Fatal(err)
 	}
 
 	// Swaps
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent1); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent1); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent2); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent2); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Store.CreateSwapRecord(swapBoltBuyRuneEvent3); err != nil {
+	if err := s.Store.CreateSwapRecord(swapBuyBolt2RuneEvent3); err != nil {
 		log.Fatal(err)
 	}
 
