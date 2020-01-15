@@ -20,7 +20,7 @@ type Client struct {
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) *Client {
-	time.Sleep(3* time.Second)
+	time.Sleep(3 * time.Second)
 	logger := log.With().Str("module", "timescale").Logger()
 	connStr := fmt.Sprintf("user=%s sslmode=%v password=%v host=%v port=%v", cfg.UserName, cfg.Sslmode, cfg.Password, cfg.Host, cfg.Port)
 	db, err := sqlx.Open("postgres", connStr)
@@ -43,8 +43,8 @@ func NewClient(cfg config.TimeScaleConfiguration) *Client {
 	}
 
 	return &Client{
-		cfg: cfg,
-		db:  db,
+		cfg:    cfg,
+		db:     db,
 		logger: logger,
 	}
 }
@@ -68,7 +68,7 @@ func (s *Client) Open() (*sqlx.DB, error) {
 	return Open(s.cfg)
 }
 
-func CreateDatabase(db *sqlx.DB, cfg config.TimeScaleConfiguration) error{
+func CreateDatabase(db *sqlx.DB, cfg config.TimeScaleConfiguration) error {
 	query := fmt.Sprintf(`SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = '%v');`, cfg.Database)
 	row := db.QueryRow(query)
 
@@ -96,7 +96,7 @@ func (s *Client) CreateDatabase() error {
 }
 
 func MigrationsUp(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConfiguration) error {
-	n, err := migrate.Exec(db.DB, "postgres", &migrate.FileMigrationSource{Dir:cfg.MigrationsDir}, migrate.Up)
+	n, err := migrate.Exec(db.DB, "postgres", &migrate.FileMigrationSource{Dir: cfg.MigrationsDir}, migrate.Up)
 
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ func (s *Client) MigrationsUp() error {
 }
 
 func MigrationsDown(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConfiguration) error {
-	n, err := migrate.Exec(db.DB, "postgres", &migrate.FileMigrationSource{Dir:cfg.MigrationsDir}, migrate.Down)
+	n, err := migrate.Exec(db.DB, "postgres", &migrate.FileMigrationSource{Dir: cfg.MigrationsDir}, migrate.Down)
 	if err != nil {
 		return err
 	}
@@ -122,4 +122,3 @@ func MigrationsDown(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConf
 func (s *Client) MigrationsDown() error {
 	return MigrationsDown(s.db, s.logger, s.cfg)
 }
-
