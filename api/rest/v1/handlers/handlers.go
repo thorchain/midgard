@@ -62,7 +62,11 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 // (GET /v1/tx/{address})
 func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 	addr, _ := common.NewAddress(address)
-	txData := h.store.GetTxData(addr)
+	txData, err := h.store.GetTxData(addr)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetTxData")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 
 	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
@@ -72,7 +76,11 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
 func (h *Handlers) GetTxDetailsByAddressAsset(ctx echo.Context, address, asset string) error {
 	addr, _ := common.NewAddress(address)
 	ass, _ := common.NewAsset(asset)
-	txData := h.store.GetTxDataByAddressAsset(addr, ass)
+	txData, err := h.store.GetTxDataByAddressAsset(addr, ass)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 
 	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
@@ -81,7 +89,11 @@ func (h *Handlers) GetTxDetailsByAddressAsset(ctx echo.Context, address, asset s
 // (GET /v1/tx/{address}/txid/{txid})
 func (h *Handlers) GetTxDetailsByAddressTxId(ctx echo.Context, address, txid string) error {
 	addr, _ := common.NewAddress(address)
-	txData := h.store.GetTxDataByAddressTxId(addr, txid)
+	txData, err := h.store.GetTxDataByAddressTxId(addr, txid)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 
 	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
@@ -90,7 +102,11 @@ func (h *Handlers) GetTxDetailsByAddressTxId(ctx echo.Context, address, txid str
 // (GET /v1/tx/asset/{asset})
 func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, asset string) error {
 	ass, _ := common.NewAsset(asset)
-	txData := h.store.GetTxDataByAsset(ass)
+	txData, err := h.store.GetTxDataByAsset(ass)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 
 	response := helpers.PrepareTxDataResponseForAPI(txData)
 	return ctx.JSON(http.StatusOK, response)
@@ -99,7 +115,11 @@ func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, asset string) error {
 // (GET /v1/pools)
 func (h *Handlers) GetPools(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
-	pools := h.store.GetPools()
+	pools, err := h.store.GetPools()
+	if err != nil {
+		h.logger.Error().Err(err).Msg("Failed to GetPools")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 	assets := api.PoolsResponse{}
 	for _, pool := range pools {
 		a := *helpers.ConvertAssetForAPI(pool)
@@ -116,27 +136,39 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	ass, err := common.NewAsset(asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
 	pool, err := h.store.GetPool(ass)
 	if err != nil {
 		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "asset doesn't exist in pool"})
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
 	tokenData, err := h.binanceClient.GetToken(pool)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("fail to get token data from binance")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "fail to get token data from binance"})
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	priceInRune, err := h.store.GetPriceInRune(pool)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("failed to GetPriceInRune")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	dateCreated, err := h.store.GetDateCreated(pool)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetDataCrated")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
 	response := api.AssetsDetailedResponse{
 		Asset:       helpers.ConvertAssetForAPI(pool),
-		DateCreated: pointy.Int64(int64(h.store.GetDateCreated(pool))),
+		DateCreated: pointy.Int64(int64(dateCreated)),
 		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
 		Name:        pointy.String(tokenData.Name),
-		PriceRune:   pointy.Float64(h.store.GetPriceInRune(pool)),
+		PriceRune:   pointy.Float64(priceInRune),
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -144,7 +176,12 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 
 // (GET /v1/stats)
 func (h *Handlers) GetStats(ctx echo.Context) error {
-	StatsData := h.store.GetStatsData()
+	StatsData, err := h.store.GetStatsData()
+	if err != nil {
+		h.logger.Err(err).Msg("failure with GetStatsData")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
 	response := api.StatsResponse{
 		DailyActiveUsers:   pointy.Int64(int64(StatsData.DailyActiveUsers)),
 		DailyTx:            pointy.Int64(int64(StatsData.DailyTx)),
@@ -171,10 +208,14 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 	asset, err := common.NewAsset(ass)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: "invalid asset or format"})
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	poolData := h.store.GetPoolData(asset)
+	poolData, err := h.store.GetPoolData(asset)
+	if err != nil {
+		h.logger.Err(err).Msg("GetPoolData failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 
 	response := api.PoolsDetailedResponse{
 		Status:           pointy.String(poolData.Status),
@@ -222,7 +263,11 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	addresses := h.store.GetStakerAddresses()
+	addresses, err := h.store.GetStakerAddresses()
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetStakerAddresses")
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
 	response := api.StakersResponse{}
 	for _, addr := range addresses {
 		response = append(response, api.Stakers(addr.String()))

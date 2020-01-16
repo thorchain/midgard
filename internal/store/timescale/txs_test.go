@@ -1,8 +1,6 @@
 package timescale
 
 import (
-	"log"
-
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
 )
@@ -10,16 +8,16 @@ import (
 func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	txData := s.Store.GetTxData(address)
+	txData, err := s.Store.GetTxData(address)
+	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -54,11 +52,11 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
-	txData = s.Store.GetTxData(address)
+	txData, err = s.Store.GetTxData(address)
+	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[1].Height * 3)
 	c.Assert(txData[1].Pool.Chain.String(), Equals, "BNB")
@@ -96,17 +94,17 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
-	txData := s.Store.GetTxDataByAddressAsset(address, asset)
+	txData, err := s.Store.GetTxDataByAddressAsset(address, asset)
+	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -141,13 +139,13 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	address, _ = common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	txData = s.Store.GetTxDataByAddressAsset(address, asset)
+	txData, err = s.Store.GetTxDataByAddressAsset(address, asset)
+	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -185,17 +183,17 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
-	txData := s.Store.GetTxDataByAddressTxId(address, txid)
+	txData, err := s.Store.GetTxDataByAddressTxId(address, txid)
+	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -230,12 +228,12 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
-	txData = s.Store.GetTxDataByAddressTxId(address, txid)
+	txData, err = s.Store.GetTxDataByAddressTxId(address, txid)
+	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -273,16 +271,16 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB")
-	txData := s.Store.GetTxDataByAsset(asset)
+	txData, err := s.Store.GetTxDataByAsset(asset)
+	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -317,12 +315,12 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	c.Assert(txData[0].Events.Fee, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	txData = s.Store.GetTxDataByAsset(asset)
+	txData, err = s.Store.GetTxDataByAsset(asset)
+	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (txData[0].Height * 3)
 	c.Assert(txData[0].Pool.Chain.String(), Equals, "BNB")
@@ -360,22 +358,20 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	eventsForAddress := s.Store.eventsForAddress(address)
 	c.Assert(len(eventsForAddress), Equals, 1)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventsForAddress = s.Store.eventsForAddress(address)
 	c.Assert(len(eventsForAddress), Equals, 2)
@@ -383,9 +379,8 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
 
 	eventsForAddress = s.Store.eventsForAddress(address)
 	c.Assert(len(eventsForAddress), Equals, 1)
@@ -394,13 +389,12 @@ func (s *TimeScaleSuite) TestEventsForAddress(c *C) {
 func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
@@ -409,9 +403,8 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 	c.Assert(len(eventsForAddressAsset), Equals, 1)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("TOML-4BC")
 	eventsForAddressAsset = s.Store.eventsForAddressAsset(address, asset)
@@ -419,9 +412,8 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BNB")
 	eventsForAddressAsset = s.Store.eventsForAddressAsset(address, asset)
@@ -431,13 +423,12 @@ func (s *TimeScaleSuite) TestEventsForAddressAsset(c *C) {
 func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
@@ -445,9 +436,8 @@ func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 	c.Assert(len(eventsForAddressTxId), Equals, 1)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
 	eventsForAddressTxId = s.Store.eventsForAddressTxId(address, txid)
@@ -456,9 +446,8 @@ func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
 
 	txid = "67C9MZZS1WOMM05S0RBTTDIFFLV3RQAZPJFD9V82EBPMG3P3HFUU3PBT3C18DV1E"
 	eventsForAddressTxId = s.Store.eventsForAddressTxId(address, txid)
@@ -468,31 +457,28 @@ func (s *TimeScaleSuite) TestEventsForAddressTxId(c *C) {
 func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB")
 	eventsForAsset := s.Store.eventsForAsset(asset)
 	c.Assert(len(eventsForAsset), Equals, 1, Commentf("%v", eventsForAsset))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("TOML-4BC")
 	eventsForAsset = s.Store.eventsForAsset(asset)
 	c.Assert(len(eventsForAsset), Equals, 1)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BNB")
 	eventsForAsset = s.Store.eventsForAsset(asset)
@@ -502,13 +488,12 @@ func (s *TimeScaleSuite) TestEventsForAsset(c *C) {
 func (s *TimeScaleSuite) TestEventPool(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	eventPool := s.Store.eventPool(eventId)
@@ -518,9 +503,8 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 	c.Assert(eventPool.Ticker.String(), Equals, "BNB")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	eventPool = s.Store.eventPool(eventId)
@@ -533,13 +517,12 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 func (s *TimeScaleSuite) TestInTx(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	inTx := s.Store.inTx(eventId)
@@ -557,9 +540,8 @@ func (s *TimeScaleSuite) TestInTx(c *C) {
 	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	inTx = s.Store.inTx(eventId)
@@ -580,13 +562,12 @@ func (s *TimeScaleSuite) TestInTx(c *C) {
 func (s *TimeScaleSuite) TestOutTx(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	outTx := s.Store.outTx(eventId)
@@ -596,9 +577,8 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 	c.Assert(outTx.TxID, Equals, "")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	outTx = s.Store.outTx(eventId)
@@ -611,13 +591,12 @@ func (s *TimeScaleSuite) TestOutTx(c *C) {
 func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	inTx := s.Store.txForDirection(eventId, "in")
@@ -632,9 +611,8 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	c.Assert(outTx.TxID, Equals, "")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	inTx = s.Store.txForDirection(eventId, "in")
@@ -652,13 +630,12 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
 	coinsForTxHash := s.Store.coinsForTxHash(txid)
@@ -668,9 +645,8 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(coinsForTxHash[0].Asset.Ticker.String(), Equals, "RUNE")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
 	coinsForTxHash = s.Store.coinsForTxHash(txid)
@@ -680,9 +656,8 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(coinsForTxHash[1].Asset.Ticker.String(), Equals, "TOML")
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
 
 	txid = "67C9MZZS1WOMM05S0RBTTDIFFLV3RQAZPJFD9V82EBPMG3P3HFUU3PBT3C18DV1E"
 	coinsForTxHash = s.Store.coinsForTxHash(txid)
@@ -695,13 +670,12 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 func (s *TimeScaleSuite) TestGas(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	gas := s.Store.gas(eventId)
@@ -711,9 +685,8 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 	c.Assert(gas.Asset.Ticker.IsEmpty(), Equals, true)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	gas = s.Store.gas(eventId)
@@ -723,9 +696,8 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 	c.Assert(gas.Asset.Ticker.IsEmpty(), Equals, true)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(4)
 	gas = s.Store.gas(eventId)
@@ -739,13 +711,12 @@ func (s *TimeScaleSuite) TestGas(c *C) {
 func (s *TimeScaleSuite) TestOptions(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	options := s.Store.options(eventId, "stake")
@@ -755,9 +726,8 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 	c.Assert(options.Asymmetry, Equals, float64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	options = s.Store.options(eventId, "stake")
@@ -770,13 +740,12 @@ func (s *TimeScaleSuite) TestOptions(c *C) {
 func (s *TimeScaleSuite) TestEvents(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	events := s.Store.events(eventId, "stake")
@@ -786,9 +755,8 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 	c.Assert(events.Fee, Equals, uint64(0))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	events = s.Store.events(eventId, "stake")
@@ -801,42 +769,41 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 func (s *TimeScaleSuite) TestTxDate(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	date := uint64(genesis.GenesisTime.Unix()) + 3
 
-	txDate := s.Store.txDate(eventId)
+	txDate, err := s.Store.txDate(eventId)
+	c.Assert(err, IsNil)
 	c.Assert(txDate, Equals, date)
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	date = uint64(genesis.GenesisTime.Unix()) + 6
 
-	txDate = s.Store.txDate(eventId)
+	txDate, err = s.Store.txDate(eventId)
+	c.Assert(err, IsNil)
 	c.Assert(txDate, Equals, date)
 }
 
 func (s *TimeScaleSuite) TestTxHeight(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
-	}
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
 	txHeight := s.Store.txHeight(eventId)
@@ -844,9 +811,8 @@ func (s *TimeScaleSuite) TestTxHeight(c *C) {
 	c.Assert(txHeight, Equals, uint64(1))
 
 	// Additional stake
-	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
 	txHeight = s.Store.txHeight(eventId)
