@@ -10,14 +10,11 @@ import (
 func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
-	if err != nil {
-		c.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		c.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB.BNB")
 	dateCreated, err := s.Store.GetDateCreated(asset)
@@ -31,9 +28,7 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 func (s *TimeScaleSuite) TestGetTimeOfBlock(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
-	if err != nil {
-		c.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 
 	timeOfBlock, err := s.Store.getTimeOfBlock(1)
 	c.Assert(err, IsNil)
@@ -46,14 +41,11 @@ func (s *TimeScaleSuite) TestGetTimeOfBlock(c *C) {
 func (s *TimeScaleSuite) TestGetBlockHeight(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
-	if err != nil {
-		c.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 
 	// Single stake
-	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		c.Fatal(err)
-	}
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB.BNB")
 	height, err := s.Store.getBlockHeight(asset)
