@@ -1,8 +1,9 @@
 package timescale
 
 import (
-	"log"
+	"database/sql"
 
+	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -25,28 +26,90 @@ type StatsData struct {
 	TotalWithdrawTx    uint64
 }
 
-func (s *Client) GetStatsData() StatsData {
-	return StatsData{
-		DailyActiveUsers:   s.dailyActiveUsers(),
-		MonthlyActiveUsers: s.monthlyActiveUsers(),
-		TotalUsers:         s.totalUsers(),
-		DailyTx:            s.dailyTx(),
-		MonthlyTx:          s.monthlyTx(),
-		TotalTx:            s.totalTx(),
-		TotalVolume24hr:    s.totalVolume24hr(),
-		TotalVolume:        s.totalVolume(),
-		TotalStaked:        s.bTotalStaked(),
-		TotalDepth:         s.totalDepth(),
-		TotalEarned:        s.bTotalEarned(),
-		PoolCount:          s.poolCount(),
-		TotalAssetBuys:     s.totalAssetBuys(),
-		TotalAssetSells:    s.totalAssetSells(),
-		TotalStakeTx:       s.totalStakeTx(),
-		TotalWithdrawTx:    s.totalWithdrawTx(),
+func (s *Client) GetStatsData() (StatsData, error) {
+	dailyActiveUsers, err := s.dailyActiveUsers()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
+
+	monthlyActiveUsers, err := s.monthlyActiveUsers()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalUsers, err := s.totalUsers()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	dailyTx, err := s.dailyTx()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	monthlyTx, err := s.monthlyTx()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalTx, err := s.totalTx()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalVolume24hr, err := s.totalVolume24hr()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalVolume, err := s.totalVolume()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	bTotalStaked, err := s.bTotalStaked()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalDepth, err := s.totalDepth()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	poolCount, err := s.poolCount()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalAssetBuys, err := s.totalAssetBuys()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalAssetSells, err := s.totalAssetSells()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalStakeTx, err := s.totalStakeTx()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+	totalWithdrawTx, err := s.totalWithdrawTx()
+	if err != nil {
+		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+	}
+
+	return StatsData{
+		DailyActiveUsers:   dailyActiveUsers,
+		MonthlyActiveUsers: monthlyActiveUsers,
+		TotalUsers:         totalUsers,
+		DailyTx:            dailyTx,
+		MonthlyTx:          monthlyTx,
+		TotalTx:            totalTx,
+		TotalVolume24hr:    totalVolume24hr,
+		TotalVolume:        totalVolume,
+		TotalStaked:        bTotalStaked,
+		TotalDepth:         totalDepth,
+		TotalEarned:        s.bTotalEarned(),
+		PoolCount:          poolCount,
+		TotalAssetBuys:     totalAssetBuys,
+		TotalAssetSells:    totalAssetSells,
+		TotalStakeTx:       totalStakeTx,
+		TotalWithdrawTx:    totalWithdrawTx,
+	}, nil
 }
 
-func (s *Client) dailyActiveUsers() uint64 {
+func (s *Client) dailyActiveUsers() (uint64, error) {
 	stmnt := `
 		SELECT SUM(users)
 			FROM (
@@ -60,17 +123,17 @@ func (s *Client) dailyActiveUsers() uint64 {
 			    WHERE txs.direction = 'out'
 			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 			) x;`
-	var dailyActiveUsers uint64
+	var dailyActiveUsers sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&dailyActiveUsers); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "dailyActiveUsers failed")
 	}
 
-	return dailyActiveUsers
+	return uint64(dailyActiveUsers.Int64), nil
 }
 
-func (s *Client) monthlyActiveUsers() uint64 {
+func (s *Client) monthlyActiveUsers() (uint64, error) {
 	stmnt := `
 		SELECT SUM(users)
 			FROM (
@@ -84,17 +147,17 @@ func (s *Client) monthlyActiveUsers() uint64 {
 			    WHERE txs.direction = 'out'
 			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()
 			) x;`
-	var dailyActiveUsers uint64
+	var dailyActiveUsers sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&dailyActiveUsers); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "monthlyActiveUsers failed")
 	}
 
-	return dailyActiveUsers
+	return uint64(dailyActiveUsers.Int64), nil
 }
 
-func (s *Client) totalUsers() uint64 {
+func (s *Client) totalUsers() (uint64, error) {
 	stmnt := `
 		SELECT SUM(users)
 			FROM (
@@ -106,145 +169,162 @@ func (s *Client) totalUsers() uint64 {
 			    	FROM txs
 			    WHERE txs.direction = 'out'
 			) x;`
-	var totalUsers uint64
+	var totalUsers sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalUsers); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalUsers failed")
 	}
 
-	return totalUsers
+	return uint64(totalUsers.Int64), nil
 }
 
-func (s *Client) dailyTx() uint64 {
+func (s *Client) dailyTx() (uint64, error) {
 	stmnt := `
 		SELECT COALESCE(COUNT(tx_hash), 0) daily_tx
 			FROM txs
 		WHERE time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()`
 
-	var dailyTx uint64
+	var dailyTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&dailyTx); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "dailyTx failed")
 	}
 
-	return dailyTx
+	return uint64(dailyTx.Int64), nil
 }
 
-func (s *Client) monthlyTx() uint64 {
+func (s *Client) monthlyTx() (uint64, error) {
 	stmnt := `
 		SELECT COALESCE(COUNT(txs.tx_hash), 0) monthly_tx
 			FROM txs
 		WHERE txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()`
 
-	var monthlyTx uint64
+	var monthlyTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&monthlyTx); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "monthlyTx failed")
 	}
 
-	return monthlyTx
+	return uint64(monthlyTx.Int64), nil
 }
 
-func (s *Client) totalTx() uint64 {
+func (s *Client) totalTx() (uint64, error) {
 	stmnt := `SELECT COALESCE(COUNT(tx_hash), 0) FROM txs`
-	var totalTx uint64
+	var totalTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalTx); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalTx failed")
 	}
 
-	return totalTx
+	return uint64(totalTx.Int64), nil
 }
 
-func (s *Client) totalVolume24hr() uint64 {
+func (s *Client) totalVolume24hr() (uint64, error) {
 	stmnt := `
 		SELECT COUNT(runeAmt) 
 		FROM swaps
 		WHERE runeAmt > 0
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
-	var totalVolume uint64
+	var totalVolume sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalVolume); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalVolume24hr failed")
 	}
 
-	return totalVolume
+	return uint64(totalVolume.Int64), nil
 }
 
-func (s *Client) totalVolume() uint64 {
+func (s *Client) totalVolume() (uint64, error) {
 	stmnt := `
 		SELECT COUNT(runeAmt) 
 		FROM swaps
 		WHERE runeAmt > 0
 	`
 
-	var totalVolume uint64
+	var totalVolume sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalVolume); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalVolume failed")
 	}
 
-	return totalVolume
+	return uint64(totalVolume.Int64), nil
 }
 
-func (s *Client) bTotalStaked() uint64 {
+func (s *Client) bTotalStaked() (uint64, error) {
 	var totalStaked uint64
-	for _, pool := range s.GetPools() {
-		totalStaked += s.poolStakedTotal(pool)
+
+	pools, err := s.GetPools()
+	if err != nil {
+		return 0, errors.Wrap(err, "bTotalStaked failed")
 	}
-	return totalStaked
+
+	for _, pool := range pools {
+		poolStakedTotal, err := s.poolStakedTotal(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "bTotalStaked failed")
+		}
+		totalStaked += poolStakedTotal
+	}
+	return totalStaked, nil
 }
 
-func (s *Client) totalDepth() uint64 {
-	stakes := s.totalRuneStaked()
-	swaps := s.runeSwaps()
+func (s *Client) totalDepth() (uint64, error) {
+	stakes, err := s.totalRuneStaked()
+	if err != nil {
+		return 0, errors.Wrap(err, "totalDepth failed")
+	}
+	swaps, err := s.runeSwaps()
+	if err != nil {
+		return 0, errors.Wrap(err, "totalDepth failed")
+	}
 
 	depth := (stakes + swaps)
-	return depth
+	return depth, nil
 }
 
-func (s *Client) totalRuneStaked() uint64 {
+func (s *Client) totalRuneStaked() (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt) FROM stakes
 	`
 
-	var totalRuneStaked uint64
+	var totalRuneStaked sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalRuneStaked); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalRuneStaked failed")
 	}
 
-	return totalRuneStaked
+	return uint64(totalRuneStaked.Int64), nil
 }
 
-func (s *Client) runeSwaps() uint64 {
+func (s *Client) runeSwaps() (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt) FROM swaps
 	`
 
-	var runeIncomingSwaps uint64
+	var runeIncomingSwaps sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&runeIncomingSwaps); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "runeSwaps failed")
 	}
 
-	return runeIncomingSwaps
+	return uint64(runeIncomingSwaps.Int64), nil
 }
 
+// TODO Reivew ??
 func (s *Client) bTotalEarned() uint64 {
 	return 0
 }
 
-func (s *Client) poolCount() uint64 {
+func (s *Client) poolCount() (uint64, error) {
 	var poolCount uint64
 
 	stmnt := `
@@ -253,7 +333,7 @@ func (s *Client) poolCount() uint64 {
 
 	rows, err := s.db.Queryx(stmnt)
 	if err != nil {
-		log.Fatal(err.Error())
+		return 0, errors.Wrap(err, "poolCount failed")
 	}
 
 	for rows.Next() {
@@ -263,62 +343,65 @@ func (s *Client) poolCount() uint64 {
 		}
 
 		asset, _ := common.NewAsset(pool)
-		depth := s.runeDepth(asset)
+		depth, err := s.runeDepth(asset)
+		if err != nil {
+			return 0, errors.Wrap(err, "poolCount failed")
+		}
 		if depth > 0 {
 			poolCount += 1
 		}
 	}
 
-	return poolCount
+	return poolCount, nil
 }
 
-func (s *Client) totalAssetBuys() uint64 {
+func (s *Client) totalAssetBuys() (uint64, error) {
 	stmnt := `SELECT COUNT(pool) FROM swaps WHERE assetAmt > 0`
-	var totalAssetBuys uint64
+	var totalAssetBuys sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalAssetBuys); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalAssetBuys failed")
 	}
 
-	return totalAssetBuys
+	return uint64(totalAssetBuys.Int64), nil
 }
 
-func (s *Client) totalAssetSells() uint64 {
+func (s *Client) totalAssetSells() (uint64, error) {
 	stmnt := `SELECT COUNT(pool) FROM swaps WHERE runeAmt > 0`
-	var totalAssetSells uint64
+	var totalAssetSells sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalAssetSells); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalAssetSells failed")
 	}
 
-	return totalAssetSells
+	return uint64(totalAssetSells.Int64), nil
 }
 
-func (s *Client) totalStakeTx() uint64 {
+func (s *Client) totalStakeTx() (uint64, error) {
 	stmnt := `
 		SELECT COUNT(event_id) FROM stakes WHERE units > 0
 	`
 
-	var totalStakeTx uint64
+	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalStakeTx); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalStakeTx failed")
 	}
 
-	return totalStakeTx
+	return uint64(totalStakeTx.Int64), nil
 }
 
-func (s *Client) totalWithdrawTx() uint64 {
+func (s *Client) totalWithdrawTx() (uint64, error) {
 	stmnt := `SELECT COUNT(event_id) FROM stakes WHERE units < 0`
-	var totalStakeTx uint64
+	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalStakeTx); err != nil {
-		return 0
+		return 0, errors.Wrap(err, "totalWithdrawTx failed")
 	}
 
-	return totalStakeTx
+	return uint64(totalStakeTx.Int64), nil
 }
