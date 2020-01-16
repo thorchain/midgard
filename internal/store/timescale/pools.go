@@ -1,8 +1,9 @@
 package timescale
 
 import (
-	"errors"
+	"database/sql"
 
+	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -47,11 +48,6 @@ type PoolData struct {
 	WithdrawTxCount  uint64
 }
 
-var USDPools = []string{
-	"BNB.TUSD-000",
-	"BNB.BUSD-BD1",
-}
-
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	query := `
 		SELECT sub.pool
@@ -69,7 +65,7 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	var a string
 
 	if err := row.Scan(&a); err != nil {
-		return common.Asset{}, err
+		return common.Asset{}, errors.Wrap(err, "getPool failed")
 	}
 
 	return common.NewAsset(a)
@@ -90,7 +86,7 @@ func (s *Client) GetPools() ([]common.Asset, error) {
 
 	rows, err := s.db.Queryx(query)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "getPools failed")
 	}
 
 	type results struct {
@@ -100,11 +96,11 @@ func (s *Client) GetPools() ([]common.Asset, error) {
 	for rows.Next() {
 		var result results
 		if err := rows.StructScan(&result); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "getPools failed")
 		}
 		pool, err := common.NewAsset(result.Pool)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "getPools failed")
 		}
 		pools = append(pools, pool)
 	}
@@ -115,7 +111,7 @@ func (s *Client) GetPools() ([]common.Asset, error) {
 func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 	exists, err := s.exists(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 	if !exists {
 		return PoolData{}, errors.New("pool does not exist")
@@ -123,182 +119,182 @@ func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 
 	assetDepth, err := s.assetDepth(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	assetROI, err := s.assetROI(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	assetStakedTotal, err := s.assetStakedTotal(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyAssetCount, err := s.buyAssetCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyFeeAverage, err := s.buyFeeAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyFeesTotal, err := s.buyFeesTotal(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buySlipAverage, err := s.buySlipAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyTxAverage, err := s.buyTxAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyVolume, err := s.buyVolume(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolDepth, err := s.poolDepth(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolFeeAverage, err := s.poolFeeAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolFeesTotal, err := s.poolFeesTotal(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolSlipAverage, err := s.poolSlipAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolStakedTotal, err := s.poolStakedTotal(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolTxAverage, err := s.poolTxAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolVolume, err := s.poolVolume(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolVolume24hr, err := s.poolVolume24hr(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	GetPriceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	runeDepth, err := s.runeDepth(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	runeROI, err := s.runeROI(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	runeStakedTotal, err := s.runeStakedTotal(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellAssetCount, err := s.sellAssetCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellFeeAverage, err := s.sellFeeAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellFeesTotal, err := s.sellFeesTotal(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellSlipAverage, err := s.sellSlipAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellTxAverage, err := s.sellTxAverage(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellVolume, err := s.sellVolume(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	stakeTxCount, err := s.stakeTxCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	stakersCount, err := s.stakersCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	stakingTxCount, err := s.stakingTxCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	swappersCount, err := s.swappersCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	swappingTxCount, err := s.swappingTxCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	withdrawTxCount, err := s.withdrawTxCount(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolROI, err := s.poolROI(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolROI12, err := s.poolROI12(asset)
 	if err != nil {
-		return PoolData{}, err
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	return PoolData{
@@ -345,12 +341,12 @@ func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 func (s *Client) GetPriceInRune(asset common.Asset) (float64, error) {
 	assetDepth, err := s.assetDepth(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "getPriceInRune failed")
 	}
 	if assetDepth > 0 {
 		runeDepth, err := s.runeDepth(asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "getPriceInRune failed")
 		}
 		return float64(runeDepth) / float64(assetDepth), nil
 	}
@@ -361,7 +357,7 @@ func (s *Client) GetPriceInRune(asset common.Asset) (float64, error) {
 func (s *Client) exists(asset common.Asset) (bool, error) {
 	staked, err := s.stakeTxCount(asset)
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "exists failed")
 	}
 	if staked > 0 {
 		return true, nil
@@ -378,14 +374,14 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		WHERE pool = $1
 		`
 
-	var assetStakedTotal uint64
+	var assetStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetStakedTotal failed")
 	}
 
-	return assetStakedTotal, nil
+	return uint64(assetStakedTotal.Int64), nil
 }
 
 // assetStakedTotal12 - total amount of asset staked in given pool in the last
@@ -398,14 +394,14 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) (uint64, error) {
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
-	var assetStakedTotal uint64
+	var assetStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetStakedTotal12m failed")
 	}
 
-	return assetStakedTotal, nil
+	return uint64(assetStakedTotal.Int64), nil
 }
 
 // assetWithdrawnTotal - total amount of asset withdrawn
@@ -417,14 +413,14 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
 		AND units < 0
 		`
 
-	var assetWithdrawnTotal int64
+	var assetWithdrawnTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetWithdrawnTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetWithdrawnTotal failed")
 	}
 
-	return -assetWithdrawnTotal, nil
+	return -assetWithdrawnTotal.Int64, nil
 }
 
 // runeStakedTotal - total amount of rune staked on the network for given pool.
@@ -435,14 +431,14 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 		WHERE pool = $1
 	`
 
-	var runeStakedTotal uint64
+	var runeStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeStakedTotal failed")
 	}
 
-	return runeStakedTotal, nil
+	return uint64(runeStakedTotal.Int64), nil
 }
 
 // runeStakedTotal12m - total amount of rune staked on the network for given
@@ -455,20 +451,20 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
-	var runeStakedTotal uint64
+	var runeStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeStakedTotal12m failed")
 	}
 
-	return runeStakedTotal, nil
+	return uint64(runeStakedTotal.Int64), nil
 }
 
 func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 	assetTotal, err := s.assetStakedTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolStakedTotal failed")
 	}
 	runeTotal, err := s.runeStakedTotal(asset)
 	if err != nil {
@@ -476,7 +472,7 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 	}
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolStakedTotal failed")
 	}
 
 	stakedPrice := float64(assetTotal) * priceInRune
@@ -492,7 +488,7 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 	stakes, err := s.assetStakedTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetDepth failed")
 	}
 	swaps, err := s.assetSwapTotal(asset)
 	if err != nil {
@@ -506,11 +502,11 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	stakes, err := s.assetStakedTotal12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
 	swaps, err := s.assetSwapTotal12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
 
 	depth := int64(stakes) + swaps
@@ -520,11 +516,11 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
 	stakes, err := s.runeStakedTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeDepth failed")
 	}
 	swaps, err := s.runeSwapTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeDepth failed")
 	}
 
 	depth := int64(stakes) + swaps
@@ -534,11 +530,11 @@ func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
 	stakes, err := s.runeStakedTotal12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
 	swaps, err := s.runeSwapTotal12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
 	depth := int64(stakes) + swaps
 	return uint64(depth), nil
@@ -552,14 +548,14 @@ func (s *Client) runeSwapTotal(asset common.Asset) (int64, error) {
 		WHERE pool = $1
 	`
 
-	var total int64
+	var total sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&total); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeSwapTotal failed")
 	}
 
-	return total, nil
+	return total.Int64, nil
 }
 
 // runeSwapTotal12m - total amount rune swapped through the pool in the last 12
@@ -572,14 +568,14 @@ func (s *Client) runeSwapTotal12m(asset common.Asset) (int64, error) {
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
-	var total int64
+	var total sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&total); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeSwapTotal12m failed")
 	}
 
-	return total, nil
+	return total.Int64, nil
 }
 
 func (s *Client) assetSwapTotal(asset common.Asset) (int64, error) {
@@ -589,14 +585,14 @@ func (s *Client) assetSwapTotal(asset common.Asset) (int64, error) {
 		WHERE pool = $1
 	`
 
-	var total int64
+	var total sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&total); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetSwapTotal failed")
 	}
 
-	return total, nil
+	return total.Int64, nil
 }
 
 func (s *Client) assetSwapTotal12m(asset common.Asset) (int64, error) {
@@ -607,20 +603,20 @@ func (s *Client) assetSwapTotal12m(asset common.Asset) (int64, error) {
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
-	var total int64
+	var total sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&total); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetSwapTotal12m failed")
 	}
 
-	return total, nil
+	return total.Int64, nil
 }
 
 func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
 	runeDepth, err := s.runeDepth(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolDepth failed")
 	}
 	return 2 * runeDepth, nil
 }
@@ -632,14 +628,14 @@ func (s *Client) poolUnits(asset common.Asset) (uint64, error) {
 		WHERE pool = $1
 	`
 
-	var units uint64
+	var units sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&units); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolUnits failed")
 	}
 
-	return units, nil
+	return uint64(units.Int64), nil
 }
 
 func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
@@ -650,18 +646,18 @@ func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
 		AND assetAmt > 0
 	`
 
-	var sellVolume uint64
+	var sellVolume sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&sellVolume); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellVolume failed")
 	}
 
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellVolume failed")
 	}
-	return uint64(float64(sellVolume) * priceInRune), nil
+	return uint64(float64(sellVolume.Int64) * priceInRune), nil
 }
 
 func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
@@ -673,18 +669,18 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
 
-	var sellVolume uint64
+	var sellVolume sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&sellVolume); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellVolume24hr failed")
 	}
 
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellVolume24hr failed")
 	}
-	return uint64(float64(sellVolume) * priceInRune), nil
+	return uint64(float64(sellVolume.Int64) * priceInRune), nil
 }
 
 func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
@@ -695,14 +691,14 @@ func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 		AND runeAmt > 0
 	`
 
-	var buyVolume uint64
+	var buyVolume sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buyVolume); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buyVolume failed")
 	}
 
-	return buyVolume, nil
+	return uint64(buyVolume.Int64), nil
 }
 
 func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
@@ -714,25 +710,25 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
 
-	var buyVolume uint64
+	var buyVolume sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buyVolume); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buyVolume24hr failed")
 	}
 
-	return buyVolume, nil
+	return uint64(buyVolume.Int64), nil
 }
 
 func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
 	sellVolume, err := s.sellVolume(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolVolume failed")
 	}
 
 	buyVolume, err := s.buyVolume(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolVolume failed")
 	}
 
 	return buyVolume + sellVolume, nil
@@ -741,12 +737,12 @@ func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
 func (s *Client) poolVolume24hr(asset common.Asset) (uint64, error) {
 	buyVolume24r, err := s.buyVolume24hr(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolVolume24hr failed")
 	}
 
 	sellVolume24r, err := s.sellVolume24hr(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolVolume24hr failed")
 	}
 	return buyVolume24r + sellVolume24r, nil
 }
@@ -759,18 +755,18 @@ func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
 		AND assetAmt > 0
 	`
 
-	var avg float64
+	var avg sql.NullFloat64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&avg); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellTxAverage failed")
 	}
 
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellTxAverage failed")
 	}
-	return uint64(avg * priceInRune), nil
+	return uint64(avg.Float64 * priceInRune), nil
 }
 
 func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
@@ -781,25 +777,25 @@ func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
 		AND runeAmt > 0
 	`
 
-	var avg uint64
+	var avg sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&avg); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buyTxAverage failed")
 	}
 
-	return avg, nil
+	return uint64(avg.Int64), nil
 }
 
 func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
 	buyTxAverage, err := s.buyTxAverage(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 
 	sellTxAverage, err := s.sellTxAverage(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 	return (buyTxAverage + sellTxAverage) / 2, nil
 }
@@ -812,14 +808,14 @@ func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
 		AND assetAmt > 0
 	`
 
-	var sellSlipAverage float64
+	var sellSlipAverage sql.NullFloat64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&sellSlipAverage); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellSlipAverage failed")
 	}
 
-	return sellSlipAverage, nil
+	return sellSlipAverage.Float64, nil
 }
 
 func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
@@ -830,25 +826,25 @@ func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
 		AND runeAmt > 0
 	`
 
-	var buySlipAverage float64
+	var buySlipAverage sql.NullFloat64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buySlipAverage); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buySlipAverage failed")
 	}
 
-	return buySlipAverage, nil
+	return buySlipAverage.Float64, nil
 }
 
 func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
 	buySlipAverage, err := s.buySlipAverage(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolSlipAverage failed")
 	}
 
 	sellSlipAverage, err := s.sellSlipAverage(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolSlipAverage failed")
 	}
 	return (buySlipAverage + sellSlipAverage) / 2, nil
 }
@@ -861,18 +857,18 @@ func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
 		AND assetAmt > 0
 	`
 
-	var sellFeeAverage uint64
+	var sellFeeAverage sql.NullFloat64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&sellFeeAverage); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellFeeAverage failed")
 	}
 
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellFeeAverage failed")
 	}
-	return uint64(float64(sellFeeAverage) * priceInRune), nil
+	return uint64((sellFeeAverage.Float64) * priceInRune), nil
 }
 
 func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
@@ -883,25 +879,25 @@ func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
 		AND runeAmt > 0
 	`
 
-	var buyFeeAverage uint64
+	var buyFeeAverage sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buyFeeAverage); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
 
-	return buyFeeAverage, nil
+	return uint64(buyFeeAverage.Int64), nil
 }
 
 func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
 	sellFeeAverage, err := s.sellFeeAverage(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolFeeAverage failed")
 	}
 
 	buyFeeAverage, err := s.buyFeeAverage(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolFeeAverage failed")
 	}
 	return (buyFeeAverage + sellFeeAverage) / 2, nil
 }
@@ -914,18 +910,18 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 		AND assetAmt > 0
 	`
 
-	var sellFeesTotal uint64
+	var sellFeesTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&sellFeesTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellFeesTotal failed")
 	}
 
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellFeesTotal failed")
 	}
-	return uint64(float64(sellFeesTotal) * priceInRune), nil
+	return uint64(float64(sellFeesTotal.Int64) * priceInRune), nil
 }
 
 func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
@@ -936,25 +932,25 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 		AND runeAmt > 0
 	`
 
-	var buyFeesTotal uint64
+	var buyFeesTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buyFeesTotal); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buyFeesTotal failed")
 	}
 
-	return buyFeesTotal, nil
+	return uint64(buyFeesTotal.Int64), nil
 }
 
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
 	buyFeesTotal, err := s.buyFeesTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolFeesTotal failed")
 	}
 
 	sellFeesTotal, err := s.sellFeesTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolFeesTotal failed")
 	}
 	return buyFeesTotal + sellFeesTotal, nil
 }
@@ -967,14 +963,14 @@ func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
 		AND assetAmt > 0
 	`
 
-	var sellAssetCount uint64
+	var sellAssetCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&sellAssetCount); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "sellAssetCount failed")
 	}
 
-	return sellAssetCount, nil
+	return uint64(sellAssetCount.Int64), nil
 }
 
 func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
@@ -985,14 +981,14 @@ func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 		AND runeAmt < 0
 	`
 
-	var buyAssetCount uint64
+	var buyAssetCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buyAssetCount); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "buyAssetCount failed")
 	}
 
-	return buyAssetCount, nil
+	return uint64(buyAssetCount.Int64), nil
 }
 
 func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
@@ -1000,14 +996,17 @@ func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
 		SELECT COUNT(event_id) FROM swaps WHERE pool = $1
 	`
 
-	var swappingTxCount uint64
+	var swappingTxCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&swappingTxCount); err != nil {
-		return 0, err
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, errors.Wrap(err, "swappingTxCount failed")
 	}
 
-	return swappingTxCount, nil
+	return uint64(swappingTxCount.Int64), nil
 }
 
 // swappersCount - number of unique swappers on the network
@@ -1019,14 +1018,17 @@ func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 		GROUP BY from_address
 	`
 
-	var swappersCount uint64
+	var swappersCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&swappersCount); err != nil {
-		return 0, err
+		if err != nil {
+			return 0, nil
+		}
+		return 0, errors.Wrap(err, "swappersCount failed")
 	}
 
-	return swappersCount, nil
+	return uint64(swappersCount.Int64), nil
 }
 
 // stakeTxCount - number of stakes that occurred on a given pool
@@ -1038,14 +1040,14 @@ func (s *Client) stakeTxCount(asset common.Asset) (uint64, error) {
 		AND units > 0
 	`
 
-	var stateTxCount uint64
+	var stateTxCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&stateTxCount); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakeTxCount failed")
 	}
 
-	return stateTxCount, nil
+	return uint64(stateTxCount.Int64), nil
 }
 
 // withdrawTxCount - number of unstakes that occurred on a given pool
@@ -1057,24 +1059,24 @@ func (s *Client) withdrawTxCount(asset common.Asset) (uint64, error) {
 		AND units < 0
 	`
 
-	var withdrawTxCount uint64
+	var withdrawTxCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&withdrawTxCount); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "withdrawTxCount failed")
 	}
 
-	return withdrawTxCount, nil
+	return uint64(withdrawTxCount.Int64), nil
 }
 
 func (s *Client) stakingTxCount(asset common.Asset) (uint64, error) {
 	stakeTxCount, err := s.stakeTxCount(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakingTxCount failed")
 	}
 	withdrawTxCount, err := s.withdrawTxCount(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakingTxCount failed")
 	}
 	stakingTxCount := stakeTxCount + withdrawTxCount
 
@@ -1094,24 +1096,24 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 		WHERE sub.total_units > 0
 	`
 
-	var stakersCount uint64
+	var stakersCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&stakersCount); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakersCount failed")
 	}
 
-	return stakersCount, nil
+	return uint64(stakersCount.Int64), nil
 }
 
 func (s *Client) assetROI(asset common.Asset) (float64, error) {
 	assetDepth, err := s.assetDepth(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetROI failed")
 	}
 	assetStakedTotal, err := s.assetStakedTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetROI failed")
 	}
 
 	staked := float64(assetStakedTotal)
@@ -1128,11 +1130,11 @@ func (s *Client) assetROI(asset common.Asset) (float64, error) {
 func (s *Client) assetROI12(asset common.Asset) (float64, error) {
 	assetDepth12m, err := s.assetDepth12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetROI12 failed")
 	}
 	assetStakedTotal12m, err := s.assetStakedTotal12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetROI12 failed")
 	}
 
 	staked := float64(assetStakedTotal12m)
@@ -1149,11 +1151,11 @@ func (s *Client) assetROI12(asset common.Asset) (float64, error) {
 func (s *Client) runeROI(asset common.Asset) (float64, error) {
 	runeDepth, err := s.runeDepth(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeROI failed")
 	}
 	runeStakedTotal, err := s.runeStakedTotal(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeROI failed")
 	}
 	staked := float64(runeStakedTotal)
 	depth := float64(runeDepth)
@@ -1169,11 +1171,11 @@ func (s *Client) runeROI(asset common.Asset) (float64, error) {
 func (s *Client) runeROI12(asset common.Asset) (float64, error) {
 	runeDepth12m, err := s.runeDepth12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeROI12 failed")
 	}
 	runeStakedTotal12m, err := s.runeStakedTotal12m(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeROI12 failed")
 	}
 	staked := float64(runeStakedTotal12m)
 	depth := float64(runeDepth12m)
@@ -1189,11 +1191,11 @@ func (s *Client) runeROI12(asset common.Asset) (float64, error) {
 func (s *Client) poolROI(asset common.Asset) (float64, error) {
 	assetROI, err := s.assetROI(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolROI failed")
 	}
 	runeROI, err := s.runeROI(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolROI failed")
 	}
 
 	var roi float64
@@ -1201,17 +1203,17 @@ func (s *Client) poolROI(asset common.Asset) (float64, error) {
 		roi = (assetROI / runeROI) / 2
 	}
 
-	return roi, err
+	return roi, errors.Wrap(err, "poolROI failed")
 }
 
 func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	assetROI12, err := s.assetROI12(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolROI12 failed")
 	}
 	runeROI12, err := s.runeROI12(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolROI12 failed")
 	}
 
 	var roi float64
@@ -1219,5 +1221,5 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 		roi = (assetROI12 / runeROI12) / 2
 	}
 
-	return roi, err
+	return roi, errors.Wrap(err, "poolROI12 failed")
 }
