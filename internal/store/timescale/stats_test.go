@@ -10,7 +10,8 @@ import (
 
 func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 
-	dailyActiveUsers := s.Store.dailyActiveUsers()
+	dailyActiveUsers, err := s.Store.dailyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Single stake
@@ -18,7 +19,8 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyActiveUsers = s.Store.dailyActiveUsers()
+	dailyActiveUsers, err = s.Store.dailyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
 
 	// Additional stake
@@ -26,7 +28,8 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyActiveUsers = s.Store.dailyActiveUsers()
+	dailyActiveUsers, err = s.Store.dailyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
 
 	// Unstake
@@ -34,13 +37,15 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyActiveUsers = s.Store.dailyActiveUsers()
+	dailyActiveUsers, err = s.Store.dailyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
 }
 
 func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 
-	dailyActiveUsers := s.Store.monthlyActiveUsers()
+	dailyActiveUsers, err := s.Store.monthlyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
 
 	// Single stake
@@ -48,7 +53,8 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyActiveUsers = s.Store.monthlyActiveUsers()
+	dailyActiveUsers, err = s.Store.monthlyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 
 	// Additional stake
@@ -56,7 +62,8 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyActiveUsers = s.Store.monthlyActiveUsers()
+	dailyActiveUsers, err = s.Store.monthlyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 
 	// Unstake
@@ -64,13 +71,15 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyActiveUsers = s.Store.monthlyActiveUsers()
+	dailyActiveUsers, err = s.Store.monthlyActiveUsers()
+	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 
-	totalUsers := s.Store.totalUsers()
+	totalUsers, err := s.Store.totalUsers()
+	c.Assert(err, IsNil)
 	c.Assert(totalUsers, Equals, uint64(0))
 
 	// Single stake
@@ -78,7 +87,8 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	totalUsers = s.Store.totalUsers()
+	totalUsers, err = s.Store.totalUsers()
+	c.Assert(err, IsNil)
 	c.Assert(totalUsers, Equals, uint64(1))
 
 	// Additional stake
@@ -86,7 +96,8 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	totalUsers = s.Store.totalUsers()
+	totalUsers, err = s.Store.totalUsers()
+	c.Assert(err, IsNil)
 	c.Assert(totalUsers, Equals, uint64(1))
 
 	// Unstake
@@ -94,7 +105,8 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	totalUsers = s.Store.totalUsers()
+	totalUsers, err = s.Store.totalUsers()
+	c.Assert(err, IsNil)
 	c.Assert(totalUsers, Equals, uint64(1))
 
 	// Additional stake
@@ -102,13 +114,15 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 		log.Fatal(err)
 	}
 
-	totalUsers = s.Store.totalUsers()
+	totalUsers, err = s.Store.totalUsers()
+	c.Assert(err, IsNil)
 	c.Assert(totalUsers, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestDailyTx(c *C) {
 
-	dailyTx := s.Store.dailyTx()
+	dailyTx, err := s.Store.dailyTx()
+	c.Assert(err, IsNil)
 	c.Assert(dailyTx, Equals, uint64(0))
 
 	// Single stake
@@ -116,7 +130,8 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyTx = s.Store.dailyTx()
+	dailyTx, err = s.Store.dailyTx()
+	c.Assert(err, IsNil)
 	c.Assert(dailyTx, Equals, uint64(1), Commentf("%v", dailyTx))
 
 	// Additional stake
@@ -124,7 +139,8 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyTx = s.Store.dailyTx()
+	dailyTx, err = s.Store.dailyTx()
+	c.Assert(err, IsNil)
 	c.Assert(dailyTx, Equals, uint64(2), Commentf("%v", dailyTx))
 
 	// Unstake
@@ -132,13 +148,15 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	dailyTx = s.Store.dailyTx()
+	dailyTx, err = s.Store.dailyTx()
+	c.Assert(err, IsNil)
 	c.Assert(dailyTx, Equals, uint64(3), Commentf("%v", dailyTx))
 }
 
 func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 
-	monthlyTx := s.Store.monthlyTx()
+	monthlyTx, err := s.Store.monthlyTx()
+	c.Assert(err, IsNil)
 	c.Assert(monthlyTx, Equals, uint64(0))
 
 	// Single stake
@@ -146,7 +164,8 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	monthlyTx = s.Store.monthlyTx()
+	monthlyTx, err = s.Store.monthlyTx()
+	c.Assert(err, IsNil)
 	c.Assert(monthlyTx, Equals, uint64(1))
 
 	// Additional stake
@@ -154,7 +173,8 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	monthlyTx = s.Store.monthlyTx()
+	monthlyTx, err = s.Store.monthlyTx()
+	c.Assert(err, IsNil)
 	c.Assert(monthlyTx, Equals, uint64(2))
 
 	// Unstake
@@ -162,7 +182,8 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	monthlyTx = s.Store.monthlyTx()
+	monthlyTx, err = s.Store.monthlyTx()
+	c.Assert(err, IsNil)
 	c.Assert(monthlyTx, Equals, uint64(3))
 
 	// Additional stake
@@ -170,13 +191,15 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 		log.Fatal(err)
 	}
 
-	monthlyTx = s.Store.monthlyTx()
+	monthlyTx, err = s.Store.monthlyTx()
+	c.Assert(err, IsNil)
 	c.Assert(monthlyTx, Equals, uint64(4))
 }
 
 func (s *TimeScaleSuite) TestTotalTx(c *C) {
 
-	totalTx := s.Store.totalTx()
+	totalTx, err := s.Store.totalTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalTx, Equals, uint64(0))
 
 	// Single stake
@@ -184,7 +207,8 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalTx = s.Store.totalTx()
+	totalTx, err = s.Store.totalTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalTx, Equals, uint64(1))
 
 	// Additional stake
@@ -192,7 +216,8 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalTx = s.Store.totalTx()
+	totalTx, err = s.Store.totalTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalTx, Equals, uint64(2))
 
 	// Unstake
@@ -200,7 +225,8 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalTx = s.Store.totalTx()
+	totalTx, err = s.Store.totalTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalTx, Equals, uint64(3))
 
 	// Additional stake
@@ -208,13 +234,15 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalTx = s.Store.totalTx()
+	totalTx, err = s.Store.totalTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalTx, Equals, uint64(4))
 }
 
 func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 
-	totalVolume24hr := s.Store.totalVolume24hr()
+	totalVolume24hr, err := s.Store.totalVolume24hr()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// Single stake
@@ -222,7 +250,8 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 		log.Fatal(err)
 	}
 
-	totalVolume24hr = s.Store.totalVolume24hr()
+	totalVolume24hr, err = s.Store.totalVolume24hr()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// Additional stake
@@ -230,7 +259,8 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 		log.Fatal(err)
 	}
 
-	totalVolume24hr = s.Store.totalVolume24hr()
+	totalVolume24hr, err = s.Store.totalVolume24hr()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 
 	// Unstake
@@ -238,13 +268,15 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 		log.Fatal(err)
 	}
 
-	totalVolume24hr = s.Store.totalVolume24hr()
+	totalVolume24hr, err = s.Store.totalVolume24hr()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume24hr, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 
-	totalVolume := s.Store.totalVolume()
+	totalVolume, err := s.Store.totalVolume()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// Single stake
@@ -252,7 +284,8 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 		log.Fatal(err)
 	}
 
-	totalVolume = s.Store.totalVolume()
+	totalVolume, err = s.Store.totalVolume()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// Additional stake
@@ -260,7 +293,8 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 		log.Fatal(err)
 	}
 
-	totalVolume = s.Store.totalVolume()
+	totalVolume, err = s.Store.totalVolume()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume, Equals, uint64(0))
 
 	// Unstake
@@ -268,7 +302,8 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 		log.Fatal(err)
 	}
 
-	totalVolume = s.Store.totalVolume()
+	totalVolume, err = s.Store.totalVolume()
+	c.Assert(err, IsNil)
 	c.Assert(totalVolume, Equals, uint64(0))
 }
 
@@ -276,7 +311,8 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 
-	totalStaked := s.Store.totalStaked(address)
+	totalStaked, err := s.Store.totalStaked(address)
+	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(0))
 
 	// Single stake
@@ -284,7 +320,8 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStaked = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked(address)
+	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
@@ -292,7 +329,8 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStaked = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked(address)
+	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(400))
 
 	// Unstake
@@ -300,7 +338,8 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStaked = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked(address)
+	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(200))
 
 	// Additional stake
@@ -310,13 +349,15 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStaked = s.Store.totalStaked(address)
+	totalStaked, err = s.Store.totalStaked(address)
+	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(50000000), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 
-	totalDepth := s.Store.totalDepth()
+	totalDepth, err := s.Store.totalDepth()
+	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(0))
 
 	// Single stake
@@ -324,7 +365,8 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 		log.Fatal(err)
 	}
 
-	totalDepth = s.Store.totalDepth()
+	totalDepth, err = s.Store.totalDepth()
+	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(100))
 
 	// Additional stake
@@ -332,14 +374,16 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 		log.Fatal(err)
 	}
 
-	totalDepth = s.Store.totalDepth()
+	totalDepth, err = s.Store.totalDepth()
+	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(200))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	totalDepth = s.Store.totalDepth()
+	totalDepth, err = s.Store.totalDepth()
+	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(100))
 
 	// Additional stake
@@ -347,13 +391,15 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 		log.Fatal(err)
 	}
 
-	totalDepth = s.Store.totalDepth()
+	totalDepth, err = s.Store.totalDepth()
+	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(50000100))
 }
 
 func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 
-	totalRuneStaked := s.Store.totalRuneStaked()
+	totalRuneStaked, err := s.Store.totalRuneStaked()
+	c.Assert(err, IsNil)
 	c.Assert(totalRuneStaked, Equals, uint64(0))
 
 	// Single stake
@@ -361,7 +407,8 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalRuneStaked = s.Store.totalRuneStaked()
+	totalRuneStaked, err = s.Store.totalRuneStaked()
+	c.Assert(err, IsNil)
 	c.Assert(totalRuneStaked, Equals, uint64(100))
 
 	// Additional stake
@@ -369,14 +416,16 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalRuneStaked = s.Store.totalRuneStaked()
+	totalRuneStaked, err = s.Store.totalRuneStaked()
+	c.Assert(err, IsNil)
 	c.Assert(totalRuneStaked, Equals, uint64(200))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	totalRuneStaked = s.Store.totalRuneStaked()
+	totalRuneStaked, err = s.Store.totalRuneStaked()
+	c.Assert(err, IsNil)
 	c.Assert(totalRuneStaked, Equals, uint64(100))
 
 	// Additional stake
@@ -384,13 +433,15 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 		log.Fatal(err)
 	}
 
-	totalRuneStaked = s.Store.totalRuneStaked()
+	totalRuneStaked, err = s.Store.totalRuneStaked()
+	c.Assert(err, IsNil)
 	c.Assert(totalRuneStaked, Equals, uint64(50000100))
 }
 
 func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 
-	runeSwaps := s.Store.runeSwaps()
+	runeSwaps, err := s.Store.runeSwaps()
+	c.Assert(err, IsNil)
 	c.Assert(runeSwaps, Equals, uint64(0))
 
 	// Single stake
@@ -398,7 +449,8 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 		log.Fatal(err)
 	}
 
-	runeSwaps = s.Store.runeSwaps()
+	runeSwaps, err = s.Store.runeSwaps()
+	c.Assert(err, IsNil)
 	c.Assert(runeSwaps, Equals, uint64(0))
 
 	// Additional stake
@@ -406,14 +458,16 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 		log.Fatal(err)
 	}
 
-	runeSwaps = s.Store.runeSwaps()
+	runeSwaps, err = s.Store.runeSwaps()
+	c.Assert(err, IsNil)
 	c.Assert(runeSwaps, Equals, uint64(0))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
 		log.Fatal(err)
 	}
 
-	runeSwaps = s.Store.runeSwaps()
+	runeSwaps, err = s.Store.runeSwaps()
+	c.Assert(err, IsNil)
 	c.Assert(runeSwaps, Equals, uint64(0))
 }
 
@@ -448,7 +502,8 @@ func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
 
 func (s *TimeScaleSuite) TestPoolCount(c *C) {
 
-	poolCount := s.Store.poolCount()
+	poolCount, err := s.Store.poolCount()
+	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(0))
 
 	// Single stake
@@ -456,7 +511,8 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 		log.Fatal(err)
 	}
 
-	poolCount = s.Store.poolCount()
+	poolCount, err = s.Store.poolCount()
+	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(1))
 
 	// Additional stake
@@ -464,7 +520,8 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 		log.Fatal(err)
 	}
 
-	poolCount = s.Store.poolCount()
+	poolCount, err = s.Store.poolCount()
+	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(2))
 
 	// Unstake
@@ -472,13 +529,15 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 		log.Fatal(err)
 	}
 
-	poolCount = s.Store.poolCount()
+	poolCount, err = s.Store.poolCount()
+	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 
-	totalAssetBuys := s.Store.totalAssetBuys()
+	totalAssetBuys, err := s.Store.totalAssetBuys()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
 	// Single stake
@@ -486,7 +545,8 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 		log.Fatal(err)
 	}
 
-	totalAssetBuys = s.Store.totalAssetBuys()
+	totalAssetBuys, err = s.Store.totalAssetBuys()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
 	// Additional stake
@@ -494,13 +554,15 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 		log.Fatal(err)
 	}
 
-	totalAssetBuys = s.Store.totalAssetBuys()
+	totalAssetBuys, err = s.Store.totalAssetBuys()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 
-	totalAssetSells := s.Store.totalAssetSells()
+	totalAssetSells, err := s.Store.totalAssetSells()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Single stake
@@ -508,7 +570,8 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 		log.Fatal(err)
 	}
 
-	totalAssetSells = s.Store.totalAssetSells()
+	totalAssetSells, err = s.Store.totalAssetSells()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Additional stake
@@ -516,7 +579,8 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 		log.Fatal(err)
 	}
 
-	totalAssetSells = s.Store.totalAssetSells()
+	totalAssetSells, err = s.Store.totalAssetSells()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
 	// Unstake
@@ -524,13 +588,15 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 		log.Fatal(err)
 	}
 
-	totalAssetSells = s.Store.totalAssetSells()
+	totalAssetSells, err = s.Store.totalAssetSells()
+	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 
-	totalStakeTx := s.Store.totalStakeTx()
+	totalStakeTx, err := s.Store.totalStakeTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(0))
 
 	// Single stake
@@ -538,7 +604,8 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStakeTx = s.Store.totalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(1))
 
 	// Additional stake
@@ -546,7 +613,8 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStakeTx = s.Store.totalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(2))
 
 	// Unstake
@@ -554,7 +622,8 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStakeTx = s.Store.totalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(2))
 
 	// More stakes
@@ -574,13 +643,15 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalStakeTx = s.Store.totalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(6))
 }
 
 func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 
-	totalWithdrawTx := s.Store.totalWithdrawTx()
+	totalWithdrawTx, err := s.Store.totalWithdrawTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Single stake
@@ -588,7 +659,8 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalWithdrawTx = s.Store.totalWithdrawTx()
+	totalWithdrawTx, err = s.Store.totalWithdrawTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Additional stake
@@ -596,7 +668,8 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalWithdrawTx = s.Store.totalWithdrawTx()
+	totalWithdrawTx, err = s.Store.totalWithdrawTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
 	// Unstake
@@ -604,6 +677,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 		log.Fatal(err)
 	}
 
-	totalWithdrawTx = s.Store.totalWithdrawTx()
+	totalWithdrawTx, err = s.Store.totalWithdrawTx()
+	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(1))
 }

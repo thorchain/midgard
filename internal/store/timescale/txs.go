@@ -8,22 +8,22 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetTxData(address common.Address) []models.TxDetails {
+func (s *Client) GetTxData(address common.Address) ([]models.TxDetails, error) {
 	events := s.eventsForAddress(address)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) []models.TxDetails {
+func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) ([]models.TxDetails, error) {
 	events := s.eventsForAddressAsset(address, asset)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) []models.TxDetails {
+func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) ([]models.TxDetails, error) {
 	events := s.eventsForAddressTxId(address, txid)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAsset(asset common.Asset) []models.TxDetails {
+func (s *Client) GetTxDataByAsset(asset common.Asset) ([]models.TxDetails, error) {
 	events := s.eventsForAsset(asset)
 	return s.processEvents(events)
 }
@@ -106,12 +106,15 @@ func (s *Client) eventsResults(rows *sqlx.Rows) []uint64 {
 	return events
 }
 
-func (s *Client) processEvents(events []uint64) []models.TxDetails {
+func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 	var txData []models.TxDetails
 
 	for _, eventId := range events {
 
-		eventDate, height, eventType, status := s.eventBasic(eventId)
+		eventDate, height, eventType, status, err := s.eventBasic(eventId)
+		if err != nil {
+			return nil, err
+		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
 			Type:    eventType,
@@ -126,7 +129,7 @@ func (s *Client) processEvents(events []uint64) []models.TxDetails {
 		})
 	}
 
-	return txData
+	return txData, nil
 }
 
 func (s *Client) eventPool(eventId uint64) common.Asset {
@@ -321,11 +324,14 @@ func (s *Client) stakeEvents(eventId uint64) models.Events {
 	return events
 }
 
-func (s *Client) txDate(eventId uint64) uint64 {
+func (s *Client) txDate(eventId uint64) (uint64, error) {
 	txHeight := s.txHeight(eventId)
-	timeOfBlock := s.getTimeOfBlock(txHeight)
+	timeOfBlock, err := s.getTimeOfBlock(txHeight)
+	if err != nil {
+		return 0, err
+	}
 
-	return timeOfBlock
+	return timeOfBlock, nil
 }
 
 func (s *Client) txHeight(eventId uint64) uint64 {
@@ -352,7 +358,7 @@ func (s *Client) priceTarget(eventId uint64) uint64 {
 	return priceTarget
 }
 
-func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string) {
+func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, error) {
 	stmnt := `
 		SELECT height, type, status 
 			FROM events
@@ -365,10 +371,13 @@ func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string) {
 
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&height, &eventType, &status); err != nil {
-		return 0, 0, "", ""
+		return 0, 0, "", "", err
 	}
 
-	eventTime := s.txDate(height)
+	eventTime, err := s.txDate(height)
+	if err != nil {
+		return 0, 0, "", "", err
+	}
 
-	return eventTime, height, eventType, status
+	return eventTime, height, eventType, status, err
 }
