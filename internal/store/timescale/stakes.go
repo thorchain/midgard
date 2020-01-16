@@ -14,7 +14,7 @@ import (
 func (s *Client) CreateStakeRecord(record models.EventStake) error {
 	err := s.CreateEventRecord(record.Event)
 	if err != nil {
-		return errors.Wrap(err, "Failed to create event record")
+		return errors.Wrap(err, "createStakeRecord failed")
 	}
 
 	// get rune/asset amounts from Event.InTx.Coins
@@ -50,7 +50,7 @@ func (s *Client) CreateStakeRecord(record models.EventStake) error {
 	)
 
 	if err != nil {
-		return errors.Wrap(err, "Failed to prepareNamed query for StakeRecord")
+		return errors.Wrap(err, "createStakeRecord failed")
 	}
 	return nil
 }
@@ -66,7 +66,7 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 
 	rows, err := s.db.Queryx(query)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "getStakerAddresses failed")
 	}
 
 	type results struct {
@@ -79,12 +79,12 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 		var result results
 		err = rows.StructScan(&result)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
 
 		addr, err := common.NewAddress(result.From_address)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
 		addresses = append(addresses, addr)
 	}
@@ -101,22 +101,22 @@ type StakerAddressDetails struct {
 func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
 	pools, err := s.getPools(address)
 	if err != nil {
-		return StakerAddressDetails{}, err
+		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	totalEarned, err := s.totalEarned(address, pools)
 	if err != nil {
-		return StakerAddressDetails{}, err
+		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	totalROI, err := s.totalROI(address)
 	if err != nil {
-		return StakerAddressDetails{}, err
+		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	totalStaked, err := s.totalStaked(address)
 	if err != nil {
-		return StakerAddressDetails{}, err
+		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	return StakerAddressDetails{
@@ -147,7 +147,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	// confirm asset in addresses pools
 	pools, err := s.getPools(address)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 	found := false
 	for _, v := range pools {
@@ -162,57 +162,57 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 
 	stakeUnits, err := s.stakeUnits(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	runeStaked, err := s.runeStaked(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	assetStaked, err := s.assetStaked(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	poolStaked, err := s.poolStaked(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	runeEarned, err := s.runeEarned(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	assetEarned, err := s.assetEarned(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	poolEarned, err := s.poolEarned(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	stakersRuneROI, err := s.stakersRuneROI(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	stakersAssetROI, err := s.stakersAssetROI(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	dateFirstStaked, err := s.dateFirstStaked(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	stakersPoolROI, err := s.stakersPoolROI(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, err
+		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	details := StakerAddressAndAssetDetails{
@@ -242,13 +242,13 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 		AND pool = ($2)
 	`
 
-	var stakeUnits uint64
+	var stakeUnits sql.NullInt64
 	err := s.db.Get(&stakeUnits, query, address, asset.String())
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakeUnits failed")
 	}
 
-	return stakeUnits, nil
+	return uint64(stakeUnits.Int64), nil
 }
 
 // runeStaked - sum of rune staked by a specific address and pool
@@ -260,13 +260,13 @@ func (s *Client) runeStaked(address common.Address, asset common.Asset) (uint64,
 		AND pool = ($2)
 	`
 
-	var runeStaked uint64
+	var runeStaked sql.NullInt64
 	err := s.db.Get(&runeStaked, query, address, asset.String())
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeStaked failed")
 	}
 
-	return runeStaked, nil
+	return uint64(runeStaked.Int64), nil
 }
 
 // runeStaked - sum of asset staked by a specific address and pool
@@ -278,29 +278,29 @@ func (s *Client) assetStaked(address common.Address, asset common.Asset) (uint64
 		AND pool = $2
 	`
 
-	var assetStaked uint64
+	var assetStaked sql.NullInt64
 	err := s.db.Get(&assetStaked, query, address, asset.String())
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetStaked failed")
 	}
 
-	return assetStaked, nil
+	return uint64(assetStaked.Int64), nil
 }
 
 func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64, error) {
 	runeStaked, err := s.runeStaked(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolStaked failed")
 	}
 
 	assetStaked, err := s.assetStaked(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolStaked failed")
 	}
 
 	assetPrice, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolStaked failed")
 	}
 	return uint64(float64(runeStaked) + (float64(assetStaked) * float64(assetPrice))), nil
 }
@@ -308,22 +308,22 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64,
 func (s *Client) runeEarned(address common.Address, asset common.Asset) (uint64, error) {
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "runeEarned failed")
 	}
 	if poolUnits > 0 {
 		stakeUnits, err := s.stakeUnits(address, asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
 		runeDepth, err := s.runeDepth(asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
 		runeStakedTotal, err := s.runeStakedTotal(asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
 		return (stakeUnits / poolUnits) * (runeDepth - runeStakedTotal), nil
@@ -335,27 +335,27 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (uint64,
 func (s *Client) assetEarned(address common.Address, asset common.Asset) (uint64, error) {
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "assetEarned failed")
 	}
 	if poolUnits > 0 {
 		stakeUnits, err := s.stakeUnits(address, asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
 		poolUnits, err := s.poolUnits(asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
 		assetDepth, err := s.assetDepth(asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
 		assetStakedTotal, err := s.assetStakedTotal(asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
 		return (stakeUnits / poolUnits) * (assetDepth - assetStakedTotal), nil
@@ -367,17 +367,17 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (uint64
 func (s *Client) poolEarned(address common.Address, asset common.Asset) (uint64, error) {
 	runeEarned, err := s.runeEarned(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolEarned failed")
 	}
 
 	assetEarned, err := s.assetEarned(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolEarned failed")
 	}
 
 	assetPrice, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "poolEarned failed")
 	}
 	return uint64(float64(runeEarned) + (float64(assetEarned) * assetPrice)), nil
 }
@@ -385,20 +385,20 @@ func (s *Client) poolEarned(address common.Address, asset common.Asset) (uint64,
 func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (float64, error) {
 	runeStaked, err := s.runeStaked(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakersRuneROI failed")
 	}
 	if runeStaked > 0 {
 		runeEarned, err := s.runeEarned(address, asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "stakersRuneROI failed")
 		}
 
 		runeStaked, err := s.runeStaked(address, asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "stakersRuneROI failed")
 		}
 
-		return float64(runeEarned / runeStaked), err
+		return float64(runeEarned / runeStaked), errors.Wrap(err, "stakersRuneROI failed")
 	}
 
 	return 0, nil
@@ -414,7 +414,7 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 	firstStaked := sql.NullTime{}
 	err := s.db.Get(&firstStaked, query, address.String(), asset.String())
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "dateFirstStaked failed")
 	}
 
 	if firstStaked.Valid {
@@ -427,35 +427,35 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) (float64, error) {
 	assetStaked, err := s.assetStaked(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakersAssetROI failed")
 	}
 	if assetStaked > 0 {
 		assetEarned, err := s.assetEarned(address, asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "stakersAssetROI failed")
 		}
 
 		assetStaked, err := s.assetStaked(address, asset)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "stakersAssetROI failed")
 		}
 
 		return float64(assetEarned / assetStaked), nil
 	}
 
-	return 0, err
+	return 0, errors.Wrap(err, "stakersAssetROI failed")
 }
 
 func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (float64, error) {
 	stakersAssetROI, err := s.stakersAssetROI(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakersPoolROI failed")
 	}
 
 	// TODO / FIXME this should be runeAssetROI (Fix in new PR)
 	runeAssetROI, err := s.stakersAssetROI(address, asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "stakersPoolROI failed")
 	}
 
 	return (stakersAssetROI + runeAssetROI) / 2, nil
@@ -464,14 +464,14 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (flo
 func (s *Client) totalStaked(address common.Address) (uint64, error) {
 	pools, err := s.getPools(address)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "totalStaked failed")
 	}
 	var totalStaked uint64
 
 	for _, pool := range pools {
 		poolStaked, err := s.poolStaked(address, pool)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "totalStaked failed")
 		}
 		totalStaked += poolStaked
 	}
@@ -489,7 +489,7 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 
 	rows, err := s.db.Queryx(query, address.String())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "getPools failed")
 	}
 
 	type results struct {
@@ -502,12 +502,12 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 		var result results
 		err := rows.StructScan(&result)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "getPools failed")
 		}
 		if result.Units > 0 {
 			asset, err := common.NewAsset(result.Pool)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "getPools failed")
 			}
 			pools = append(pools, asset)
 		}
@@ -522,12 +522,12 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (uint
 	for _, pool := range pools {
 		runeEarned, err := s.runeEarned(address, pool)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "totalEarned failed")
 		}
 
 		assetEarned, err := s.assetEarned(address, pool)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "totalEarned failed")
 		}
 
 		priceInRune, err := s.GetPriceInRune(pool)
@@ -539,7 +539,7 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (uint
 	}
 
 	if math.IsNaN(totalEarned) {
-		return 0, errors.New("totalEarned not-a-number")
+		return 0, nil
 	}
 
 	return uint64(totalEarned), nil
@@ -553,7 +553,7 @@ func (s *Client) totalROI(address common.Address) (float64, error) {
 		return 0, err
 	}
 	if len(pools) == 0 {
-		return 0, errors.New("No pools exist")
+		return 0, nil
 	}
 
 	for _, pool := range pools {
