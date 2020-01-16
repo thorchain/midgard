@@ -302,7 +302,7 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64,
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStaked failed")
 	}
-	return uint64(float64(runeStaked) + (float64(assetStaked) * float64(assetPrice))), nil
+	return uint64(float64(runeStaked) + (float64(assetStaked) * assetPrice)), nil
 }
 
 func (s *Client) runeEarned(address common.Address, asset common.Asset) (uint64, error) {
