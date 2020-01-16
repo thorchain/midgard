@@ -3,6 +3,7 @@ package timescale
 import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -113,7 +114,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 
 		eventDate, height, eventType, status, err := s.eventBasic(eventId)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "processEvents failed")
 		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
@@ -328,7 +329,7 @@ func (s *Client) txDate(eventId uint64) (uint64, error) {
 	txHeight := s.txHeight(eventId)
 	timeOfBlock, err := s.getTimeOfBlock(txHeight)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "txDate failed")
 	}
 
 	return timeOfBlock, nil
@@ -371,13 +372,13 @@ func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, err
 
 	row := s.db.QueryRow(stmnt, eventId)
 	if err := row.Scan(&height, &eventType, &status); err != nil {
-		return 0, 0, "", "", err
+		return 0, 0, "eventBasic failed", "eventBasic failed", errors.Wrap(err, "eventBasic failed")
 	}
 
 	eventTime, err := s.txDate(height)
 	if err != nil {
-		return 0, 0, "", "", err
+		return 0, 0, "", "", errors.Wrap(err, "")
 	}
 
-	return eventTime, height, eventType, status, err
+	return eventTime, height, eventType, status, errors.Wrap(err, "")
 }

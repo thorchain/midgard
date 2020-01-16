@@ -1,22 +1,22 @@
 package timescale
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
-	"log"
-	"time"
 )
 
 func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
 	if err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	asset, _ := common.NewAsset("BNB.BNB")
@@ -32,7 +32,7 @@ func (s *TimeScaleSuite) TestGetTimeOfBlock(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
 	if err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	timeOfBlock, err := s.Store.getTimeOfBlock(1)
@@ -47,12 +47,12 @@ func (s *TimeScaleSuite) TestGetBlockHeight(c *C) {
 	// Create Genesis
 	_, err := s.Store.CreateGenesis(genesis)
 	if err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	asset, _ := common.NewAsset("BNB.BNB")
