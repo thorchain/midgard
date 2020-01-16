@@ -365,13 +365,21 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (uint64
 }
 
 func (s *Client) poolEarned(address common.Address, asset common.Asset) (uint64, error) {
-	runeEarned := float64(s.runeEarned(address, asset))
-	assetEarned := float64(s.assetEarned(address, asset))
+	runeEarned, err := s.runeEarned(address, asset)
+	if err != nil {
+		return 0, err
+	}
+
+	assetEarned, err := s.assetEarned(address, asset)
+	if err != nil {
+		return 0, err
+	}
+
 	assetPrice, err := s.GetPriceInRune(asset)
 	if err != nil {
 		return 0, err
 	}
-	return uint64(runeEarned + (assetEarned * assetPrice)), nil
+	return uint64(float64(runeEarned) + (float64(assetEarned) * assetPrice)), nil
 }
 
 func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (float64, error) {
@@ -444,8 +452,13 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (flo
 		return 0, err
 	}
 
-  stakersAsset s.stakersAssetROI(address, asset)
-	return (s.stakersAssetROI(address, asset) + s.stakersAssetROI(address, asset)) / 2, nil
+	// TODO / FIXME this should be runeAssetROI (Fix in new PR)
+	runeAssetROI, err := s.stakersAssetROI(address, asset)
+	if err != nil {
+		return 0, err
+	}
+
+	return (stakersAssetROI + runeAssetROI) / 2, nil
 }
 
 func (s *Client) totalStaked(address common.Address) (uint64, error) {
@@ -454,8 +467,13 @@ func (s *Client) totalStaked(address common.Address) (uint64, error) {
 		return 0, err
 	}
 	var totalStaked uint64
+
 	for _, pool := range pools {
-		totalStaked += s.poolStaked(address, pool)
+		poolStaked, err := s.poolStaked(address, pool)
+		if err != nil {
+			return 0, err
+		}
+		totalStaked += poolStaked
 	}
 
 	return totalStaked, nil
@@ -502,11 +520,26 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (uint
 	var totalEarned float64
 
 	for _, pool := range pools {
-		totalEarned += (float64(s.runeEarned(address, pool)) + float64(s.assetEarned(address, pool))) / s.GetPriceInRune(pool)
+		runeEarned, err := s.runeEarned(address, pool)
+		if err != nil {
+			return 0, err
+		}
+
+		assetEarned, err := s.assetEarned(address, pool)
+		if err != nil {
+			return 0, err
+		}
+
+		priceInRune, err := s.GetPriceInRune(pool)
+		if err != nil {
+			return 0, err
+		}
+
+		totalEarned += (float64(runeEarned) + float64(assetEarned)) / priceInRune
 	}
 
 	if math.IsNaN(totalEarned) {
-		return 0, err
+		return 0, errors.New("totalEarned not-a-number")
 	}
 
 	return uint64(totalEarned), nil
@@ -524,7 +557,11 @@ func (s *Client) totalROI(address common.Address) (float64, error) {
 	}
 
 	for _, pool := range pools {
-		total += s.stakersPoolROI(address, pool)
+		stakersPoolROI, err := s.stakersPoolROI(address, pool)
+		if err != nil {
+			return 0, err
+		}
+		total += stakersPoolROI
 	}
 
 	return total / float64(len(pools)), nil
