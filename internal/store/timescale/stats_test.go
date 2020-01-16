@@ -1,8 +1,6 @@
 package timescale
 
 import (
-	"log"
-
 	. "gopkg.in/check.v1"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -16,7 +14,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyActiveUsers, err = s.Store.dailyActiveUsers()
@@ -25,7 +23,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyActiveUsers, err = s.Store.dailyActiveUsers()
@@ -34,7 +32,7 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyActiveUsers, err = s.Store.dailyActiveUsers()
@@ -50,7 +48,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyActiveUsers, err = s.Store.monthlyActiveUsers()
@@ -59,7 +57,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyActiveUsers, err = s.Store.monthlyActiveUsers()
@@ -68,7 +66,7 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyActiveUsers, err = s.Store.monthlyActiveUsers()
@@ -84,7 +82,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalUsers, err = s.Store.totalUsers()
@@ -93,7 +91,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalUsers, err = s.Store.totalUsers()
@@ -102,7 +100,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalUsers, err = s.Store.totalUsers()
@@ -111,7 +109,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalUsers, err = s.Store.totalUsers()
@@ -127,7 +125,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyTx, err = s.Store.dailyTx()
@@ -136,7 +134,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyTx, err = s.Store.dailyTx()
@@ -145,7 +143,7 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	dailyTx, err = s.Store.dailyTx()
@@ -161,7 +159,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	monthlyTx, err = s.Store.monthlyTx()
@@ -170,7 +168,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	monthlyTx, err = s.Store.monthlyTx()
@@ -179,7 +177,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	monthlyTx, err = s.Store.monthlyTx()
@@ -188,7 +186,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	monthlyTx, err = s.Store.monthlyTx()
@@ -204,7 +202,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalTx, err = s.Store.totalTx()
@@ -213,7 +211,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalTx, err = s.Store.totalTx()
@@ -222,7 +220,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalTx, err = s.Store.totalTx()
@@ -231,7 +229,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalTx, err = s.Store.totalTx()
@@ -247,7 +245,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalVolume24hr, err = s.Store.totalVolume24hr()
@@ -256,7 +254,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalVolume24hr, err = s.Store.totalVolume24hr()
@@ -265,7 +263,7 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalVolume24hr, err = s.Store.totalVolume24hr()
@@ -281,7 +279,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalVolume, err = s.Store.totalVolume()
@@ -290,7 +288,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalVolume, err = s.Store.totalVolume()
@@ -299,7 +297,7 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalVolume, err = s.Store.totalVolume()
@@ -317,7 +315,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStaked, err = s.Store.totalStaked(address)
@@ -326,7 +324,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStaked, err = s.Store.totalStaked(address)
@@ -335,7 +333,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStaked, err = s.Store.totalStaked(address)
@@ -346,12 +344,12 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(50000000), Commentf("%d", totalStaked))
+	c.Assert(totalStaked, Equals, uint64(100000099), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {
@@ -362,7 +360,7 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalDepth, err = s.Store.totalDepth()
@@ -371,7 +369,7 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalDepth, err = s.Store.totalDepth()
@@ -379,7 +377,7 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 	c.Assert(totalDepth, Equals, uint64(200))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalDepth, err = s.Store.totalDepth()
@@ -388,7 +386,7 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalDepth, err = s.Store.totalDepth()
@@ -404,7 +402,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalRuneStaked, err = s.Store.totalRuneStaked()
@@ -413,7 +411,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalRuneStaked, err = s.Store.totalRuneStaked()
@@ -421,7 +419,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 	c.Assert(totalRuneStaked, Equals, uint64(200))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalRuneStaked, err = s.Store.totalRuneStaked()
@@ -430,7 +428,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalRuneStaked, err = s.Store.totalRuneStaked()
@@ -446,7 +444,7 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	runeSwaps, err = s.Store.runeSwaps()
@@ -455,7 +453,7 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	runeSwaps, err = s.Store.runeSwaps()
@@ -463,7 +461,7 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 	c.Assert(runeSwaps, Equals, uint64(0))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	runeSwaps, err = s.Store.runeSwaps()
@@ -478,7 +476,7 @@ func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	bTotalEarned = s.Store.bTotalEarned()
@@ -486,14 +484,14 @@ func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	bTotalEarned = s.Store.bTotalEarned()
 	c.Assert(bTotalEarned, Equals, uint64(0))
 
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	bTotalEarned = s.Store.bTotalEarned()
@@ -508,7 +506,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	poolCount, err = s.Store.poolCount()
@@ -517,7 +515,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	poolCount, err = s.Store.poolCount()
@@ -526,7 +524,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	poolCount, err = s.Store.poolCount()
@@ -542,7 +540,7 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalAssetBuys, err = s.Store.totalAssetBuys()
@@ -551,7 +549,7 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalAssetBuys, err = s.Store.totalAssetBuys()
@@ -567,7 +565,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalAssetSells, err = s.Store.totalAssetSells()
@@ -576,7 +574,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalAssetSells, err = s.Store.totalAssetSells()
@@ -585,7 +583,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalAssetSells, err = s.Store.totalAssetSells()
@@ -601,7 +599,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStakeTx, err = s.Store.totalStakeTx()
@@ -610,7 +608,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStakeTx, err = s.Store.totalStakeTx()
@@ -619,7 +617,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStakeTx, err = s.Store.totalStakeTx()
@@ -628,19 +626,19 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 
 	// More stakes
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent2); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	if err := s.Store.CreateStakeRecord(stakeTcanEvent3); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	if err := s.Store.CreateStakeRecord(stakeTcanEvent4); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	if err := s.Store.CreateStakeRecord(stakeBoltEvent5); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalStakeTx, err = s.Store.totalStakeTx()
@@ -656,7 +654,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 
 	// Single stake
 	if err := s.Store.CreateStakeRecord(stakeBnbEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalWithdrawTx, err = s.Store.totalWithdrawTx()
@@ -665,7 +663,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 
 	// Additional stake
 	if err := s.Store.CreateStakeRecord(stakeTomlEvent1); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalWithdrawTx, err = s.Store.totalWithdrawTx()
@@ -674,7 +672,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 
 	// Unstake
 	if err := s.Store.CreateUnStakesRecord(unstakeTOMLEvent0); err != nil {
-		log.Fatal(err)
+		c.Fatal(err)
 	}
 
 	totalWithdrawTx, err = s.Store.totalWithdrawTx()
