@@ -532,7 +532,7 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (uint
 
 		priceInRune, err := s.GetPriceInRune(pool)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "totalEarned failed")
 		}
 
 		totalEarned += (float64(runeEarned) + float64(assetEarned)) / priceInRune
@@ -550,7 +550,7 @@ func (s *Client) totalROI(address common.Address) (float64, error) {
 
 	pools, err := s.getPools(address)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "totalROI failed")
 	}
 	if len(pools) == 0 {
 		return 0, nil
@@ -559,7 +559,7 @@ func (s *Client) totalROI(address common.Address) (float64, error) {
 	for _, pool := range pools {
 		stakersPoolROI, err := s.stakersPoolROI(address, pool)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "totalROI failed")
 		}
 		total += stakersPoolROI
 	}

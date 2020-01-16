@@ -16,11 +16,11 @@ const blockSpeed = 3
 func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
 	assetBlockHeight, err := s.getBlockHeight(asset)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "getDateCreated failed")
 	}
 	dateCreated, err := s.getTimeOfBlock(assetBlockHeight)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "getDateCreated failed")
 	}
 
 	return dateCreated, nil
@@ -29,7 +29,7 @@ func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
 func (s *Client) getTimeOfBlock(assetBlockHeight uint64) (uint64, error) {
 	getGenesis, err := s.getGenesis()
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "getTimeOfBlock failed")
 	}
 
 	currentTime := uint64(time.Now().Unix())
@@ -48,7 +48,7 @@ func (s *Client) getGenesis() (time.Time, error) {
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&genesisTime); err != nil {
-		return time.Time{}, err
+		return time.Time{}, errors.Wrap(err, "getGenesis failed")
 	}
 
 	return genesisTime, nil
@@ -67,7 +67,7 @@ func (s *Client) getBlockHeight(asset common.Asset) (uint64, error) {
 	row := s.db.QueryRow(stmnt, asset.Ticker.String())
 
 	if err := row.Scan(&blockHeight); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "getBlockHeight failed")
 	}
 
 	return blockHeight, nil
