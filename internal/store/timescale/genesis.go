@@ -13,37 +13,48 @@ import (
 const blockSpeed = 3
 
 // timeOfBlock = ((currentTime - genesisTime) / (currentBlockheight))*blockHeight + genesisTime (edited)
-func (s *Client) GetDateCreated(asset common.Asset) uint64 {
-	assetBlockHeight := s.getBlockHeight(asset)
-	dateCreated := s.getTimeOfBlock(assetBlockHeight)
+func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
+	assetBlockHeight, err := s.getBlockHeight(asset)
+	if err != nil {
+		return 0, err
+	}
+	dateCreated, err := s.getTimeOfBlock(assetBlockHeight)
+	if err != nil {
+		return 0, err
+	}
 
-	return dateCreated
+	return dateCreated, nil
 }
 
-func (s *Client) getTimeOfBlock(assetBlockHeight uint64) uint64 {
+func (s *Client) getTimeOfBlock(assetBlockHeight uint64) (uint64, error) {
+	getGenesis, err := s.getGenesis()
+	if err != nil {
+		return 0, err
+	}
+
 	currentTime := uint64(time.Now().Unix())
-	genesisTime := uint64(s.getGenesis().Unix())
+	genesisTime := uint64(getGenesis.Unix())
 	currentBlockHeight := (currentTime - genesisTime) / blockSpeed
 
 	timeOfBlock := (((currentTime - genesisTime) / currentBlockHeight) * assetBlockHeight) + genesisTime
 
-	return timeOfBlock
+	return timeOfBlock, nil
 }
 
-func (s *Client) getGenesis() time.Time {
+func (s *Client) getGenesis() (time.Time, error) {
 	stmnt := `SELECT genesis_time FROM genesis`
 
 	var genesisTime time.Time
 	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&genesisTime); err != nil {
-		return time.Time{}
+		return time.Time{}, err
 	}
 
-	return genesisTime
+	return genesisTime, nil
 }
 
-func (s *Client) getBlockHeight(asset common.Asset) uint64 {
+func (s *Client) getBlockHeight(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT MAX(events.height)
 			FROM events
@@ -56,10 +67,10 @@ func (s *Client) getBlockHeight(asset common.Asset) uint64 {
 	row := s.db.QueryRow(stmnt, asset.Ticker.String())
 
 	if err := row.Scan(&blockHeight); err != nil {
-		return 0
+		return 0, err
 	}
 
-	return blockHeight
+	return blockHeight, nil
 }
 
 func (s *Client) CreateGenesis(genesis models.Genesis) (int64, error) {
@@ -70,7 +81,6 @@ func (s *Client) CreateGenesis(genesis models.Genesis) (int64, error) {
 		ON CONFLICT (genesis_time) DO NOTHING;`, models.ModelGenesisTable)
 
 	results, err := s.db.Exec(query, genesis.GenesisTime)
-
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for GenesisRecord")
 	}
