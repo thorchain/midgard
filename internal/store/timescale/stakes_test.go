@@ -34,7 +34,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 	c.Assert(stakeUnits, Equals, uint64(100))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	stakeUnits, err = s.Store.stakeUnits(address, asset)
@@ -80,7 +80,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	c.Assert(runeStaked, Equals, uint64(100))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	runeStaked, err = s.Store.runeStaked(address, asset)
@@ -126,7 +126,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	c.Assert(assetStaked, Equals, uint64(10))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	assetStaked, err = s.Store.assetStaked(address, asset)
@@ -172,7 +172,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 	c.Assert(poolStaked, Equals, uint64(200))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
@@ -218,7 +218,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 	c.Assert(runeEarned, Equals, uint64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	runeEarned, err = s.Store.runeEarned(address, asset)
@@ -253,7 +253,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 	c.Assert(assetEarned, Equals, uint64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	assetEarned, err = s.Store.assetEarned(address, asset)
@@ -288,7 +288,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 	c.Assert(poolEarned, Equals, uint64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	poolEarned, err = s.Store.poolEarned(address, asset)
@@ -323,7 +323,7 @@ func (s *TimeScaleSuite) TestStakersRuneROI(c *C) {
 	c.Assert(runeROI, Equals, float64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	runeROI, err = s.Store.stakersRuneROI(address, asset)
@@ -390,7 +390,7 @@ func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {
 	c.Assert(assetROI, Equals, float64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	assetROI, err = s.Store.stakersAssetROI(address, asset)
@@ -425,7 +425,7 @@ func (s *TimeScaleSuite) TestStakersPoolROI(c *C) {
 	c.Assert(poolROI, Equals, float64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	poolROI, err = s.Store.stakersPoolROI(address, asset)
@@ -458,7 +458,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	c.Assert(totalStaked, Equals, uint64(400))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	totalStaked, err = s.Store.totalStaked(address)
@@ -501,7 +501,7 @@ func (s *TimeScaleSuite) TestGetPools(c *C) {
 	c.Assert(len(pools), Equals, 2)
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	pools, err = s.Store.getPools(address)
@@ -540,7 +540,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 	c.Assert(totalEarned, Equals, uint64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	totalEarned, err = s.Store.totalEarned(address, assets)
@@ -573,7 +573,7 @@ func (s *TimeScaleSuite) TestTotalROI(c *C) {
 	c.Assert(totalROI, Equals, float64(0))
 
 	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTOMLEvent0)
+	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	totalROI, err = s.Store.totalROI(address)

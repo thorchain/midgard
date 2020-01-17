@@ -36,7 +36,7 @@ func (s *TimeScaleSuite) TestGetTxData(c *C) {
 	c.Assert(txData[0].In.Coin[1].Asset.Symbol.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Asset.Ticker.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Amount, Equals, int64(10))
-	c.Assert(txData[0].In.Memo, Equals, "stake:BNB")
+	c.Assert(txData[0].In.Memo, Equals, "stake:BNB.BNB")
 	c.Assert(txData[0].In.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
@@ -123,7 +123,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressAsset(c *C) {
 	c.Assert(txData[0].In.Coin[1].Asset.Symbol.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Asset.Ticker.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Amount, Equals, int64(10))
-	c.Assert(txData[0].In.Memo, Equals, "stake:BNB")
+	c.Assert(txData[0].In.Memo, Equals, "stake:BNB.BNB")
 	c.Assert(txData[0].In.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
@@ -212,7 +212,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAddressTxId(c *C) {
 	c.Assert(txData[0].In.Coin[1].Asset.Symbol.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Asset.Ticker.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Amount, Equals, int64(10))
-	c.Assert(txData[0].In.Memo, Equals, "stake:BNB")
+	c.Assert(txData[0].In.Memo, Equals, "stake:BNB.BNB")
 	c.Assert(txData[0].In.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
@@ -299,7 +299,7 @@ func (s *TimeScaleSuite) TestGetTxDataByAsset(c *C) {
 	c.Assert(txData[0].In.Coin[1].Asset.Symbol.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Asset.Ticker.String(), Equals, "BNB")
 	c.Assert(txData[0].In.Coin[1].Amount, Equals, int64(10))
-	c.Assert(txData[0].In.Memo, Equals, "stake:BNB")
+	c.Assert(txData[0].In.Memo, Equals, "stake:BNB.BNB")
 	c.Assert(txData[0].In.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 	c.Assert(txData[0].Out.Address, Equals, "")
 	c.Assert(txData[0].Out.Memo, Equals, "")
@@ -536,7 +536,7 @@ func (s *TimeScaleSuite) TestInTx(c *C) {
 	c.Assert(inTx.Coin[1].Asset.Symbol.String(), Equals, "BNB")
 	c.Assert(inTx.Coin[1].Asset.Ticker.String(), Equals, "BNB")
 	c.Assert(inTx.Coin[1].Amount, Equals, int64(10))
-	c.Assert(inTx.Memo, Equals, "stake:BNB")
+	c.Assert(inTx.Memo, Equals, "stake:BNB.BNB")
 	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
 	// Additional stake
@@ -602,7 +602,7 @@ func (s *TimeScaleSuite) TestTxForDirection(c *C) {
 	inTx := s.Store.txForDirection(eventId, "in")
 
 	c.Assert(inTx.Address, Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	c.Assert(inTx.Memo, Equals, "stake:BNB")
+	c.Assert(inTx.Memo, Equals, "stake:BNB.BNB")
 	c.Assert(inTx.TxID, Equals, "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
 
 	outTx := s.Store.txForDirection(eventId, "out")

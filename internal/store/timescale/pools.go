@@ -640,10 +640,10 @@ func (s *Client) poolUnits(asset common.Asset) (uint64, error) {
 
 func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT SUM(assetAmt)
+		SELECT SUM(runeAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 	`
 
 	var sellVolume sql.NullInt64
@@ -653,19 +653,15 @@ func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "sellVolume failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "sellVolume failed")
-	}
-	return uint64(float64(sellVolume.Int64) * priceInRune), nil
+	return uint64(float64(-sellVolume.Int64)), nil
 }
 
 func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT SUM(assetAmt)
+		SELECT SUM(runeAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
 
@@ -676,19 +672,15 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "sellVolume24hr failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "sellVolume24hr failed")
-	}
-	return uint64(float64(sellVolume.Int64) * priceInRune), nil
+	return uint64(-sellVolume.Int64), nil
 }
 
 func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT SUM(runeAmt)
+		SELECT SUM(assetAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND runeAmt > 0
+		AND assetAmt < 0
 	`
 
 	var buyVolume sql.NullInt64
@@ -698,15 +690,19 @@ func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyVolume failed")
 	}
 
-	return uint64(buyVolume.Int64), nil
+	priceInRune, err := s.GetPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "buyVolume failed")
+	}
+	return uint64(float64(-buyVolume.Int64) * priceInRune), nil
 }
 
 func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT SUM(runeAmt)
+		SELECT SUM(assetAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND runeAmt > 0
+		AND assetAmt < 0
 		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
 
@@ -717,7 +713,7 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyVolume24hr failed")
 	}
 
-	return uint64(buyVolume.Int64), nil
+	return uint64(-buyVolume.Int64), nil
 }
 
 func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
@@ -735,16 +731,17 @@ func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) poolVolume24hr(asset common.Asset) (uint64, error) {
-	buyVolume24r, err := s.buyVolume24hr(asset)
+	buyVolume24hr, err := s.buyVolume24hr(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolVolume24hr failed")
 	}
 
-	sellVolume24r, err := s.sellVolume24hr(asset)
+	sellVolume24hr, err := s.sellVolume24hr(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolVolume24hr failed")
 	}
-	return buyVolume24r + sellVolume24r, nil
+
+	return buyVolume24hr + sellVolume24hr, nil
 }
 
 func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
