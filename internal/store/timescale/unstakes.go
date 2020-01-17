@@ -26,6 +26,8 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 		}
 	}
 
+	// FIXME we need to get the unstake tx data from OutTx too!!!
+
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
