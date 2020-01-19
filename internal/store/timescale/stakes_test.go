@@ -99,7 +99,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	c.Assert(runeStaked, Equals, uint64(50000000), Commentf("%v", runeStaked))
 }
 
-func (s *TimeScaleSuite) TestAssetStaked(c *C) {
+func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
 
