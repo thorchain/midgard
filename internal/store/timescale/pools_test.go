@@ -166,6 +166,38 @@ func (s *TimeScaleSuite) TestExists(c *C) {
 	c.Assert(exists, Equals, true)
 }
 
+func (s *TimeScaleSuite) TestAssetStaked(c *C) {
+	// No stake
+	asset, _ := common.NewAsset("BNB.BNB")
+	assetStakedTotal, err := s.Store.assetStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(0))
+
+	// Single stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(10))
+
+	// Another stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(10), Commentf("%v", assetStakedTotal))
+}
+
 func (s *TimeScaleSuite) TestAssetStakedTotal(c *C) {
 
 	// No stake
@@ -181,6 +213,22 @@ func (s *TimeScaleSuite) TestAssetStakedTotal(c *C) {
 	assetStakedTotal, err = s.Store.assetStakedTotal(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetStakedTotal, Equals, uint64(10))
+
+	// Another stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestAssetStakedTotal12m(c *C) {
@@ -198,6 +246,22 @@ func (s *TimeScaleSuite) TestAssetStakedTotal12m(c *C) {
 	assetStakedTotal, err = s.Store.assetStakedTotal12m(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetStakedTotal, Equals, uint64(10))
+
+	// Another stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStakedTotal12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStakedTotal, err = s.Store.assetStakedTotal12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
@@ -241,6 +305,22 @@ func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
 	runeStakedTotal, err = s.Store.runeStakedTotal(asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeStakedTotal, Equals, uint64(100))
+
+	// Another stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	runeStakedTotal, err = s.Store.runeStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStakedTotal, Equals, uint64(50000100), Commentf("%v", runeStakedTotal))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	runeStakedTotal, err = s.Store.runeStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStakedTotal, Equals, uint64(50000100), Commentf("%v", runeStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {
@@ -255,9 +335,24 @@ func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	runeStakedTotal, err = s.Store.runeStakedTotal(asset)
+	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeStakedTotal, Equals, uint64(100))
+
+	// Another stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStakedTotal, Equals, uint64(200))
+
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStakedTotal, Equals, uint64(200), Commentf("%v", runeStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
@@ -275,6 +370,22 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 	poolStakedTotal, err = s.Store.poolStakedTotal(asset)
 	c.Assert(err, IsNil)
 	c.Assert(poolStakedTotal, Equals, uint64(200))
+
+	// Another stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	poolStakedTotal, err = s.Store.poolStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolStakedTotal, Equals, uint64(400))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	poolStakedTotal, err = s.Store.poolStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolStakedTotal, Equals, uint64(400))
 }
 
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
@@ -410,28 +521,43 @@ func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
 	c.Assert(runeDepth, Equals, uint64(10))
 }
 
-func (s *TimeScaleSuite) TestAssetSwapTotal(c *C) {
+func (s *TimeScaleSuite) TestAssetSwap(c *C) {
 
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	swapTotal, err := s.Store.assetSwapTotal(asset)
+	swapTotal, err := s.Store.assetSwap(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(0))
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	swapTotal, err = s.Store.assetSwapTotal(asset)
+	// Swap (Sell)
+	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	c.Assert(err, IsNil)
+
+	asset, _ = common.NewAsset("BNB.BOLT-014")
+	swapTotal, err = s.Store.assetSwap(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(20000000))
+
+	// Swap (Buy)
+	swap := swapBuyRune2BoltEvent1
+	swap.ID = 9
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	swapTotal, err = s.Store.assetSwap(asset)
+	c.Assert(err, IsNil)
+	c.Assert(swapTotal, Equals, int64(0))
 }
 
-func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
+func (s *TimeScaleSuite) TestAssetSwap12m(c *C) {
 
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	swapTotal, err := s.Store.assetSwapTotal12m(asset)
+	swapTotal, err := s.Store.assetSwapped12m(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(0))
 
@@ -444,32 +570,18 @@ func (s *TimeScaleSuite) TestAssetSwapTotal12m(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
-	swapTotal, err = s.Store.assetSwapTotal(asset)
+	swapTotal, err = s.Store.assetSwapped12m(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(20000000))
-}
 
-func (s *TimeScaleSuite) TestRuneSwapTotal(c *C) {
-
-	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	swapTotal, err := s.Store.runeSwapTotal(asset)
+	swap := swapBuyRune2BoltEvent1
+	swap.ID = 9
+	err = s.Store.CreateSwapRecord(swap)
 	c.Assert(err, IsNil)
 
+	swapTotal, err = s.Store.assetSwapped12m(asset)
+	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(0))
-
-	// Stake
-	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
-	c.Assert(err, IsNil)
-
-	asset, _ = common.NewAsset("BNB.BOLT-014")
-	swapTotal, err = s.Store.runeSwapTotal(asset)
-	c.Assert(err, IsNil)
-	c.Assert(swapTotal, Equals, int64(-1))
 }
 
 func (s *TimeScaleSuite) TestRuneSwapTotal12m(c *C) {
@@ -759,7 +871,7 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 
 	// Buy Swap
 	swap := swapBuyRune2BoltEvent1
-	swap.ID = 8
+	swap.ID = 9
 	err = s.Store.CreateSwapRecord(swap)
 	c.Assert(err, IsNil)
 
