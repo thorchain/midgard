@@ -165,12 +165,12 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
-	runeStaked, err := s.runeStaked(address, asset)
+	runeStaked, err := s.runeStakedForAddress(address, asset)
 	if err != nil {
 		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
-	assetStaked, err := s.assetStaked(address, asset)
+	assetStaked, err := s.assetStakedForAddress(address, asset)
 	if err != nil {
 		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
@@ -251,8 +251,8 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 	return uint64(stakeUnits.Int64), nil
 }
 
-// runeStaked - sum of rune staked by a specific address and pool
-func (s *Client) runeStaked(address common.Address, asset common.Asset) (uint64, error) {
+// runeStakedForAddress - sum of rune staked by a specific address and pool
+func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
 		SELECT SUM(runeAmt)
 		FROM stakes
@@ -263,14 +263,14 @@ func (s *Client) runeStaked(address common.Address, asset common.Asset) (uint64,
 	var runeStaked sql.NullInt64
 	err := s.db.Get(&runeStaked, query, address, asset.String())
 	if err != nil {
-		return 0, errors.Wrap(err, "runeStaked failed")
+		return 0, errors.Wrap(err, "runeStakedForAddress failed")
 	}
 
 	return uint64(runeStaked.Int64), nil
 }
 
-// runeStaked - sum of asset staked by a specific address and pool
-func (s *Client) assetStaked(address common.Address, asset common.Asset) (uint64, error) {
+// runeStakedForAddress - sum of asset staked by a specific address and pool
+func (s *Client) assetStakedForAddress(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
 		SELECT SUM(assetAmt)
 		FROM stakes
@@ -281,19 +281,19 @@ func (s *Client) assetStaked(address common.Address, asset common.Asset) (uint64
 	var assetStaked sql.NullInt64
 	err := s.db.Get(&assetStaked, query, address, asset.String())
 	if err != nil {
-		return 0, errors.Wrap(err, "assetStaked failed")
+		return 0, errors.Wrap(err, "assetStakedForAddress failed")
 	}
 
 	return uint64(assetStaked.Int64), nil
 }
 
 func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64, error) {
-	runeStaked, err := s.runeStaked(address, asset)
+	runeStaked, err := s.runeStakedForAddress(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStaked failed")
 	}
 
-	assetStaked, err := s.assetStaked(address, asset)
+	assetStaked, err := s.assetStakedForAddress(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStaked failed")
 	}
@@ -383,7 +383,7 @@ func (s *Client) poolEarned(address common.Address, asset common.Asset) (uint64,
 }
 
 func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (float64, error) {
-	runeStaked, err := s.runeStaked(address, asset)
+	runeStaked, err := s.runeStakedForAddress(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "stakersRuneROI failed")
 	}
@@ -393,7 +393,7 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 			return 0, errors.Wrap(err, "stakersRuneROI failed")
 		}
 
-		runeStaked, err := s.runeStaked(address, asset)
+		runeStaked, err := s.runeStakedForAddress(address, asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "stakersRuneROI failed")
 		}
@@ -425,7 +425,7 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 }
 
 func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) (float64, error) {
-	assetStaked, err := s.assetStaked(address, asset)
+	assetStaked, err := s.assetStakedForAddress(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "stakersAssetROI failed")
 	}
@@ -435,7 +435,7 @@ func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) (fl
 			return 0, errors.Wrap(err, "stakersAssetROI failed")
 		}
 
-		assetStaked, err := s.assetStaked(address, asset)
+		assetStaked, err := s.assetStakedForAddress(address, asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "stakersAssetROI failed")
 		}
