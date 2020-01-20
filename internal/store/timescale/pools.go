@@ -390,7 +390,7 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0 
+		AND assetAmt > 0
 		`
 
 	var assetStakedTotal sql.NullInt64
@@ -467,7 +467,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
+		AND runeAmt > 0
 	`
 
 	var runeStakedTotal sql.NullInt64
@@ -505,7 +505,7 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
+		AND runeAmt > 0
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
@@ -1034,7 +1034,7 @@ func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 		SELECT COUNT(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
-		AND runeAmt < 0
+		AND assetAmt < 0
 	`
 
 	var buyAssetCount sql.NullInt64
