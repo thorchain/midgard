@@ -1255,9 +1255,7 @@ func (s *Client) poolROI(asset common.Asset) (float64, error) {
 	}
 
 	var roi float64
-	if runeROI > 0 {
-		roi = (assetROI / runeROI) / 2
-	}
+	roi = (assetROI + runeROI) / 2
 
 	return roi, errors.Wrap(err, "poolROI failed")
 }
@@ -1273,9 +1271,7 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	}
 
 	var roi float64
-	if runeROI12 > 0 {
-		roi = (assetROI12 / runeROI12) / 2
-	}
+	roi = (assetROI12 + runeROI12) / 2
 
 	return roi, errors.Wrap(err, "poolROI12 failed")
 }
