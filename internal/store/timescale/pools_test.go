@@ -1018,7 +1018,6 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 	c.Assert(err, IsNil)
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 
 	// No stake
@@ -1027,23 +1026,89 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(feesTotal, Equals, uint64(0))
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
+
+	// buy swap
+
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent2)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.sellFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(0))
+
+	// Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.sellFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(7463), Commentf("feesTotal: %v", feesTotal))
+
+	// Another sell Swap
+	swap := swapSellBnb2RuneEvent5
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.sellFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(11939), Commentf("feesTotal: %v", feesTotal))
+
+	// Buy swap
+	swap = swapBuyRune2BnbEvent2
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.sellFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(11944), Commentf("feesTotal: %v", feesTotal))
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feesTotal, err := s.Store.buyFeesTotal(asset)
 	c.Assert(err, IsNil)
-
 	c.Assert(feesTotal, Equals, uint64(0))
+
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	// Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.buyFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(0), Commentf("feesTotal: %v", feesTotal))
+
+	// Another buy Swap
+	swap := swapBuyRune2BnbEvent2
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.buyFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
+
+	// Sell swap
+	swap = swapSellBnb2RuneEvent4
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.buyFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
 
 	// No stake
@@ -1052,9 +1117,46 @@ func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(feesTotal, Equals, uint64(0))
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
+
+	// buy swap
+
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent2)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.poolFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
+
+	// Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.poolFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(7471019), Commentf("feesTotal: %v", feesTotal))
+
+	// Another sell Swap
+	swap := swapSellBnb2RuneEvent5
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.poolFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(7475495), Commentf("feesTotal: %v", feesTotal))
+
+	// Buy swap
+	swap = swapBuyRune2BnbEvent2
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feesTotal, err = s.Store.poolFeesTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feesTotal, Equals, uint64(14939056), Commentf("feesTotal: %v", feesTotal))
 }
 
 func (s *TimeScaleSuite) TestSellAssetCount(c *C) {
