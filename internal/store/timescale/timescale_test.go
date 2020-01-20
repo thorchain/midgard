@@ -74,7 +74,6 @@ var (
 		},
 		StakeUnits: 100,
 	}
-
 	stakeBnbEvent1 = models.EventStake{
 		Event: models.Event{
 			Time:   time.Now(),
