@@ -287,7 +287,7 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 
 	assetWithdrawnTotal, err = s.Store.assetWithdrawnTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetWithdrawnTotal, Equals, int64(10))
+	c.Assert(assetWithdrawnTotal, Equals, int64(10), Commentf("assetWithdrawnTotal: %v", assetWithdrawnTotal))
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
@@ -385,7 +385,7 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 
 	poolStakedTotal, err = s.Store.poolStakedTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStakedTotal, Equals, uint64(400))
+	c.Assert(poolStakedTotal, Equals, uint64(400), Commentf("poolStakedTotal: %v", poolStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
