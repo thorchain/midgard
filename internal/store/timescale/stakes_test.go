@@ -131,7 +131,7 @@ func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 
 	assetStaked, err = s.Store.assetStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(0))
+	c.Assert(assetStaked, Equals, uint64(0), Commentf("assetStaked: %v", assetStaked))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
