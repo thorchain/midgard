@@ -884,7 +884,7 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	txAverage, err := s.Store.sellTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(0))
@@ -893,30 +893,98 @@ func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
 	c.Assert(err, IsNil)
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	txAverage, err = s.Store.sellTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(0))
+
+	// Buy swap
+	swap := swapBuyRune2BoltEvent1
+	swap.ID += 2
+	err = s.Store.CreateSwapRecord(swap)
 	c.Assert(err, IsNil)
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
+	txAverage, err = s.Store.sellTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(0))
+
+	// Sell Swap
+	swap = swapSellBolt2RuneEvent2
+	swap.ID += 2
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.sellTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(140331491), Commentf("%d", txAverage))
+
+	// Another Sell Swap
+	swap.ID += 3
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
 	txAverage, err = s.Store.sellTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(132422150), Commentf("%d", txAverage))
+
+	// Buy swap
+	swap = swapBuyRune2BoltEvent1
+	swap.ID += 3 // TODO these are hacks due to the current sql table unique constraint requirements. Could be fixed with a factory builder pattern.
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.sellTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(140331491), Commentf("%d", txAverage))
 }
 
 func (s *TimeScaleSuite) TestBuyTxAverage(c *C) {
-
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	txAverage, err := s.Store.buyTxAverage(asset)
 	c.Assert(err, IsNil)
-
 	c.Assert(txAverage, Equals, uint64(0))
+
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.buyTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(0))
+
+	// Sell swap
+	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent2)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.buyTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(0), Commentf("%d", txAverage))
+
+	// Buy Swap
+	swap := swapBuyRune2BoltEvent1
+	swap.ID += 3
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.buyTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(140331491), Commentf("%d", txAverage))
+
+	// Another Buy Swap
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.buyTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(149245672), Commentf("%d", txAverage))
+
 }
 
 func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	txAverage, err := s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(0))
@@ -925,29 +993,59 @@ func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
 	c.Assert(err, IsNil)
 
-	// Swap
+	txAverage, err = s.Store.poolTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(0))
+
+	// Sell Swap
 	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
 	c.Assert(err, IsNil)
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
 	txAverage, err = s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(66211075), Commentf("%d", txAverage))
+
+	// Buy Swap
+	swap := swapBuyRune2BoltEvent1
+	swap.ID += 2
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.poolTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(140331491), Commentf("%d", txAverage))
 }
 
 func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	slipAverage, err := s.Store.sellSlipAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.0)
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	// Buy Swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BoltEvent1)
 	c.Assert(err, IsNil)
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
+	slipAverage, err = s.Store.sellSlipAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(slipAverage, Equals, 0.0)
+
+	// Sell Swap
+	swap := swapSellBolt2RuneEvent1
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	slipAverage, err = s.Store.sellSlipAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(slipAverage, Equals, 0.12302392721176147)
+
+	// Another Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent2)
+	c.Assert(err, IsNil)
+
 	slipAverage, err = s.Store.sellSlipAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.12302392721176147)
@@ -956,16 +1054,42 @@ func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
 func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	slipAverage, err := s.Store.buySlipAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.0)
+
+	// Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent2)
+	c.Assert(err, IsNil)
+
+	slipAverage, err = s.Store.buySlipAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(slipAverage, Equals, 0.0)
+
+	// Buy Swap
+	swap := swapBuyRune2BoltEvent1
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	slipAverage, err = s.Store.buySlipAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(slipAverage, Equals, 0.12302392721176147)
+
+	// Another Buy Swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BoltEvent1)
+	c.Assert(err, IsNil)
+
+	slipAverage, err = s.Store.buySlipAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(slipAverage, Equals, 0.12302392721176147)
 }
 
 func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	slipAverage, err := s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.0)
@@ -974,48 +1098,148 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
 	c.Assert(err, IsNil)
 
-	asset, _ = common.NewAsset("BNB.BOLT-014")
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(slipAverage, Equals, 0.06151196360588074)
+
+	// Buy swap
+	swap := swapBuyRune2BoltEvent1
+	swap.ID += 1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	slipAverage, err = s.Store.poolSlipAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(slipAverage, Equals, 0.12302392721176147)
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	feeAverage, err := s.Store.sellFeeAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(feeAverage, Equals, uint64(0))
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
 	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.sellFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(0))
+
+	// Buy Swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BoltEvent1)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.sellFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(0))
+
+	// Sell Swap
+	swap := swapSellBolt2RuneEvent2
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.sellFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(52368597), Commentf("feeAverage: %v", feeAverage))
+
+	// Sell Swap
+	swap.ID = +1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.sellFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(49417006), Commentf("feeAverage: %v", feeAverage))
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	feeAverage, err := s.Store.buyFeeAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(feeAverage, Equals, uint64(0))
+
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.buyFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(0))
+
+	// Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent2)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.buyFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(0))
+
+	// Buy Swap
+	swap := swapBuyRune2BoltEvent1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.buyFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(7463556), Commentf("feeAverage: %v", feeAverage))
+
+	// Buy Swap
+	swap.ID = +1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.buyFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(7463556), Commentf("feeAverage: %v", feeAverage))
 }
 
-// TODO More data requested
 func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
+	asset, _ := common.NewAsset("BNB.BOLT-014")
 	feeAverage, err := s.Store.poolFeeAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(feeAverage, Equals, uint64(0))
 
-	// Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	// Stake
+	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
 	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.poolFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(0))
+
+	// Sell Swap
+	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent2)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.poolFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(24708503), Commentf("feeAverage: %v", feeAverage))
+
+	// Buy Swap
+	swap := swapBuyRune2BoltEvent1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.poolFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(29916076), Commentf("feeAverage: %v", feeAverage))
+
+	// Buy Swap
+	swap.ID = +1
+	err = s.Store.CreateSwapRecord(swap)
+	c.Assert(err, IsNil)
+
+	feeAverage, err = s.Store.poolFeeAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(feeAverage, Equals, uint64(31579363), Commentf("feeAverage: %v", feeAverage))
 }
 
 func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
@@ -1250,7 +1474,7 @@ func (s *TimeScaleSuite) TestBuyAssetCount(c *C) {
 
 	// Sell Swap
 	swap = swapSellBolt2RuneEvent1
-	swap.ID += 3
+	swap.ID += 4
 	err = s.Store.CreateSwapRecord(swap)
 	c.Assert(err, IsNil)
 
