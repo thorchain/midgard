@@ -808,7 +808,7 @@ func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
 		SELECT AVG(assetAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 	`
 
 	var avg sql.NullFloat64
@@ -827,20 +827,25 @@ func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
 
 func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT AVG(runeAmt)
+		SELECT AVG(assetAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND runeAmt > 0
+		AND assetAmt < 0
 	`
 
-	var avg sql.NullInt64
+	var avg sql.NullFloat64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&avg); err != nil {
 		return 0, errors.Wrap(err, "buyTxAverage failed")
 	}
 
-	return uint64(avg.Int64), nil
+	priceInRune, err := s.GetPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "buyTxAverage failed")
+	}
+
+	return uint64(-avg.Float64 * priceInRune), nil
 }
 
 func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
@@ -861,7 +866,7 @@ func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
 		SELECT AVG(trade_slip)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 	`
 
 	var sellSlipAverage sql.NullFloat64
@@ -910,7 +915,7 @@ func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
 		SELECT AVG(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 	`
 
 	var sellFeeAverage sql.NullFloat64
@@ -935,14 +940,14 @@ func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
 		AND runeAmt > 0
 	`
 
-	var buyFeeAverage sql.NullInt64
+	var buyFeeAverage sql.NullFloat64
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&buyFeeAverage); err != nil {
 		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
 
-	return uint64(buyFeeAverage.Int64), nil
+	return uint64(buyFeeAverage.Float64), nil
 }
 
 func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
@@ -963,7 +968,7 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 		SELECT SUM(liquidity_fee)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 	`
 
 	var sellFeesTotal sql.NullInt64
@@ -1016,7 +1021,7 @@ func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
 		SELECT COUNT(assetAmt)
 		FROM swaps
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND runeAmt < 0
 	`
 
 	var sellAssetCount sql.NullInt64
