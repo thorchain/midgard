@@ -1,0 +1,29 @@
+[
+  {
+    "id": "4",
+    "height": "11",
+    "type": "rewards",
+    "event": {
+      "bond_rewards": {},
+      "pool_rewards": [
+        {
+          "assets": {
+            "chain": "BNB",
+            "symbol": "BOLT-014",
+            "ticker": "BOLT"
+          },
+          "amount": "1000"
+        },
+        {
+          "assets": {
+            "chain": "BNB",
+            "symbol": "TCAN-014",
+            "ticker": "TCAN"
+          },
+          "amount": "1000"
+        }
+      ]
+    },
+    "status": "Success"
+  }
+]
