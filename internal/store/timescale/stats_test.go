@@ -104,7 +104,7 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 
 	totalUsers, err = s.Store.totalUsers()
 	c.Assert(err, IsNil)
-	c.Assert(totalUsers, Equals, uint64(2))
+	c.Assert(totalUsers, Equals, uint64(2), Commentf("totalUsers: %v", totalUsers))
 }
 
 func (s *TimeScaleSuite) TestDailyTx(c *C) {
@@ -166,7 +166,7 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 
 	monthlyTx, err = s.Store.monthlyTx()
 	c.Assert(err, IsNil)
-	c.Assert(monthlyTx, Equals, uint64(3))
+	c.Assert(monthlyTx, Equals, uint64(3), Commentf("monthlyTx: %v", monthlyTx))
 
 	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
@@ -205,7 +205,7 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 
 	totalTx, err = s.Store.totalTx()
 	c.Assert(err, IsNil)
-	c.Assert(totalTx, Equals, uint64(3))
+	c.Assert(totalTx, Equals, uint64(3), Commentf("totalTx: %v", totalTx))
 
 	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent2)

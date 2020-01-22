@@ -1,0 +1,63 @@
+[
+  {
+    "id": "1",
+    "height": "5",
+    "type": "stake",
+    "in_tx": {
+      "id": "LAOCVOEPF5CT06Q1A9YI2VV7DZEXPGV8ZVWI0WB2OMTTM0T2JDFE1CCVLPUQ0WX5",
+      "chain": "BNB",
+      "from_address": "tbnb1e9g63aput2eedys7xvh0kjnyuephhsqhqh9c8r",
+      "to_address": "tbnb10xran5jhc2e7wkzhge0qpgyrj09vdnhystcnuc",
+      "coins": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "LOK-3C0",
+            "ticker": "LOK"
+          },
+          "amount": "10000000000"
+        },
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "RUNE-A1F",
+            "ticker": "RUNE"
+          },
+          "amount": "50000000000"
+        }
+      ],
+      "gas": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BNB",
+            "ticker": "BNB"
+          },
+          "amount": "60000"
+        }
+      ],
+      "memo": "STAKE:BNB.LOK-3C0"
+    },
+    "out_txs": [
+      {
+        "id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "chain": "",
+        "from_address": "",
+        "to_address": "",
+        "coins": null,
+        "gas": null,
+        "memo": ""
+      }
+    ],
+    "gas": null,
+    "event": {
+      "pool": {
+        "chain": "BNB",
+        "symbol": "LOK-3C0",
+        "ticker": "LOK"
+      },
+      "stake_units": "30000000000"
+    },
+    "status": "Success"
+  }
+]

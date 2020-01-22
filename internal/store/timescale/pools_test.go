@@ -287,7 +287,7 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 
 	assetWithdrawnTotal, err = s.Store.assetWithdrawnTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetWithdrawnTotal, Equals, int64(10))
+	c.Assert(assetWithdrawnTotal, Equals, int64(10), Commentf("assetWithdrawnTotal: %v", assetWithdrawnTotal))
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
@@ -385,7 +385,7 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 
 	poolStakedTotal, err = s.Store.poolStakedTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStakedTotal, Equals, uint64(400))
+	c.Assert(poolStakedTotal, Equals, uint64(400), Commentf("poolStakedTotal: %v", poolStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
@@ -1738,25 +1738,87 @@ func (s *TimeScaleSuite) TestAssetROI12(c *C) {
 	c.Assert(roi, Equals, 0.0) // because we're always sending asset in (not rune), there is no ROI
 }
 
-// TODO
 func (s *TimeScaleSuite) TestRuneROI(c *C) {
+	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
 	roi, err := s.Store.runeROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
+
+	// stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 0.0)
+
+	// Buy swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent2)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 0.00000002, Commentf("roi: %d", roi))
+
+	// Buy Another swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent3)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 4.00000002)
+
+	// Sell swap
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent5)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 3.80000002)
+
 }
 
-// TODO
 func (s *TimeScaleSuite) TestRuneROI12(c *C) {
+	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	roi, err := s.Store.runeROI(asset)
+	roi, err := s.Store.runeROI12(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 0.0)
+
+	// stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
+	roi, err = s.Store.runeROI12(asset)
+	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
+
+	// Buy swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent2)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI12(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 0.00000002, Commentf("roi: %d", roi))
+
+	// Buy Another swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent3)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI12(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 4.00000002)
+
+	// Sell swap
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent5)
+	c.Assert(err, IsNil)
+
+	roi, err = s.Store.runeROI12(asset)
+	c.Assert(err, IsNil)
+	c.Assert(roi, Equals, 3.80000002)
 }
 
 func (s *TimeScaleSuite) TestPoolROI(c *C) {
