@@ -94,6 +94,10 @@ run:
 
 run-thormock:
 	cd ./tools/mockServer && go run mockServer.go
+
+run-thormock-with-smoke:
+	cd ./tools/mockServer && go run mockServer.go -s
+
 up:
 	@docker-compose up --build
 
