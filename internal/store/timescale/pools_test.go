@@ -1040,7 +1040,7 @@ func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.sellSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.12302392721176147)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 
 	// Another Sell Swap
 	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent2)
@@ -1048,7 +1048,7 @@ func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.sellSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.12302392721176147)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 }
 
 func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
@@ -1075,7 +1075,7 @@ func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
 
 	slipAverage, err = s.Store.buySlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.12302392721176147)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 
 	// Another Buy Swap
 	err = s.Store.CreateSwapRecord(swapBuyRune2BoltEvent1)
@@ -1083,7 +1083,7 @@ func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
 
 	slipAverage, err = s.Store.buySlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.12302392721176147)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 }
 
 func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
@@ -1100,7 +1100,7 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.06151196360588074)
+	c.Assert(slipAverage, Equals, 0.061500001698732376)
 
 	// Buy swap
 	swap := swapBuyRune2BoltEvent1
@@ -1110,7 +1110,7 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.12302392721176147)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 }
 
 func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
