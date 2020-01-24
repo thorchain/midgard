@@ -14,7 +14,7 @@ type EventSwap struct {
 	Event
 	Pool         common.Asset
 	PriceTarget  int64
-	TradeSlip    float64
+	TradeSlip    int64
 	LiquidityFee int64
 }
 
