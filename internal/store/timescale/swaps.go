@@ -9,6 +9,8 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
+const slipBasisPoints float64 = 10000
+
 func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 	err := s.CreateEventRecord(record.Event)
 	if err != nil {
@@ -54,7 +56,7 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 		record.Event.InTx.ToAddress,
 		record.Pool.String(),
 		record.PriceTarget,
-		record.TradeSlip,
+		float64(record.TradeSlip)/slipBasisPoints,
 		record.LiquidityFee,
 		runeAmt,
 		assetAmt,
