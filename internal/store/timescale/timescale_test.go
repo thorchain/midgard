@@ -74,6 +74,7 @@ var (
 		},
 		StakeUnits: 100,
 	}
+
 	stakeBnbEvent1 = models.EventStake{
 		Event: models.Event{
 			Time:   time.Now(),
@@ -522,7 +523,7 @@ var (
 			Ticker: "BOLT",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapSellBolt2RuneEvent2 = models.EventSwap{
@@ -575,7 +576,7 @@ var (
 			Ticker: "BOLT",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapSellBolt2RuneEvent3 = models.EventSwap{
@@ -628,7 +629,7 @@ var (
 			Ticker: "BOLT",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapSellBnb2RuneEvent4 = models.EventSwap{
@@ -681,7 +682,7 @@ var (
 			Ticker: "BNB",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapSellBnb2RuneEvent5 = models.EventSwap{
@@ -734,7 +735,7 @@ var (
 			Ticker: "BNB",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapBuyRune2BoltEvent1 = models.EventSwap{
@@ -787,7 +788,7 @@ var (
 			Ticker: "BOLT",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapBuyRune2BnbEvent2 = models.EventSwap{
@@ -840,7 +841,7 @@ var (
 			Ticker: "BNB",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 	swapBuyRune2BnbEvent3 = models.EventSwap{
@@ -893,7 +894,7 @@ var (
 			Ticker: "BNB",
 		},
 		PriceTarget:  124958592,
-		TradeSlip:    0.123023930000000000,
+		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
 )
