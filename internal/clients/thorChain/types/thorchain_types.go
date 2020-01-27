@@ -27,7 +27,7 @@ type EventStake struct {
 type EventSwap struct {
 	Pool         common.Asset `json:"pool"`
 	PriceTarget  int64        `json:"price_target,string"`
-	TradeSlip    int64      `json:"trade_slip,string"`
+	TradeSlip    int64        `json:"trade_slip,string"`
 	LiquidityFee int64        `json:"liquidity_fee,string"`
 }
 
@@ -42,7 +42,7 @@ type EventRewards struct {
 }
 
 type PoolAmt struct {
-	Pool   common.Asset `json:"assets"`
+	Pool   common.Asset `json:"asset"`
 	Amount int64        `json:"amount,string"`
 }
 
