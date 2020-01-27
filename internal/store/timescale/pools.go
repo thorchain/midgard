@@ -371,17 +371,37 @@ func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1
+		WHERE pool = $1 
+		AND from_address != $2
 		`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetStakedTotal failed")
+		return 0, errors.Wrap(err, "assetStaked failed")
 	}
 
 	return uint64(assetStakedTotal.Int64), nil
+}
+
+// assetRewarded - total amount of asset rewarded by block reward
+func (s *Client) assetRewarded(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(assetAmt)
+		FROM stakes
+		WHERE pool = $1 
+		AND from_address = $2
+		`
+
+	var assetRewardedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+
+	if err := row.Scan(&assetRewardedTotal); err != nil {
+		return 0, errors.Wrap(err, "assetRewarded failed")
+	}
+
+	return assetRewardedTotal.Int64, nil
 }
 
 // assetStakedTotal - total amount of asset ever staked in given pool
@@ -390,11 +410,12 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND assetAmt > 0 
+		AND from_address != $2
 		`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStakedTotal failed")
@@ -403,22 +424,62 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 	return uint64(assetStakedTotal.Int64), nil
 }
 
-func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
+// assetRewardedTotal - total amount of asset ever rewarded
+func (s *Client) assetRewardedTotal(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
+		AND assetAmt > 0 
+		AND from_address = $2
+		`
+
+	var assetRewardedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+
+	if err := row.Scan(&assetRewardedTotal); err != nil {
+		return 0, errors.Wrap(err, "assetRewardedTotal failed")
+	}
+
+	return assetRewardedTotal.Int64, nil
+}
+
+func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
+	stmnt := `
+		SELECT SUM(assetAmt)
+		FROM stakes
+		WHERE pool = $1 
+		AND from_address != $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetStakedTotal12m failed")
+		return 0, errors.Wrap(err, "assetStaked12m failed")
 	}
 
 	return uint64(assetStakedTotal.Int64), nil
+}
+
+func (s *Client) assetRewarded12m(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(assetAmt)
+		FROM stakes
+		WHERE pool = $1 
+		AND from_address = $2
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+	`
+
+	var assetRewardedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+
+	if err := row.Scan(&assetRewardedTotal); err != nil {
+		return 0, errors.Wrap(err, "assetRewarded12m failed")
+	}
+
+	return assetRewardedTotal.Int64, nil
 }
 
 // assetStakedTotal12 - total amount of asset staked in given pool in the last
@@ -428,18 +489,40 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) (uint64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0
+		AND assetAmt > 0 
+		AND	from_address != $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStakedTotal12m failed")
 	}
 
 	return uint64(assetStakedTotal.Int64), nil
+}
+
+// assetRewardedTotal12 - total amount of asset rewarded in the last 12 months
+func (s *Client) assetRewardedTotal12m(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(assetAmt)
+		FROM stakes
+		WHERE pool = $1
+		AND assetAmt > 0 
+		AND from_address = $2
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+	`
+
+	var assetRewardedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+
+	if err := row.Scan(&assetRewardedTotal); err != nil {
+		return 0, errors.Wrap(err, "assetRewardedTotal12m failed")
+	}
+
+	return assetRewardedTotal.Int64, nil
 }
 
 // assetWithdrawnTotal - total amount of asset withdrawn
@@ -466,12 +549,13 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1
+		WHERE pool = $1 
+		AND from_address != $2
 		AND runeAmt > 0
 	`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
@@ -485,17 +569,37 @@ func (s *Client) runeStaked(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1
+		WHERE pool = $1 
+		AND from_address != $2
 	`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
 	}
 
 	return uint64(runeStakedTotal.Int64), nil
+}
+
+// runeRewarded - amount of rune rewarded by block reward
+func (s *Client) runeRewarded(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(runeAmt)
+		FROM stakes
+		WHERE pool = $1 
+		AND from_address = $2
+	`
+
+	var runeRewardedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+
+	if err := row.Scan(&runeRewardedTotal); err != nil {
+		return 0, errors.Wrap(err, "runeRewarded failed")
+	}
+
+	return runeRewardedTotal.Int64, nil
 }
 
 // runeStakedTotal12m - total amount of rune staked on the network for given
@@ -505,18 +609,41 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0
+		AND runeAmt > 0 
+		AND from_address != $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal12m failed")
 	}
 
 	return uint64(runeStakedTotal.Int64), nil
+}
+
+// runeRewardedTotal12m - total amount of rune rewarded on the network for given
+// pool in the last 12 months.
+func (s *Client) runeRewardedTotal12m(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(runeAmt)
+		FROM stakes
+		WHERE pool = $1
+		AND runeAmt > 0 
+		AND from_address = $2
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+		`
+
+	var runeRewardedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+
+	if err := row.Scan(&runeRewardedTotal); err != nil {
+		return 0, errors.Wrap(err, "runeRewardedTotal12m failed")
+	}
+
+	return runeRewardedTotal.Int64, nil
 }
 
 func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
@@ -541,6 +668,7 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 
 // +stakes
 // +incomingSwapAsset
+// +rewards
 // -outgoingSwapAsset
 // -withdraws
 func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
@@ -553,7 +681,12 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 		return 0, nil
 	}
 
-	depth := int64(stakes) + swaps
+	rewards, err := s.assetRewarded(asset)
+	if err != nil {
+		return 0, nil
+	}
+
+	depth := int64(stakes) + swaps + rewards
 	return uint64(depth), nil
 }
 
@@ -567,7 +700,12 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
 
-	depth := int64(stakes) + swaps
+	rewards, err := s.assetRewarded12m(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "assetDepth12m failed")
+	}
+
+	depth := int64(stakes) + swaps + rewards
 	return uint64(depth), nil
 }
 
@@ -580,8 +718,12 @@ func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth failed")
 	}
+	rewards, err := s.runeRewarded(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "runeDepth failed")
+	}
 
-	depth := int64(stakes) + swaps
+	depth := int64(stakes) + swaps + rewards
 	return uint64(depth), nil
 }
 
@@ -594,7 +736,11 @@ func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	depth := int64(stakes) + swaps
+	reward, err := s.runeRewardedTotal12m(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "runeDepth12m failed")
+	}
+	depth := int64(stakes) + swaps + reward
 	return uint64(depth), nil
 }
 
@@ -1151,14 +1297,15 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 		FROM (
 			SELECT from_address, SUM(units) AS total_units
 			FROM stakes
-			WHERE pool = $1
+			WHERE pool = $1 
+			AND from_address != $2
 			GROUP BY from_address
 		) AS sub
 		WHERE sub.total_units > 0
 	`
 
 	var stakersCount sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
 
 	if err := row.Scan(&stakersCount); err != nil {
 		return 0, errors.Wrap(err, "stakersCount failed")

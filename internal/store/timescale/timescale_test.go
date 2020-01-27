@@ -897,6 +897,98 @@ var (
 		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
+	rewardBnbEvent0 = models.EventReward{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     9,
+			Status: "Success",
+			Height: 8,
+			Type:   "rewards",
+		},
+		PoolRewards: []models.PoolAmount{
+			models.PoolAmount{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "BOLT-014",
+					Ticker: "BOLT",
+				},
+				Amount: 1000,
+			},
+			models.PoolAmount{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "TCAN-014",
+					Ticker: "TCAN",
+				},
+				Amount: 1000,
+			},
+		},
+	}
+	rewardTomlEvent1 = models.EventReward{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     10,
+			Status: "Success",
+			Height: 8,
+			Type:   "rewards",
+		},
+		PoolRewards: []models.PoolAmount{
+			models.PoolAmount{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "TOML-4BC",
+					Ticker: "TOML",
+				},
+				Amount: 1000,
+			},
+			models.PoolAmount{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "TCAN-014",
+					Ticker: "TCAN",
+				},
+				Amount: 1000,
+			},
+		},
+	}
+	rewardRuneEvent0 = models.EventReward{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     11,
+			Status: "Success",
+			Height: 9,
+			Type:   "rewards",
+		},
+		PoolRewards: []models.PoolAmount{
+			models.PoolAmount{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "RUNE-B1A",
+					Ticker: "RUNE",
+				},
+				Amount: 1000,
+			},
+		},
+	}
+	rewardRuneEvent1 = models.EventReward{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     12,
+			Status: "Success",
+			Height: 9,
+			Type:   "rewards",
+		},
+		PoolRewards: []models.PoolAmount{
+			models.PoolAmount{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "RUNE-B1A",
+					Ticker: "RUNE",
+				},
+				Amount: 2000,
+			},
+		},
+	}
 )
 
 type TimeScaleSuite struct {

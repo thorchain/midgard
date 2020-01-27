@@ -149,7 +149,7 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 		case "rewards":
 			err = api.processRewardEvent(evt)
 			if err != nil {
-				api.logger.Err(err).Msg("processUnstakeEvent failed")
+				api.logger.Err(err).Msg("processRewardEvent failed")
 				continue
 			}
 		default:

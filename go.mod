@@ -25,7 +25,7 @@ require (
 	github.com/pelletier/go-toml v1.5.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
-	github.com/rs/zerolog v1.15.0
+	github.com/rs/zerolog v1.17.2
 	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
@@ -36,6 +36,7 @@ require (
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc // indirect
 	golang.org/x/net v0.0.0-20191007182048-72f939374954 // indirect
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
