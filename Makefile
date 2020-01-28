@@ -47,15 +47,12 @@ coverage-report: test-coverage
 test-short:
 	@go test -short ./...
 
-# pg docker required
+# require make pg
 test-internal:
-	PG_HOST=pg go test -cover ./...
+	@go test -cover ./...
 
 test:
-	@./scripts/run.sh testcode make test-internal
-
-test-docker:
-	@docker-compose run --rm --no-deps test --build
+	@docker-compose run --rm testcode
 
 test-watch: clear
 	@./scripts/watch.bash
@@ -64,10 +61,16 @@ sh:
 	@docker-compose run --rm midgard /bin/sh
 
 thormock:
-	@docker-compose run --rm -p 8081:8081 --no-deps thormock
+	@docker-compose up -d thormock
 
 pg:
-	@docker-compose run --rm -p 5432:5432 --no-deps pg
+	@docker-compose up -d pg
+
+stop:
+	@docker-compose stop
+
+down:
+	@docker-compose down
 
 # -------------------------------------------- API Targets ------------------------------------
 
