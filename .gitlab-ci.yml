@@ -28,6 +28,8 @@ unit:
     - apk add make
   script:
     - make test
+  after_script:
+    - make down
 
 lint:
   image: golangci/golangci-lint

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
@@ -19,34 +20,37 @@ type Client struct {
 	db     *sqlx.DB
 }
 
-func NewClient(cfg config.TimeScaleConfiguration) *Client {
+func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	time.Sleep(3 * time.Second)
 	logger := log.With().Str("module", "timescale").Logger()
 	connStr := fmt.Sprintf("user=%s sslmode=%v password=%v host=%v port=%v", cfg.UserName, cfg.Sslmode, cfg.Password, cfg.Host, cfg.Port)
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		logger.Err(err).Msg("Open")
-		return &Client{}
+		return &Client{}, errors.Wrap(err, "fail to open postgres connection")
 	}
 
 	if err := CreateDatabase(db, cfg); err != nil {
 		logger.Err(err).Msg("CreateDatabase")
+		return &Client{}, errors.Wrap(err, "fail to create database")
 	}
 
 	db, err = Open(cfg)
 	if err != nil {
 		logger.Err(err).Msg("Open")
+		return &Client{}, errors.Wrap(err, "fail to open database connection")
 	}
 
 	if err := MigrationsUp(db, logger, cfg); err != nil {
 		logger.Err(err).Msg("MigrationsUp")
+		return &Client{}, errors.Wrap(err, "fail to run migrations up")
 	}
 
 	return &Client{
 		cfg:    cfg,
 		db:     db,
 		logger: logger,
-	}
+	}, nil
 }
 
 func (s *Client) Ping() error {
