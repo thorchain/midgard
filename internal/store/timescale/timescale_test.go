@@ -998,14 +998,18 @@ type TimeScaleSuite struct {
 var _ = Suite(&TimeScaleSuite{})
 
 func (s *TimeScaleSuite) SetUpSuite(c *C) {
-	s.Store = NewTestStore(c)
+	var err error
+	s.Store, err = NewTestStore(c)
+	if err != nil {
+		c.Fatal(err.Error())
+	}
 }
 
 func (s *TimeScaleSuite) TearDownSuite(c *C) {
 	MigrationDown(c, s.Store)
 }
 
-func NewTestStore(c *C) *Client {
+func NewTestStore(c *C) (*Client, error) {
 	if testing.Short() {
 		c.Skip("Short mode: no integration tests")
 	}

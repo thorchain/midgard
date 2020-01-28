@@ -49,7 +49,7 @@ test-short:
 
 # pg docker required
 test-internal:
-	PG_HOST=pg go test -cover ./...
+	go test -cover ./...
 
 test:
 	@./scripts/run.sh testcode make test-internal
