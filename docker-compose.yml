@@ -38,7 +38,7 @@ services:
     depends_on:
       - pg
       - thormock
-    command: make install test-internal
+    command: make test-internal
 
   pg:
     image: timescale/timescaledb:latest-pg11
