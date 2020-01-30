@@ -59,6 +59,9 @@ type GenesisResult struct {
 type GenesisData struct {
 	GenesisTime time.Time `json:"genesis_time"`
 }
+type EventAdd struct {
+	Pool common.Asset `json:"pool"`
+}
 
 //
 //type Header struct {
