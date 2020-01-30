@@ -1,0 +1,52 @@
+[
+  {
+    "id": "6",
+    "height": "19",
+    "type": "add",
+    "in_tx": {
+      "id": "HXCU95TXJ97QEGO4Q13UGK9R5KZWC34QNFF3FPSA1LF4J1Q32QR7CPN147PQOZTU",
+      "chain": "BNB",
+      "from_address": "tbnb13yuyd3acyns04vv5mdsrk2dflzd7h9g3zf34qp",
+      "to_address": "tbnb10phwn0asg46nmm68q7kxt3zmp3tcseaf40egqs",
+      "coins": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BNB",
+            "ticker": "BNB"
+          },
+          "amount": "30000000"
+        },
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "RUNE-A1F",
+            "ticker": "RUNE"
+          },
+          "amount": "5000000000"
+        }
+      ],
+      "gas": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BNB",
+            "ticker": "BNB"
+          },
+          "amount": "60000"
+        }
+      ],
+      "memo": "ADD:BNB.BNB"
+    },
+    "out_txs": null,
+    "gas": null,
+    "event": {
+      "pool": {
+        "chain": "BNB",
+        "symbol": "BNB",
+        "ticker": "BNB"
+      }
+    },
+    "status": "Success"
+  }
+]

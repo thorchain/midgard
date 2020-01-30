@@ -152,6 +152,12 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				api.logger.Err(err).Msg("processRewardEvent failed")
 				continue
 			}
+		case "add":
+			err = api.processAddEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processAddEvent failed")
+				continue
+			}
 		default:
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
@@ -216,6 +222,21 @@ func (api *API) processRewardEvent(evt types.Event) error {
 	err = api.store.CreateRewardRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create rewards record")
+	}
+	return nil
+}
+
+func (api *API) processAddEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processAddEvent")
+	var add types.EventAdd
+	err := json.Unmarshal(evt.Event, &add)
+	if err != nil {
+		return errors.Wrap(err, "fail to unmarshal add event")
+	}
+	record := models.NewAddEvent(add, evt)
+	err = api.store.CreateAddRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create add record")
 	}
 	return nil
 }
