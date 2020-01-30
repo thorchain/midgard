@@ -377,7 +377,7 @@ func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
 		`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStaked failed")
@@ -396,7 +396,7 @@ func (s *Client) assetRewarded(asset common.Asset) (int64, error) {
 		`
 
 	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
 	if err := row.Scan(&assetRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetRewarded failed")
@@ -415,7 +415,7 @@ func (s *Client) assetAdded(asset common.Asset) (int64, error) {
 		`
 
 	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), rewardEventAddress)
 
 	if err := row.Scan(&assetRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetAdded failed")
@@ -436,7 +436,7 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStakedTotal failed")
@@ -456,7 +456,7 @@ func (s *Client) assetRewardedTotal(asset common.Asset) (int64, error) {
 		`
 
 	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
 	if err := row.Scan(&assetRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetRewardedTotal failed")
@@ -476,7 +476,7 @@ func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
 	`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStaked12m failed")
@@ -495,7 +495,7 @@ func (s *Client) assetRewarded12m(asset common.Asset) (int64, error) {
 	`
 
 	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
 	if err := row.Scan(&assetRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetRewarded12m failed")
@@ -513,7 +513,7 @@ func (s *Client) assetAdded12m(asset common.Asset) (int64, error) {
 	`
 
 	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), rewardEventAddress)
 
 	if err := row.Scan(&assetRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetAdded12m failed")
@@ -536,7 +536,7 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) (uint64, error) {
 	`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStakedTotal12m failed")
@@ -557,7 +557,7 @@ func (s *Client) assetRewardedTotal12m(asset common.Asset) (int64, error) {
 	`
 
 	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
 	if err := row.Scan(&assetRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetRewardedTotal12m failed")
@@ -597,7 +597,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 	`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
@@ -617,7 +617,7 @@ func (s *Client) runeStaked(asset common.Asset) (uint64, error) {
 	`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
@@ -636,7 +636,7 @@ func (s *Client) runeRewarded(asset common.Asset) (int64, error) {
 	`
 
 	var runeRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
 	if err := row.Scan(&runeRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeRewarded failed")
@@ -655,7 +655,7 @@ func (s *Client) runeAdded(asset common.Asset) (int64, error) {
 	`
 
 	var runeRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), rewardEventAddress)
 
 	if err := row.Scan(&runeRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeAdded failed")
@@ -678,7 +678,7 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 		`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal12m failed")
@@ -700,7 +700,7 @@ func (s *Client) runeRewardedTotal12m(asset common.Asset) (int64, error) {
 		`
 
 	var runeRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
 	if err := row.Scan(&runeRewardedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeRewardedTotal12m failed")
@@ -723,7 +723,7 @@ func (s *Client) runeAddedTotal12m(asset common.Asset) (int64, error) {
 		`
 
 	var runeAddedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), poolAddAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), rewardEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&runeAddedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeAddedTotal12m failed")
@@ -1409,7 +1409,7 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 	`
 
 	var stakersCount sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), blockRewardAddress, poolAddAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress)
 
 	if err := row.Scan(&stakersCount); err != nil {
 		return 0, errors.Wrap(err, "stakersCount failed")
