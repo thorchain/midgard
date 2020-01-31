@@ -64,13 +64,13 @@ func (api *API) getGenesis() (types.Genesis, error) {
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("fail to close response body")
+			api.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
 	var genesis types.Genesis
 	if err := json.NewDecoder(resp.Body).Decode(&genesis); nil != err {
-		return types.Genesis{}, errors.Wrap(err, "fail to unmarshal events")
+		return types.Genesis{}, errors.Wrap(err, "failed to unmarshal events")
 	}
 
 	return genesis, nil
@@ -97,13 +97,13 @@ func (api *API) getEvents(id int64) ([]types.Event, error) {
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("fail to close response body")
+			api.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
 	var events []types.Event
 	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal events")
+		return nil, errors.Wrap(err, "failed to unmarshal events")
 	}
 	return events, nil
 }
@@ -112,7 +112,7 @@ func (api *API) getEvents(id int64) ([]types.Event, error) {
 func (api *API) processEvents(id int64) (int64, int, error) {
 	events, err := api.getEvents(id)
 	if err != nil {
-		return id, 0, errors.Wrap(err, "fail to get events")
+		return id, 0, errors.Wrap(err, "failed to get events")
 	}
 
 	// sort events lowest ID first. Ensures we don't process an event out of order
@@ -152,6 +152,12 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				api.logger.Err(err).Msg("processRewardEvent failed")
 				continue
 			}
+		case "add":
+			err = api.processAddEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processAddEvent failed")
+				continue
+			}
 		default:
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
@@ -165,7 +171,7 @@ func (api *API) processSwapEvent(evt types.Event) error {
 	var swap types.EventSwap
 	err := json.Unmarshal(evt.Event, &swap)
 	if err != nil {
-		return errors.Wrap(err, "fail to unmarshal swap event")
+		return errors.Wrap(err, "failed to unmarshal swap event")
 	}
 	record := models.NewSwapEvent(swap, evt)
 	err = api.store.CreateSwapRecord(record)
@@ -180,7 +186,7 @@ func (api *API) processStakingEvent(evt types.Event) error {
 	var stake types.EventStake
 	err := json.Unmarshal(evt.Event, &stake)
 	if err != nil {
-		return errors.Wrap(err, "fail to unmarshal stake event")
+		return errors.Wrap(err, "failed to unmarshal stake event")
 	}
 	record := models.NewStakeEvent(stake, evt)
 	err = api.store.CreateStakeRecord(record)
@@ -195,7 +201,7 @@ func (api *API) processUnstakeEvent(evt types.Event) error {
 	var unstake types.EventUnstake
 	err := json.Unmarshal(evt.Event, &unstake)
 	if err != nil {
-		return errors.Wrap(err, "fail to unmarshal unstake event")
+		return errors.Wrap(err, "failed to unmarshal unstake event")
 	}
 	record := models.NewUnstakeEvent(unstake, evt)
 	err = api.store.CreateUnStakesRecord(record)
@@ -210,12 +216,27 @@ func (api *API) processRewardEvent(evt types.Event) error {
 	var rewards types.EventRewards
 	err := json.Unmarshal(evt.Event, &rewards)
 	if err != nil {
-		return errors.Wrap(err, "fail to unmarshal rewards event")
+		return errors.Wrap(err, "failed to unmarshal rewards event")
 	}
 	record := models.NewRewardEvent(rewards, evt)
 	err = api.store.CreateRewardRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create rewards record")
+	}
+	return nil
+}
+
+func (api *API) processAddEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processAddEvent")
+	var add types.EventAdd
+	err := json.Unmarshal(evt.Event, &add)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal add event")
+	}
+	record := models.NewAddEvent(add, evt)
+	err = api.store.CreateAddRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create add record")
 	}
 	return nil
 }
@@ -236,12 +257,12 @@ func (api *API) scan() {
 	api.logger.Info().Msg("getting thorchain genesis")
 	genesisTime, err := api.getGenesis()
 	if err != nil {
-		api.logger.Error().Err(err).Msg("fail to get genesis from thorchain")
+		api.logger.Error().Err(err).Msg("failed to get genesis from thorchain")
 	}
 
 	err = api.processGenesis(genesisTime)
 	if err != nil {
-		api.logger.Error().Err(err).Msg("fail to set genesis in db")
+		api.logger.Error().Err(err).Msg("failed to set genesis in db")
 	}
 	api.logger.Info().Msg("processed thorchain genesis")
 
@@ -252,7 +273,7 @@ func (api *API) scan() {
 	currentPos := int64(1) // we start from 1
 	maxID, err := api.store.GetMaxID()
 	if nil != err {
-		api.logger.Error().Err(err).Msg("fail to get currentPos from data store")
+		api.logger.Error().Err(err).Msg("failed to get currentPos from data store")
 	} else {
 		api.logger.Info().Int64("previous pos", maxID).Msg("find previous maxID")
 		currentPos = maxID + 1
@@ -267,7 +288,7 @@ func (api *API) scan() {
 			api.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
 			maxID, events, err := api.processEvents(currentPos)
 			if err != nil {
-				api.logger.Error().Err(err).Msg("fail to get events from thorchain")
+				api.logger.Error().Err(err).Msg("failed to get events from thorchain")
 				continue // we will retry a bit later
 			}
 			if events == 0 { // nothing in it

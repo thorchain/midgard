@@ -989,6 +989,130 @@ var (
 			},
 		},
 	}
+	addBnbEvent0 = models.EventAdd{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     13,
+			Status: "Success",
+			Height: 10,
+			Type:   "add",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BOLT",
+						},
+						Amount: 1000,
+					},
+				},
+				Memo: "add:BNB.BOLT-014",
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BOLT-014",
+			Ticker: "BOLT",
+		},
+	}
+	addTomlEvent1 = models.EventAdd{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     14,
+			Status: "Success",
+			Height: 10,
+			Type:   "add",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "TOML-4BC",
+							Ticker: "TOML",
+						},
+						Amount: 1000,
+					},
+				},
+				Memo: "add:BNB.TOML-4BC",
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TOML-4BC",
+			Ticker: "TOML",
+		},
+	}
+	addRuneEvent0 = models.EventAdd{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     15,
+			Status: "Success",
+			Height: 10,
+			Type:   "add",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 1000,
+					},
+				},
+				Memo: "add:BNB.RUNE-B1A",
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "RUNE-B1A",
+			Ticker: "RUNE",
+		},
+	}
+	addRuneEvent1 = models.EventAdd{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     16,
+			Status: "Success",
+			Height: 10,
+			Type:   "add",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 2000,
+					},
+				},
+				Memo: "add:BNB.RUNE-B1A",
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "RUNE-B1A",
+			Ticker: "RUNE",
+		},
+	}
 )
 
 type TimeScaleSuite struct {

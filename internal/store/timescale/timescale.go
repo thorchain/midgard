@@ -27,23 +27,23 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		logger.Err(err).Msg("Open")
-		return &Client{}, errors.Wrap(err, "fail to open postgres connection")
+		return &Client{}, errors.Wrap(err, "failed to open postgres connection")
 	}
 
 	if err := CreateDatabase(db, cfg); err != nil {
 		logger.Err(err).Msg("CreateDatabase")
-		return &Client{}, errors.Wrap(err, "fail to create database")
+		return &Client{}, errors.Wrap(err, "failed to create database")
 	}
 
 	db, err = Open(cfg)
 	if err != nil {
 		logger.Err(err).Msg("Open")
-		return &Client{}, errors.Wrap(err, "fail to open database connection")
+		return &Client{}, errors.Wrap(err, "failed to open database connection")
 	}
 
 	if err := MigrationsUp(db, logger, cfg); err != nil {
 		logger.Err(err).Msg("MigrationsUp")
-		return &Client{}, errors.Wrap(err, "fail to run migrations up")
+		return &Client{}, errors.Wrap(err, "failed to run migrations up")
 	}
 
 	return &Client{
