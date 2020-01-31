@@ -59,7 +59,7 @@ func New(cfgFile *string) (*Server, error) {
 	// Load config
 	cfg, err := config.LoadConfiguration(*cfgFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to load chain service config")
+		return nil, errors.Wrap(err, "failed to load chain service config")
 	}
 
 	log := initLog(cfg.LogLevel, false)
@@ -69,18 +69,18 @@ func New(cfgFile *string) (*Server, error) {
 	// Setup binance client
 	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to create binance client")
+		return nil, errors.Wrap(err, "failed to create binance client")
 	}
 
 	timescale, err := timescale.NewClient(cfg.TimeScale)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to create timescale client instance")
+		return nil, errors.Wrap(err, "failed to create timescale client instance")
 	}
 
 	// Setup thorchain BinanceClient scanner
 	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to create thorchain api instance")
+		return nil, errors.Wrap(err, "failed to create thorchain api instance")
 	}
 
 	// Setup echo
@@ -126,7 +126,7 @@ func (s *Server) Start() error {
 
 func (s *Server) Stop() error {
 	if err := s.thorChainClient.StopScan(); nil != err {
-		s.logger.Error().Err(err).Msg("fail to stop thorchain scan")
+		s.logger.Error().Err(err).Msg("failed to stop thorchain scan")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
 	defer cancel()

@@ -18,11 +18,11 @@ func main() {
 
 	s, err := server.New(cfgFile)
 	if err != nil {
-		log.Fatal("fail to create service: ", err)
+		log.Fatal("failed to create service: ", err)
 	}
 
 	if err := s.Start(); err != nil {
-		log.Fatal("fail to start server: ", err)
+		log.Fatal("failed to start server: ", err)
 	}
 
 	ch := make(chan os.Signal, 1)
@@ -30,6 +30,6 @@ func main() {
 	<-ch
 	s.Log().Info().Msg("stop signal received")
 	if err := s.Stop(); nil != err {
-		s.Log().Fatal().Err(err).Msg("fail to stop chain service")
+		s.Log().Fatal().Err(err).Msg("failed to stop chain service")
 	}
 }
