@@ -70,12 +70,12 @@ func LoadConfiguration(file string) (*Configuration, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath(filepath.Dir(file))
 	if err := viper.ReadInConfig(); nil != err {
-		return nil, errors.Wrap(err, "fail to read from config file")
+		return nil, errors.Wrap(err, "failed to read from config file")
 	}
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	if err := viper.Unmarshal(&cfg); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal")
+		return nil, errors.Wrap(err, "failed to unmarshal")
 	}
 	return &cfg, nil
 }

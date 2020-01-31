@@ -81,7 +81,7 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
-		if result.From_address != blockRewardAddress {
+		if result.From_address != addEventAddress {
 			addr, err := common.NewAddress(result.From_address)
 			if err != nil {
 				return nil, errors.Wrap(err, "getStakerAddresses failed")
