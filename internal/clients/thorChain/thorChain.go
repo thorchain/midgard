@@ -216,7 +216,7 @@ func (api *API) processRewardEvent(evt types.Event) error {
 	var rewards types.EventRewards
 	err := json.Unmarshal(evt.Event, &rewards)
 	if err != nil {
-		return errors.Wrap(err, "fail to unmarshal rewards event")
+		return errors.Wrap(err, "failed to unmarshal rewards event")
 	}
 	record := models.NewRewardEvent(rewards, evt)
 	err = api.store.CreateRewardRecord(record)
