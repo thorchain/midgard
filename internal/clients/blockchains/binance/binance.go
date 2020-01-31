@@ -67,14 +67,14 @@ func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 func (bc *BinanceClient) ensureTokensDataAvailable() error {
 	if bc.cachedTokens == nil {
 		if err := bc.getAllTokens(); nil != err {
-			return errors.Wrap(err, "fail to get all tokens data from binance")
+			return errors.Wrap(err, "failed to get all tokens data from binance")
 		}
 		return nil
 	}
 	d := time.Since(bc.cachedTokens.LastUpdated)
 	if d > bc.cfg.TokensCacheDuration {
 		if err := bc.getAllTokens(); nil != err {
-			return errors.Wrap(err, "fail to get all markets data from binance")
+			return errors.Wrap(err, "failed to get all markets data from binance")
 		}
 		return nil
 	}
@@ -85,14 +85,14 @@ func (bc *BinanceClient) ensureTokensDataAvailable() error {
 func (bc *BinanceClient) ensureMarketsDataAvailable() error {
 	if bc.cachedMarkets == nil {
 		if err := bc.getAllMarkets(); nil != err {
-			return errors.Wrap(err, "fail to get all markets data from binance")
+			return errors.Wrap(err, "failed to get all markets data from binance")
 		}
 		return nil
 	}
 	d := time.Since(bc.cachedMarkets.LastUpdated)
 	if d > bc.cfg.MarketsCacheDuration {
 		if err := bc.getAllMarkets(); nil != err {
-			return errors.Wrap(err, "fail to get all markets data from binance")
+			return errors.Wrap(err, "failed to get all markets data from binance")
 		}
 		return nil
 	}
@@ -106,7 +106,7 @@ func (bc *BinanceClient) getAllTokens() error {
 	for {
 		result, err := bc.getTokens(offset)
 		if err != nil {
-			return errors.Wrap(err, "fail to get markets from binance")
+			return errors.Wrap(err, "failed to get markets from binance")
 		}
 		tokens = append(tokens, result...)
 		if len(result) < tokensPerPage { // we finished here
@@ -130,7 +130,7 @@ func (bc *BinanceClient) getAllMarkets() error {
 	for {
 		result, err := bc.getMarkets(offset)
 		if err != nil {
-			return errors.Wrap(err, "fail to get markets from binance")
+			return errors.Wrap(err, "failed to get markets from binance")
 		}
 		markets = append(markets, result...)
 		if len(result) < marketsPerPage { // we finished here
@@ -153,11 +153,11 @@ func (bc *BinanceClient) getTokens(offset int) ([]Token, error) {
 	bc.logger.Debug().Msg(requestUrl)
 	resp, err := bc.httpClient.Get(requestUrl)
 	if nil != err {
-		return nil, errors.Wrapf(err, "fail to send get request to %s", requestUrl)
+		return nil, errors.Wrapf(err, "failed to send get request to %s", requestUrl)
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			bc.logger.Error().Err(err).Msg("fail to close response body")
+			bc.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -167,7 +167,7 @@ func (bc *BinanceClient) getTokens(offset int) ([]Token, error) {
 
 	var tokens []Token
 	if err := json.NewDecoder(resp.Body).Decode(&tokens); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal market")
+		return nil, errors.Wrap(err, "failed to unmarshal market")
 	}
 	return tokens, nil
 }
@@ -179,11 +179,11 @@ func (bc *BinanceClient) getMarkets(offset int) ([]Market, error) {
 
 	resp, err := bc.httpClient.Get(requestUrl)
 	if nil != err {
-		return nil, errors.Wrapf(err, "fail to send get request to %s", requestUrl)
+		return nil, errors.Wrapf(err, "failed to send get request to %s", requestUrl)
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			bc.logger.Error().Err(err).Msg("fail to close response body")
+			bc.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -192,7 +192,7 @@ func (bc *BinanceClient) getMarkets(offset int) ([]Market, error) {
 	}
 	var markets []Market
 	if err := json.NewDecoder(resp.Body).Decode(&markets); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal market")
+		return nil, errors.Wrap(err, "failed to unmarshal market")
 	}
 	return markets, nil
 }
@@ -204,16 +204,16 @@ func (bc *BinanceClient) getDepth(symbol string) (*SourceMarketDepth, error) {
 	depthUrl := bc.getBinanceApiUrl("/api/v1/depth", fmt.Sprintf("symbol=%s_BNB", symbol))
 	resp, err := bc.httpClient.Get(depthUrl)
 	if nil != err {
-		return nil, errors.Wrapf(err, "fail to get response from %s", depthUrl)
+		return nil, errors.Wrapf(err, "failed to get response from %s", depthUrl)
 	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			bc.logger.Error().Err(err).Msg("fail to close response body")
+			bc.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 	var smd SourceMarketDepth
 	if err := json.NewDecoder(resp.Body).Decode(&smd); nil != err {
-		return nil, errors.Wrap(err, "fail to unmarshal result")
+		return nil, errors.Wrap(err, "failed to unmarshal result")
 	}
 	return &smd, nil
 }
@@ -224,7 +224,7 @@ func (bc *BinanceClient) GetToken(asset common.Asset) (*Token, error) {
 	}
 
 	if err := bc.ensureTokensDataAvailable(); nil != err {
-		bc.logger.Error().Err(err).Msg("fail to get token data from binance")
+		bc.logger.Error().Err(err).Msg("failed to get token data from binance")
 		return nil, err
 	}
 
@@ -244,7 +244,7 @@ func (bc *BinanceClient) GetMarketData(symbol string) (*MarketData, error) {
 		return nil, errors.New("empty symbol")
 	}
 	if err := bc.ensureMarketsDataAvailable(); nil != err {
-		bc.logger.Error().Err(err).Msg("fail to get markets data from binance")
+		bc.logger.Error().Err(err).Msg("failed to get markets data from binance")
 		return nil, err
 	}
 	var m Market
@@ -257,8 +257,8 @@ func (bc *BinanceClient) GetMarketData(symbol string) (*MarketData, error) {
 	// There are chances that we will not be able to get the depth from binance due to rate limit , if that happens , we might just bubble the error up
 	smd, err := bc.getDepth(symbol)
 	if nil != err {
-		bc.logger.Error().Err(err).Msg("fail to get depth from binance")
-		return nil, errors.Wrap(err, "fail to get depth from binance")
+		bc.logger.Error().Err(err).Msg("failed to get depth from binance")
+		return nil, errors.Wrap(err, "failed to get depth from binance")
 	}
 	md := MarketData{
 		Symbol:      symbol,
@@ -325,11 +325,11 @@ func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 // 	bc.logger.Debug().Msg(requestUrl)
 // 	resp, err := bc.httpClient.Get(requestUrl)
 // 	if nil != err {
-// 		return noTx, errors.Wrap(err, "fail to get tx from binance full node")
+// 		return noTx, errors.Wrap(err, "failed to get tx from binance full node")
 // 	}
 // 	defer func() {
 // 		if err := resp.Body.Close(); nil != err {
-// 			bc.logger.Error().Err(err).Msg("fail to close response body")
+// 			bc.logger.Error().Err(err).Msg("failed to close response body")
 // 		}
 // 	}()
 // 	if resp.StatusCode != http.StatusOK {
@@ -337,15 +337,15 @@ func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 // 	}
 // 	var fnr FullNodeTxResp
 // 	if err := json.NewDecoder(resp.Body).Decode(&fnr); nil != err {
-// 		return noTx, errors.Wrap(err, "fail to decode response body")
+// 		return noTx, errors.Wrap(err, "failed to decode response body")
 // 	}
 // 	rawBuf, err := base64.StdEncoding.DecodeString(fnr.Result.Tx)
 // 	if nil != err {
-// 		return noTx, errors.Wrap(err, "fail to base64 decode tx")
+// 		return noTx, errors.Wrap(err, "failed to base64 decode tx")
 // 	}
 // 	var t tx.StdTx
 // 	if err := tx.Cdc.UnmarshalBinaryLengthPrefixed(rawBuf, &t); nil != err {
-// 		return noTx, errors.Wrap(err, "fail to unmarshal tx")
+// 		return noTx, errors.Wrap(err, "failed to unmarshal tx")
 // 	}
 // 	// usually we don't expect too many msgs in it , but given it is a slice, let's enumerate it
 // 	for _, m := range t.Msgs {
@@ -354,7 +354,7 @@ func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 // 			txDetail := bc.getTxDetailFromMsg(fnr.Result.Hash, mt)
 // 			blockTime, err := bc.getTimeFromBlock(fnr.Result.Height)
 // 			if nil != err {
-// 				return noTx, errors.Wrap(err, "fail to get block time")
+// 				return noTx, errors.Wrap(err, "failed to get block time")
 // 			}
 // 			txDetail.Timestamp = blockTime
 // 			return txDetail, nil
@@ -369,16 +369,16 @@ func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
 // 	requestUrl := bc.getBlockUrl(height)
 // 	resp, err := bc.httpClient.Get(requestUrl)
 // 	if nil != err {
-// 		return t, errors.Wrap(err, "fail to get block from binance full node")
+// 		return t, errors.Wrap(err, "failed to get block from binance full node")
 // 	}
 // 	defer func() {
 // 		if err := resp.Body.Close(); nil != err {
-// 			bc.logger.Error().Err(err).Msg("fail to close response body")
+// 			bc.logger.Error().Err(err).Msg("failed to close response body")
 // 		}
 // 	}()
 // 	var br BlockResponse
 // 	if err := json.NewDecoder(resp.Body).Decode(&br); nil != err {
-// 		return t, errors.Wrap(err, "fail to unmarshal block response")
+// 		return t, errors.Wrap(err, "failed to unmarshal block response")
 // 	}
 // 	return br.Result.Block.Header.Time, nil
 // }

@@ -141,13 +141,13 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 
 	pool, err := h.store.GetPool(ass)
 	if err != nil {
-		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("fail to get pool")
+		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("failed to get pool")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
 	tokenData, err := h.binanceClient.GetToken(pool)
 	if err != nil {
-		h.logger.Error().Err(err).Msg("fail to get token data from binance")
+		h.logger.Error().Err(err).Msg("failed to get token data from binance")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
