@@ -103,24 +103,27 @@ func (bc *BinanceClient) ensureMarketsDataAvailable() error {
 func (bc *BinanceClient) getAllTokens() error {
 	bc.tokensLock.Lock()
 	defer bc.tokensLock.Unlock()
-	if bc.cachedTokens == nil || time.Since(bc.cachedTokens.LastUpdated) > bc.cfg.TokensCacheDuration {
-		offset := 0
-		var tokens []Token
-		for {
-			result, err := bc.getTokens(offset)
-			if err != nil {
-				return errors.Wrap(err, "fail to get tokens data from binance")
-			}
-			tokens = append(tokens, result...)
-			if len(result) < tokensPerPage { // we finished here
-				break
-			}
-			offset += len(result)
+
+	if bc.cachedTokens != nil && time.Since(bc.cachedTokens.LastUpdated) <= bc.cfg.TokensCacheDuration {
+		return nil
+	}
+
+	offset := 0
+	var tokens []Token
+	for {
+		result, err := bc.getTokens(offset)
+		if err != nil {
+			return errors.Wrap(err, "fail to get tokens data from binance")
 		}
-		bc.cachedTokens = &CachedTokens{
-			Tokens:      tokens,
-			LastUpdated: time.Now(),
+		tokens = append(tokens, result...)
+		if len(result) < tokensPerPage { // we finished here
+			break
 		}
+		offset += len(result)
+	}
+	bc.cachedTokens = &CachedTokens{
+		Tokens:      tokens,
+		LastUpdated: time.Now(),
 	}
 	return nil
 }
