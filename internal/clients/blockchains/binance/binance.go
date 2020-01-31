@@ -101,12 +101,19 @@ func (bc *BinanceClient) ensureMarketsDataAvailable() error {
 
 // getAllTokens will call getTokens recursively to get all the tokens data
 func (bc *BinanceClient) getAllTokens() error {
+	bc.tokensLock.Lock()
+	defer bc.tokensLock.Unlock()
+
+	if bc.cachedTokens != nil && time.Since(bc.cachedTokens.LastUpdated) <= bc.cfg.TokensCacheDuration {
+		return nil
+	}
+
 	offset := 0
 	var tokens []Token
 	for {
 		result, err := bc.getTokens(offset)
 		if err != nil {
-			return errors.Wrap(err, "failed to get markets from binance")
+			return errors.Wrap(err, "fail to get tokens data from binance")
 		}
 		tokens = append(tokens, result...)
 		if len(result) < tokensPerPage { // we finished here
@@ -114,8 +121,6 @@ func (bc *BinanceClient) getAllTokens() error {
 		}
 		offset += len(result)
 	}
-	bc.tokensLock.Lock()
-	defer bc.tokensLock.Unlock()
 	bc.cachedTokens = &CachedTokens{
 		Tokens:      tokens,
 		LastUpdated: time.Now(),
