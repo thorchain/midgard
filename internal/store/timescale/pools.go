@@ -2,13 +2,13 @@ package timescale
 
 import (
 	"database/sql"
-
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 type PoolData struct {
-	Status           string // TODO build
+	Status           string
 	Asset            common.Asset
 	AssetDepth       uint64
 	AssetROI         float64
@@ -296,6 +296,10 @@ func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 	if err != nil {
 		return PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
+	poolStatus, err := s.poolStatus(asset)
+	if err != nil {
+		return PoolData{}, errors.Wrap(err, "getPoolData failed")
+	}
 
 	return PoolData{
 		Asset:            asset,
@@ -335,6 +339,7 @@ func (s *Client) GetPoolData(asset common.Asset) (PoolData, error) {
 		SwappersCount:    swappersCount,
 		SwappingTxCount:  swappingTxCount,
 		WithdrawTxCount:  withdrawTxCount,
+		Status:           poolStatus,
 	}, nil
 }
 
@@ -1530,4 +1535,24 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	roi = (assetROI12 + runeROI12) / 2
 
 	return roi, errors.Wrap(err, "poolROI12 failed")
+}
+
+// poolStatus - latest pool status
+func (s *Client) poolStatus(asset common.Asset) (string, error) {
+	stmnt := `
+		SELECT status 
+		FROM   pools 
+		WHERE  pool = $1 
+		ORDER  BY event_id DESC 
+		LIMIT  1  
+		`
+	var poolStatus sql.NullInt32
+	row := s.db.QueryRow(stmnt, asset.String())
+	if err := row.Scan(&poolStatus); err != nil {
+		if err == sql.ErrNoRows {
+			return models.Enabled.String(), nil
+		}
+		return "", errors.Wrap(err, "poolStatus failed")
+	}
+	return models.PoolStatus(poolStatus.Int32).String(), nil
 }
