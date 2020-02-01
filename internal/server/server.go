@@ -67,7 +67,7 @@ func New(cfgFile *string) (*Server, error) {
 	logoClient := logo.NewLogoClient(cfg)
 
 	// Setup binance client
-	binanceClient, err := binance.NewBinanceClient(cfg.Binance)
+	binanceClient, err := binance.NewClient(cfg.Binance)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create binance client")
 	}
