@@ -63,6 +63,12 @@ type EventAdd struct {
 	Pool common.Asset `json:"pool"`
 }
 
+// Represent pool change event
+type EventPool struct {
+	Pool   common.Asset `json:"pool"`
+	Status int          `json:"status,string"`
+}
+
 //
 //type Header struct {
 //	Height  string `json:"height"`
