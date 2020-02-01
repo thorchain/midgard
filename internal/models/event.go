@@ -16,6 +16,7 @@ const (
 	ModelStakesTable  = "stakes"
 	ModelSwapsTable   = "swaps"
 	ModelGenesisTable = "genesis"
+	ModelPoolsTable   = "pools"
 )
 
 type Event struct {

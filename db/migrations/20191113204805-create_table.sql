@@ -80,6 +80,13 @@ CREATE TABLE gas (
     amount bigint not null,
     primary key (time, event_id, chain, symbol)
 );
+CREATE TABLE pools (
+    time        TIMESTAMPTZ       NOT NULL,
+    event_id bigint not null,
+    pool varchar not null,
+    status smallint	 not null,
+    primary key (time, event_id, pool)
+);
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
@@ -88,6 +95,7 @@ SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
 SELECT create_hypertable('gas', 'time');
+SELECT create_hypertable('pools', 'time');
 
 -- +migrate Down
 
@@ -98,5 +106,6 @@ DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
 DROP TABLE gas;
+DROP TABLE pools;
 
 DROP TYPE tx_direction;
