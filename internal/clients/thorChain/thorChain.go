@@ -158,6 +158,12 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				api.logger.Err(err).Msg("processAddEvent failed")
 				continue
 			}
+		case "pool":
+			err = api.processPoolEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processPoolEvent failed")
+				continue
+			}
 		default:
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
@@ -237,6 +243,20 @@ func (api *API) processAddEvent(evt types.Event) error {
 	err = api.store.CreateAddRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create add record")
+	}
+	return nil
+}
+func (api *API) processPoolEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processPoolEvent")
+	var pool types.EventPool
+	err := json.Unmarshal(evt.Event, &pool)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal pool event")
+	}
+	record := models.NewPoolEvent(pool, evt)
+	err = api.store.CreatePoolRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create pool record")
 	}
 	return nil
 }

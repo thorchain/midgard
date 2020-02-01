@@ -1113,6 +1113,36 @@ var (
 			Ticker: "RUNE",
 		},
 	}
+	poolStatusEvent0 = models.EventPool{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Bootstrap,
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BOLT-014",
+			Ticker: "BOLT",
+		},
+	}
+	poolStatusEvent1 = models.EventPool{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     18,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BOLT-014",
+			Ticker: "BOLT",
+		},
+	}
 )
 
 type TimeScaleSuite struct {
