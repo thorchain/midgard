@@ -20,7 +20,7 @@ func TestPackage(t *testing.T) { TestingT(t) }
 
 type BinanceSuite struct {
 	server *httptest.Server
-	client *BinanceClient
+	client *Client
 }
 
 func (s *BinanceSuite) SetUpSuite(c *C) {
@@ -39,7 +39,7 @@ func (s *BinanceSuite) SetUpSuite(c *C) {
 		Scheme:              "http",
 		TokensCacheDuration: time.Second * 5,
 	}
-	s.client, _ = NewBinanceClient(cfg)
+	s.client, _ = NewClient(cfg)
 }
 
 func (s *BinanceSuite) TearDownSuite(c *C) {

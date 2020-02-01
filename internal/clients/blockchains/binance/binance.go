@@ -23,8 +23,8 @@ var (
 	tokensPerPage = 1000
 )
 
-// BinanceClient is a client design to talk to binance using their api endpoint
-type BinanceClient struct {
+// Client is a client design to talk to binance using their api endpoint
+type Client struct {
 	logger       zerolog.Logger
 	cfg          config.BinanceConfiguration
 	httpClient   *http.Client
@@ -32,13 +32,13 @@ type BinanceClient struct {
 	cachedTokens *CachedTokens
 }
 
-// NewBinanceClient create a new instance of BinanceClient
-func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
+// NewClient create a new instance of Client
+func NewClient(cfg config.BinanceConfiguration) (*Client, error) {
 	if len(cfg.DEXHost) == 0 {
 		return nil, errors.New("DEXHost is empty")
 	}
 
-	return &BinanceClient{
+	return &Client{
 		logger: log.With().Str("module", "binance-client").Logger(),
 		cfg:    cfg,
 		httpClient: &http.Client{
@@ -49,7 +49,7 @@ func NewBinanceClient(cfg config.BinanceConfiguration) (*BinanceClient, error) {
 	}, nil
 }
 
-func (bc *BinanceClient) ensureTokensDataAvailable() error {
+func (bc *Client) ensureTokensDataAvailable() error {
 	if bc.cachedTokens == nil {
 		if err := bc.getAllTokens(); nil != err {
 			return errors.Wrap(err, "failed to get all tokens data from binance")
@@ -67,7 +67,7 @@ func (bc *BinanceClient) ensureTokensDataAvailable() error {
 }
 
 // getAllTokens will call getTokens recursively to get all the tokens data
-func (bc *BinanceClient) getAllTokens() error {
+func (bc *Client) getAllTokens() error {
 	bc.tokensLock.Lock()
 	defer bc.tokensLock.Unlock()
 
@@ -95,7 +95,7 @@ func (bc *BinanceClient) getAllTokens() error {
 	return nil
 }
 
-func (bc *BinanceClient) getTokens(offset int) ([]Token, error) {
+func (bc *Client) getTokens(offset int) ([]Token, error) {
 	requestURL := bc.getBinanceApiUrl("/api/v1/tokens", fmt.Sprintf("limit=%d&offset=%d", tokensPerPage, offset))
 	bc.logger.Debug().Msg(requestURL)
 	resp, err := bc.httpClient.Get(requestURL)
@@ -119,7 +119,7 @@ func (bc *BinanceClient) getTokens(offset int) ([]Token, error) {
 	return tokens, nil
 }
 
-func (bc *BinanceClient) GetToken(asset common.Asset) (*Token, error) {
+func (bc *Client) GetToken(asset common.Asset) (*Token, error) {
 	if asset.IsEmpty() {
 		return nil, errors.New("empty asset")
 	}
@@ -139,7 +139,7 @@ func (bc *BinanceClient) GetToken(asset common.Asset) (*Token, error) {
 	return &t, nil
 }
 
-func (bc *BinanceClient) getBinanceApiUrl(rawPath, rawQuery string) string {
+func (bc *Client) getBinanceApiUrl(rawPath, rawQuery string) string {
 	u := url.URL{
 		Scheme:   bc.cfg.Scheme,
 		Host:     bc.cfg.DEXHost,
