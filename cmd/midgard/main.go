@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	cfgFile := flag.StringP("cfg", "c", "config", "configuration file with extension")
 	flag.Parse()
 

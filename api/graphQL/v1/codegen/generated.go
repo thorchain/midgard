@@ -67,6 +67,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateTodo(ctx context.Context, input models.NewTodo) (*models.Todo, error)
 }
+
 type QueryResolver interface {
 	Todos(ctx context.Context) ([]*models.Todo, error)
 }
@@ -1838,7 +1839,7 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 func (ec *executionContext) unmarshalInputNewTodo(ctx context.Context, obj interface{}) (models.NewTodo, error) {
 	var it models.NewTodo
-	var asMap = obj.(map[string]interface{})
+	asMap := obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {

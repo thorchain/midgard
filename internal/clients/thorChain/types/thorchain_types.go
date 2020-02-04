@@ -61,6 +61,7 @@ type GenesisResult struct {
 type GenesisData struct {
 	GenesisTime time.Time `json:"genesis_time"`
 }
+
 type EventAdd struct {
 	Pool common.Asset `json:"pool"`
 }
@@ -127,19 +128,19 @@ func GetPoolStatus(ps string) PoolStatus {
 }
 
 //
-//type Header struct {
+// type Header struct {
 //	Height  string `json:"height"`
 //}
 //
-//type BlockMeta struct {
+// type BlockMeta struct {
 //	Header Header `json:"header"`
 //}
 //
-//type BlockResult struct {
+// type BlockResult struct {
 //	BlockMeta BlockMeta `json:"block_meta"`
 //}
 //
-//type Block struct {
+// type Block struct {
 //	Jsonrpc string `json:"jsonrpc"`
 //	ID      string `json:"id"`
 //	Result  BlockResult `json:"result"`

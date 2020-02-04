@@ -128,7 +128,6 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 		coin.Asset.Ticker,
 		amount,
 	)
-
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for CoinRecord")
 	}
@@ -155,7 +154,6 @@ func (s *Client) createGasRecord(parent models.Event, coin common.Coin) (int64, 
 		coin.Asset.Ticker,
 		coin.Amount,
 	)
-
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for GasRecord")
 	}
@@ -186,7 +184,6 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 		record.ToAddress,
 		record.Memo,
 	)
-
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")
 	}

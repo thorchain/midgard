@@ -27,7 +27,7 @@ go.sum: go.mod
 	GO111MODULE=on go mod verify
 
 lint-pre:
-	@test -z $(gofmt -l .) # checks code is in proper format
+	@test -z "$(shell gofumpt -l .)"
 	@go mod verify
 
 lint: lint-pre

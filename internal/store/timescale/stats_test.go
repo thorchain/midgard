@@ -7,7 +7,6 @@ import (
 )
 
 func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
-
 	dailyActiveUsers, err := s.Store.dailyActiveUsers()
 	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
@@ -38,7 +37,6 @@ func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
 }
 
 func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
-
 	dailyActiveUsers, err := s.Store.monthlyActiveUsers()
 	c.Assert(err, IsNil)
 	c.Assert(dailyActiveUsers, Equals, uint64(0))
@@ -69,7 +67,6 @@ func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalUsers(c *C) {
-
 	totalUsers, err := s.Store.totalUsers()
 	c.Assert(err, IsNil)
 	c.Assert(totalUsers, Equals, uint64(0))
@@ -108,7 +105,6 @@ func (s *TimeScaleSuite) TestTotalUsers(c *C) {
 }
 
 func (s *TimeScaleSuite) TestDailyTx(c *C) {
-
 	dailyTx, err := s.Store.dailyTx()
 	c.Assert(err, IsNil)
 	c.Assert(dailyTx, Equals, uint64(0))
@@ -139,7 +135,6 @@ func (s *TimeScaleSuite) TestDailyTx(c *C) {
 }
 
 func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
-
 	monthlyTx, err := s.Store.monthlyTx()
 	c.Assert(err, IsNil)
 	c.Assert(monthlyTx, Equals, uint64(0))
@@ -178,7 +173,6 @@ func (s *TimeScaleSuite) TestMonthlyTx(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalTx(c *C) {
-
 	totalTx, err := s.Store.totalTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalTx, Equals, uint64(0))
@@ -217,7 +211,6 @@ func (s *TimeScaleSuite) TestTotalTx(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
-
 	totalVolume24hr, err := s.Store.totalVolume24hr()
 	c.Assert(err, IsNil)
 	c.Assert(totalVolume24hr, Equals, uint64(0))
@@ -248,7 +241,6 @@ func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalVolume(c *C) {
-
 	totalVolume, err := s.Store.totalVolume()
 	c.Assert(err, IsNil)
 	c.Assert(totalVolume, Equals, uint64(0))
@@ -279,7 +271,6 @@ func (s *TimeScaleSuite) TestTotalVolume(c *C) {
 }
 
 func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
-
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 
 	totalStaked, err := s.Store.totalStaked(address)
@@ -322,7 +313,6 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {
-
 	totalDepth, err := s.Store.totalDepth()
 	c.Assert(err, IsNil)
 	c.Assert(totalDepth, Equals, uint64(0))
@@ -360,7 +350,6 @@ func (s *TimeScaleSuite) TestTotalDepth(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
-
 	totalRuneStaked, err := s.Store.totalRuneStaked()
 	c.Assert(err, IsNil)
 	c.Assert(totalRuneStaked, Equals, uint64(0))
@@ -398,7 +387,6 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
-
 	runeSwaps, err := s.Store.runeSwaps()
 	c.Assert(err, IsNil)
 	c.Assert(runeSwaps, Equals, uint64(0))
@@ -428,7 +416,6 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 }
 
 func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
-
 	bTotalEarned := s.Store.bTotalEarned()
 	c.Assert(bTotalEarned, Equals, uint64(0))
 
@@ -454,7 +441,6 @@ func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolCount(c *C) {
-
 	poolCount, err := s.Store.poolCount()
 	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(0))
@@ -485,7 +471,6 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
-
 	totalAssetBuys, err := s.Store.totalAssetBuys()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
@@ -508,7 +493,6 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
-
 	totalAssetSells, err := s.Store.totalAssetSells()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
@@ -539,7 +523,6 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
-
 	totalStakeTx, err := s.Store.totalStakeTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(0))
@@ -587,7 +570,6 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 }
 
 func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
-
 	totalWithdrawTx, err := s.Store.totalWithdrawTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))

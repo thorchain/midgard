@@ -55,6 +55,7 @@ func (a Amount) Float64() float64 {
 	amt, _ := strconv.ParseFloat(a.String(), 64)
 	return amt
 }
+
 func (a Amount) IsNegative() bool {
 	return a.Float64() < 0
 }

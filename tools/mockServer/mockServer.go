@@ -2,20 +2,18 @@ package main
 
 import (
 	"fmt"
-	flag "github.com/spf13/pflag"
 	"io/ioutil"
 	"log"
 	"net/http"
 
+	flag "github.com/spf13/pflag"
+
 	"github.com/gorilla/mux"
 )
 
-var (
-	SmokeTestDataEnabled *bool
-)
+var SmokeTestDataEnabled *bool
 
 func main() {
-
 	SmokeTestDataEnabled = flag.BoolP("smoke", "s", false, "event the use of the last know smoke-test data suite")
 	flag.Parse()
 	fmt.Println("SmokeTestDataEnabled: ", *SmokeTestDataEnabled)
@@ -99,8 +97,8 @@ func pool_addresses(writer http.ResponseWriter, request *http.Request) {
 
 func eventsTxMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("eventsTxMockedEndpoint Hit!")
-	//vars := mux.Vars(request)
-	//id := vars["id"]
+	// vars := mux.Vars(request)
+	// id := vars["id"]
 
 	content, err := ioutil.ReadFile("./thorchain/events/tx/tx.json")
 	if err != nil {

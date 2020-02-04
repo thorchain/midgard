@@ -34,13 +34,13 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	github.com/ziflex/lecho/v2 v2.0.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc // indirect
 	golang.org/x/net v0.0.0-20191007182048-72f939374954 // indirect
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/gorp.v1 v1.7.2 // indirect
+	mvdan.cc/gofumpt v0.0.0-20200129124340-2a103673760e // indirect
 )
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1

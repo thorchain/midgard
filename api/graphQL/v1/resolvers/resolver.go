@@ -4,8 +4,9 @@ package resolvers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"math/rand"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/models"
@@ -20,6 +21,7 @@ type Resolver struct {
 func (r *Resolver) Mutation() codegen.MutationResolver {
 	return &mutationResolver{r}
 }
+
 func (r *Resolver) Query() codegen.QueryResolver {
 	return &queryResolver{r}
 }
