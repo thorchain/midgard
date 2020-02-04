@@ -2,6 +2,8 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"time"
 
@@ -66,7 +68,62 @@ type EventAdd struct {
 // Represent pool change event
 type EventPool struct {
 	Pool   common.Asset `json:"pool"`
-	Status int          `json:"status,string"`
+	Status PoolStatus   `json:"status"`
+}
+type PoolStatus int
+
+const (
+	Enabled PoolStatus = iota
+	Bootstrap
+	Suspended
+)
+
+var poolStatusStr = map[string]PoolStatus{
+	"Enabled":   Enabled,
+	"Bootstrap": Bootstrap,
+	"Suspended": Suspended,
+}
+
+func (ps PoolStatus) String() string {
+	for key, item := range poolStatusStr {
+		if item == ps {
+			return key
+		}
+	}
+	return ""
+}
+
+func (ps PoolStatus) Valid() error {
+	if ps.String() == "" {
+		return fmt.Errorf("Invalid pool status")
+	}
+	return nil
+}
+
+// MarshalJSON marshal PoolStatus to JSON in string form
+func (ps PoolStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ps.String())
+}
+
+// UnmarshalJSON convert string form back to PoolStatus
+func (ps *PoolStatus) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	*ps = GetPoolStatus(s)
+	return nil
+}
+
+// GetPoolStatus from string
+func GetPoolStatus(ps string) PoolStatus {
+	for key, item := range poolStatusStr {
+		if strings.EqualFold(key, ps) {
+			return item
+		}
+	}
+
+	return Suspended
 }
 
 //
