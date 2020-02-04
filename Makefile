@@ -51,6 +51,9 @@ test-short:
 test-internal:
 	@go test -cover ./...
 
+test-integration:
+	@CHAIN_API=localhost:1317 MIDGARD_API=localhost:8080 go test -tags=integration ./tests/integration/...
+
 test:
 	@docker-compose run --rm testcode
 
