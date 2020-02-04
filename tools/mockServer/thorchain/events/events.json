@@ -231,7 +231,7 @@
         "symbol": "BOLT-014",
         "ticker": "BOLT"
       },
-      "status": "1"
+      "status": "Bootstrap"
     },
     "status": "Success"
   },
@@ -248,7 +248,7 @@
         "symbol": "BOLT-014",
         "ticker": "BOLT"
       },
-      "status": "0"
+      "status": "Enabled"
     },
     "status": "Success"
   }
