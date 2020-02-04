@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"fmt"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 
 	"github.com/pkg/errors"
@@ -45,7 +46,6 @@ func (s *Client) CreateRewardRecord(record models.EventReward) error {
 			assetAmt,
 			addEventAddress,
 		)
-
 		if err != nil {
 			s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
 		}

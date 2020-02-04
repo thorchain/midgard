@@ -19,9 +19,7 @@ import (
 // Creating this binance client because the official go-sdk doesn't support
 // these endpoints it seems
 
-var (
-	tokensPerPage = 1000
-)
+var tokensPerPage = 1000
 
 // Client is a client design to talk to binance using their api endpoint
 type Client struct {
@@ -99,7 +97,7 @@ func (bc *Client) getTokens(offset int) ([]Token, error) {
 	requestURL := bc.getBinanceApiUrl("/api/v1/tokens", fmt.Sprintf("limit=%d&offset=%d", tokensPerPage, offset))
 	bc.logger.Debug().Msg(requestURL)
 	resp, err := bc.httpClient.Get(requestURL)
-	if nil != err {
+	if err != nil {
 		return nil, errors.Wrapf(err, "failed to send get request to %s", requestURL)
 	}
 	defer func() {

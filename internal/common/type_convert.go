@@ -31,6 +31,7 @@ func IntToUint64(input sdk.Int) uint64 {
 func FloatToUintAndMultipleOne(input float64) sdk.Uint {
 	return sdk.NewUint(uint64(math.Round(input * One)))
 }
+
 func FloatToUint(input float64) sdk.Uint {
 	return sdk.NewUint(uint64(math.Round(input)))
 }

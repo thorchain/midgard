@@ -327,7 +327,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		})
 	}
 
-	var response = api.StakersAssetDataResponse{
+	response := api.StakersAssetDataResponse{
 		Asset:           helpers.ConvertAssetForAPI(details.Asset),
 		AssetEarned:     pointy.Int64(int64(details.AssetEarned)),
 		AssetROI:        pointy.Float64(details.AssetROI),

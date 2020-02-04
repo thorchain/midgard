@@ -60,7 +60,6 @@ func (s *Client) Ping() error {
 func Open(cfg config.TimeScaleConfiguration) (*sqlx.DB, error) {
 	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=%v password=%v host=%v port=%v", cfg.UserName, cfg.Database, cfg.Sslmode, cfg.Password, cfg.Host, cfg.Port)
 	db, err := sqlx.Open("postgres", connStr)
-
 	if err != nil {
 		return &sqlx.DB{}, err
 	}
@@ -101,7 +100,6 @@ func (s *Client) CreateDatabase() error {
 
 func MigrationsUp(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConfiguration) error {
 	n, err := migrate.Exec(db.DB, "postgres", &migrate.FileMigrationSource{Dir: cfg.MigrationsDir}, migrate.Up)
-
 	if err != nil {
 		return err
 	}

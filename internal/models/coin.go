@@ -1,10 +1,10 @@
 package models
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
-
-	"time"
 )
 
 type Coin struct {

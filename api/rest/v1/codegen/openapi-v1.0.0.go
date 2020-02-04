@@ -8,11 +8,12 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"strings"
 )
 
 // AssetDetail defines model for AssetDetail.
@@ -459,7 +460,6 @@ func (w *ServerInterfaceWrapper) GetTxDetailsByAddressTxId(ctx echo.Context) err
 
 // RegisterHandlers adds each server route to the EchoRouter.
 func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
-
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
@@ -479,7 +479,6 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	router.GET("/v1/tx/:address", wrapper.GetTxDetails)
 	router.GET("/v1/tx/:address/asset/:asset", wrapper.GetTxDetailsByAddressAsset)
 	router.GET("/v1/tx/:address/txid/:txid", wrapper.GetTxDetailsByAddressTxId)
-
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object

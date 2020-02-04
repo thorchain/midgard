@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
