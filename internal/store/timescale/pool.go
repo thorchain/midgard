@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/models"
 )

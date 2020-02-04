@@ -246,6 +246,7 @@ func (api *API) processAddEvent(evt types.Event) error {
 	}
 	return nil
 }
+
 func (api *API) processPoolEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processPoolEvent")
 	var pool types.EventPool
@@ -292,7 +293,7 @@ func (api *API) scan() {
 	defer api.logger.Info().Msg("thorchain event scanning stopped")
 	currentPos := int64(1) // we start from 1
 	maxID, err := api.store.GetMaxID()
-	if nil != err {
+	if err != nil {
 		api.logger.Error().Err(err).Msg("failed to get currentPos from data store")
 	} else {
 		api.logger.Info().Int64("previous pos", maxID).Msg("find previous maxID")

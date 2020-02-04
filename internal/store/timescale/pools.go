@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -508,6 +509,7 @@ func (s *Client) assetRewarded12m(asset common.Asset) (int64, error) {
 
 	return assetRewardedTotal.Int64, nil
 }
+
 func (s *Client) assetAdded12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)

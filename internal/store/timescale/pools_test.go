@@ -6,7 +6,6 @@ import (
 )
 
 func (s *TimeScaleSuite) TestGetPool(c *C) {
-
 	pools, err := s.Store.GetPools()
 	c.Assert(err, IsNil)
 
@@ -55,7 +54,6 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetPoolData(c *C) {
-
 	c.Skip("This needs revision once all others are completed. ")
 
 	// Stakes
@@ -133,7 +131,6 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
-
 	// No stakes
 	asset, _ := common.NewAsset("BNB.BNB")
 	priceRune, err := s.Store.GetPriceInRune(asset)
@@ -150,7 +147,6 @@ func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
 }
 
 func (s *TimeScaleSuite) TestExists(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	exists, err := s.Store.exists(asset)
@@ -199,7 +195,6 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetStakedTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetStakedTotal, err := s.Store.assetStakedTotal(asset)
@@ -232,7 +227,6 @@ func (s *TimeScaleSuite) TestAssetStakedTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetStakedTotal12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetStakedTotal, err := s.Store.assetStakedTotal12m(asset)
@@ -265,7 +259,6 @@ func (s *TimeScaleSuite) TestAssetStakedTotal12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetWithdrawnTotal, err := s.Store.assetWithdrawnTotal(asset)
@@ -291,7 +284,6 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	runeStakedTotal, err := s.Store.runeStakedTotal(asset)
@@ -324,7 +316,6 @@ func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	runeStakedTotal, err := s.Store.runeStakedTotal12m(asset)
@@ -356,7 +347,6 @@ func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	poolStakedTotal, err := s.Store.poolStakedTotal(asset)
@@ -389,7 +379,6 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetDepth, err := s.Store.assetDepth(asset)
@@ -435,11 +424,9 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	assetDepth, err = s.Store.assetDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(50000000000), Commentf("%v", assetDepth))
-
 }
 
 func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetDepth, err := s.Store.assetDepth12m(asset)
@@ -456,7 +443,6 @@ func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneDepth(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	runeDepth, err := s.Store.runeDepth(asset)
@@ -505,7 +491,6 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	runeDepth, err := s.Store.runeDepth12m(asset)
@@ -522,7 +507,6 @@ func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetSwap(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	swapTotal, err := s.Store.assetSwap(asset)
@@ -554,7 +538,6 @@ func (s *TimeScaleSuite) TestAssetSwap(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetSwap12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	swapTotal, err := s.Store.assetSwapped12m(asset)
@@ -585,7 +568,6 @@ func (s *TimeScaleSuite) TestAssetSwap12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestRuneSwapTotal12m(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	swapTotal, err := s.Store.runeSwapTotal12m(asset)
@@ -608,7 +590,6 @@ func (s *TimeScaleSuite) TestRuneSwapTotal12m(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolDepth(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	poolDepth, err := s.Store.poolDepth(asset)
@@ -657,7 +638,6 @@ func (s *TimeScaleSuite) TestPoolDepth(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolUnits(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	poolUnits, err := s.Store.poolUnits(asset)
@@ -698,7 +678,6 @@ func (s *TimeScaleSuite) TestPoolUnits(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSellVolume(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.sellVolume(asset)
@@ -731,7 +710,6 @@ func (s *TimeScaleSuite) TestSellVolume(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSellVolume24hr(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.sellVolume24hr(asset)
@@ -753,7 +731,6 @@ func (s *TimeScaleSuite) TestSellVolume24hr(c *C) {
 }
 
 func (s *TimeScaleSuite) TestBuyVolume(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.buyVolume(asset)
@@ -782,11 +759,9 @@ func (s *TimeScaleSuite) TestBuyVolume(c *C) {
 	volume, err = s.Store.buyVolume(asset)
 	c.Assert(err, IsNil)
 	c.Assert(volume, Equals, uint64(140331491), Commentf("%v", volume))
-
 }
 
 func (s *TimeScaleSuite) TestBuyVolume24hr(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.buyVolume24hr(asset)
@@ -809,7 +784,6 @@ func (s *TimeScaleSuite) TestBuyVolume24hr(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolVolume(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.poolVolume(asset)
@@ -849,7 +823,6 @@ func (s *TimeScaleSuite) TestPoolVolume(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	volume, err := s.Store.poolVolume24hr(asset)
@@ -878,11 +851,9 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 	volume, err = s.Store.poolVolume24hr(asset)
 	c.Assert(err, IsNil)
 	c.Assert(volume, Equals, uint64(20000001), Commentf("%v", volume))
-
 }
 
 func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	txAverage, err := s.Store.sellTxAverage(asset)
@@ -978,11 +949,9 @@ func (s *TimeScaleSuite) TestBuyTxAverage(c *C) {
 	txAverage, err = s.Store.buyTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(149245672), Commentf("%d", txAverage))
-
 }
 
 func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	txAverage, err := s.Store.poolTxAverage(asset)
@@ -1017,7 +986,6 @@ func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	slipAverage, err := s.Store.sellSlipAverage(asset)
@@ -1052,7 +1020,6 @@ func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	slipAverage, err := s.Store.buySlipAverage(asset)
@@ -1087,7 +1054,6 @@ func (s *TimeScaleSuite) TestBuySlipAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	slipAverage, err := s.Store.poolSlipAverage(asset)
@@ -1114,7 +1080,6 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	feeAverage, err := s.Store.sellFeeAverage(asset)
@@ -1157,7 +1122,6 @@ func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	feeAverage, err := s.Store.buyFeeAverage(asset)
@@ -1200,7 +1164,6 @@ func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
 	feeAverage, err := s.Store.poolFeeAverage(asset)
@@ -1243,7 +1206,6 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feesTotal, err := s.Store.sellFeesTotal(asset)
@@ -1293,7 +1255,6 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feesTotal, err := s.Store.buyFeesTotal(asset)
@@ -1334,7 +1295,6 @@ func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	feesTotal, err := s.Store.poolFeesTotal(asset)
@@ -1384,7 +1344,6 @@ func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSellAssetCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetCount, err := s.Store.sellAssetCount(asset)
@@ -1433,11 +1392,9 @@ func (s *TimeScaleSuite) TestSellAssetCount(c *C) {
 	assetCount, err = s.Store.sellAssetCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetCount, Equals, uint64(2), Commentf("assetCount: %v", assetCount))
-
 }
 
 func (s *TimeScaleSuite) TestBuyAssetCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetCount, err := s.Store.buyAssetCount(asset)
@@ -1492,7 +1449,6 @@ func (s *TimeScaleSuite) TestBuyAssetCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSwappingTxCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	swappingCount, err := s.Store.swappingTxCount(asset)
@@ -1516,7 +1472,6 @@ func (s *TimeScaleSuite) TestSwappingTxCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestSwappersCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	swappersCount, err := s.Store.swappersCount(asset)
@@ -1544,7 +1499,6 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestStakeTxCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	stakeCount, err := s.Store.stakeTxCount(asset)
@@ -1577,7 +1531,6 @@ func (s *TimeScaleSuite) TestStakeTxCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestWithdrawTxCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	withdrawCount, err := s.Store.withdrawTxCount(asset)
@@ -1612,7 +1565,6 @@ func (s *TimeScaleSuite) TestWithdrawTxCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestStakingTxCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	stakingCount, err := s.Store.stakingTxCount(asset)
@@ -1647,7 +1599,6 @@ func (s *TimeScaleSuite) TestStakingTxCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestStakersCount(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	stakersCount, err := s.Store.stakersCount(asset)
@@ -1673,7 +1624,6 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetROI(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	roi, err := s.Store.assetROI(asset)
@@ -1711,7 +1661,6 @@ func (s *TimeScaleSuite) TestAssetROI(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetROI12(c *C) {
-
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	roi, err := s.Store.assetROI12(asset)
@@ -1777,7 +1726,6 @@ func (s *TimeScaleSuite) TestRuneROI(c *C) {
 	roi, err = s.Store.runeROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 3.80000002)
-
 }
 
 func (s *TimeScaleSuite) TestRuneROI12(c *C) {
@@ -1822,7 +1770,6 @@ func (s *TimeScaleSuite) TestRuneROI12(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolROI(c *C) {
-
 	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No stake
@@ -1864,7 +1811,6 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolROI12(c *C) {
-
 	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No stake

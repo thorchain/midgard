@@ -37,5 +37,4 @@ func (s *TimeScaleSuite) TestPool(c *C) {
 	// Duplicate pool status
 	err = s.Store.CreatePoolRecord(poolStatusEvent1)
 	c.Assert(err, NotNil)
-
 }

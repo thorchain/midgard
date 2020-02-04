@@ -26,6 +26,7 @@ func NewPoolEvent(pool types.EventPool, event types.Event) EventPool {
 		Event:  newEvent(event),
 	}
 }
+
 func (status PoolStatus) String() string {
 	switch status {
 	case Suspended:

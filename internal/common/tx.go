@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
-type TxID string
-type TxIDs []TxID
+type (
+	TxID  string
+	TxIDs []TxID
+)
 
 var BlankTxID = TxID("0000000000000000000000000000000000000000000000000000000000000000")
 

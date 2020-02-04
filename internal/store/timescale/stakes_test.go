@@ -614,5 +614,4 @@ func (s *TimeScaleSuite) TestGetStakerAddresses(c *C) {
 	c.Assert(len(stakerAddresses), Equals, 2)
 	c.Assert(stakerAddresses[0].String(), Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(stakerAddresses[1].String(), Equals, "tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-
 }
