@@ -298,10 +298,11 @@ components:
         application/json:
           schema:
             type: object
-            additionalProperties:
-              type: array
-              items:
-                $ref: '#/components/schemas/ThorchainEndpoint'
+            properties:
+              current:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ThorchainEndpoint'
 
   schemas:
     TxDetails:
