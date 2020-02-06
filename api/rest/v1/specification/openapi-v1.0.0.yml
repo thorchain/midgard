@@ -291,17 +291,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-            
+
     ThorchainEndpointsResponse:
       description: Get Return an object for the proxied pools_addresses endpoint.
       content:
         application/json:
           schema:
-            type: object
-            additionalProperties:
-              type: array
-              items:
-                $ref: '#/components/schemas/ThorchainEndpoint'
+            $ref: '#/components/schemas/ThorchainEndpoints'
 
   schemas:
     TxDetails:
@@ -713,7 +709,7 @@ components:
         slip:
           type: number
           format: double
-    
+
     ThorchainEndpoint:
       type: object
       properties:
@@ -723,6 +719,15 @@ components:
           type: string
         address:
           type: string
+
+    ThorchainEndpoints:
+      type: object
+      properties:
+        current:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThorchainEndpoint'
+
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
