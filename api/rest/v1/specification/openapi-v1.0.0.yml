@@ -221,11 +221,7 @@ paths:
       description: Returns a proxied endpoint for the pool_addresses endpoint from a local thornode
       responses:
         "200":
-          description: Get Return an object for the proxied pools_addresses endpoint.
-          content:
-            application/json:
-              schema:
-                type: object
+          $ref: '#/components/responses/ThorchainEndpointsResponse'
 components:
   responses:
     PoolsDetailedResponse:
@@ -295,6 +291,17 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+            
+    ThorchainEndpointsResponse:
+      description: Get Return an object for the proxied pools_addresses endpoint.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                $ref: '#/components/schemas/ThorchainEndpoint'
 
   schemas:
     TxDetails:
@@ -706,6 +713,16 @@ components:
         slip:
           type: number
           format: double
+    
+    ThorchainEndpoint:
+      type: object
+      properties:
+        chain:
+          type: string
+        pub_key:
+          type: string
+        address:
+          type: string
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
