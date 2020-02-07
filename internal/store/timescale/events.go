@@ -135,18 +135,14 @@ func (s *Client) createGasRecord(parent models.Event, coin common.Coin) (int64, 
 		INSERT INTO %v (
 			time,
 			event_id,
-			chain,
-			symbol,
-			ticker,
+			pool,
 			amount
-		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelGasTable)
+		)  VALUES ( $1, $2, $3, $4 ) RETURNING event_id`, models.ModelGasTable)
 
 	results, err := s.db.Exec(query,
 		parent.Time,
 		parent.ID,
-		coin.Asset.Chain,
-		coin.Asset.Symbol,
-		coin.Asset.Ticker,
+		coin.Asset.String(),
 		coin.Amount,
 	)
 	if err != nil {

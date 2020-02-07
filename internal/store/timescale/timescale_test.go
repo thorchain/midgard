@@ -1217,6 +1217,46 @@ var (
 			Ticker: "BOLT",
 		},
 	}
+	gasEvent1 = models.EventGas{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     19,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		GasType: models.GasSpend,
+		Gas: common.Coins{
+			{
+				Asset: common.Asset{
+					Chain:  "BNB",
+					Symbol: "BOLT-014",
+					Ticker: "BOLT",
+				},
+				Amount: 8400,
+			},
+		},
+	}
+	gasEvent2 = models.EventGas{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     20,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		GasType: models.GasTopup,
+		Gas: common.Coins{
+			{
+				Asset: common.Asset{
+					Chain:  "BNB",
+					Symbol: "TCAN-014",
+					Ticker: "TCAN",
+				},
+				Amount: 4000,
+			},
+		},
+	}
 )
 
 type TimeScaleSuite struct {
