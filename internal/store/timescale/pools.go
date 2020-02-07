@@ -435,13 +435,12 @@ func (s *Client) gasSpend(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(amount)
 		FROM gas
-		WHERE chain = $1 
-		AND symbol = $2
-		AND gas_type = $3
+		WHERE pool = $1
+		AND gas_type = $2
 		`
 
 	var gasSpendTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.Chain, asset.Symbol, models.GasSpend)
+	row := s.db.QueryRow(stmnt, asset.String(), models.GasSpend)
 
 	if err := row.Scan(&gasSpendTotal); err != nil {
 		return 0, errors.Wrap(err, "gasSpend failed")
@@ -553,14 +552,13 @@ func (s *Client) gasSpend12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(amount)
 		FROM gas
-		WHERE chain = $1 
-		AND symbol = $2
-		AND gas_type = $3
+		WHERE pool = $1 
+		AND gas_type = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var gasSpendTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.Chain, asset.Symbol, models.GasSpend)
+	row := s.db.QueryRow(stmnt, asset.String(), models.GasSpend)
 
 	if err := row.Scan(&gasSpendTotal); err != nil {
 		return 0, errors.Wrap(err, "gasSpend12m failed")

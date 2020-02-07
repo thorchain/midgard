@@ -252,21 +252,21 @@ func (s *Client) coinsForTxHash(txHash string) common.Coins {
 
 func (s *Client) gas(eventId uint64) models.TxGas {
 	stmnt := `
-		SELECT gas.chain, gas.symbol, gas.ticker, gas.amount
+		SELECT gas.pool, gas.amount
 			FROM gas
 		WHERE event_id = $1;`
 
 	var (
-		chain, symbol, ticker string
+		pool string
 		amount                uint64
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
-	if err := row.Scan(&chain, &symbol, &ticker, &amount); err != nil {
+	if err := row.Scan(&pool, &amount); err != nil {
 		return models.TxGas{}
 	}
 
-	asset, _ := common.NewAsset(symbol)
+	asset, _ := common.NewAsset(pool)
 	return models.TxGas{
 		Asset:  asset,
 		Amount: amount,

@@ -74,12 +74,10 @@ CREATE TABLE coins (
 CREATE TABLE gas (
     time        TIMESTAMPTZ       NOT NULL,
     event_id bigint not null,
-    chain varchar not null,
-    symbol varchar not null,
-    ticker varchar not null,
+    pool varchar not null,
     amount bigint not null,
     gas_type  varchar,
-    primary key (time, event_id, chain, symbol)
+    primary key (time, event_id, pool)
 );
 CREATE TABLE pools (
     time        TIMESTAMPTZ       NOT NULL,

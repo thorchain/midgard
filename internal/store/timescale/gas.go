@@ -17,20 +17,16 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 		INSERT INTO %v (
 			time,
 			event_id,
-			chain,
-			symbol,
-			ticker,
+			pool,
 			amount,
 			gas_type
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelGasTable)
+		)  VALUES ( $1, $2, $3, $4, $5 ) RETURNING event_id`, models.ModelGasTable)
 
 	for _, coin := range record.Gas {
 		_, err := s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
-			coin.Asset.Chain,
-			coin.Asset.Symbol,
-			coin.Asset.Ticker,
+			coin.Asset.String(),
 			coin.Amount,
 			record.GasType,
 		)
