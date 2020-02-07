@@ -436,7 +436,7 @@ func (s *Client) gasSpend(asset common.Asset) (int64, error) {
 		SELECT SUM(amount)
 		FROM gas
 		WHERE chain = $1 
-		AND symbole = $2
+		AND symbol = $2
 		AND gas_type = $3
 		`
 
