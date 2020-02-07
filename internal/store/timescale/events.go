@@ -114,11 +114,6 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 			amount
 		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelCoinsTable)
 
-	amount := coin.Amount
-	if parent.Type == "unstake" {
-		amount = -amount
-	}
-
 	results, err := s.db.Exec(query,
 		parent.Time,
 		record.ID,
@@ -126,7 +121,7 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 		coin.Asset.Chain,
 		coin.Asset.Symbol,
 		coin.Asset.Ticker,
-		amount,
+		coin.Amount,
 	)
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for CoinRecord")

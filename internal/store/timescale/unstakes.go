@@ -15,18 +15,20 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
-	// get rune/asset amounts from Event.InTx.Coins
+	// get rune/asset amounts from Event.OutTxs[].Coins
 	var runeAmt int64
 	var assetAmt int64
-	for _, coin := range record.Event.InTx.Coins {
-		if common.IsRuneAsset(coin.Asset) {
-			runeAmt = coin.Amount
-		} else {
-			assetAmt = coin.Amount
+	for _, tx := range record.Event.OutTxs {
+		for _, coin := range tx.Coins {
+			if common.IsRuneAsset(coin.Asset) {
+				runeAmt += coin.Amount
+			} else if record.Pool.Equals(coin.Asset) {
+				assetAmt += coin.Amount
+			}
 		}
 	}
 
-	// FIXME we need to get the unstake tx data from OutTx too!!!
+	// TODO: Do something with Event.InTx
 
 	query := fmt.Sprintf(`
 		INSERT INTO %v (

@@ -159,13 +159,13 @@ func (s *Client) monthlyActiveUsers() (uint64, error) {
 
 func (s *Client) totalUsers() (uint64, error) {
 	stmnt := `
-		SELECT SUM(users)
+		SELECT COUNT(DISTINCT(users))
 			FROM (
-			    SELECT COUNT(DISTINCT(txs.from_address)) users 
+			    SELECT DISTINCT(txs.from_address) users 
 			    	FROM txs
 			    WHERE txs.direction = 'in'
 			    UNION
-			    SELECT COUNT(DISTINCT(txs.to_address)) users 
+			    SELECT DISTINCT(txs.to_address) users 
 			    	FROM txs
 			    WHERE txs.direction = 'out'
 			) x;`
