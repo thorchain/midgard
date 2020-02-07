@@ -127,21 +127,7 @@ func GetPoolStatus(ps string) PoolStatus {
 	return Suspended
 }
 
-//
-// type Header struct {
-//	Height  string `json:"height"`
-//}
-//
-// type BlockMeta struct {
-//	Header Header `json:"header"`
-//}
-//
-// type BlockResult struct {
-//	BlockMeta BlockMeta `json:"block_meta"`
-//}
-//
-// type Block struct {
-//	Jsonrpc string `json:"jsonrpc"`
-//	ID      string `json:"id"`
-//	Result  BlockResult `json:"result"`
-//}
+type EventGas struct {
+	Gas     common.Coins `json:"gas"`
+	GasType string       `json:"gas_type"`
+}

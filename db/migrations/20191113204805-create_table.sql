@@ -78,6 +78,7 @@ CREATE TABLE gas (
     symbol varchar not null,
     ticker varchar not null,
     amount bigint not null,
+    gas_type  varchar,
     primary key (time, event_id, chain, symbol)
 );
 CREATE TABLE pools (

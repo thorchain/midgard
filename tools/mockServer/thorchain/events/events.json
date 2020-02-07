@@ -251,5 +251,49 @@
       "status": "Enabled"
     },
     "status": "Success"
+  },
+  {
+    "id": "9",
+    "height": "22",
+    "type": "gas",
+    "in_tx": { },
+    "out_txs": [],
+    "gas": null,
+    "event": {
+      "gas": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BNB",
+            "ticker": "BNB"
+          },
+          "amount": "5500"
+        }
+      ],
+      "gas_type": "gas_spend"
+    },
+    "status": "Success"
+  },
+  {
+    "id": "10",
+    "height": "23",
+    "type": "gas",
+    "in_tx": { },
+    "out_txs": [],
+    "gas": null,
+    "event": {
+      "gas": [
+        {
+          "asset": {
+            "chain": "BNB",
+            "symbol": "BNB",
+            "ticker": "BNB"
+          },
+          "amount": "4420"
+        }
+      ],
+      "gas_type": "gas_topup"
+    },
+    "status": "Success"
   }
 ]

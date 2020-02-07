@@ -22,3 +22,24 @@ func NewGas(gas common.Coin, event types.Event) Gas {
 		Amount:  gas.Amount,
 	}
 }
+
+type GasType string
+
+const (
+	GasSpend GasType = `gas_spend`
+	GasTopup GasType = `gas_topup`
+)
+
+type EventGas struct {
+	Event
+	Gas     common.Coins `json:"gas"`
+	GasType GasType      `json:"gas_type"`
+}
+
+func NewGasEvent(gas types.EventGas, event types.Event) EventGas {
+	return EventGas{
+		Gas:     gas.Gas,
+		GasType: GasType(gas.GasType),
+		Event:   newEvent(event),
+	}
+}
