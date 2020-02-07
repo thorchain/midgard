@@ -349,7 +349,6 @@ var (
 		StakeUnits: 1342175000,
 	}
 
-	// FIXME unstake data is incorrect due to no OutTx as pre a recent example that was provided
 	unstakeTomlEvent0 = models.EventUnstake{
 		Event: models.Event{
 			Time:   time.Now(),
@@ -366,23 +365,48 @@ var (
 					{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "RUNE-B1A",
-							Ticker: "RUNE",
+							Symbol: "BNB",
+							Ticker: "BNB",
 						},
-						Amount: 100,
-					},
-					{
-						Asset: common.Asset{
-							Chain:  "BNB",
-							Symbol: "TOML-4BC",
-							Ticker: "TOML",
-						},
-						Amount: 10,
+						Amount: 1,
 					},
 				},
-				Memo: "withdraw:TOML",
+				Memo: "WITHDRAW:TOML-4BC",
 			},
-			OutTxs: nil,
+			OutTxs: common.Txs{
+				common.Tx{
+					ID:          "E5869F3E93A4B0C0C63D79130ACBFA8A40590F0B54F82343E7F3C334C23F55B4",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-B1A",
+								Ticker: "RUNE",
+							},
+							Amount: 100,
+						},
+					},
+				},
+				common.Tx{
+					ID:          "4B074E4B83156A4E69A565B7E5AA8E106FC62F3390D9A947AA68BFEF2B092021",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "TOML-4BC",
+								Ticker: "TOML",
+							},
+							Amount: 10,
+						},
+					},
+				},
+			},
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -407,23 +431,48 @@ var (
 					{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "RUNE-B1A",
-							Ticker: "RUNE",
-						},
-						Amount: 100,
-					},
-					{
-						Asset: common.Asset{
-							Chain:  "BNB",
 							Symbol: "BNB",
 							Ticker: "BNB",
 						},
-						Amount: 10,
+						Amount: 1,
 					},
 				},
-				Memo: "withdraw:BNB.BNB",
+				Memo: "WITHDRAW:BNB.BNB",
 			},
-			OutTxs: nil,
+			OutTxs: common.Txs{
+				common.Tx{
+					ID:          "E5869F3E93A4B0C0C63D79130ACBFA8A40590F0B54F82343E7F3C334C23F55B4",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-B1A",
+								Ticker: "RUNE",
+							},
+							Amount: 100,
+						},
+					},
+				},
+				common.Tx{
+					ID:          "4B074E4B83156A4E69A565B7E5AA8E106FC62F3390D9A947AA68BFEF2B092021",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 10,
+						},
+					},
+				},
+			},
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -448,23 +497,48 @@ var (
 					{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "RUNE-B1A",
-							Ticker: "RUNE",
+							Symbol: "BNB",
+							Ticker: "BNB",
 						},
-						Amount: 100,
-					},
-					{
-						Asset: common.Asset{
-							Chain:  "BNB",
-							Symbol: "BOLT-014",
-							Ticker: "BOLT",
-						},
-						Amount: 10,
+						Amount: 1,
 					},
 				},
-				Memo: "withdraw:BNB.BOLT-014",
+				Memo: "WITHDRAW:BNB.BOLT-014",
 			},
-			OutTxs: nil,
+			OutTxs: common.Txs{
+				common.Tx{
+					ID:          "E5869F3E93A4B0C0C63D79130ACBFA8A40590F0B54F82343E7F3C334C23F55B4",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-B1A",
+								Ticker: "RUNE",
+							},
+							Amount: 100,
+						},
+					},
+				},
+				common.Tx{
+					ID:          "4B074E4B83156A4E69A565B7E5AA8E106FC62F3390D9A947AA68BFEF2B092021",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BOLT-014",
+								Ticker: "BOLT",
+							},
+							Amount: 10,
+						},
+					},
+				},
+			},
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
