@@ -430,6 +430,26 @@ func (s *Client) assetAdded(asset common.Asset) (int64, error) {
 	return assetRewardedTotal.Int64, nil
 }
 
+// gasSpend - total amount of  gas subtracted from pools
+func (s *Client) gasSpend(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(amount)
+		FROM gas
+		WHERE chain = $1 
+		AND symbole = $2
+		AND gas_type = $3
+		`
+
+	var gasSpendTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.Chain,asset.String(), models.GasSpend)
+
+	if err := row.Scan(&gasSpendTotal); err != nil {
+		return 0, errors.Wrap(err, "gasSpend failed")
+	}
+
+	return gasSpendTotal.Int64, nil
+}
+
 // assetStakedTotal - total amount of asset ever staked in given pool
 func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
@@ -527,6 +547,26 @@ func (s *Client) assetAdded12m(asset common.Asset) (int64, error) {
 	}
 
 	return assetRewardedTotal.Int64, nil
+}
+
+func (s *Client) gasSpend12m(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(amount)
+		FROM gas
+		WHERE chain = $1 
+		AND symbol = $2
+		AND gas_type = $3
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+	`
+
+	var gasSpendTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.Chain,asset.Symbol, models.GasSpend)
+
+	if err := row.Scan(&gasSpendTotal); err != nil {
+		return 0, errors.Wrap(err, "gasSpend12m failed")
+	}
+
+	return gasSpendTotal.Int64, nil
 }
 
 // assetStakedTotal12 - total amount of asset staked in given pool in the last
@@ -765,6 +805,7 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 // +adds
 // -outgoingSwapAsset
 // -withdraws
+// -gasSpend
 func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 	stakes, err := s.assetStaked(asset)
 	if err != nil {
@@ -774,7 +815,6 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, nil
 	}
-
 	rewards, err := s.assetRewarded(asset)
 	if err != nil {
 		return 0, nil
@@ -783,8 +823,12 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, nil
 	}
+	gas, err := s.gasSpend(asset)
+	if err != nil {
+		return 0, nil
+	}
 
-	depth := int64(stakes) + swaps + rewards + adds
+	depth := int64(stakes) + swaps + rewards + adds - gas
 	return uint64(depth), nil
 }
 
@@ -797,7 +841,6 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
-
 	rewards, err := s.assetRewarded12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetDepth12m failed")
@@ -806,8 +849,11 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
-
-	depth := int64(stakes) + swaps + rewards + adds
+	gas, err := s.gasSpend12m(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "gasSpend12m failed")
+	}
+	depth := int64(stakes) + swaps + rewards + adds - gas
 	return uint64(depth), nil
 }
 
