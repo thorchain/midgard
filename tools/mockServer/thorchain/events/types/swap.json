@@ -16,7 +16,7 @@
       ],
       "gas": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "37500"
         }
       ],
@@ -30,13 +30,13 @@
         "to_address": "tbnb1s3jmk2utv7g996hstxerfxpux3v7rg776d7qf5",
         "coins": [
           {
-            "asset": "BNB",
+            "asset": "BNB.BNB",
             "amount": "298803"
           }
         ],
         "gas": [
           {
-            "asset": "BNB",
+            "asset": "BNB.BNB",
             "amount": "37500"
           }
         ],

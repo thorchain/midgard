@@ -10,7 +10,7 @@
       "to_address": "tbnb10phwn0asg46nmm68q7kxt3zmp3tcseaf40egqs",
       "coins": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "30000000"
         },
         {
@@ -20,7 +20,7 @@
       ],
       "gas": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "60000"
         }
       ],

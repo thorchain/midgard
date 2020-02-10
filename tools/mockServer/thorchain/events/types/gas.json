@@ -9,7 +9,7 @@
     "event": {
       "gas": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "5500"
         }
       ],
@@ -27,7 +27,7 @@
     "event": {
       "gas": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "4420"
         }
       ],

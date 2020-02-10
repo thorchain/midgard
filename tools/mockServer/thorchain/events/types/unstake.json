@@ -16,7 +16,7 @@
       ],
       "gas": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "13750"
         }
       ],
@@ -36,7 +36,7 @@
         ],
         "gas": [
           {
-            "asset": "BNB",
+            "asset": "BNB.BNB",
             "amount": "13750"
           }
         ],
@@ -55,7 +55,7 @@
         ],
         "gas": [
           {
-            "asset": "BNB",
+            "asset": "BNB.BNB",
             "amount": "13750"
           }
         ],

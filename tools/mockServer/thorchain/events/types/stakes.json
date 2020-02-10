@@ -20,7 +20,7 @@
       ],
       "gas": [
         {
-          "asset": "BNB",
+          "asset": "BNB.BNB",
           "amount": "60000"
         }
       ],
