@@ -9,19 +9,11 @@
     "to_address": "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
     "coins": [
       {
-        "asset": {
-          "chain": "BNB",
-          "symbol": "RUNE-B1A",
-          "ticker": "RUNE"
-        },
+        "asset": "BNB.RUNE-B1A",
         "amount": "1"
       },
       {
-        "asset": {
-          "chain": "BNB",
-          "symbol": "TCAN-014",
-          "ticker": "TCAN"
-        },
+        "asset": "BNB.TCAN-014",
         "amount": "1"
       }
     ],
@@ -39,11 +31,7 @@
   ],
   "gas": null,
   "event": {
-    "pool": {
-      "chain": "BNB",
-      "symbol": "TCAN-014",
-      "ticker": "TCAN"
-    },
+    "pool": "BNB.TCAN-014",
     "stake_units": "100"
   },
   "status": "Success"

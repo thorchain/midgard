@@ -10,29 +10,17 @@
       "to_address": "tbnb10xran5jhc2e7wkzhge0qpgyrj09vdnhystcnuc",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "LOK-3C0",
-            "ticker": "LOK"
-          },
+          "asset": "BNB.LOK-3C0",
           "amount": "10000000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -51,11 +39,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "LOK-3C0",
-        "ticker": "LOK"
-      },
+      "asset": "BNB.LOK-3C0",
       "stake_units": "30000000000"
     },
     "status": "Success"

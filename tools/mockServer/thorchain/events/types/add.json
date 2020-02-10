@@ -10,29 +10,17 @@
       "to_address": "tbnb10phwn0asg46nmm68q7kxt3zmp3tcseaf40egqs",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "30000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "5000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -41,11 +29,7 @@
     "out_txs": null,
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      }
+      "pool": "BNB"
     },
     "status": "Success"
   }

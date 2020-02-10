@@ -10,29 +10,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "150000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -51,11 +39,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "25075000000"
     },
     "status": "Success"
@@ -71,29 +55,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "LOK-3C0",
-            "ticker": "LOK"
-          },
+          "asset": "BNB.LOK-3C0",
           "amount": "40000000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -112,11 +84,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "LOK-3C0",
-        "ticker": "LOK"
-      },
+      "asset": "BNB.LOK-3C0",
       "stake_units": "45000000000"
     },
     "status": "Success"
@@ -132,29 +100,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "150000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -168,21 +124,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "150000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -195,21 +143,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "50000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -234,29 +174,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "150000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -270,21 +198,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "150000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -297,21 +217,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "50000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -336,29 +248,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "150000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -372,21 +272,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "150000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -399,21 +291,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "50000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -438,29 +322,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "150000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -474,21 +346,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "150000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -501,21 +365,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "50000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -540,29 +396,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "150000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "50000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -576,21 +420,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "150000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -603,21 +439,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "50000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -642,21 +470,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "30000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -675,11 +495,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "2095182672"
     },
     "status": "Success"
@@ -695,21 +511,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "10000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -728,11 +536,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "2507484375"
     },
     "status": "Success"
@@ -748,29 +552,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "90000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "30000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -789,11 +581,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "15055399904"
     },
     "status": "Success"
@@ -809,29 +597,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "30000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "5000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -840,11 +616,7 @@
     "out_txs": null,
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      }
+      "pool": "BNB"
     },
     "status": "Success"
   },
@@ -859,21 +631,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "100000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -887,21 +651,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "100000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -926,21 +682,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "100000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -954,21 +702,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "100000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -993,21 +733,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1021,21 +753,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "1"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1060,21 +784,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "30000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1088,21 +804,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "30000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1127,29 +835,17 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "30000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "100000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "60000"
         }
       ],
@@ -1163,21 +859,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "30000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1190,21 +878,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "100000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1229,21 +909,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "40000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1257,21 +929,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "62426337"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1280,11 +944,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "RUNE-A1F",
-        "ticker": "RUNE"
-      },
+      "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "10194",
       "liquidity_fee": "8340191834"
@@ -1302,21 +962,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1330,21 +982,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "1"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1369,21 +1013,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "10000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1397,21 +1033,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "10000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1436,21 +1064,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "10000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1464,21 +1084,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "15208683"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1487,11 +1099,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "RUNE-A1F",
-        "ticker": "RUNE"
-      },
+      "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "1536",
       "liquidity_fee": "642092663"
@@ -1509,21 +1117,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "10000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1537,21 +1137,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "5990096601"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1560,11 +1152,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "price_target": "0",
       "trade_slip": "923",
       "liquidity_fee": "270292946"
@@ -1582,21 +1170,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "10000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1610,21 +1190,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "10000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1649,21 +1221,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "10000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1677,21 +1241,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "10000000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1716,21 +1272,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "10000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1744,21 +1292,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "10000000"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1783,21 +1323,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "LOK-3C0",
-            "ticker": "LOK"
-          },
+          "asset": "BNB.LOK-3C0",
           "amount": "5000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1811,21 +1343,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "4938271604"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1834,11 +1358,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "LOK-3C0",
-        "ticker": "LOK"
-      },
+      "asset": "BNB.LOK-3C0",
       "price_target": "0",
       "trade_slip": "2656",
       "liquidity_fee": "617283950"
@@ -1856,21 +1376,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "5000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1884,21 +1396,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "LOK-3C0",
-              "ticker": "LOK"
-            },
+            "asset": "BNB.LOK-3C0",
             "amount": "4045560351"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1907,11 +1411,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "RUNE-A1F",
-        "ticker": "RUNE"
-      },
+      "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "2342",
       "liquidity_fee": "449506706"
@@ -1929,21 +1429,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "4854247129"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -1957,21 +1449,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "7544092"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -1980,11 +1464,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "LOK-3C0",
-        "ticker": "LOK"
-      },
+      "asset": "BNB.LOK-3C0",
       "price_target": "0",
       "trade_slip": "2591",
       "liquidity_fee": "592639915"
@@ -2002,21 +1482,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "4854247129"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2030,21 +1502,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "7544092"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2053,11 +1517,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "RUNE-A1F",
-        "ticker": "RUNE"
-      },
+      "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "711",
       "liquidity_fee": "158264282"
@@ -2075,21 +1535,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "3075070424"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2103,21 +1555,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "LOK-3C0",
-              "ticker": "LOK"
-            },
+            "asset": "BNB.LOK-3C0",
             "amount": "2740390314"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2126,11 +1570,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "price_target": "0",
       "trade_slip": "452",
       "liquidity_fee": "68698730"
@@ -2148,21 +1588,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "3075070424"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2176,21 +1608,13 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "LOK-3C0",
-              "ticker": "LOK"
-            },
+            "asset": "BNB.LOK-3C0",
             "amount": "2740390314"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2199,11 +1623,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "RUNE-A1F",
-        "ticker": "RUNE"
-      },
+      "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "1407",
       "liquidity_fee": "183374952"
@@ -2221,21 +1641,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2249,21 +1661,13 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "39459469518"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2276,21 +1680,13 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "64118452"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2299,11 +1695,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "12537500000",
       "basis_points": 5000,
       "asymmetry": "0.000000000000000000"
@@ -2321,21 +1713,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2349,21 +1733,13 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "39459469518"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2376,21 +1752,13 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "64089246"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2399,11 +1767,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "12537500000",
       "basis_points": 10000,
       "asymmetry": "0.000000000000000000"
@@ -2426,11 +1790,7 @@
     "out_txs": null,
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "status": "Bootstrap"
     },
     "status": "Success"
@@ -2446,21 +1806,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2474,21 +1826,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "61870141068"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2501,21 +1845,13 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "100413190"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2524,11 +1860,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      },
+      "pool": "BNB",
       "stake_units": "19658066951",
       "basis_points": 10000,
       "asymmetry": "0.000000000000000000"
@@ -2551,11 +1883,7 @@
     "out_txs": null,
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "LOK-3C0",
-        "ticker": "LOK"
-      },
+      "asset": "BNB.LOK-3C0",
       "status": "Bootstrap"
     },
     "status": "Success"
@@ -2571,21 +1899,13 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "37500"
         }
       ],
@@ -2599,21 +1919,13 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-A1F",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-A1F",
             "amount": "48282551691"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2626,21 +1938,13 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "LOK-3C0",
-              "ticker": "LOK"
-            },
+            "asset": "BNB.LOK-3C0",
             "amount": "43214049335"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "37500"
           }
         ],
@@ -2649,11 +1953,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "LOK-3C0",
-        "ticker": "LOK"
-      },
+      "asset": "BNB.LOK-3C0",
       "stake_units": "45000000000",
       "basis_points": 10000,
       "asymmetry": "0.000000000000000000"

@@ -7,11 +7,7 @@
     "out_txs": [],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BOLT-014",
-        "ticker": "BOLT"
-      },
+      "pool": "BNB.BOLT-014",
       "status": "Bootstrap"
     },
     "status": "Success"
@@ -24,11 +20,7 @@
     "out_txs": [],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BOLT-014",
-        "ticker": "BOLT"
-      },
+      "pool": "BNB.BOLT-014",
       "status": "Enabled"
     },
     "status": "Success"

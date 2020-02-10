@@ -10,21 +10,13 @@
       "to_address": "tbnb1uj688q0y0uhcaau672zqewa3df799scezfptfj",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-B1A",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-B1A",
           "amount": "1"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "13750"
         }
       ],
@@ -38,21 +30,13 @@
         "to_address": "tbnb1uj688q0y0uhcaau672zqewa3df799scezfptfj",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-B1A",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-B1A",
             "amount": "1"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "13750"
           }
         ],
@@ -65,21 +49,13 @@
         "to_address": "tbnb1uj688q0y0uhcaau672zqewa3df799scezfptfj",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "RUNE-B1A",
-              "ticker": "RUNE"
-            },
+            "asset": "BNB.RUNE-B1A",
             "amount": "1"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB",
             "amount": "13750"
           }
         ],
@@ -88,11 +64,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "TCAN-014",
-        "ticker": "TCAN"
-      },
+      "pool": "BNB.TCAN-014",
       "stake_units": "1342175000",
       "basis_points": 10000,
       "asymmetry": "0.000000000000000000"

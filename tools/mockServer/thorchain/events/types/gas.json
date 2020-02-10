@@ -9,11 +9,7 @@
     "event": {
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "5500"
         }
       ],
@@ -31,11 +27,7 @@
     "event": {
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB",
           "amount": "4420"
         }
       ],
