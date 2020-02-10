@@ -377,7 +377,7 @@ func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address != $2
 		AND from_address != $3
 		`
@@ -389,6 +389,10 @@ func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetStaked failed")
 	}
 
+	if assetStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(assetStakedTotal.Int64), nil
 }
 
@@ -397,7 +401,7 @@ func (s *Client) assetRewarded(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address = $2
 		`
 
@@ -416,7 +420,7 @@ func (s *Client) assetAdded(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address = $2
 		`
 
@@ -455,7 +459,7 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0 
+		AND assetAmt > 0
 		AND from_address != $2
 		AND from_address != $3
 		`
@@ -467,6 +471,10 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetStakedTotal failed")
 	}
 
+	if assetStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(assetStakedTotal.Int64), nil
 }
 
@@ -476,7 +484,7 @@ func (s *Client) assetRewardedTotal(asset common.Asset) (int64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0 
+		AND assetAmt > 0
 		AND from_address = $2
 		`
 
@@ -494,7 +502,7 @@ func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address != $2
 		AND from_address != $3
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
@@ -507,6 +515,10 @@ func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetStaked12m failed")
 	}
 
+	if assetStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(assetStakedTotal.Int64), nil
 }
 
@@ -514,7 +526,7 @@ func (s *Client) assetRewarded12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
@@ -533,7 +545,7 @@ func (s *Client) assetAdded12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
@@ -552,7 +564,7 @@ func (s *Client) gasSpend12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(amount)
 		FROM gas
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND gas_type = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
@@ -574,7 +586,7 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) (uint64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0 
+		AND assetAmt > 0
 		AND	from_address != $2
 		AND	from_address != $3
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
@@ -587,6 +599,10 @@ func (s *Client) assetStakedTotal12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetStakedTotal12m failed")
 	}
 
+	if assetStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(assetStakedTotal.Int64), nil
 }
 
@@ -596,7 +612,7 @@ func (s *Client) assetRewardedTotal12m(asset common.Asset) (int64, error) {
 		SELECT SUM(assetAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND assetAmt > 0 
+		AND assetAmt > 0
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
@@ -635,7 +651,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address != $2
 		AND from_address != $3
 		AND runeAmt > 0
@@ -648,6 +664,10 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
 	}
 
+	if runeStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(runeStakedTotal.Int64), nil
 }
 
@@ -656,7 +676,7 @@ func (s *Client) runeStaked(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address != $2
 		AND from_address != $3
 	`
@@ -668,6 +688,10 @@ func (s *Client) runeStaked(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
 	}
 
+	if runeStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(runeStakedTotal.Int64), nil
 }
 
@@ -676,7 +700,7 @@ func (s *Client) runeRewarded(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address = $2
 	`
 
@@ -695,7 +719,7 @@ func (s *Client) runeAdded(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1 
+		WHERE pool = $1
 		AND from_address = $2
 	`
 
@@ -715,8 +739,8 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
-		WHERE pool = $1 
-		AND runeAmt > 0 
+		WHERE pool = $1
+		AND runeAmt > 0
 		AND from_address != $2
 		AND from_address != $3
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
@@ -729,6 +753,10 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "runeStakedTotal12m failed")
 	}
 
+	if runeStakedTotal.Int64 < 0 {
+		return 0, nil
+	}
+
 	return uint64(runeStakedTotal.Int64), nil
 }
 
@@ -739,7 +767,7 @@ func (s *Client) runeRewardedTotal12m(asset common.Asset) (int64, error) {
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
+		AND runeAmt > 0
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
@@ -761,7 +789,7 @@ func (s *Client) runeAddedTotal12m(asset common.Asset) (int64, error) {
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
+		AND runeAmt > 0
 		AND from_address = $2
 		AND from_address = $3
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
@@ -1451,7 +1479,7 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 		FROM (
 			SELECT from_address, SUM(units) AS total_units
 			FROM stakes
-			WHERE pool = $1 
+			WHERE pool = $1
 			AND from_address != $2
 			AND from_address != $3
 			GROUP BY from_address
@@ -1586,11 +1614,11 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 // poolStatus - latest pool status
 func (s *Client) poolStatus(asset common.Asset) (string, error) {
 	stmnt := `
-		SELECT status 
-		FROM   pools 
-		WHERE  pool = $1 
-		ORDER  BY event_id DESC 
-		LIMIT  1  
+		SELECT status
+		FROM   pools
+		WHERE  pool = $1
+		ORDER  BY event_id DESC
+		LIMIT  1
 		`
 	var poolStatus sql.NullInt32
 	row := s.db.QueryRow(stmnt, asset.String())

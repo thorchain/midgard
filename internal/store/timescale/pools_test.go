@@ -426,6 +426,98 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	c.Assert(assetDepth, Equals, uint64(50000000000), Commentf("%v", assetDepth))
 }
 
+func (s *TimeScaleSuite) TestAssetDepthAlwaysPositive(c *C) {
+	// No stake
+	asset, _ := common.NewAsset("BNB.BNB")
+	assetDepth, err := s.Store.assetDepth(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth, Equals, uint64(0))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetDepth, err = s.Store.assetDepth(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth, Equals, uint64(0), Commentf("%v", assetDepth))
+
+	assetDepth12m, err := s.Store.assetDepth12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth12m, Equals, uint64(0), Commentf("%v", assetDepth12m))
+}
+
+func (s *TimeScaleSuite) TestAssetStakedAlwaysPositive(c *C) {
+	// No stake
+	asset, _ := common.NewAsset("BNB.BNB")
+	assetStaked, err := s.Store.assetStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStaked, Equals, uint64(0))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	assetStaked, err = s.Store.assetStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStaked, Equals, uint64(0), Commentf("%v", assetStaked))
+
+	assetStaked12m, err := s.Store.assetStaked12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStaked12m, Equals, uint64(0), Commentf("%v", assetStaked12m))
+
+	assetStakedTotal, err := s.Store.assetStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal, Equals, uint64(0), Commentf("%v", assetStakedTotal))
+
+	assetStakedTotal12m, err := s.Store.assetStakedTotal12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetStakedTotal12m, Equals, uint64(0), Commentf("%v", assetStakedTotal12m))
+}
+
+func (s *TimeScaleSuite) TestRuneDepthAlwaysPositive(c *C) {
+	// No stake
+	asset, _ := common.NewAsset("BNB.BNB")
+	runeDepth, err := s.Store.runeDepth(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(0))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	runeDepth, err = s.Store.runeDepth(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(0), Commentf("%v", runeDepth))
+
+	runeDepth12m, err := s.Store.runeDepth12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth12m, Equals, uint64(0), Commentf("%v", runeDepth12m))
+}
+
+func (s *TimeScaleSuite) TestRuneStakedAlwaysPositive(c *C) {
+	// No stake
+	asset, _ := common.NewAsset("BNB.BNB")
+	runeStaked, err := s.Store.runeStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStaked, Equals, uint64(0))
+
+	// Withdrawal
+	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	runeStaked, err = s.Store.runeStaked(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStaked, Equals, uint64(0), Commentf("%v", runeStaked))
+
+	runeStakedTotal, err := s.Store.runeStakedTotal(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStakedTotal, Equals, uint64(0), Commentf("%v", runeStakedTotal))
+
+	runeStakedTotal12m, err := s.Store.runeStakedTotal12m(asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeStakedTotal12m, Equals, uint64(0), Commentf("%v", runeStakedTotal12m))
+}
+
 func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
