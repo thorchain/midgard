@@ -9,11 +9,8 @@ import (
 )
 
 func ConvertAssetForAPI(asset common.Asset) *api.Asset {
-	return &api.Asset{
-		Chain:  pointy.String(asset.Chain.String()),
-		Symbol: pointy.String(asset.Symbol.String()),
-		Ticker: pointy.String(asset.Ticker.String()),
-	}
+	assetString := api.Asset(asset.String())
+	return &assetString
 }
 
 func ConvertEventDataForAPI(events models.Events) *api.Event {
@@ -91,13 +88,9 @@ func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedRespon
 			In:      ConvertTxForAPI(d.In),
 			Options: ConvertOptionsForAPI(d.Options),
 			Out:     ConvertTxForAPI(d.Out),
-			Pool: &api.Asset{
-				Chain:  pointy.String(d.Pool.Chain.String()),
-				Symbol: pointy.String(d.Pool.Symbol.String()),
-				Ticker: pointy.String(d.Pool.Ticker.String()),
-			},
-			Status: pointy.String(d.Status),
-			Type:   pointy.String(d.Type),
+			Pool:    ConvertAssetForAPI(d.Pool),
+			Status:  pointy.String(d.Status),
+			Type:    pointy.String(d.Type),
 		}
 		response = append(response, txD)
 	}
