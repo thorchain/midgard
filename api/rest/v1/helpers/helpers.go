@@ -72,6 +72,15 @@ func ConvertTxForAPI(tx models.TxData) *api.Tx {
 	}
 }
 
+func ConvertTxsForAPI(txs []models.TxData) *[]api.Tx {
+	apiTxs := make([]api.Tx, 0, len(txs))
+	for _, tx := range txs {
+		apiTxs = append(apiTxs, *ConvertTxForAPI(tx))
+	}
+
+	return &apiTxs
+}
+
 func ConvertOptionsForAPI(options models.Options) *api.Option {
 	return &api.Option{
 		Asymmetry:           pointy.Float64(options.Asymmetry),
@@ -90,7 +99,7 @@ func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedRespon
 			Height:  pointy.Int64(int64(d.Height)),
 			In:      ConvertTxForAPI(d.In),
 			Options: ConvertOptionsForAPI(d.Options),
-			Out:     ConvertTxForAPI(d.Out),
+			Out:     ConvertTxsForAPI(d.Out),
 			Pool: &api.Asset{
 				Chain:  pointy.String(d.Pool.Chain.String()),
 				Symbol: pointy.String(d.Pool.Symbol.String()),
