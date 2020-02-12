@@ -77,6 +77,7 @@ CREATE TABLE gas (
     pool varchar not null,
     amount bigint not null,
     gas_type  varchar,
+    tx_hash varchar,
     primary key (time, event_id, pool)
 );
 CREATE TABLE pools (
