@@ -10,19 +10,11 @@
       "to_address": "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-B1A",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-B1A",
           "amount": "1"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "TCAN-014",
-            "ticker": "TCAN"
-          },
+          "asset": "BNB.TCAN-014",
           "amount": "1"
         }
       ],
@@ -40,11 +32,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "TCAN-014",
-        "ticker": "TCAN"
-      },
+      "pool": "BNB.TCAN-014",
       "stake_units": "100"
     },
     "status": "Success"
@@ -60,19 +48,11 @@
       "to_address": "bnb1t3c49u74fum2gtgekwqqdngg5alt4txrq3txad",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-B1A",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-B1A",
           "amount": "2"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BOLT-014",
-            "ticker": "BOLT"
-          },
+          "asset": "BNB.BOLT-014",
           "amount": "2"
         }
       ],
@@ -90,11 +70,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BOLT-014",
-        "ticker": "BOLT"
-      },
+      "pool": "BNB.BOLT-014",
       "stake_units": "100"
     },
     "status": "Success"
@@ -107,11 +83,7 @@
       "bond_rewards": {},
       "pool_rewards": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-B1A",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-B1A",
           "amount": "1000"
         }
       ]
@@ -129,29 +101,17 @@
       "to_address": "tbnb10xran5jhc2e7wkzhge0qpgyrj09vdnhystcnuc",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-B1A",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-B1A",
           "amount": "2"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "TCAN-014",
-            "ticker": "TCAN"
-          },
+          "asset": "BNB.TCAN-014",
           "amount": "3"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB.BNB",
           "amount": "37500"
         }
       ],
@@ -160,11 +120,7 @@
     "out_txs": [],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "TCAN-014",
-        "ticker": "TCAN"
-      }
+      "pool": "BNB.TCAN-014"
     },
     "status": "Success"
   },
@@ -179,29 +135,17 @@
       "to_address": "tbnb10phwn0asg46nmm68q7kxt3zmp3tcseaf40egqs",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB.BNB",
           "amount": "30000000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "5000000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB.BNB",
           "amount": "60000"
         }
       ],
@@ -210,11 +154,7 @@
     "out_txs": null,
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BNB",
-        "ticker": "BNB"
-      }
+      "pool": "BNB"
     },
     "status": "Success"
   },
@@ -226,11 +166,7 @@
     "out_txs": [],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BOLT-014",
-        "ticker": "BOLT"
-      },
+      "pool": "BNB.BOLT-014",
       "status": "Bootstrap"
     },
     "status": "Success"
@@ -243,11 +179,7 @@
     "out_txs": [],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "BOLT-014",
-        "ticker": "BOLT"
-      },
+      "pool": "BNB.BOLT-014",
       "status": "Enabled"
     },
     "status": "Success"
@@ -262,11 +194,7 @@
     "event": {
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB.BNB",
           "amount": "5500"
         }
       ],
@@ -284,11 +212,7 @@
     "event": {
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB.BNB",
           "amount": "4420"
         }
       ],

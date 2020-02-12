@@ -658,14 +658,7 @@ components:
           type: integer
           format: int64
     asset:
-      type: object
-      properties:
-        chain:
-          type: string
-        symbol:
-          type: string
-        ticker:
-          type: string
+      type: string
     tx:
       type: object
       properties:

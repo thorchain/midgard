@@ -7,19 +7,11 @@
       "bond_rewards": {},
       "pool_rewards": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BOLT-014",
-            "ticker": "BOLT"
-          },
+          "asset": "BNB.BOLT-014",
           "amount": "1000"
         },
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "TCAN-014",
-            "ticker": "TCAN"
-          },
+          "asset": "BNB.TCAN-014",
           "amount": "1000"
         }
       ]

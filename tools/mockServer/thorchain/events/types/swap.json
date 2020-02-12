@@ -10,21 +10,13 @@
       "to_address": "tbnb10xran5jhc2e7wkzhge0qpgyrj09vdnhystcnuc",
       "coins": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "RUNE-A1F",
-            "ticker": "RUNE"
-          },
+          "asset": "BNB.RUNE-A1F",
           "amount": "100000000"
         }
       ],
       "gas": [
         {
-          "asset": {
-            "chain": "BNB",
-            "symbol": "BNB",
-            "ticker": "BNB"
-          },
+          "asset": "BNB.BNB",
           "amount": "37500"
         }
       ],
@@ -38,21 +30,13 @@
         "to_address": "tbnb1s3jmk2utv7g996hstxerfxpux3v7rg776d7qf5",
         "coins": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB.BNB",
             "amount": "298803"
           }
         ],
         "gas": [
           {
-            "asset": {
-              "chain": "BNB",
-              "symbol": "BNB",
-              "ticker": "BNB"
-            },
+            "asset": "BNB.BNB",
             "amount": "37500"
           }
         ],
@@ -61,11 +45,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": {
-        "chain": "BNB",
-        "symbol": "RUNE-A1F",
-        "ticker": "RUNE"
-      },
+      "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "40",
       "liquidity_fee": "199000"

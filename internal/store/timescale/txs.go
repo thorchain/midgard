@@ -257,8 +257,8 @@ func (s *Client) gas(eventId uint64) models.TxGas {
 		WHERE event_id = $1;`
 
 	var (
-		pool string
-		amount                uint64
+		pool   string
+		amount uint64
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
