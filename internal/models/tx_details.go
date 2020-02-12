@@ -34,7 +34,7 @@ type TxDetails struct {
 	Type    string
 	Status  string
 	In      TxData
-	Out     TxData
+	Out     []TxData
 	Gas     TxGas
 	Options Options
 	Events  Events

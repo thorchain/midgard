@@ -122,7 +122,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 			Type:    eventType,
 			Status:  status,
 			In:      s.inTx(eventId),
-			Out:     s.outTx(eventId),
+			Out:     s.outTxs(eventId),
 			Gas:     s.gas(eventId),
 			Options: s.options(eventId, eventType),
 			Events:  s.events(eventId, eventType),
@@ -180,11 +180,13 @@ func (s *Client) inTx(eventId uint64) models.TxData {
 	return tx
 }
 
-func (s *Client) outTx(eventId uint64) models.TxData {
-	tx := s.txForDirection(eventId, "out")
-	tx.Coin = s.coinsForTxHash(tx.TxID)
+func (s *Client) outTxs(eventId uint64) []models.TxData {
+	txs := s.txsForDirection(eventId, "out")
+	for i, tx := range txs {
+		txs[i].Coin = s.coinsForTxHash(tx.TxID)
+	}
 
-	return tx
+	return txs
 }
 
 func (s *Client) txForDirection(eventId uint64, direction string) models.TxData {
@@ -205,6 +207,38 @@ func (s *Client) txForDirection(eventId uint64, direction string) models.TxData 
 	}
 
 	return tx
+}
+
+func (s *Client) txsForDirection(eventId uint64, direction string) []models.TxData {
+	stmnt := `
+		SELECT txs.tx_hash AS tx_id, txs.memo, txs.from_address AS address
+			FROM txs
+		WHERE txs.event_id = $1
+		AND txs.direction = $2`
+
+	rows, err := s.db.Queryx(stmnt, eventId, direction)
+	if err != nil {
+		s.logger.Err(err).Msg("Failed")
+		return nil
+	}
+
+	txs := []models.TxData{}
+	for rows.Next() {
+		results := make(map[string]interface{})
+		err = rows.MapScan(results)
+		if err != nil {
+			s.logger.Err(err).Msg("MapScan error")
+			continue
+		}
+
+		txs = append(txs, models.TxData{
+			Address: results["address"].(string),
+			Memo:    results["memo"].(string),
+			TxID:    results["tx_id"].(string),
+		})
+	}
+
+	return txs
 }
 
 func (s *Client) coinsForTxHash(txHash string) common.Coins {

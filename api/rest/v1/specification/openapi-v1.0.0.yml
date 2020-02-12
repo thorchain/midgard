@@ -313,7 +313,9 @@ components:
         in:
           $ref: '#/components/schemas/tx'
         out:
-          $ref: '#/components/schemas/tx'
+          type: array
+          items:
+            $ref: '#/components/schemas/tx'
         date:
           type: integer
           format: int64
