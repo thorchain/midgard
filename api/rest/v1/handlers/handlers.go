@@ -329,16 +329,16 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 
 	response := api.StakersAssetDataResponse{
 		Asset:           helpers.ConvertAssetForAPI(details.Asset),
-		AssetEarned:     pointy.Int64(int64(details.AssetEarned)),
+		AssetEarned:     pointy.Int64(details.AssetEarned),
 		AssetROI:        pointy.Float64(details.AssetROI),
-		AssetStaked:     pointy.Int64(int64(details.AssetStaked)),
+		AssetStaked:     pointy.Int64(details.AssetStaked),
 		DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
-		PoolEarned:      pointy.Int64(int64(details.PoolEarned)),
+		PoolEarned:      pointy.Int64(details.PoolEarned),
 		PoolROI:         pointy.Float64(details.PoolROI),
-		PoolStaked:      pointy.Int64(int64(details.PoolStaked)),
-		RuneEarned:      pointy.Int64(int64(details.RuneEarned)),
+		PoolStaked:      pointy.Int64(details.PoolStaked),
+		RuneEarned:      pointy.Int64(details.RuneEarned),
 		RuneROI:         pointy.Float64(details.RuneROI),
-		RuneStaked:      pointy.Int64(int64(details.RuneStaked)),
+		RuneStaked:      pointy.Int64(details.RuneStaked),
 		StakeUnits:      pointy.Int64(int64(details.StakeUnits)),
 	}
 

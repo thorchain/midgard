@@ -275,7 +275,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	totalStaked, err := s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(0))
+	c.Assert(totalStaked, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -283,7 +283,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, int64(200))
 
 	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
@@ -291,7 +291,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(400))
+	c.Assert(totalStaked, Equals, int64(400))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -299,7 +299,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, int64(200))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -309,7 +309,7 @@ func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(100000099), Commentf("%d", totalStaked))
+	c.Assert(totalStaked, Equals, int64(100000099), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {
