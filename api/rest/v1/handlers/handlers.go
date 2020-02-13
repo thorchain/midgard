@@ -297,9 +297,9 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 
 	response := api.StakersAddressDataResponse{
 		PoolsArray:  &assets,
-		TotalEarned: pointy.Int64(int64(details.TotalEarned)),
+		TotalEarned: pointy.Int64(details.TotalEarned),
 		TotalROI:    pointy.Float64(details.TotalROI),
-		TotalStaked: pointy.Int64(int64(details.TotalStaked)),
+		TotalStaked: pointy.Int64(details.TotalStaked),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
