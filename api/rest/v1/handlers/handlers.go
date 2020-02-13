@@ -132,43 +132,45 @@ func (h *Handlers) GetPools(ctx echo.Context) error {
 func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
 
-	// asset passed in
-	ass, err := common.NewAsset(asset)
+	asts, err := helpers.ParseAssets(asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	pool, err := h.store.GetPool(ass)
-	if err != nil {
-		h.logger.Error().Err(err).Str("asset", ass.String()).Msg("failed to get pool")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
-	}
+	response := make(api.AssetsDetailedResponse, len(asts))
+	for i, ast := range asts {
+		pool, err := h.store.GetPool(ast)
+		if err != nil {
+			h.logger.Error().Err(err).Str("asset", ast.String()).Msg("failed to get pool")
+			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+		}
 
-	tokenData, err := h.binanceClient.GetToken(pool)
-	if err != nil {
-		h.logger.Error().Err(err).Msg("failed to get token data from binance")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
-	}
+		tokenData, err := h.binanceClient.GetToken(pool)
+		if err != nil {
+			h.logger.Error().Err(err).Msg("failed to get token data from binance")
+			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+		}
 
-	priceInRune, err := h.store.GetPriceInRune(pool)
-	if err != nil {
-		h.logger.Error().Err(err).Msg("failed to GetPriceInRune")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
+		priceInRune, err := h.store.GetPriceInRune(pool)
+		if err != nil {
+			h.logger.Error().Err(err).Msg("failed to GetPriceInRune")
+			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		}
 
-	dateCreated, err := h.store.GetDateCreated(pool)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetDataCrated")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
+		dateCreated, err := h.store.GetDateCreated(pool)
+		if err != nil {
+			h.logger.Err(err).Msg("failed to GetDataCrated")
+			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		}
 
-	response := api.AssetsDetailedResponse{
-		Asset:       helpers.ConvertAssetForAPI(pool),
-		DateCreated: pointy.Int64(int64(dateCreated)),
-		Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
-		Name:        pointy.String(tokenData.Name),
-		PriceRune:   pointy.Float64(priceInRune),
+		response[i] = api.AssetDetail{
+			Asset:       helpers.ConvertAssetForAPI(pool),
+			DateCreated: pointy.Int64(int64(dateCreated)),
+			Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
+			Name:        pointy.String(tokenData.Name),
+			PriceRune:   pointy.Float64(priceInRune),
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -204,58 +206,61 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 }
 
 // (GET /v1/pools/{asset})
-func (h *Handlers) GetPoolsData(ctx echo.Context, ass string) error {
-	asset, err := common.NewAsset(ass)
+func (h *Handlers) GetPoolsData(ctx echo.Context, asset string) error {
+	asts, err := helpers.ParseAssets(asset)
 	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", ass).Msg("invalid asset or format")
+		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	poolData, err := h.store.GetPoolData(asset)
-	if err != nil {
-		h.logger.Err(err).Msg("GetPoolData failed")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
+	response := make(api.PoolsDetailedResponse, len(asts))
+	for i, ast := range asts {
+		poolData, err := h.store.GetPoolData(ast)
+		if err != nil {
+			h.logger.Err(err).Msg("GetPoolData failed")
+			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		}
 
-	response := api.PoolsDetailedResponse{
-		Status:           pointy.String(poolData.Status),
-		Asset:            helpers.ConvertAssetForAPI(asset),
-		AssetDepth:       pointy.Int64(int64(poolData.AssetDepth)),
-		AssetROI:         pointy.Float64(poolData.AssetROI),
-		AssetStakedTotal: pointy.Int64(int64(poolData.AssetStakedTotal)),
-		BuyAssetCount:    pointy.Int64(int64(poolData.BuyAssetCount)),
-		BuyFeeAverage:    pointy.Int64(int64(poolData.BuyFeeAverage)),
-		BuyFeesTotal:     pointy.Int64(int64(poolData.BuyFeesTotal)),
-		BuySlipAverage:   pointy.Float64(poolData.BuySlipAverage),
-		BuyTxAverage:     pointy.Int64(int64(poolData.BuyTxAverage)),
-		BuyVolume:        pointy.Int64(int64(poolData.BuyVolume)),
-		PoolDepth:        pointy.Int64(int64(poolData.PoolDepth)),
-		PoolFeeAverage:   pointy.Int64(int64(poolData.PoolFeeAverage)),
-		PoolFeesTotal:    pointy.Int64(int64(poolData.PoolFeesTotal)),
-		PoolROI:          pointy.Float64(poolData.PoolROI),
-		PoolROI12:        pointy.Float64(poolData.PoolROI12),
-		PoolSlipAverage:  pointy.Float64(poolData.PoolSlipAverage),
-		PoolStakedTotal:  pointy.Int64(int64(poolData.PoolStakedTotal)),
-		PoolTxAverage:    pointy.Int64(int64(poolData.PoolTxAverage)),
-		PoolUnits:        pointy.Int64(int64(poolData.PoolUnits)),
-		PoolVolume:       pointy.Int64(int64(poolData.PoolVolume)),
-		PoolVolume24hr:   pointy.Int64(int64(poolData.PoolVolume24hr)),
-		Price:            pointy.Float64(poolData.Price),
-		RuneDepth:        pointy.Int64(int64(poolData.RuneDepth)),
-		RuneROI:          pointy.Float64(poolData.RuneROI),
-		RuneStakedTotal:  pointy.Int64(int64(poolData.RuneStakedTotal)),
-		SellAssetCount:   pointy.Int64(int64(poolData.SellAssetCount)),
-		SellFeeAverage:   pointy.Int64(int64(poolData.SellFeeAverage)),
-		SellFeesTotal:    pointy.Int64(int64(poolData.SellFeeAverage)),
-		SellSlipAverage:  pointy.Float64(poolData.SellSlipAverage),
-		SellTxAverage:    pointy.Int64(int64(poolData.SellTxAverage)),
-		SellVolume:       pointy.Int64(int64(poolData.SellVolume)),
-		StakeTxCount:     pointy.Int64(int64(poolData.StakeTxCount)),
-		StakersCount:     pointy.Int64(int64(poolData.StakersCount)),
-		StakingTxCount:   pointy.Int64(int64(poolData.StakingTxCount)),
-		SwappersCount:    pointy.Int64(int64(poolData.SwappersCount)),
-		SwappingTxCount:  pointy.Int64(int64(poolData.SwappingTxCount)),
-		WithdrawTxCount:  pointy.Int64(int64(poolData.WithdrawTxCount)),
+		response[i] = api.PoolDetail{
+			Status:           pointy.String(poolData.Status),
+			Asset:            helpers.ConvertAssetForAPI(ast),
+			AssetDepth:       pointy.Int64(int64(poolData.AssetDepth)),
+			AssetROI:         pointy.Float64(poolData.AssetROI),
+			AssetStakedTotal: pointy.Int64(int64(poolData.AssetStakedTotal)),
+			BuyAssetCount:    pointy.Int64(int64(poolData.BuyAssetCount)),
+			BuyFeeAverage:    pointy.Int64(int64(poolData.BuyFeeAverage)),
+			BuyFeesTotal:     pointy.Int64(int64(poolData.BuyFeesTotal)),
+			BuySlipAverage:   pointy.Float64(poolData.BuySlipAverage),
+			BuyTxAverage:     pointy.Int64(int64(poolData.BuyTxAverage)),
+			BuyVolume:        pointy.Int64(int64(poolData.BuyVolume)),
+			PoolDepth:        pointy.Int64(int64(poolData.PoolDepth)),
+			PoolFeeAverage:   pointy.Int64(int64(poolData.PoolFeeAverage)),
+			PoolFeesTotal:    pointy.Int64(int64(poolData.PoolFeesTotal)),
+			PoolROI:          pointy.Float64(poolData.PoolROI),
+			PoolROI12:        pointy.Float64(poolData.PoolROI12),
+			PoolSlipAverage:  pointy.Float64(poolData.PoolSlipAverage),
+			PoolStakedTotal:  pointy.Int64(int64(poolData.PoolStakedTotal)),
+			PoolTxAverage:    pointy.Int64(int64(poolData.PoolTxAverage)),
+			PoolUnits:        pointy.Int64(int64(poolData.PoolUnits)),
+			PoolVolume:       pointy.Int64(int64(poolData.PoolVolume)),
+			PoolVolume24hr:   pointy.Int64(int64(poolData.PoolVolume24hr)),
+			Price:            pointy.Float64(poolData.Price),
+			RuneDepth:        pointy.Int64(int64(poolData.RuneDepth)),
+			RuneROI:          pointy.Float64(poolData.RuneROI),
+			RuneStakedTotal:  pointy.Int64(int64(poolData.RuneStakedTotal)),
+			SellAssetCount:   pointy.Int64(int64(poolData.SellAssetCount)),
+			SellFeeAverage:   pointy.Int64(int64(poolData.SellFeeAverage)),
+			SellFeesTotal:    pointy.Int64(int64(poolData.SellFeeAverage)),
+			SellSlipAverage:  pointy.Float64(poolData.SellSlipAverage),
+			SellTxAverage:    pointy.Int64(int64(poolData.SellTxAverage)),
+			SellVolume:       pointy.Int64(int64(poolData.SellVolume)),
+			StakeTxCount:     pointy.Int64(int64(poolData.StakeTxCount)),
+			StakersCount:     pointy.Int64(int64(poolData.StakersCount)),
+			StakingTxCount:   pointy.Int64(int64(poolData.StakingTxCount)),
+			SwappersCount:    pointy.Int64(int64(poolData.SwappersCount)),
+			SwappingTxCount:  pointy.Int64(int64(poolData.SwappingTxCount)),
+			WithdrawTxCount:  pointy.Int64(int64(poolData.WithdrawTxCount)),
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -313,33 +318,35 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		})
 	}
 
-	ass, err := common.NewAsset(asset)
+	asts, err := helpers.ParseAssets(asset)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
-			Error: err.Error(),
-		})
+		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	details, err := h.store.GetStakersAddressAndAssetDetails(addr, ass)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
-			Error: err.Error(),
-		})
-	}
+	response := make(api.StakersAssetDataResponse, len(asts))
+	for i, ast := range asts {
+		details, err := h.store.GetStakersAddressAndAssetDetails(addr, ast)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+				Error: err.Error(),
+			})
+		}
 
-	response := api.StakersAssetDataResponse{
-		Asset:           helpers.ConvertAssetForAPI(details.Asset),
-		AssetEarned:     pointy.Int64(int64(details.AssetEarned)),
-		AssetROI:        pointy.Float64(details.AssetROI),
-		AssetStaked:     pointy.Int64(int64(details.AssetStaked)),
-		DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
-		PoolEarned:      pointy.Int64(int64(details.PoolEarned)),
-		PoolROI:         pointy.Float64(details.PoolROI),
-		PoolStaked:      pointy.Int64(int64(details.PoolStaked)),
-		RuneEarned:      pointy.Int64(int64(details.RuneEarned)),
-		RuneROI:         pointy.Float64(details.RuneROI),
-		RuneStaked:      pointy.Int64(int64(details.RuneStaked)),
-		StakeUnits:      pointy.Int64(int64(details.StakeUnits)),
+		response[i] = api.StakersAssetData{
+			Asset:           helpers.ConvertAssetForAPI(details.Asset),
+			AssetEarned:     pointy.Int64(int64(details.AssetEarned)),
+			AssetROI:        pointy.Float64(details.AssetROI),
+			AssetStaked:     pointy.Int64(int64(details.AssetStaked)),
+			DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
+			PoolEarned:      pointy.Int64(int64(details.PoolEarned)),
+			PoolROI:         pointy.Float64(details.PoolROI),
+			PoolStaked:      pointy.Int64(int64(details.PoolStaked)),
+			RuneEarned:      pointy.Int64(int64(details.RuneEarned)),
+			RuneROI:         pointy.Float64(details.RuneROI),
+			RuneStaked:      pointy.Int64(int64(details.RuneStaked)),
+			StakeUnits:      pointy.Int64(int64(details.StakeUnits)),
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, response)

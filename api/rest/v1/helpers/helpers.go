@@ -1,7 +1,10 @@
 package helpers
 
 import (
+	"strings"
+
 	"github.com/openlyinc/pointy"
+	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/models"
 
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
@@ -105,4 +108,18 @@ func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedRespon
 	}
 
 	return response
+}
+
+// ParseAssets parses comma separated assets from string.
+func ParseAssets(str string) (asts []common.Asset, err error) {
+	parts := strings.Split(str, ",")
+
+	asts = make([]common.Asset, len(parts))
+	for i, part := range parts {
+		asts[i], err = common.NewAsset(part)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid asset '%s'", part)
+		}
+	}
+	return asts, nil
 }
