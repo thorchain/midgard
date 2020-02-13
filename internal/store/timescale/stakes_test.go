@@ -60,7 +60,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 	// No stakes
 	runeStaked, err := s.Store.runeStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(0))
+	c.Assert(runeStaked, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -68,7 +68,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 	runeStaked, err = s.Store.runeStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(100))
+	c.Assert(runeStaked, Equals, int64(100))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -77,7 +77,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 	runeStaked, err = s.Store.runeStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(100))
+	c.Assert(runeStaked, Equals, int64(100))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -85,7 +85,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 	runeStaked, err = s.Store.runeStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(0))
+	c.Assert(runeStaked, Equals, int64(0))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -96,7 +96,7 @@ func (s *TimeScaleSuite) TestRuneStaked(c *C) {
 
 	runeStaked, err = s.Store.runeStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeStaked, Equals, uint64(50000000), Commentf("%v", runeStaked))
+	c.Assert(runeStaked, Equals, int64(50000000), Commentf("%v", runeStaked))
 }
 
 func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
@@ -106,7 +106,7 @@ func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 	// No stakes
 	assetStaked, err := s.Store.assetStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(0))
+	c.Assert(assetStaked, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -114,7 +114,7 @@ func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 
 	assetStaked, err = s.Store.assetStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(10))
+	c.Assert(assetStaked, Equals, int64(10))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -123,7 +123,7 @@ func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 
 	assetStaked, err = s.Store.assetStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(10))
+	c.Assert(assetStaked, Equals, int64(10))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -131,7 +131,7 @@ func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 
 	assetStaked, err = s.Store.assetStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(0), Commentf("assetStaked: %v", assetStaked))
+	c.Assert(assetStaked, Equals, int64(0), Commentf("assetStaked: %v", assetStaked))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -142,7 +142,7 @@ func (s *TimeScaleSuite) TestAssetStakedForAddress(c *C) {
 
 	assetStaked, err = s.Store.assetStakedForAddress(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStaked, Equals, uint64(50000000000), Commentf("%v", assetStaked))
+	c.Assert(assetStaked, Equals, int64(50000000000), Commentf("%v", assetStaked))
 }
 
 func (s *TimeScaleSuite) TestPoolStaked(c *C) {
@@ -152,7 +152,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 	// No stakes
 	poolStaked, err := s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(0))
+	c.Assert(poolStaked, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -160,7 +160,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(200))
+	c.Assert(poolStaked, Equals, int64(200))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -169,7 +169,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(200))
+	c.Assert(poolStaked, Equals, int64(200))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -177,7 +177,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(0))
+	c.Assert(poolStaked, Equals, int64(0))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -188,7 +188,7 @@ func (s *TimeScaleSuite) TestPoolStaked(c *C) {
 
 	poolStaked, err = s.Store.poolStaked(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolStaked, Equals, uint64(100000099), Commentf("%v", poolStaked))
+	c.Assert(poolStaked, Equals, int64(100000099), Commentf("%v", poolStaked))
 }
 
 func (s *TimeScaleSuite) TestRuneEarned(c *C) {
@@ -198,7 +198,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 	// No stakes
 	runeEarned, err := s.Store.runeEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeEarned, Equals, uint64(0))
+	c.Assert(runeEarned, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -206,7 +206,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 
 	runeEarned, err = s.Store.runeEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeEarned, Equals, uint64(0))
+	c.Assert(runeEarned, Equals, int64(0))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -215,7 +215,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 
 	runeEarned, err = s.Store.runeEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeEarned, Equals, uint64(0))
+	c.Assert(runeEarned, Equals, int64(0))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -223,7 +223,7 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 
 	runeEarned, err = s.Store.runeEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(runeEarned, Equals, uint64(0))
+	c.Assert(runeEarned, Equals, int64(0))
 }
 
 func (s *TimeScaleSuite) TestAssetEarned(c *C) {
@@ -233,7 +233,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 	// No stakes
 	assetEarned, err := s.Store.assetEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetEarned, Equals, uint64(0))
+	c.Assert(assetEarned, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -241,7 +241,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 
 	assetEarned, err = s.Store.assetEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetEarned, Equals, uint64(0))
+	c.Assert(assetEarned, Equals, int64(0))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -250,7 +250,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 
 	assetEarned, err = s.Store.assetEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetEarned, Equals, uint64(0))
+	c.Assert(assetEarned, Equals, int64(0))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -258,7 +258,7 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 
 	assetEarned, err = s.Store.assetEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetEarned, Equals, uint64(0))
+	c.Assert(assetEarned, Equals, int64(0))
 }
 
 func (s *TimeScaleSuite) TestPoolEarned(c *C) {
@@ -268,7 +268,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 	// No stakes
 	poolEarned, err := s.Store.poolEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolEarned, Equals, uint64(0))
+	c.Assert(poolEarned, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -276,7 +276,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 
 	poolEarned, err = s.Store.poolEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolEarned, Equals, uint64(0))
+	c.Assert(poolEarned, Equals, int64(0))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -285,7 +285,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 
 	poolEarned, err = s.Store.poolEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolEarned, Equals, uint64(0))
+	c.Assert(poolEarned, Equals, int64(0))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -293,7 +293,7 @@ func (s *TimeScaleSuite) TestPoolEarned(c *C) {
 
 	poolEarned, err = s.Store.poolEarned(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolEarned, Equals, uint64(0))
+	c.Assert(poolEarned, Equals, int64(0))
 }
 
 func (s *TimeScaleSuite) TestStakersRuneROI(c *C) {
@@ -439,7 +439,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	// No stakes
 	totalStaked, err := s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(0))
+	c.Assert(totalStaked, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -447,7 +447,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, int64(200))
 
 	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
@@ -455,7 +455,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(400))
+	c.Assert(totalStaked, Equals, int64(400))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -463,7 +463,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(200))
+	c.Assert(totalStaked, Equals, int64(200))
 
 	// Additional stake
 	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
@@ -473,7 +473,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 
 	totalStaked, err = s.Store.totalStaked(address)
 	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, uint64(100000099), Commentf("%d", totalStaked))
+	c.Assert(totalStaked, Equals, int64(100000099), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestGetPools(c *C) {
@@ -516,7 +516,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 	// No stakes
 	totalEarned, err := s.Store.totalEarned(address, assets)
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -527,7 +527,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 
 	totalEarned, err = s.Store.totalEarned(address, assets)
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
@@ -537,7 +537,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 
 	totalEarned, err = s.Store.totalEarned(address, assets)
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 
 	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
@@ -545,7 +545,7 @@ func (s *TimeScaleSuite) TestTotalEarned(c *C) {
 
 	totalEarned, err = s.Store.totalEarned(address, assets)
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 }
 
 func (s *TimeScaleSuite) TestTotalROI(c *C) {

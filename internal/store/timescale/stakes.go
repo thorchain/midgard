@@ -94,9 +94,9 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 
 type StakerAddressDetails struct {
 	PoolsDetails []common.Asset
-	TotalEarned  uint64
+	TotalEarned  int64
 	TotalROI     float64
-	TotalStaked  uint64
+	TotalStaked  int64
 }
 
 func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
@@ -131,12 +131,12 @@ func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressD
 type StakerAddressAndAssetDetails struct {
 	Asset           common.Asset
 	StakeUnits      uint64
-	RuneStaked      uint64
-	AssetStaked     uint64
-	PoolStaked      uint64
-	RuneEarned      uint64
-	AssetEarned     uint64
-	PoolEarned      uint64
+	RuneStaked      int64
+	AssetStaked     int64
+	PoolStaked      int64
+	RuneEarned      int64
+	AssetEarned     int64
+	PoolEarned      int64
 	RuneROI         float64
 	AssetROI        float64
 	PoolROI         float64
@@ -253,7 +253,7 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 }
 
 // runeStakedForAddress - sum of rune staked by a specific address and pool
-func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset) (int64, error) {
 	query := `
 		SELECT SUM(runeAmt)
 		FROM stakes
@@ -267,11 +267,11 @@ func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset
 		return 0, errors.Wrap(err, "runeStakedForAddress failed")
 	}
 
-	return uint64(runeStaked.Int64), nil
+	return runeStaked.Int64, nil
 }
 
 // runeStakedForAddress - sum of asset staked by a specific address and pool
-func (s *Client) assetStakedForAddress(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) assetStakedForAddress(address common.Address, asset common.Asset) (int64, error) {
 	query := `
 		SELECT SUM(assetAmt)
 		FROM stakes
@@ -285,10 +285,10 @@ func (s *Client) assetStakedForAddress(address common.Address, asset common.Asse
 		return 0, errors.Wrap(err, "assetStakedForAddress failed")
 	}
 
-	return uint64(assetStaked.Int64), nil
+	return assetStaked.Int64, nil
 }
 
-func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) poolStaked(address common.Address, asset common.Asset) (int64, error) {
 	runeStaked, err := s.runeStakedForAddress(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStaked failed")
@@ -303,10 +303,10 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) (uint64,
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStaked failed")
 	}
-	return uint64(float64(runeStaked) + (float64(assetStaked) * assetPrice)), nil
+	return int64(float64(runeStaked) + (float64(assetStaked) * assetPrice)), nil
 }
 
-func (s *Client) runeEarned(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, error) {
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeEarned failed")
@@ -327,13 +327,13 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (uint64,
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		return (stakeUnits / poolUnits) * (runeDepth - runeStakedTotal), nil
+		return int64(stakeUnits/poolUnits) * (int64(runeDepth) - int64(runeStakedTotal)), nil
 	}
 
 	return 0, nil
 }
 
-func (s *Client) assetEarned(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64, error) {
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetEarned failed")
@@ -359,13 +359,13 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (uint64
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		return (stakeUnits / poolUnits) * (assetDepth - assetStakedTotal), nil
+		return int64(stakeUnits/poolUnits) * (int64(assetDepth) - int64(assetStakedTotal)), nil
 	}
 
 	return 0, nil
 }
 
-func (s *Client) poolEarned(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) poolEarned(address common.Address, asset common.Asset) (int64, error) {
 	runeEarned, err := s.runeEarned(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolEarned failed")
@@ -380,7 +380,7 @@ func (s *Client) poolEarned(address common.Address, asset common.Asset) (uint64,
 	if err != nil {
 		return 0, errors.Wrap(err, "poolEarned failed")
 	}
-	return uint64(float64(runeEarned) + (float64(assetEarned) * assetPrice)), nil
+	return int64(float64(runeEarned) + (float64(assetEarned) * assetPrice)), nil
 }
 
 func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (float64, error) {
@@ -399,7 +399,7 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 			return 0, errors.Wrap(err, "stakersRuneROI failed")
 		}
 
-		return float64(runeEarned / runeStaked), errors.Wrap(err, "stakersRuneROI failed")
+		return float64(runeEarned) / float64(runeStaked), errors.Wrap(err, "stakersRuneROI failed")
 	}
 
 	return 0, nil
@@ -441,7 +441,7 @@ func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) (fl
 			return 0, errors.Wrap(err, "stakersAssetROI failed")
 		}
 
-		return float64(assetEarned / assetStaked), nil
+		return float64(assetEarned) / float64(assetStaked), nil
 	}
 
 	return 0, errors.Wrap(err, "stakersAssetROI failed")
@@ -453,8 +453,7 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (flo
 		return 0, errors.Wrap(err, "stakersPoolROI failed")
 	}
 
-	// TODO / FIXME this should be runeAssetROI (Fix in new PR)
-	runeAssetROI, err := s.stakersAssetROI(address, asset)
+	runeAssetROI, err := s.stakersRuneROI(address, asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "stakersPoolROI failed")
 	}
@@ -462,13 +461,13 @@ func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (flo
 	return (stakersAssetROI + runeAssetROI) / 2, nil
 }
 
-func (s *Client) totalStaked(address common.Address) (uint64, error) {
+func (s *Client) totalStaked(address common.Address) (int64, error) {
 	pools, err := s.getPools(address)
 	if err != nil {
 		return 0, errors.Wrap(err, "totalStaked failed")
 	}
-	var totalStaked uint64
 
+	var totalStaked int64
 	for _, pool := range pools {
 		poolStaked, err := s.poolStaked(address, pool)
 		if err != nil {
@@ -517,7 +516,7 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 	return pools, nil
 }
 
-func (s *Client) totalEarned(address common.Address, pools []common.Asset) (uint64, error) {
+func (s *Client) totalEarned(address common.Address, pools []common.Asset) (int64, error) {
 	var totalEarned float64
 
 	for _, pool := range pools {
@@ -543,7 +542,7 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (uint
 		return 0, nil
 	}
 
-	return uint64(totalEarned), nil
+	return int64(totalEarned), nil
 }
 
 func (s *Client) totalROI(address common.Address) (float64, error) {
