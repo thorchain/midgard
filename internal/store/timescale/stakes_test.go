@@ -3,6 +3,7 @@ package timescale
 import (
 	"time"
 
+	"github.com/go-test/deep"
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
 )
@@ -620,34 +621,52 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	c.Assert(err, IsNil)
 	assest, err := common.NewAsset("BNB.TOML-4BC")
 	c.Assert(err, IsNil)
-	details, err := s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
+	expectedDetails := StakerAddressAndAssetDetails{
+		Asset: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TOML-4BC",
+			Ticker: "TOML",
+		},
+		AssetEarned:     0,
+		AssetROI:        0,
+		AssetStaked:     10,
+		DateFirstStaked: uint64(stakeTomlEvent1.Time.Unix()),
+		PoolEarned:      0,
+		PoolROI:         0,
+		PoolStaked:      200,
+		RuneEarned:      0,
+		RuneROI:         0,
+		RuneStaked:      100,
+		StakeUnits:      100,
+	}
+	actualDetails, err := s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	c.Assert(details.Asset.String(), Equals, "BNB.TOML-4BC")
-	c.Assert(details.AssetEarned, Equals, int64(0))
-	c.Assert(details.AssetROI, Equals, float64(0))
-	c.Assert(details.AssetStaked, Equals, int64(10))
-	c.Assert(details.DateFirstStaked, Equals, uint64(stakeTomlEvent1.Time.Unix()))
-	c.Assert(details.PoolEarned, Equals, int64(0))
-	c.Assert(details.PoolROI, Equals, float64(0))
-	c.Assert(details.PoolStaked, Equals, int64(200))
-	c.Assert(details.RuneEarned, Equals, int64(0))
-	c.Assert(details.RuneROI, Equals, float64(0))
-	c.Assert(details.RuneStaked, Equals, int64(100))
-	c.Assert(details.StakeUnits, Equals, uint64(100))
-
+	if diff := deep.Equal(actualDetails, expectedDetails); diff != nil {
+		c.Error(diff)
+	}
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent1)
 	c.Assert(err, IsNil)
-	details, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
+	expectedDetails = StakerAddressAndAssetDetails{
+		Asset: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TOML-4BC",
+			Ticker: "TOML",
+		},
+		AssetEarned:     -5,
+		AssetROI:        -1,
+		AssetStaked:     5,
+		DateFirstStaked: uint64(stakeTomlEvent1.Time.Unix()),
+		PoolEarned:      -100,
+		PoolROI:         -1,
+		PoolStaked:      100,
+		RuneEarned:      -50,
+		RuneROI:         -1,
+		RuneStaked:      50,
+		StakeUnits:      50,
+	}
+	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	c.Assert(details.Asset.String(), Equals, "BNB.TOML-4BC")
-	c.Assert(details.AssetEarned, Equals, int64(-5))
-	c.Assert(details.AssetROI, Equals, float64(-1))
-	c.Assert(details.AssetStaked, Equals, int64(5))
-	c.Assert(details.PoolEarned, Equals, int64(-100))
-	c.Assert(details.PoolROI, Equals, float64(-1))
-	c.Assert(details.PoolStaked, Equals, int64(100))
-	c.Assert(details.RuneEarned, Equals, int64(-50))
-	c.Assert(details.RuneROI, Equals, float64(-1))
-	c.Assert(details.RuneStaked, Equals, int64(50))
-	c.Assert(details.StakeUnits, Equals, uint64(50))
+	if diff := deep.Equal(actualDetails, expectedDetails); diff != nil {
+		c.Error(diff)
+	}
 }
