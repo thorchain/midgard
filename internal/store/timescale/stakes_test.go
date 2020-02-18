@@ -1,11 +1,9 @@
 package timescale
 
 import (
-	"time"
-
-	"github.com/go-test/deep"
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
+	"time"
 )
 
 func (s *TimeScaleSuite) TestStakeUnits(c *C) {
@@ -641,9 +639,8 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	}
 	actualDetails, err := s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	if diff := deep.Equal(actualDetails, expectedDetails); diff != nil {
-		c.Error(diff)
-	}
+	c.Assert(actualDetails, DeepEquals, expectedDetails)
+
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent1)
 	c.Assert(err, IsNil)
 	expectedDetails = StakerAddressAndAssetDetails{
@@ -666,7 +663,5 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	}
 	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	if diff := deep.Equal(actualDetails, expectedDetails); diff != nil {
-		c.Error(diff)
-	}
+	c.Assert(actualDetails, DeepEquals, expectedDetails)
 }
