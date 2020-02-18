@@ -25,11 +25,11 @@ unit:
   before_script:
     - echo $GOPATH
     - apk update
-    - apk add make
+    - apk add make curl bash
   script:
     - make test
   after_script:
-    - make down
+    - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 
 lint:
   image: golangci/golangci-lint
@@ -133,3 +133,4 @@ deploy:production:
   only:
     - master
   when: manual
+
