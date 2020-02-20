@@ -128,13 +128,12 @@ func (h *Handlers) GetPools(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, assets)
 }
 
-// (GET /v1/assets/{asset})
-func (h *Handlers) GetAssetInfo(ctx echo.Context, asset string) error {
+// (GET v1/assets?asset={a1,a2,a3})
+func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoParams) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
-
-	asts, err := helpers.ParseAssets(asset)
+	asts, err := helpers.ParseAssets(assetParam.Asset)
 	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+		h.logger.Error().Err(err).Str("params.Asset", assetParam.Asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
@@ -205,11 +204,11 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// (GET /v1/pools/{asset})
-func (h *Handlers) GetPoolsData(ctx echo.Context, asset string) error {
-	asts, err := helpers.ParseAssets(asset)
+// (GET /v1/pools/detail?asset={a1,a2,a3})
+func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataParams) error {
+	asts, err := helpers.ParseAssets(assetParam.Asset)
 	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+		h.logger.Error().Err(err).Str("params.Asset", assetParam.Asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
@@ -309,8 +308,8 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// (GET /v1/stakers/{address}/{asset})
-func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, asset string) error {
+// (GET /v1/stakers/{address}/pools?asset={a1,a2,a3})
+func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, assetDataParam api.GetStakersAddressAndAssetDataParams) error {
 	addr, err := common.NewAddress(address)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
@@ -318,9 +317,9 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		})
 	}
 
-	asts, err := helpers.ParseAssets(asset)
+	asts, err := helpers.ParseAssets(assetDataParam.Asset)
 	if err != nil {
-		h.logger.Error().Err(err).Str("params.Asset", asset).Msg("invalid asset or format")
+		h.logger.Error().Err(err).Str("params.Asset", assetDataParam.Asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
