@@ -23,22 +23,3 @@ func (s TxSuite) TestTxID(c *C) {
 	_, err = NewTxID("bogus")
 	c.Check(err, NotNil)
 }
-
-func (s TxSuite) TestTx(c *C) {
-	// id, err := NewTxID("0xb41cf456e942f3430681298c503def54b79a96e3373ef9d44ea314d7eae41952")
-	// c.Assert(err, IsNil)
-	// tx := NewTx(
-	// 	id,
-	// 	Address("bnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
-	// 	Address("bnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6"),
-	// 	Coins{NewCoin(BNBAsset, sdk.NewUint(5*One))},
-	// 	"hello memo",
-	// )
-	// c.Check(tx.ID.Equals(id), Equals, true)
-	// c.Check(tx.IsEmpty(), Equals, false)
-	// c.Check(tx.FromAddress.IsEmpty(), Equals, false)
-	// c.Check(tx.ToAddress.IsEmpty(), Equals, false)
-	// c.Assert(tx.Coins, HasLen, 1)
-	// c.Check(tx.Coins[0].Equals(NewCoin(BNBAsset, sdk.NewUint(5*One))), Equals, true)
-	// c.Check(tx.Memo, Equals, "hello memo")
-}
