@@ -19,9 +19,7 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	pools, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
 	c.Check(len(pools), Equals, 1)
-	c.Assert(pools[0].Symbol.String(), Equals, "BNB")
-	c.Assert(pools[0].Ticker.String(), Equals, "BNB")
-	c.Assert(pools[0].Chain.String(), Equals, "BNB")
+	c.Assert(pools[0].String(), Equals, "BNB.BNB")
 
 	// Test with a another staked asset
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
@@ -41,10 +39,7 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	pools, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
 	c.Check(len(pools), Equals, 1)
-
-	c.Assert(pools[0].Symbol.String(), Equals, "BNB")
-	c.Assert(pools[0].Ticker.String(), Equals, "BNB")
-	c.Assert(pools[0].Chain.String(), Equals, "BNB")
+	c.Assert(pools[0].String(), Equals, "BNB.BNB")
 
 	asset, err := common.NewAsset("BNB.BNB")
 	c.Assert(err, IsNil)
