@@ -19,7 +19,7 @@ unit:
   variables:
     GOPATH: "~"
   services:
-    - docker:dind
+    - docker:19.03.5-dind
   tags:
     - docker
   before_script:
@@ -65,7 +65,7 @@ build-gitlab-docker:
   only:
     - master
   services:
-    - docker:dind
+    - docker:19.03.5-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
@@ -81,7 +81,7 @@ deploy:develop:
   stage: deploy
   image: docker:stable
   services:
-    - docker:dind
+    - docker:19.03.5-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
@@ -101,7 +101,7 @@ deploy:staging:
   stage: deploy
   image: docker:stable
   services:
-    - docker:dind
+    - docker:19.03.5-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
@@ -119,7 +119,7 @@ deploy:production:
   stage: deploy
   image: docker:stable
   services:
-    - docker:dind
+    - docker:19.03.5-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
