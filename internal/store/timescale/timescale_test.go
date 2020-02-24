@@ -415,6 +415,72 @@ var (
 		},
 		StakeUnits: 100,
 	}
+	unstakeTomlEvent1 = models.EventUnstake{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     3,
+			Status: "Success",
+			Height: 3,
+			Type:   "unstake",
+			InTx: common.Tx{
+				ID:          "24F5D0CF0DC1B1F1E3DA0DEC19E13252072F8E1F1CFB2839937C9DE38378E57C",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BNB",
+							Ticker: "BNB",
+						},
+						Amount: 1,
+					},
+				},
+				Memo: "WITHDRAW:TOML-4BC:50",
+			},
+			OutTxs: common.Txs{
+				common.Tx{
+					ID:          "E5869F3E93A4B0C0C63D79130ACBFA8A40590F0B54F82343E7F3C334C23F55B4",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-B1A",
+								Ticker: "RUNE",
+							},
+							Amount: 50,
+						},
+					},
+				},
+				common.Tx{
+					ID:          "4B074E4B83156A4E69A565B7E5AA8E106FC62F3390D9A947AA68BFEF2B092021",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "TOML-4BC",
+								Ticker: "TOML",
+							},
+							Amount: 5,
+						},
+					},
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TOML-4BC",
+			Ticker: "TOML",
+		},
+		StakeUnits: 50,
+	}
 	unstakeBnbEvent1 = models.EventUnstake{
 		Event: models.Event{
 			Time:   time.Now(),
