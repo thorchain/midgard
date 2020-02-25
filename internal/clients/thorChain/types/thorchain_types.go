@@ -39,7 +39,7 @@ type EventUnstake struct {
 }
 
 type EventRewards struct {
-	BondReward  uint64    `json:"bond_reward"` // we are ignoring bond rewards for now
+	BondReward  uint64    `json:"bond_reward,string"` // we are ignoring bond rewards for now
 	PoolRewards []PoolAmt `json:"pool_rewards"`
 }
 

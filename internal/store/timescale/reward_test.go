@@ -129,3 +129,9 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 }
+
+func (s *TimeScaleSuite) TestEmptyRewarded(c *C) {
+	// Empty reward
+	err := s.Store.CreateRewardRecord(rewardEmptyEvent0)
+	c.Assert(err, IsNil)
+}

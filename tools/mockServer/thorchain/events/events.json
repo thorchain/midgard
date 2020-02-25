@@ -219,5 +219,26 @@
       "gas_type": "gas_topup"
     },
     "status": "Success"
+  },
+  {
+    "id": "11",
+    "height": "24",
+    "type": "rewards",
+    "in_tx": {
+      "id": "0000000000000000000000000000000000000000000000000000000000000000",
+      "chain": "",
+      "from_address": "",
+      "to_address": "",
+      "coins": null,
+      "gas": null,
+      "memo": ""
+    },
+    "out_txs": null,
+    "gas": null,
+    "event": {
+      "bond_reward": "0",
+      "pool_rewards": null
+    },
+    "status": "Success"
   }
 ]
