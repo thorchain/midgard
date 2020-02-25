@@ -88,11 +88,11 @@ paths:
           example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
         - in: path
           name: asset
-          description: An Asset
+          description: An asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          example: TCAN-014
+          example: BNB.TOMOB-1E1
       responses:
         "200":
           $ref: '#/components/responses/TxDetailedResponse'
@@ -104,11 +104,11 @@ paths:
       parameters:
         - in: path
           name: asset
-          description: An Asset
+          description: An asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          example: TCAN-014
+          example: BNB.TOMOB-1E1
       responses:
         "200":
           $ref: '#/components/responses/TxDetailedResponse'
@@ -120,19 +120,19 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/StatsResponse'
-  "/v1/assets/{asset}":
+  "/v1/assets":
     get:
       operationId: GetAssetInfo
       summary: Get Asset Information
       description: Detailed information about a specific asset. Returns enough information to display a unique asset in various user interfaces, including latest price. The logo is sourced from an internal database. 
       parameters:
-        - in: path
+        - in: query
           name: asset
-          description: Unique asset (CHAIN.SYMBOL)
+          description: One or more comma separated unique asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          example: BNB.TOMOB-1E1
+          example: [BNB.TOMOB-1E1,BNB.TCAN-014]
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
@@ -148,19 +148,19 @@ paths:
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
           $ref: '#/components/responses/PoolsResponse'
-  "/v1/pools/{asset}":
+  "/v1/pools/detail":
     get:
       operationId: GetPoolsData
       summary: Get Pools Data
       description: Returns an object containing all the pool data for that asset. All assets on BEPSwap have associated pools. 
       parameters:
-        - in: path
+        - in: query
           name: asset
-          description: Unique asset (CHAIN.SYMBOL)
+          description: One or more comma separated unique asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          example: BNB.TOMOB-1E1
+          example: [BNB.TOMOB-1E1,BNB.TCAN-014]
       responses:
         "200":
           $ref: '#/components/responses/PoolsDetailedResponse'
@@ -191,7 +191,7 @@ paths:
         "200":
           $ref: '#/components/responses/StakersAddressDataResponse'
 
-  "/v1/stakers/{address}/{asset}":
+  "/v1/stakers/{address}/pools":
     get:
       operationId: GetStakersAddressAndAssetData
       summary: Get Staker Pool Data
@@ -204,13 +204,13 @@ paths:
           schema:
             type: string
           example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
-        - in: path
+        - in: query
           name: asset
-          description: Unique asset
+          description: One or more comma separated unique asset (CHAIN.SYMBOL)
           required: true
           schema:
             type: string
-          example: 'BNB.TOMOB-1E1'
+          example: [BNB.TOMOB-1E1,BNB.TCAN-014]
       responses:
         "200":
           $ref: '#/components/responses/StakersAssetDataResponse'
@@ -229,7 +229,9 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/PoolDetail'
+            type: array
+            items:
+              $ref: '#/components/schemas/PoolDetail'
 
     StatsResponse:
       description: object containing global BEPSwap data
@@ -267,14 +269,18 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/StakersAssetData'
+            type: array
+            items:
+              $ref: '#/components/schemas/StakersAssetData'
 
     AssetsDetailedResponse:
       description: object containing detailed asset information
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/AssetDetail'
+            type: array
+            items:
+              $ref: '#/components/schemas/AssetDetail'
 
     PoolsResponse:
       description: array of assets
