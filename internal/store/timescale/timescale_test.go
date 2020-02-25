@@ -1110,6 +1110,16 @@ var (
 			},
 		},
 	}
+	rewardEmptyEvent0 = models.EventReward{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     21,
+			Status: "Success",
+			Height: 9,
+			Type:   "rewards",
+		},
+		PoolRewards: nil,
+	}
 	rewardRuneEvent1 = models.EventReward{
 		Event: models.Event{
 			Time:   time.Now(),
