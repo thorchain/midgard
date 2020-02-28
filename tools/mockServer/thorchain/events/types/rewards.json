@@ -8,11 +8,11 @@
       "pool_rewards": [
         {
           "asset": "BNB.BOLT-014",
-          "amount": "1000"
+          "amount": 1000
         },
         {
           "asset": "BNB.TCAN-014",
-          "amount": "1000"
+          "amount": 1000
         }
       ]
     },
