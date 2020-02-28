@@ -9,7 +9,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-const rewardEventAddress = "ADD"
+const addEventAddress = "ADD"
 
 func (s *Client) CreateAddRecord(record models.EventAdd) error {
 	err := s.CreateEventRecord(record.Event)
@@ -43,7 +43,7 @@ func (s *Client) CreateAddRecord(record models.EventAdd) error {
 		record.Pool.String(),
 		runeAmt,
 		assetAmt,
-		rewardEventAddress,
+		addEventAddress,
 	)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
