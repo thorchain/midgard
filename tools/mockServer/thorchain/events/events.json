@@ -96,7 +96,7 @@
       "pool_rewards": [
         {
           "asset": "BNB.RUNE-B1A",
-          "amount": "1000"
+          "amount": 1000
         }
       ]
     },
