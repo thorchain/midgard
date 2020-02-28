@@ -1333,6 +1333,138 @@ var (
 			},
 		},
 	}
+	refundBOLTEvent0 = models.EventRefund{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     21,
+			Status: "Refund",
+			Height: 11,
+			Type:   "refund",
+			InTx: common.Tx{Coins: common.Coins{
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "BOLT-014",
+						Ticker: "BLOT",
+					},
+					Amount: 10,
+				},
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "RUNE-A1F",
+						Ticker: "RUNE",
+					},
+					Amount: 5,
+				},
+			},
+			},
+			OutTxs: common.Txs{
+				common.Tx{
+					Coins: common.Coins{
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BOLT-014",
+								Ticker: "BLOT",
+							},
+							Amount: 10,
+						},
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-A1F",
+								Ticker: "RUNE",
+							},
+							Amount: 5,
+						},
+					},
+				},
+			},
+		},
+	}
+	refundBOLTEvent1 = models.EventRefund{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     22,
+			Status: "Refund",
+			Height: 12,
+			Type:   "refund",
+			InTx: common.Tx{Coins: common.Coins{
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "BOLT-014",
+						Ticker: "BLOT",
+					},
+					Amount: 10,
+				},
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "RUNE-A1F",
+						Ticker: "RUNE",
+					},
+					Amount: 5,
+				},
+			},
+			},
+			OutTxs: common.Txs{
+				common.Tx{
+					Coins: common.Coins{
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BOLT-014",
+								Ticker: "BLOT",
+							},
+							Amount: 10,
+						},
+					},
+				},
+				common.Tx{
+					Coins: common.Coins{
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-A1F",
+								Ticker: "RUNE",
+							},
+							Amount: 5,
+						},
+					},
+				},
+			},
+		},
+	}
+	refundBOLTEvent2 = models.EventRefund{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     23,
+			Status: "Refund",
+			Height: 14,
+			Type:   "refund",
+			InTx: common.Tx{Coins: common.Coins{
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "BOLT-014",
+						Ticker: "BLOT",
+					},
+					Amount: 10,
+				},
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "RUNE-A1F",
+						Ticker: "RUNE",
+					},
+					Amount: 5,
+				},
+			},
+			},
+		},
+	}
 )
 
 type TimeScaleSuite struct {
