@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/openlyinc/pointy"
@@ -18,9 +19,9 @@ func ConvertAssetForAPI(asset common.Asset) *api.Asset {
 
 func ConvertEventDataForAPI(events models.Events) *api.Event {
 	return &api.Event{
-		Fee:        pointy.Int64(int64(events.Fee)),
+		Fee:        Uint64ToString(events.Fee),
 		Slip:       pointy.Float64(events.Slip),
-		StakeUnits: pointy.Int64(int64(events.StakeUnits)),
+		StakeUnits: Uint64ToString(events.StakeUnits),
 	}
 }
 
@@ -33,7 +34,7 @@ func ConvertGasForAPI(gas models.TxGas) *api.Gas {
 	asset := ConvertAssetForAPI(a)
 
 	return &api.Gas{
-		Amount: pointy.Int64(int64(gas.Amount)),
+		Amount: Uint64ToString(gas.Amount),
 		Asset:  asset,
 	}
 }
@@ -43,7 +44,7 @@ func ConvertCoinForAPI(coin common.Coin) *api.Coin {
 	asset := ConvertAssetForAPI(a)
 
 	return &api.Coin{
-		Amount: pointy.Int64(coin.Amount),
+		Amount: Int64ToString(coin.Amount),
 		Asset:  asset,
 	}
 }
@@ -84,8 +85,8 @@ func ConvertTxsForAPI(txs []models.TxData) *[]api.Tx {
 func ConvertOptionsForAPI(options models.Options) *api.Option {
 	return &api.Option{
 		Asymmetry:           pointy.Float64(options.Asymmetry),
-		PriceTarget:         pointy.Int64(int64(options.PriceTarget)),
-		WithdrawBasisPoints: pointy.Int64(int64(options.WithdrawBasisPoints)),
+		PriceTarget:         Uint64ToString(options.PriceTarget),
+		WithdrawBasisPoints: pointy.Float64(options.WithdrawBasisPoints),
 	}
 }
 
@@ -93,10 +94,10 @@ func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedRespon
 	var response api.TxDetailedResponse
 	for _, d := range txData {
 		txD := api.TxDetails{
-			Date:    pointy.Int64(int64(d.Date)),
+			Date:    Uint64ToString(d.Date),
 			Events:  ConvertEventDataForAPI(d.Events),
 			Gas:     ConvertGasForAPI(d.Gas),
-			Height:  pointy.Int64(int64(d.Height)),
+			Height:  Uint64ToString(d.Height),
 			In:      ConvertTxForAPI(d.In),
 			Options: ConvertOptionsForAPI(d.Options),
 			Out:     ConvertTxsForAPI(d.Out),
@@ -108,6 +109,16 @@ func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedRespon
 	}
 
 	return response
+}
+
+func Uint64ToString(v uint64) *string {
+	str := strconv.FormatUint(v, 10)
+	return &str
+}
+
+func Int64ToString(v int64) *string {
+	str := strconv.FormatInt(v, 10)
+	return &str
 }
 
 // ParseAssets parses comma separated assets from string.
