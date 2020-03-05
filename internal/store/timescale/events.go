@@ -39,23 +39,6 @@ func (s *Client) CreateEventRecord(record models.Event) error {
 		return errors.Wrap(err, "Failed to process OutTxs")
 	}
 
-	// Ingest Gas.
-	err = s.processGasRecord(record)
-	if err != nil {
-		return errors.Wrap(err, "Failed to process Gas")
-	}
-	return nil
-}
-
-func (s *Client) processGasRecord(record models.Event) error {
-	for _, coin := range record.Gas {
-		if !coin.IsEmpty() {
-			_, err := s.createGasRecord(record, coin)
-			if err != nil {
-				return errors.Wrap(err, "Failed createGasRecord")
-			}
-		}
-	}
 	return nil
 }
 

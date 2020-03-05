@@ -194,17 +194,6 @@ var (
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
-			// FIXME Gas is at the transaction
-			Gas: []common.Coin{
-				{
-					Asset: common.Asset{
-						Chain:  "BNB",
-						Symbol: "BNB",
-						Ticker: "BNB",
-					},
-					Amount: 37500,
-				},
-			},
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
