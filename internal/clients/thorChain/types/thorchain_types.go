@@ -3,7 +3,6 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
 
 	"time"
@@ -131,9 +130,4 @@ func GetPoolStatus(ps string) PoolStatus {
 type EventGas struct {
 	Gas     common.Coins `json:"gas"`
 	GasType string       `json:"gas_type"`
-}
-
-type EventRefund struct {
-	Code   sdk.CodeType `json:"code"`
-	Reason string       `json:"reason"`
 }
