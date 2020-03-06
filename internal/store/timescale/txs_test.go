@@ -643,47 +643,6 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(coinsForTxHash[1].Asset.Ticker.String(), Equals, "BNB")
 }
 
-func (s *TimeScaleSuite) TestGas(c *C) {
-	// Genesis
-	if _, err := s.Store.CreateGenesis(genesis); err != nil {
-		c.Fatal(err)
-	}
-
-	// Single stake
-	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	eventId := uint64(1)
-	gas := s.Store.gas(eventId)
-
-	c.Assert(gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Ticker.IsEmpty(), Equals, true)
-
-	// Additional stake
-	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	eventId = uint64(2)
-	gas = s.Store.gas(eventId)
-
-	c.Assert(gas.Asset.Chain.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Symbol.IsEmpty(), Equals, true)
-	c.Assert(gas.Asset.Ticker.IsEmpty(), Equals, true)
-
-	// Additional stake
-	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
-	c.Assert(err, IsNil)
-
-	eventId = uint64(4)
-	gas = s.Store.gas(eventId)
-
-	c.Assert(gas.Asset.Chain.String(), Equals, "BNB")
-	c.Assert(gas.Asset.Symbol.String(), Equals, "BNB")
-	c.Assert(gas.Asset.Ticker.String(), Equals, "BNB")
-	c.Assert(gas.Amount, Equals, uint64(37500))
-}
-
 func (s *TimeScaleSuite) TestOptions(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {

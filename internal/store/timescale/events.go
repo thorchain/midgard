@@ -113,28 +113,6 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 	return results.RowsAffected()
 }
 
-func (s *Client) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
-	query := fmt.Sprintf(`
-		INSERT INTO %v (
-			time,
-			event_id,
-			pool,
-			amount
-		)  VALUES ( $1, $2, $3, $4 ) RETURNING event_id`, models.ModelGasTable)
-
-	results, err := s.db.Exec(query,
-		parent.Time,
-		parent.ID,
-		coin.Asset.String(),
-		coin.Amount,
-	)
-	if err != nil {
-		return 0, errors.Wrap(err, "Failed to prepareNamed query for GasRecord")
-	}
-
-	return results.RowsAffected()
-}
-
 func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (

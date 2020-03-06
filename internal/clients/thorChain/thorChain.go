@@ -170,6 +170,12 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				api.logger.Err(err).Msg("processGasEvent failed")
 				continue
 			}
+		case "refund":
+			err = api.processRefundEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processRefundEvent failed")
+				continue
+			}
 		default:
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
@@ -267,6 +273,7 @@ func (api *API) processPoolEvent(evt types.Event) error {
 	}
 	return nil
 }
+
 func (api *API) processGasEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processGasEvent")
 	var gas types.EventGas
@@ -278,6 +285,21 @@ func (api *API) processGasEvent(evt types.Event) error {
 	err = api.store.CreateGasRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create gas record")
+	}
+	return nil
+}
+
+func (api *API) processRefundEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processRefundEvent")
+	var refund types.EventRefund
+	err := json.Unmarshal(evt.Event, &refund)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal refund event")
+	}
+	record := models.NewRefundEvent(refund, evt)
+	err = api.store.CreateRefundRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create refund record")
 	}
 	return nil
 }
