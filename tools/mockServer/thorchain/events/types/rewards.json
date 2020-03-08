@@ -3,6 +3,10 @@
     "id": "4",
     "height": "11",
     "type": "rewards",
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "bond_rewards": {},
       "pool_rewards": [
@@ -33,6 +37,10 @@
     },
     "out_txs": null,
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "bond_reward": "0",
       "pool_rewards": null

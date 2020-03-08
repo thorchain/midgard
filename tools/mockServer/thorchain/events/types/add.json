@@ -28,6 +28,10 @@
     },
     "out_txs": null,
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "pool": "BNB"
     },

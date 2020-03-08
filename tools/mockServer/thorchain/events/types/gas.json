@@ -6,6 +6,10 @@
     "in_tx": { },
     "out_txs": [],
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "gas": [
         {
@@ -24,6 +28,10 @@
     "in_tx": { },
     "out_txs": [],
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "gas": [
         {
