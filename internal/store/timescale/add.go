@@ -43,7 +43,7 @@ func (s *Client) CreateAddRecord(record models.EventAdd) error {
 		record.Pool.String(),
 		runeAmt,
 		assetAmt,
-		addEventAddress,
+		rewardEventAddress,
 	)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
