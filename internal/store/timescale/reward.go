@@ -10,7 +10,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-const rewardEventAddress = "BLOCK_REWARD"
+const addEventAddress = "BLOCK_REWARD"
 
 func (s *Client) CreateRewardRecord(record models.EventReward) error {
 	err := s.CreateEventRecord(record.Event)
