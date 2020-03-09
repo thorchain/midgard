@@ -469,7 +469,7 @@ var (
 								Symbol: "TOML-4BC",
 								Ticker: "TOML",
 							},
-							Amount: 4,
+							Amount: 5,
 						},
 					},
 				},
@@ -483,14 +483,6 @@ var (
 							Ticker: "RUNE",
 						},
 						Amount: 10,
-					},
-					common.Coin{
-						Asset: common.Asset{
-							Chain:  "BNB",
-							Symbol: "TOML-4BC",
-							Ticker: "TOML",
-						},
-						Amount: 1,
 					},
 				},
 			},
@@ -907,7 +899,7 @@ var (
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
-							Amount: 9999900,
+							Amount: 10000000,
 						},
 					},
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E69",
@@ -972,7 +964,7 @@ var (
 								Symbol: "BOLT-014",
 								Ticker: "BOLT",
 							},
-							Amount: 19999950,
+							Amount: 20000000,
 						},
 					},
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
@@ -983,10 +975,10 @@ var (
 					common.Coin{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "BOLT-014",
-							Ticker: "BOLT",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
 						},
-						Amount: 50,
+						Amount: 1,
 					},
 				},
 			},
@@ -1399,6 +1391,191 @@ var (
 					Ticker: "TCAN",
 				},
 				Amount: 4000,
+			},
+		},
+	}
+	refundBOLTEvent0 = models.EventRefund{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     21,
+			Status: "Refund",
+			Height: 11,
+			Type:   "refund",
+			InTx: common.Tx{Coins: common.Coins{
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "BOLT-014",
+						Ticker: "BLOT",
+					},
+					Amount: 10,
+				},
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "RUNE-A1F",
+						Ticker: "RUNE",
+					},
+					Amount: 5,
+				},
+			},
+			},
+			OutTxs: common.Txs{
+				common.Tx{
+					Coins: common.Coins{
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-A1F",
+								Ticker: "RUNE",
+							},
+							Amount: 3,
+						},
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 2,
+					},
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BNB",
+						},
+						Amount: 10,
+					},
+				},
+			},
+		},
+	}
+	refundBOLTEvent1 = models.EventRefund{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     22,
+			Status: "Refund",
+			Height: 12,
+			Type:   "refund",
+			InTx: common.Tx{Coins: common.Coins{
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "BOLT-014",
+						Ticker: "BLOT",
+					},
+					Amount: 10,
+				},
+				common.Coin{
+					Asset: common.Asset{
+						Chain:  "BNB",
+						Symbol: "RUNE-A1F",
+						Ticker: "RUNE",
+					},
+					Amount: 5,
+				},
+			},
+			},
+			OutTxs: common.Txs{
+				common.Tx{
+					Coins: common.Coins{
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BOLT-014",
+								Ticker: "BLOT",
+							},
+							Amount: 7,
+						},
+					},
+				},
+				common.Tx{
+					Coins: common.Coins{
+						common.Coin{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-A1F",
+								Ticker: "RUNE",
+							},
+							Amount: 3,
+						},
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 2,
+					},
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BNB",
+						},
+						Amount: 3,
+					},
+				},
+			},
+		},
+	}
+	refundBOLTEvent2 = models.EventRefund{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     23,
+			Status: "Refund",
+			Height: 14,
+			Type:   "refund",
+			InTx: common.Tx{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BLOT",
+						},
+						Amount: 10,
+					},
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-A1F",
+							Ticker: "RUNE",
+						},
+						Amount: 5,
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 5,
+					},
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BNB",
+						},
+						Amount: 10,
+					},
+				},
 			},
 		},
 	}

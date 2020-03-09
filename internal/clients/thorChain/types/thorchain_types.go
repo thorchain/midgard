@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
 
 	"time"
@@ -61,7 +62,10 @@ type GenesisResult struct {
 type GenesisData struct {
 	GenesisTime time.Time `json:"genesis_time"`
 }
-
+type EventRefund struct {
+	Code   sdk.CodeType `json:"code"`
+	Reason string       `json:"reason"`
+}
 type EventAdd struct {
 	Pool common.Asset `json:"pool"`
 }

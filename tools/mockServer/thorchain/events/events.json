@@ -284,5 +284,87 @@
       "pool_rewards": null
     },
     "status": "Success"
+  },
+  {
+    "id": "12",
+    "height": "25",
+    "type": "refund",
+    "in_tx": {
+      "id": "3598C001619FC1423A0BCA498573A23F540B50015C902FB5B160D9DF4BF86028",
+      "chain": "BNB",
+      "from_address": "tbnb1erds50nhzt0y4axp4uvq3fh8wed2m4dfycav58",
+      "to_address": "tbnb1ma9367eaj7zf737pnfnxhe7u37af2tl8mttanz",
+      "coins": [
+        {
+          "asset": "BNB.LOK-3C0",
+          "amount": "10000000"
+        }
+      ],
+      "gas": [
+        {
+          "asset": "BNB.BNB",
+          "amount": "37500"
+        }
+      ],
+      "memo": "SWAP:FTM-585::"
+    },
+    "out_txs": null,
+    "gas": null,
+    "event": {
+      "code": 110,
+      "reason": "output RUNE (13605442) is not enough to pay transaction fee"
+    },
+    "status": "Refund"
+  },
+  {
+    "id": "13",
+    "height": "26",
+    "type": "refund",
+    "in_tx": {
+      "id": "E2816F52BE30760C4469DD3736C59EF8455773A505FFA95F9F1976FC9B132ABA",
+      "chain": "BNB",
+      "from_address": "tbnb1erds50nhzt0y4axp4uvq3fh8wed2m4dfycav58",
+      "to_address": "tbnb1ma9367eaj7zf737pnfnxhe7u37af2tl8mttanz",
+      "coins": [
+        {
+          "asset": "BNB.BNB",
+          "amount": "1"
+        }
+      ],
+      "gas": [
+        {
+          "asset": "BNB.BNB",
+          "amount": "37500"
+        }
+      ],
+      "memo": "SWAP:FTM-585::"
+    },
+    "out_txs": [
+      {
+        "id": "AC9B397228905B370019B39C60810EB4B7B8C6A106832B24227C8DF61055E267",
+        "chain": "BNB",
+        "from_address": "tbnb1ma9367eaj7zf737pnfnxhe7u37af2tl8mttanz",
+        "to_address": "tbnb1erds50nhzt0y4axp4uvq3fh8wed2m4dfycav58",
+        "coins": [
+          {
+            "asset": "BNB.BNB",
+            "amount": "1"
+          }
+        ],
+        "gas": [
+          {
+            "asset": "BNB.BNB",
+            "amount": "37500"
+          }
+        ],
+        "memo": "REFUND:E2816F52BE30760C4469DD3736C59EF8455773A505FFA95F9F1976FC9B132ABA"
+      }
+    ],
+    "gas": null,
+    "event": {
+      "code": 110,
+      "reason": ""
+    },
+    "status": "Refund"
   }
 ]
