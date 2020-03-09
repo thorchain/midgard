@@ -46,7 +46,7 @@ type EventRewards struct {
 
 type PoolAmt struct {
 	Pool   common.Asset `json:"asset"`
-	Amount int64        `json:"amount,string"`
+	Amount int64        `json:"amount"`
 }
 
 type Genesis struct {
