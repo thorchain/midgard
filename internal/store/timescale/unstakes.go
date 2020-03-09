@@ -15,6 +15,11 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
+	err = s.CreateFeeRecord(record.Event, record.Pool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to create fee record")
+	}
+
 	// get rune/asset amounts from Event.OutTxs[].Coins
 	var runeAmt int64
 	var assetAmt int64
@@ -27,6 +32,9 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 			}
 		}
 	}
+
+	runeAmt += record.Fee.RuneFee()
+	assetAmt += record.Fee.AssetFee()
 
 	// TODO: Do something with Event.InTx
 

@@ -39,23 +39,6 @@ func (s *Client) CreateEventRecord(record models.Event) error {
 		return errors.Wrap(err, "Failed to process OutTxs")
 	}
 
-	// Ingest Gas.
-	err = s.processGasRecord(record)
-	if err != nil {
-		return errors.Wrap(err, "Failed to process Gas")
-	}
-	return nil
-}
-
-func (s *Client) processGasRecord(record models.Event) error {
-	for _, coin := range record.Gas {
-		if !coin.IsEmpty() {
-			_, err := s.createGasRecord(record, coin)
-			if err != nil {
-				return errors.Wrap(err, "Failed createGasRecord")
-			}
-		}
-	}
 	return nil
 }
 
@@ -125,28 +108,6 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 	)
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for CoinRecord")
-	}
-
-	return results.RowsAffected()
-}
-
-func (s *Client) createGasRecord(parent models.Event, coin common.Coin) (int64, error) {
-	query := fmt.Sprintf(`
-		INSERT INTO %v (
-			time,
-			event_id,
-			pool,
-			amount
-		)  VALUES ( $1, $2, $3, $4 ) RETURNING event_id`, models.ModelGasTable)
-
-	results, err := s.db.Exec(query,
-		parent.Time,
-		parent.ID,
-		coin.Asset.String(),
-		coin.Amount,
-	)
-	if err != nil {
-		return 0, errors.Wrap(err, "Failed to prepareNamed query for GasRecord")
 	}
 
 	return results.RowsAffected()

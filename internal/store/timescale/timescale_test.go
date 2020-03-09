@@ -194,17 +194,6 @@ var (
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
-			// FIXME Gas is at the transaction
-			Gas: []common.Coin{
-				{
-					Asset: common.Asset{
-						Chain:  "BNB",
-						Symbol: "BNB",
-						Ticker: "BNB",
-					},
-					Amount: 37500,
-				},
-			},
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -386,7 +375,7 @@ var (
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
-							Amount: 100,
+							Amount: 90,
 						},
 					},
 				},
@@ -404,6 +393,18 @@ var (
 							},
 							Amount: 10,
 						},
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 10,
 					},
 				},
 			},
@@ -452,7 +453,7 @@ var (
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
-							Amount: 50,
+							Amount: 40,
 						},
 					},
 				},
@@ -468,8 +469,28 @@ var (
 								Symbol: "TOML-4BC",
 								Ticker: "TOML",
 							},
-							Amount: 5,
+							Amount: 4,
 						},
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 10,
+					},
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "TOML-4BC",
+							Ticker: "TOML",
+						},
+						Amount: 1,
 					},
 				},
 			},
@@ -518,7 +539,7 @@ var (
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
-							Amount: 100,
+							Amount: 97,
 						},
 					},
 				},
@@ -536,6 +557,18 @@ var (
 							},
 							Amount: 10,
 						},
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 3,
 					},
 				},
 			},
@@ -584,7 +617,7 @@ var (
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
-							Amount: 100,
+							Amount: 95,
 						},
 					},
 				},
@@ -602,6 +635,18 @@ var (
 							},
 							Amount: 10,
 						},
+					},
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 5,
 					},
 				},
 			},
@@ -862,10 +907,22 @@ var (
 								Symbol: "RUNE-B1A",
 								Ticker: "RUNE",
 							},
-							Amount: 10000000,
+							Amount: 9999900,
 						},
 					},
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E69",
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 100,
+					},
 				},
 			},
 		},
@@ -915,10 +972,22 @@ var (
 								Symbol: "BOLT-014",
 								Ticker: "BOLT",
 							},
-							Amount: 20000000,
+							Amount: 19999950,
 						},
 					},
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+			Fee: common.Fee{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BOLT",
+						},
+						Amount: 50,
+					},
 				},
 			},
 		},

@@ -63,6 +63,15 @@
       }
     ],
     "gas": null,
+    "fee": {
+      "coins": [
+        {
+          "asset": "BNB.RUNE-B1A",
+          "amount": "1"
+        }
+      ],
+      "pool_deduct": "0"
+    },
     "event": {
       "pool": "BNB.TCAN-014",
       "stake_units": "1342175000",
