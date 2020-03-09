@@ -39,6 +39,8 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 			assetAmt = -coin.Amount
 		}
 	}
+	runeAmt -= record.Fee.RuneFee()
+	assetAmt -= record.Fee.AssetFee()
 
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
