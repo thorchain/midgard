@@ -27,7 +27,7 @@ type Event struct {
 	Type   string    `json:"type" db:"type"`
 	InTx   common.Tx
 	OutTxs common.Txs
-	Gas    common.Coins
+	Fee    common.Fee `json:"fee"`
 }
 
 func newEvent(e types.Event) Event {
@@ -39,6 +39,6 @@ func newEvent(e types.Event) Event {
 		Type:   e.Type,
 		InTx:   e.InTx,
 		OutTxs: e.OutTxs,
-		Gas:    e.Gas,
+		Fee:    e.Fee,
 	}
 }

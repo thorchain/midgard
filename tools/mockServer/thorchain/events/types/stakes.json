@@ -38,6 +38,10 @@
       }
     ],
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "asset": "BNB.LOK-3C0",
       "stake_units": "30000000000"

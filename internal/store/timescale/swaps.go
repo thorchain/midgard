@@ -17,6 +17,11 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
+	err = s.CreateFeeRecord(record.Event, record.Pool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to create fee record")
+	}
+
 	// get rune/asset amounts from Event.InTx/OutTxs.Coins
 	var runeAmt int64
 	var assetAmt int64
@@ -34,6 +39,8 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 			assetAmt = -coin.Amount
 		}
 	}
+	runeAmt -= record.Fee.RuneFee()
+	assetAmt -= record.Fee.AssetFee()
 
 	query := fmt.Sprintf(`
 		INSERT INTO %v (

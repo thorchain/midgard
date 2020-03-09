@@ -6,6 +6,10 @@
     "in_tx": { },
     "out_txs": [],
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "pool": "BNB.BOLT-014",
       "status": "Bootstrap"
@@ -19,6 +23,10 @@
     "in_tx": { },
     "out_txs": [],
     "gas": null,
+    "fee": {
+      "coins": null,
+      "pool_deduct": "0"
+    },
     "event": {
       "pool": "BNB.BOLT-014",
       "status": "Enabled"

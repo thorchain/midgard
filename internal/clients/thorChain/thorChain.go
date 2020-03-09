@@ -267,6 +267,7 @@ func (api *API) processPoolEvent(evt types.Event) error {
 	}
 	return nil
 }
+
 func (api *API) processGasEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processGasEvent")
 	var gas types.EventGas
