@@ -909,7 +909,7 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, nil
 	}
-	fee, err := s.gasSpend(asset)
+	fee, err := s.assetFee(asset)
 	if err != nil {
 		return 0, nil
 	}
@@ -990,7 +990,7 @@ func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	fee, err := s.runeAddedTotal12m(asset)
+	fee, err := s.runeFeeTotal12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
