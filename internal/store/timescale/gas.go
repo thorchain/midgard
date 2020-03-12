@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -29,7 +30,23 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelGasTable)
 
 	for _, coin := range record.Gas {
-		_, err := s.db.Exec(query,
+		asset := coin.Asset
+		runeGas := uint64(0)
+		runDepth, err := s.runeDepth(asset)
+		if err != nil {
+			s.logger.Error().Err(err).Msg("failed to get run depth")
+			return err
+		}
+		assetDepth, err := s.assetDepth(asset)
+		if err != nil {
+			s.logger.Error().Err(err).Msg("failed to get asset depth")
+			return err
+		}
+		if runDepth != 0 || assetDepth != 0 {
+			runeGas = common.GetShare(sdk.NewUint(runDepth), sdk.NewUint(assetDepth), sdk.NewUint(uint64(coin.Amount))).Uint64()
+			_ = runeGas
+		}
+		_, err = s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
 			coin.Asset.String(),

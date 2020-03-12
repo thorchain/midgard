@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"strings"
 )
@@ -89,4 +90,31 @@ func (a *Asset) UnmarshalJSON(data []byte) error {
 	}
 	*a, err = NewAsset(assetStr)
 	return err
+}
+
+// GetShare this method will panic if any of the input parameter can't be convert to sdk.Dec
+// which shouldn't happen
+func GetShare(part sdk.Uint, total sdk.Uint, allocation sdk.Uint) sdk.Uint {
+	if part.IsZero() || total.IsZero() {
+		return sdk.ZeroUint()
+	}
+
+	// use string to convert sdk.Uint to sdk.Dec is the only way I can find out without being constrain to uint64
+	// sdk.Uint can hold values way larger than uint64 , because it is using big.Int internally
+	aD, err := sdk.NewDecFromStr(allocation.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to sdk.Dec: %w", allocation.String(), err))
+	}
+
+	pD, err := sdk.NewDecFromStr(part.String())
+	if err != nil {
+		panic(fmt.Errorf("fatil to convert %s to sdk.Dec: %w", part.String(), err))
+	}
+	tD, err := sdk.NewDecFromStr(total.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert%s to sdk.Dec: %w", total.String(), err))
+	}
+	// A / (Total / part) == A * (part/Total) but safer when part < Totals
+	result := aD.Quo(tD.Quo(pD))
+	return sdk.NewUintFromBigInt(result.RoundInt().BigInt())
 }
