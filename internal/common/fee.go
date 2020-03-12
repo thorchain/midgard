@@ -1,5 +1,7 @@
 package common
 
+const TransactionFee = 1e+8
+
 type Fee struct {
 	Coins      Coins `json:"coins"`
 	PoolDeduct int64 `json:"pool_deduct,string"`
