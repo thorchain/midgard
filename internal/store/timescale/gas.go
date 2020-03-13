@@ -29,9 +29,9 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 			tx_hash
 		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelGasTable)
 
-	for _, coin := range record.Gas {
+	for i, coin := range record.Gas {
 		if record.GasType == models.GasReimburse {
-			pool = *record.ReimburseTo
+			pool = record.ReimburseTo[i]
 			runeAmt = coin.Amount
 			assetAmt = 0
 		} else {
