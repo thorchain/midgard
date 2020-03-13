@@ -27,7 +27,7 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 			assetAmt,
 			gas_type,
 			tx_hash
-		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelGasTable)
+		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelGasTable)
 
 	for _, coin := range record.Gas {
 		if record.GasType == models.GasReimburse {
@@ -42,7 +42,7 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 		_, err = s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
-			pool,
+			pool.String(),
 			runeAmt,
 			assetAmt,
 			record.GasType,
