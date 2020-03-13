@@ -132,6 +132,7 @@ func GetPoolStatus(ps string) PoolStatus {
 }
 
 type EventGas struct {
-	Gas     common.Coins `json:"gas"`
-	GasType string       `json:"gas_type"`
+	Gas         common.Coins  `json:"gas"`
+	GasType     string        `json:"gas_type"`
+	ReimburseTo *common.Asset `json:"reimburse_to"` // Determine which pool we are reimbursing to
 }
