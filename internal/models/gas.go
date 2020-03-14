@@ -26,20 +26,23 @@ func NewGas(gas common.Coin, event types.Event) Gas {
 type GasType string
 
 const (
-	GasSpend GasType = `gas_spend`
-	GasTopup GasType = `gas_topup`
+	GasSpend     GasType = `gas_spend`
+	GasTopup     GasType = `gas_topup`
+	GasReimburse GasType = `gas_reimburse`
 )
 
 type EventGas struct {
 	Event
-	Gas     common.Coins `json:"gas"`
-	GasType GasType      `json:"gas_type"`
+	Gas         common.Coins   `json:"gas"`
+	GasType     GasType        `json:"gas_type"`
+	ReimburseTo []common.Asset `json:"reimburse_to"`
 }
 
 func NewGasEvent(gas types.EventGas, event types.Event) EventGas {
 	return EventGas{
-		Gas:     gas.Gas,
-		GasType: GasType(gas.GasType),
-		Event:   newEvent(event),
+		Gas:         gas.Gas,
+		GasType:     GasType(gas.GasType),
+		ReimburseTo: gas.ReimburseTo,
+		Event:       newEvent(event),
 	}
 }

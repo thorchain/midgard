@@ -75,7 +75,8 @@ CREATE TABLE gas (
     time        TIMESTAMPTZ       NOT NULL,
     event_id bigint not null,
     pool varchar not null,
-    amount bigint not null,
+    runeAmt bigint,
+    assetAmt bigint,
     gas_type  varchar,
     tx_hash varchar,
     primary key (time, event_id, pool)
