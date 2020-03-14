@@ -312,7 +312,7 @@ components:
           $ref: '#/components/schemas/asset'
         type:
           type: string
-          enum: [sell, buy, crossPool, stake, withdraw]
+          enum: [swap, stake, unstake, rewards, add, pool, gas, refund]
         status:
           type: string
           enum: [success, refund, priceCancelled] 
