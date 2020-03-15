@@ -17,6 +17,7 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
+	record.Event.Fee.Coins = common.Coins{common.NoCoin}
 	err = s.CreateFeeRecord(record.Event, record.Pool)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create fee record")
