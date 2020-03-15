@@ -393,25 +393,6 @@ func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
 	return uint64(assetStakedTotal.Int64), nil
 }
 
-// assetRewarded - total amount of asset rewarded by block reward
-func (s *Client) assetRewarded(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM stakes
-		WHERE pool = $1 
-		AND from_address = $2
-		`
-
-	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
-
-	if err := row.Scan(&assetRewardedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetRewarded failed")
-	}
-
-	return assetRewardedTotal.Int64, nil
-}
-
 // assetAdded - total amount of asset added by eventadd
 func (s *Client) assetAdded(asset common.Asset) (int64, error) {
 	stmnt := `
@@ -491,26 +472,6 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 	return uint64(assetStakedTotal.Int64), nil
 }
 
-// assetRewardedTotal - total amount of asset ever rewarded
-func (s *Client) assetRewardedTotal(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM stakes
-		WHERE pool = $1
-		AND assetAmt > 0 
-		AND from_address = $2
-		`
-
-	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
-
-	if err := row.Scan(&assetRewardedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetRewardedTotal failed")
-	}
-
-	return assetRewardedTotal.Int64, nil
-}
-
 func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
@@ -530,25 +491,6 @@ func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
 	}
 
 	return uint64(assetStakedTotal.Int64), nil
-}
-
-func (s *Client) assetRewarded12m(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(assetAmt)
-		FROM stakes
-		WHERE pool = $1 
-		AND from_address = $2
-		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
-	`
-
-	var assetRewardedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
-
-	if err := row.Scan(&assetRewardedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetRewarded12m failed")
-	}
-
-	return assetRewardedTotal.Int64, nil
 }
 
 func (s *Client) assetAdded12m(asset common.Asset) (int64, error) {
@@ -918,7 +860,6 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 
 // +stakes
 // +incomingSwapAsset
-// +rewards
 // +adds
 // -outgoingSwapAsset
 // -withdraws
@@ -930,10 +871,6 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetDepth failed")
 	}
 	swaps, err := s.assetSwap(asset)
-	if err != nil {
-		return 0, nil
-	}
-	rewards, err := s.assetRewarded(asset)
 	if err != nil {
 		return 0, nil
 	}
@@ -950,7 +887,7 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 		return 0, nil
 	}
 
-	depth := int64(stakes) + swaps + rewards + adds - gas + fee
+	depth := int64(stakes) + swaps + adds - gas + fee
 	return uint64(depth), nil
 }
 
@@ -960,10 +897,6 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
 	swaps, err := s.assetSwapped12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetDepth12m failed")
-	}
-	rewards, err := s.assetRewarded12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetDepth12m failed")
 	}
@@ -979,7 +912,7 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "assetFee12m failed")
 	}
-	depth := int64(stakes) + swaps + rewards + adds - gas + fee
+	depth := int64(stakes) + swaps + adds - gas + fee
 	return uint64(depth), nil
 }
 
