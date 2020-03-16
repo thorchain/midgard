@@ -23,6 +23,8 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 	// get rune/asset amounts from Event.OutTxs[].Coins
 	var runeAmt int64
 	var assetAmt int64
+	runeAmt += record.Fee.RuneFee()
+	assetAmt += record.Fee.AssetFee()
 	for _, tx := range record.Event.OutTxs {
 		for _, coin := range tx.Coins {
 			if common.IsRuneAsset(coin.Asset) {
@@ -32,9 +34,6 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 			}
 		}
 	}
-
-	runeAmt += record.Fee.RuneFee()
-	assetAmt += record.Fee.AssetFee()
 
 	// TODO: Do something with Event.InTx
 
