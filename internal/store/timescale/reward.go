@@ -3,8 +3,6 @@ package timescale
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/midgard/internal/common"
-
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -24,26 +22,15 @@ func (s *Client) CreateRewardRecord(record models.EventReward) error {
 			event_id,
 			pool,
 			runeAmt,
-			assetAmt,
 			from_address
-		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelStakesTable)
+		)  VALUES ( $1, $2, $3, $4, $5 ) RETURNING event_id`, models.ModelStakesTable)
 
-	var runeAmt int64
-	var assetAmt int64
 	for _, reward := range record.PoolRewards {
-		runeAmt = 0
-		assetAmt = 0
-		if common.IsRune(reward.Pool.Ticker) {
-			runeAmt = reward.Amount
-		} else {
-			assetAmt = reward.Amount
-		}
 		_, err := s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
 			reward.Pool.String(),
-			runeAmt,
-			assetAmt,
+			reward.Amount,
 			addEventAddress,
 		)
 		if err != nil {
