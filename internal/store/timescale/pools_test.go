@@ -567,10 +567,10 @@ func (s *TimeScaleSuite) TestAssetSwap12m(c *C) {
 	c.Assert(swapTotal, Equals, int64(0))
 }
 
-func (s *TimeScaleSuite) TestRuneSwapTotal12m(c *C) {
+func (s *TimeScaleSuite) TestRuneSwap12m(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BOLT-014")
-	swapTotal, err := s.Store.runeSwapTotal12m(asset)
+	swapTotal, err := s.Store.runeSwap12m(asset)
 	c.Assert(err, IsNil)
 
 	c.Assert(swapTotal, Equals, int64(0))
@@ -584,7 +584,7 @@ func (s *TimeScaleSuite) TestRuneSwapTotal12m(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
-	swapTotal, err = s.Store.runeSwapTotal12m(asset)
+	swapTotal, err = s.Store.runeSwap12m(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swapTotal, Equals, int64(-1))
 }
