@@ -94,7 +94,7 @@ func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedRespon
 	var response api.TxDetailedResponse
 	for _, d := range txData {
 		txD := api.TxDetails{
-			Date:    Uint64ToString(d.Date),
+			Date:    pointy.Int64(int64(d.Date)),
 			Events:  ConvertEventDataForAPI(d.Events),
 			Gas:     ConvertGasForAPI(d.Gas),
 			Height:  Uint64ToString(d.Height),
