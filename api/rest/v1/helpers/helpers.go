@@ -20,7 +20,7 @@ func ConvertAssetForAPI(asset common.Asset) *api.Asset {
 func ConvertEventDataForAPI(events models.Events) *api.Event {
 	return &api.Event{
 		Fee:        Uint64ToString(events.Fee),
-		Slip:       pointy.Float64(events.Slip),
+		Slip:       Float64ToString(events.Slip),
 		StakeUnits: Uint64ToString(events.StakeUnits),
 	}
 }
@@ -84,9 +84,9 @@ func ConvertTxsForAPI(txs []models.TxData) *[]api.Tx {
 
 func ConvertOptionsForAPI(options models.Options) *api.Option {
 	return &api.Option{
-		Asymmetry:           pointy.Float64(options.Asymmetry),
+		Asymmetry:           Float64ToString(options.Asymmetry),
 		PriceTarget:         Uint64ToString(options.PriceTarget),
-		WithdrawBasisPoints: pointy.Float64(options.WithdrawBasisPoints),
+		WithdrawBasisPoints: Float64ToString(options.WithdrawBasisPoints),
 	}
 }
 
@@ -118,6 +118,11 @@ func Uint64ToString(v uint64) *string {
 
 func Int64ToString(v int64) *string {
 	str := strconv.FormatInt(v, 10)
+	return &str
+}
+
+func Float64ToString(v float64) *string {
+	str := strconv.FormatFloat(v, 'f', -1, 64)
 	return &str
 }
 
