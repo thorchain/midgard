@@ -733,6 +733,27 @@ func (s *Client) runeFee(asset common.Asset) (int64, error) {
 	return runeFeeTotal.Int64, nil
 }
 
+func (s *Client) runeStaked12m(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(runeAmt)
+		FROM stakes
+		WHERE pool = $1 
+		AND from_address != $2
+		AND from_address != $3
+		AND from_address != $4
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+		`
+
+	var runeStaked12m sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress)
+
+	if err := row.Scan(&runeStaked12m); err != nil {
+		return 0, errors.Wrap(err, "runeStaked12m failed")
+	}
+
+	return runeStaked12m.Int64, nil
+}
+
 // runeStakedTotal12m - total amount of rune staked on the network for given
 // pool in the last 12 months.
 func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
@@ -757,48 +778,46 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 	return uint64(runeStakedTotal.Int64), nil
 }
 
-// runeRewardedTotal12m - total amount of rune rewarded on the network for given
+// runeRewarded12m - amount of rune rewarded on the network for given
 // pool in the last 12 months.
-func (s *Client) runeRewardedTotal12m(asset common.Asset) (int64, error) {
+func (s *Client) runeRewarded12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
-	var runeRewardedTotal sql.NullInt64
+	var runeRewarded12m sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress)
 
-	if err := row.Scan(&runeRewardedTotal); err != nil {
-		return 0, errors.Wrap(err, "runeRewardedTotal12m failed")
+	if err := row.Scan(&runeRewarded12m); err != nil {
+		return 0, errors.Wrap(err, "runeRewarded12m failed")
 	}
 
-	return runeRewardedTotal.Int64, nil
+	return runeRewarded12m.Int64, nil
 }
 
-// runeAddedTotal12m - total amount of rune added on the network for given
+// runeAdded12m - amount of rune added on the network for given
 // pool in the last 12 months.
-func (s *Client) runeAddedTotal12m(asset common.Asset) (int64, error) {
+func (s *Client) runeAdded12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
-	var runeAddedTotal sql.NullInt64
+	var runeAdded12m sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String(), rewardEventAddress)
 
-	if err := row.Scan(&runeAddedTotal); err != nil {
-		return 0, errors.Wrap(err, "runeAddedTotal12m failed")
+	if err := row.Scan(&runeAdded12m); err != nil {
+		return 0, errors.Wrap(err, "runeAdded12m failed")
 	}
 
-	return runeAddedTotal.Int64, nil
+	return runeAdded12m.Int64, nil
 }
 func (s *Client) runeGas12m(asset common.Asset) (int64, error) {
 	stmnt := `
@@ -818,24 +837,23 @@ func (s *Client) runeGas12m(asset common.Asset) (int64, error) {
 
 	return runeGasTotal.Int64, nil
 }
-func (s *Client) runeFeeTotal12m(asset common.Asset) (int64, error) {
+func (s *Client) runeFee12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
 		WHERE pool = $1
-		AND runeAmt > 0 
 		AND from_address = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
-	var runeFeeTotal sql.NullInt64
+	var runeFee12m sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String(), feeAddress)
 
-	if err := row.Scan(&runeFeeTotal); err != nil {
-		return 0, errors.Wrap(err, "runeFeeTotal12m failed")
+	if err := row.Scan(&runeFee12m); err != nil {
+		return 0, errors.Wrap(err, "runeFee12m failed")
 	}
 
-	return runeFeeTotal.Int64, nil
+	return runeFee12m.Int64, nil
 }
 
 func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
@@ -947,19 +965,19 @@ func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
-	stakes, err := s.runeStakedTotal12m(asset)
+	stakes, err := s.runeStaked12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	swaps, err := s.runeSwapTotal12m(asset)
+	swaps, err := s.runeSwap12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	reward, err := s.runeRewardedTotal12m(asset)
+	reward, err := s.runeRewarded12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	adds, err := s.runeAddedTotal12m(asset)
+	adds, err := s.runeAdded12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
@@ -967,11 +985,11 @@ func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	fee, err := s.runeFeeTotal12m(asset)
+	fee, err := s.runeFee12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth12m failed")
 	}
-	depth := int64(stakes) + swaps + reward + adds + gas + fee
+	depth := stakes + swaps + reward + adds + gas + fee
 	return uint64(depth), nil
 }
 
@@ -993,9 +1011,9 @@ func (s *Client) runeSwapped(asset common.Asset) (int64, error) {
 	return total.Int64, nil
 }
 
-// runeSwapTotal12m - total amount rune swapped through the pool in the last 12
+// runeSwap12m - amount rune swapped through the pool in the last 12
 // months
-func (s *Client) runeSwapTotal12m(asset common.Asset) (int64, error) {
+func (s *Client) runeSwap12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM swaps
@@ -1003,14 +1021,14 @@ func (s *Client) runeSwapTotal12m(asset common.Asset) (int64, error) {
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
-	var total sql.NullInt64
+	var runeSwap12m sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
-	if err := row.Scan(&total); err != nil {
-		return 0, errors.Wrap(err, "runeSwapTotal12m failed")
+	if err := row.Scan(&runeSwap12m); err != nil {
+		return 0, errors.Wrap(err, "runeSwap12m failed")
 	}
 
-	return total.Int64, nil
+	return runeSwap12m.Int64, nil
 }
 
 // assetSwap returns the sum of assets swapped
