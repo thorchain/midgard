@@ -165,7 +165,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 
 		response[i] = api.AssetDetail{
 			Asset:       helpers.ConvertAssetForAPI(pool),
-			DateCreated: helpers.Uint64ToString(dateCreated),
+			DateCreated: pointy.Int64(int64(dateCreated)),
 			Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
 			Name:        pointy.String(tokenData.Name),
 			PriceRune:   helpers.Float64ToString(priceInRune),
@@ -337,7 +337,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 			AssetEarned:     helpers.Int64ToString(details.AssetEarned),
 			AssetROI:        helpers.Float64ToString(details.AssetROI),
 			AssetStaked:     helpers.Int64ToString(details.AssetStaked),
-			DateFirstStaked: helpers.Uint64ToString(details.DateFirstStaked),
+			DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
 			PoolEarned:      helpers.Int64ToString(details.PoolEarned),
 			PoolROI:         helpers.Float64ToString(details.PoolROI),
 			PoolStaked:      helpers.Int64ToString(details.PoolStaked),
