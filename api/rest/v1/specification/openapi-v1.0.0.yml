@@ -323,7 +323,8 @@ components:
           items:
             $ref: '#/components/schemas/tx'
         date:
-          type: string
+          type: integer
+          format: int64
         gas:
           $ref: '#/components/schemas/gas'
         options:
@@ -438,7 +439,8 @@ components:
           type: string
           description: Average ROI (in RUNE) of both sides
         dateFirstStaked:
-          type: string
+          type: integer
+          format: int64
 
     Stakers:
       type: string
@@ -570,7 +572,8 @@ components:
         name:
           type: string
         dateCreated:
-          type: string
+          type: integer
+          format: int64
         logo:
           type: string
         priceRune:
