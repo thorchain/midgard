@@ -167,7 +167,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetStakedTotal, err := s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(0))
+	c.Assert(assetStakedTotal, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -175,7 +175,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 
 	assetStakedTotal, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(10))
+	c.Assert(assetStakedTotal, Equals, int64(10))
 
 	// Another stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
@@ -183,7 +183,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 
 	assetStakedTotal, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
+	c.Assert(assetStakedTotal, Equals, int64(20), Commentf("%v", assetStakedTotal))
 
 	// Withdrawal
 	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
@@ -191,7 +191,7 @@ func (s *TimeScaleSuite) TestAssetStaked(c *C) {
 
 	assetStakedTotal, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(10), Commentf("%v", assetStakedTotal))
+	c.Assert(assetStakedTotal, Equals, int64(10), Commentf("%v", assetStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestAssetStakedTotal(c *C) {

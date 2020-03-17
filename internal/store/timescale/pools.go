@@ -373,7 +373,7 @@ func (s *Client) exists(asset common.Asset) (bool, error) {
 }
 
 // assetStaked - total amount of asset staked in given pool
-func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
+func (s *Client) assetStaked(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
@@ -390,7 +390,7 @@ func (s *Client) assetStaked(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetStaked failed")
 	}
 
-	return uint64(assetStakedTotal.Int64), nil
+	return assetStakedTotal.Int64, nil
 }
 
 // assetAdded - total amount of asset added by eventadd
@@ -472,7 +472,7 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 	return uint64(assetStakedTotal.Int64), nil
 }
 
-func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
+func (s *Client) assetStaked12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(assetAmt)
 		FROM stakes
@@ -490,7 +490,7 @@ func (s *Client) assetStaked12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "assetStaked12m failed")
 	}
 
-	return uint64(assetStakedTotal.Int64), nil
+	return assetStakedTotal.Int64, nil
 }
 
 func (s *Client) assetAdded12m(asset common.Asset) (int64, error) {
@@ -637,7 +637,7 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 }
 
 // runeStaked - amount of rune staked on the network for given pool.
-func (s *Client) runeStaked(asset common.Asset) (uint64, error) {
+func (s *Client) runeStaked(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
@@ -654,7 +654,7 @@ func (s *Client) runeStaked(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
 	}
 
-	return uint64(runeStakedTotal.Int64), nil
+	return runeStakedTotal.Int64, nil
 }
 
 // runeRewarded - amount of rune rewarded by block reward
@@ -887,7 +887,7 @@ func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
 		return 0, nil
 	}
 
-	depth := int64(stakes) + swaps + adds - gas + fee
+	depth := stakes + swaps + adds - gas + fee
 	return uint64(depth), nil
 }
 
@@ -912,7 +912,7 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "assetFee12m failed")
 	}
-	depth := int64(stakes) + swaps + adds - gas + fee
+	depth := stakes + swaps + adds - gas + fee
 	return uint64(depth), nil
 }
 
@@ -942,7 +942,7 @@ func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "runeDepth failed")
 	}
 
-	depth := int64(stakes) + swaps + rewards + adds + gas + fee
+	depth := stakes + swaps + rewards + adds + gas + fee
 	return uint64(depth), nil
 }
 
