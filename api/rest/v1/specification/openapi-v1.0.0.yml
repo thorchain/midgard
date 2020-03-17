@@ -399,8 +399,7 @@ components:
           type: string
           description: Total value of earnings (in RUNE) across all pools.
         totalROI:
-          type: number
-          format: double
+          type: string
           description: Average of all pool ROIs.
 
     StakersAssetData:
@@ -430,16 +429,13 @@ components:
           type: string
           description: Total value of earnings (in RUNE). 
         runeROI:
-          type: number
-          format: double
+          type: string
           description: ROI of the Rune side.
         assetROI:
-          type: number
-          format: double
+          type: string
           description: ROI of the Asset side
         poolROI:
-          type: number
-          format: double
+          type: string
           description: Average ROI (in RUNE) of both sides
         dateFirstStaked:
           type: string
@@ -458,8 +454,7 @@ components:
           type: string
           enum: [bootstrapped, enabled, disabled]
         price:
-          type: number
-          format: double
+          type: string
           description: Price of Asset (in RUNE).
         assetStakedTotal:
           type: string
@@ -504,16 +499,13 @@ components:
           type: string
           description: Average pool transaction
         sellSlipAverage:
-          type: number
-          format: double
+          type: string
           description: Average trade slip for ASSET->RUNE in %
         buySlipAverage:
-          type: number
-          format: double
+          type: string
           description: Average trade slip for RUNE->ASSET in %
         poolSlipAverage:
-          type: number
-          format: double
+          type: string
           description: Average pool slip
         sellFeeAverage:
           type: string
@@ -558,20 +550,16 @@ components:
           type: string
           description: Number of unique stakers
         assetROI:
-          type: number
-          format: double
+          type: string
           description: Asset return on investment
         runeROI:
-          type: number
-          format: double
+          type: string
           description: RUNE return on investment
         poolROI:
-          type: number
-          format: double
+          type: string
           description: Pool ROI (average of RUNE and Asset ROI)
         poolROI12:
-          type: number
-          format: double
+          type: string
           description: Pool ROI over 12 months
 
     AssetDetail:
@@ -586,8 +574,7 @@ components:
         logo:
           type: string
         priceRune:
-          type: number
-          format: double
+          type: string
 
     Error:
       required:
@@ -633,11 +620,9 @@ components:
         priceTarget:
           type: string
         withdrawBasisPoints:
-          type: number
-          format: double
+          type: string
         asymmetry:
-          type: number
-          format: double
+          type: string
     event:
       type: object
       properties:
@@ -646,8 +631,7 @@ components:
         stakeUnits:
           type: string
         slip:
-          type: number
-          format: double
+          type: string
 
     ThorchainEndpoint:
       type: object
