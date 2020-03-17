@@ -4,15 +4,11 @@
 package api
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
 	"fmt"
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/labstack/echo/v4"
 	"net/http"
-	"strings"
+
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
+	"github.com/labstack/echo/v4"
 )
 
 // AssetDetail defines model for AssetDetail.
@@ -555,7 +551,6 @@ var swaggerSpec = []string{
 	"0S1bmjK7ADKooU+GCDBh6BMaW8im7LQNnir5IAs/5PQ0iFTS1yjhzOQQi5mIKx25TDawKbk+u1qPg07p",
 	"HrN598pya54DNjaIlrZx56ma8pSdnF5c3fKcbIyyXS+UjhdcyFOZ5ErIZxC0zcIn8Q9g2SXYQkvGJSvl",
 	"d6ECWK7VSkDiMP8LdzsFDIOS4phUWT1/FKx4DMKEU8egPjU8rObS8BhXMFiCM8aoFGOTHctIe3QX5Vrl",
-	"oK1wqdNhf2i8S7iFtxq4hQTfcdkrOoqEtK9fRrUCQlqYg8Y3UjVXuLR8YqwWco4PJM/A+yDXIobLQvqe",
 	"bmzk/InrXWJrKQbV120SGm4KoVGFn8tlnzx0G/npC63GnQNyu8BXtl16rSxPWVxoDdIychWb8pTLGDb2",
 	"3BiHSF2en7UJuVe1A7ySTMglGJshUkN0KBolJEFIMEeVQk/iozMt1rTkrSrcltgm8qHIpqARppcfP5zu",
 	"/bPY338Bx1dXp9dN3JoA5e8BjpegsSxpq+seMANpJeUMgBnxG9Amb/HbEZLRp90wN9NpixmAcWSQXYjM",
@@ -600,28 +595,3 @@ var swaggerSpec = []string{
 	"/aF10BdbfojJv3h46b9Z23wVL3zz3VAWLkM3xe/FQ6P/7dj7iV2JZHKH/347pFyvzpI/OlAqtG9Eq4tR",
 	"L1+08O8SEzTtrJeVFwqdYuVjbX40mRwcfjfeH++PD47e7L/Zj9AQm+fGs+DT/X8CAAD//xLCTfZTPwAA",
 }
-
-// GetSwagger returns the Swagger specification corresponding to the generated code
-// in this file.
-func GetSwagger() (*openapi3.Swagger, error) {
-	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
-	if err != nil {
-		return nil, fmt.Errorf("error base64 decoding spec: %s", err)
-	}
-	zr, err := gzip.NewReader(bytes.NewReader(zipped))
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %s", err)
-	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(zr)
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %s", err)
-	}
-
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData(buf.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("error loading Swagger: %s", err)
-	}
-	return swagger, nil
-}
-
