@@ -905,18 +905,6 @@ var (
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E69",
 				},
 			},
-			Fee: common.Fee{
-				Coins: common.Coins{
-					common.Coin{
-						Asset: common.Asset{
-							Chain:  "BNB",
-							Symbol: "RUNE-B1A",
-							Ticker: "RUNE",
-						},
-						Amount: 100,
-					},
-				},
-			},
 		},
 		Pool: common.Asset{
 			Chain:  "BNB",
@@ -968,18 +956,6 @@ var (
 						},
 					},
 					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
-				},
-			},
-			Fee: common.Fee{
-				Coins: common.Coins{
-					common.Coin{
-						Asset: common.Asset{
-							Chain:  "BNB",
-							Symbol: "RUNE-B1A",
-							Ticker: "RUNE",
-						},
-						Amount: 1,
-					},
 				},
 			},
 		},

@@ -25,18 +25,20 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 	// get rune/asset amounts from Event.InTx/OutTxs.Coins
 	var runeAmt int64
 	var assetAmt int64
+	runeAmt -= record.Fee.RuneFee()
+	assetAmt -= record.Fee.AssetFee()
 	for _, coin := range record.Event.InTx.Coins {
 		if common.IsRuneAsset(coin.Asset) {
-			runeAmt = coin.Amount
+			runeAmt += coin.Amount
 		} else {
-			assetAmt = coin.Amount
+			assetAmt += coin.Amount
 		}
 	}
 	for _, coin := range record.Event.OutTxs[0].Coins {
 		if common.IsRuneAsset(coin.Asset) {
-			runeAmt = -coin.Amount
+			runeAmt -= coin.Amount
 		} else {
-			assetAmt = -coin.Amount
+			assetAmt -= coin.Amount
 		}
 	}
 
