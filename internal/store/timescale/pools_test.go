@@ -850,7 +850,7 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 
 	volume, err = s.Store.poolVolume24hr(asset)
 	c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(20000001), Commentf("%v", volume))
+	c.Assert(volume, Equals, uint64(140331492), Commentf("%v", volume))
 }
 
 func (s *TimeScaleSuite) TestSellTxAverage(c *C) {
