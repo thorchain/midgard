@@ -1167,7 +1167,11 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyVolume24hr failed")
 	}
 
-	return uint64(-buyVolume.Int64), nil
+	priceInRune, err := s.GetPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "buyVolume24hr failed")
+	}
+	return uint64(float64(-buyVolume.Int64) * priceInRune), nil
 }
 
 func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
