@@ -127,6 +127,9 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 			maxID = evt.ID
 			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		}
+		if evt.Status == "Failed" {
+			continue
+		}
 		switch strings.ToLower(evt.Type) {
 		case "swap":
 			err = api.processSwapEvent(evt)
