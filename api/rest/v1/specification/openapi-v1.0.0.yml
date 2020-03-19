@@ -34,84 +34,53 @@ paths:
       responses:
         "200":
           description: health response of the API.
-  "/v1/tx/{address}":
+  "/v1/events":
     get:
-      operationId: GetTxDetails
-      summary: Get transaction
-      description: Return an object containing the tx details
+      operationId: GetEvents
+      summary: Get events by address, asset or tx-id
+      description: Return an array containing the event details
       parameters:
-        - in: path
+        - in: query
           name: address
-          description: An address
-          required: true
+          description: Address of sender or recipient of any in/out tx in event
+          required: false
           schema:
             type: string
           example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
-      responses:
-        "200":
-          $ref: '#/components/responses/TxDetailedResponse'
-  "/v1/tx/{address}/txid/{txid}":
-    get:
-      operationId: GetTxDetailsByAddressTxId
-      summary: Get transaction
-      description: Return an object containing the tx details
-      parameters:
-        - in: path
-          name: address
-          description: An address
-          required: true
-          schema:
-            type: string
-          example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
-        - in: path
+        - in: query
           name: txid
-          description: An Asset
-          required: true
+          description: ID of any in/out tx in event
+          required: false
           schema:
             type: string
-          example: TCAN-014
-      responses:
-        "200":
-          $ref: '#/components/responses/TxDetailedResponse'
-  "/v1/tx/{address}/asset/{asset}":
-    get:
-      operationId: GetTxDetailsByAddressAsset
-      summary: Get transaction
-      description: Return an object containing the tx details
-      parameters:
-        - in: path
-          name: address
-          description: An address
-          required: true
-          schema:
-            type: string
-          example: tbnb1fj2lqj8dvr5pumfchc7ntlfqd2v6zdxqwjewf5
-        - in: path
+          example: 2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4
+        - in: query
           name: asset
-          description: An asset (CHAIN.SYMBOL)
-          required: true
+          description: Any asset used in event (CHAIN.SYMBOL)
+          required: false
           schema:
             type: string
           example: BNB.TOMOB-1E1
-      responses:
-        "200":
-          $ref: '#/components/responses/TxDetailedResponse'
-  "/v1/tx/asset/{asset}":
-    get:
-      operationId: GetTxDetailsByAsset
-      summary: Get transaction
-      description: Return an object containing the tx details
-      parameters:
-        - in: path
-          name: asset
-          description: An asset (CHAIN.SYMBOL)
+        - in: query
+          name: offset
+          description: pagination offset
           required: true
           schema:
-            type: string
-          example: BNB.TOMOB-1E1
+            type: integer
+            format: int64
+            minimum: 0
+        - in: query
+          name: limit
+          description: pagination limit
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            maximum: 50
       responses:
         "200":
-          $ref: '#/components/responses/TxDetailedResponse'
+          $ref: '#/components/responses/EventsResponse'
   "/v1/stats":
     get:
       operationId: GetStats
@@ -239,14 +208,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/StatsData'
-    TxDetailedResponse:
+    EventsResponse:
       description: Returns an array of transaction events
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/TxDetails'        
+              $ref: '#/components/schemas/EventDetails'        
 
     StakersAddressDataResponse:
       description: array of all the pools the staker is staking in
@@ -306,7 +275,7 @@ components:
             $ref: '#/components/schemas/ThorchainEndpoints'
 
   schemas:
-    TxDetails:
+    EventDetails:
       properties:
         pool:
           $ref: '#/components/schemas/asset'
@@ -315,7 +284,7 @@ components:
           enum: [swap, stake, unstake, rewards, add, pool, gas, refund]
         status:
           type: string
-          enum: [success, refund, priceCancelled] 
+          enum: [success, refund] 
         in:
           $ref: '#/components/schemas/tx'
         out:

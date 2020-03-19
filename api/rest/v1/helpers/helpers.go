@@ -90,10 +90,10 @@ func ConvertOptionsForAPI(options models.Options) *api.Option {
 	}
 }
 
-func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedResponse {
-	var response api.TxDetailedResponse
+func PrepareTxDataResponseForAPI(txData []models.EventDetails) api.EventsResponse {
+	var response api.EventsResponse
 	for _, d := range txData {
-		txD := api.TxDetails{
+		txD := api.EventDetails{
 			Date:    pointy.Int64(int64(d.Date)),
 			Events:  ConvertEventDataForAPI(d.Events),
 			Gas:     ConvertGasForAPI(d.Gas),

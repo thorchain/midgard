@@ -10,22 +10,22 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetTxData(address common.Address) ([]models.TxDetails, error) {
+func (s *Client) GetTxData(address common.Address) ([]models.EventDetails, error) {
 	events := s.eventsForAddress(address)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) ([]models.TxDetails, error) {
+func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) ([]models.EventDetails, error) {
 	events := s.eventsForAddressAsset(address, asset)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) ([]models.TxDetails, error) {
+func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) ([]models.EventDetails, error) {
 	events := s.eventsForAddressTxId(address, txid)
 	return s.processEvents(events)
 }
 
-func (s *Client) GetTxDataByAsset(asset common.Asset) ([]models.TxDetails, error) {
+func (s *Client) GetTxDataByAsset(asset common.Asset) ([]models.EventDetails, error) {
 	events := s.eventsForAsset(asset)
 	return s.processEvents(events)
 }
@@ -108,8 +108,8 @@ func (s *Client) eventsResults(rows *sqlx.Rows) []uint64 {
 	return events
 }
 
-func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
-	var txData []models.TxDetails
+func (s *Client) processEvents(events []uint64) ([]models.EventDetails, error) {
+	var txData []models.EventDetails
 
 	for _, eventId := range events {
 
@@ -117,7 +117,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "processEvents failed")
 		}
-		txData = append(txData, models.TxDetails{
+		txData = append(txData, models.EventDetails{
 			Pool:    s.eventPool(eventId),
 			Type:    eventType,
 			Status:  status,
