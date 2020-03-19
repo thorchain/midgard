@@ -59,52 +59,12 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "OK")
 }
 
-// (GET /v1/tx/{address})
-func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
-	addr, _ := common.NewAddress(address)
+// (GET /v1/events?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
+func (h *Handlers) GetEvents(ctx echo.Context, params api.GetEventsParams) error {
+	addr, _ := common.NewAddress(*params.Address)
 	txData, err := h.store.GetTxData(addr)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxData")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	response := helpers.PrepareTxDataResponseForAPI(txData)
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/tx/{address}/asset/{asset})
-func (h *Handlers) GetTxDetailsByAddressAsset(ctx echo.Context, address, asset string) error {
-	addr, _ := common.NewAddress(address)
-	ass, _ := common.NewAsset(asset)
-	txData, err := h.store.GetTxDataByAddressAsset(addr, ass)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	response := helpers.PrepareTxDataResponseForAPI(txData)
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/tx/{address}/txid/{txid})
-func (h *Handlers) GetTxDetailsByAddressTxId(ctx echo.Context, address, txid string) error {
-	addr, _ := common.NewAddress(address)
-	txData, err := h.store.GetTxDataByAddressTxId(addr, txid)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	response := helpers.PrepareTxDataResponseForAPI(txData)
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/tx/asset/{asset})
-func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, asset string) error {
-	ass, _ := common.NewAsset(asset)
-	txData, err := h.store.GetTxDataByAsset(ass)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
