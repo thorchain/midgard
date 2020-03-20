@@ -2,7 +2,9 @@ package common
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 type (
@@ -10,8 +12,20 @@ type (
 	TxIDs []TxID
 )
 
+const randBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
 var BlankTxID = TxID("0000000000000000000000000000000000000000000000000000000000000000")
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+func RandomTxID() (TxID, error) {
+	b := make([]byte, 64)
+	for i := range b {
+		b[i] = randBytes[rand.Intn(len(randBytes))]
+	}
+	return NewTxID(string(b))
+}
 func NewTxID(hash string) (TxID, error) {
 	switch len(hash) {
 	case 64:
