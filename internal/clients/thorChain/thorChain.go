@@ -419,10 +419,7 @@ func (api *API) GetOutTx(event types.Event) (common.Txs, error) {
 					},
 				}
 				if outTx.ID.IsEmpty() {
-					outTx.ID, err = common.RandomTxID()
-					if err != nil {
-						return nil, err
-					}
+					outTx.ID = common.UnknownTxID
 				}
 				outTxs = append(outTxs, outTx)
 			}
