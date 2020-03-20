@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -10,84 +11,50 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetTxData(address common.Address) ([]models.EventDetails, error) {
-	events := s.eventsForAddress(address)
-	return s.processEvents(events)
-}
+// GetEvents returns events with pagination and given query params.
+func (s *Client) GetEvents(address *common.Address, txID *common.TxID, asset *common.Asset, offset, limit int64) ([]models.EventDetails, error) {
+	hasAddress := address != nil
+	hasTxID := txID != nil
+	hasAsset := asset != nil
+	q := s.buildEventsQuery(hasAddress, hasTxID, hasAsset)
 
-func (s *Client) GetTxDataByAddressAsset(address common.Address, asset common.Asset) ([]models.EventDetails, error) {
-	events := s.eventsForAddressAsset(address, asset)
-	return s.processEvents(events)
-}
-
-func (s *Client) GetTxDataByAddressTxId(address common.Address, txid string) ([]models.EventDetails, error) {
-	events := s.eventsForAddressTxId(address, txid)
-	return s.processEvents(events)
-}
-
-func (s *Client) GetTxDataByAsset(asset common.Asset) ([]models.EventDetails, error) {
-	events := s.eventsForAsset(asset)
-	return s.processEvents(events)
-}
-
-func (s *Client) eventsForAddress(address common.Address) []uint64 {
-	stmnt := `
-		SELECT DISTINCT(event_id)
-			FROM txs
-		WHERE (from_address = $1 OR to_address = $1)`
-
-	rows, err := s.db.Queryx(stmnt, address.String())
+	params := map[string]interface{}{
+		"offset": offset,
+		"limit":  limit,
+	}
+	if address != nil {
+		params["address"] = address.String()
+	}
+	if txID != nil {
+		params["txid"] = txID.String()
+	}
+	if asset != nil {
+		params["asset_ticker"] = asset.Ticker.String()
+	}
+	rows, err := s.db.NamedQuery(q, params)
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
 	}
-
-	return s.eventsResults(rows)
+	events := s.eventsResults(rows)
+	return s.processEvents(events)
 }
 
-func (s *Client) eventsForAddressAsset(address common.Address, asset common.Asset) []uint64 {
-	stmnt := `
-		SELECT DISTINCT(txs.event_id)
-			FROM txs
-				LEFT JOIN coins ON txs.tx_hash = coins.tx_hash
-		WHERE coins.ticker = $1
-		AND (txs.from_address = $2 OR txs.to_address = $2)`
-
-	rows, err := s.db.Queryx(stmnt, asset.Ticker.String(), address.String())
-	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+func (s *Client) buildEventsQuery(hasAddress, hasTxID, hasAsset bool) string {
+	q := `SELECT DISTINCT(txs.event_id) FROM txs`
+	where := []string{}
+	if hasAddress {
+		where = append(where, "(txs.from_address = :address OR txs.to_address = :address)")
 	}
-
-	return s.eventsResults(rows)
-}
-
-func (s *Client) eventsForAddressTxId(address common.Address, txid string) []uint64 {
-	stmnt := `
-		SELECT DISTINCT(txs.event_id)
-			FROM txs
-		WHERE tx_hash = $1
-		AND (txs.from_address = $2 OR txs.to_address = $2)`
-
-	rows, err := s.db.Queryx(stmnt, txid, address.String())
-	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+	if hasTxID {
+		where = append(where, "txs.tx_hash = :txid")
 	}
-
-	return s.eventsResults(rows)
-}
-
-func (s *Client) eventsForAsset(asset common.Asset) []uint64 {
-	stmnt := `
-		SELECT DISTINCT(txs.event_id)
-			FROM txs
-				LEFT JOIN coins ON txs.tx_hash = coins.tx_hash
-		WHERE coins.ticker = $1`
-
-	rows, err := s.db.Queryx(stmnt, asset.Ticker.String())
-	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+	if hasAsset {
+		q += " LEFT JOIN coins ON txs.tx_hash = coins.tx_hash"
+		where = append(where, "coins.ticker = :asset_ticker")
 	}
-
-	return s.eventsResults(rows)
+	q += " WHERE " + strings.Join(where, " AND ")
+	q += " LIMIT :limit OFFSET :offset"
+	return q
 }
 
 func (s *Client) eventsResults(rows *sqlx.Rows) []uint64 {
