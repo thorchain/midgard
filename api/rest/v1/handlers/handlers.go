@@ -61,14 +61,32 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 
 // (GET /v1/events?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
 func (h *Handlers) GetEvents(ctx echo.Context, params api.GetEventsParams) error {
-	addr, _ := common.NewAddress(*params.Address)
-	txData, err := h.store.GetTxData(addr)
+	err := helpers.ValidatePagination(params.Offset, params.Limit)
 	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxData")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	var address *common.Address
+	if params.Address != nil {
+		addr, _ := common.NewAddress(*params.Address)
+		address = &addr
+	}
+	var txID *common.TxID
+	if params.Txid != nil {
+		id, _ := common.NewTxID(*params.Txid)
+		txID = &id
+	}
+	var asset *common.Asset
+	if params.Asset != nil {
+		ast, _ := common.NewAsset(*params.Asset)
+		asset = &ast
+	}
+	events, err := h.store.GetEvents(address, txID, asset, params.Offset, params.Limit)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetEvents")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := helpers.PrepareTxDataResponseForAPI(txData)
+	response := helpers.PrepareEventsResponseForAPI(events)
 	return ctx.JSON(http.StatusOK, response)
 }
 
