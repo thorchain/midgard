@@ -3,6 +3,7 @@ package thorChain
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"net/http"
 	"sort"
 	"strings"
@@ -126,6 +127,14 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 		if maxID < evt.ID {
 			maxID = evt.ID
 			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
+		}
+		if evt.OutTxs == nil {
+			outTx, err := api.GetOutTx(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("GetOutTx failed")
+			} else {
+				evt.OutTxs = outTx
+			}
 		}
 		switch strings.ToLower(evt.Type) {
 		case "swap":
@@ -372,4 +381,49 @@ func (api *API) StopScan() error {
 	api.wg.Wait()
 
 	return nil
+}
+
+//Query output transaction for a given event from THORNode
+func (api *API) GetOutTx(event types.Event) (common.Txs, error) {
+	if event.InTx.ID.IsEmpty() {
+		return nil, nil
+	}
+	uri := fmt.Sprintf("%s/keysign/%d", api.baseUrl, event.Height)
+	api.logger.Debug().Msg(uri)
+	resp, err := api.netClient.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			api.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var chainTxout types.QueryResTxOut
+	if err := json.NewDecoder(resp.Body).Decode(&chainTxout); nil != err {
+		return nil, errors.Wrap(err, "failed to unmarshal chainTxout")
+	}
+	var outTxs common.Txs
+	for _, chain := range chainTxout.Chains {
+		for _, tx := range chain.TxArray {
+			if tx.InHash == event.InTx.ID {
+				outTx := common.Tx{
+					ID:        tx.OutHash,
+					ToAddress: tx.ToAddress,
+					Memo:      tx.Memo,
+					Chain:     tx.Chain,
+					Coins: common.Coins{
+						tx.Coin,
+					},
+				}
+				if outTx.ID.IsEmpty() {
+					outTx.ID = common.UnknownTxID
+				}
+				outTxs = append(outTxs, outTx)
+			}
+		}
+	}
+	return outTxs, nil
 }
