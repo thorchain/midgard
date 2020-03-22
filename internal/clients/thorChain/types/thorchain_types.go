@@ -156,3 +156,8 @@ type TxOutItem struct {
 	InHash    common.TxID    `json:"in_hash"`
 	OutHash   common.TxID    `json:"out_hash"`
 }
+
+type EventSlash struct {
+	Pool        common.Asset `json:"pool"`
+	SlashAmount []PoolAmt    `json:"slash_amount"`
+}
