@@ -777,7 +777,7 @@ func (s *Client) runeFee(asset common.Asset) (int64, error) {
 	return runeFeeTotal.Int64, nil
 }
 
-func (s *Client) runeSlahed(asset common.Asset) (int64, error) {
+func (s *Client) runeSlashed(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes
@@ -785,14 +785,14 @@ func (s *Client) runeSlahed(asset common.Asset) (int64, error) {
 		AND from_address = $2
 	`
 
-	var runeSlahed sql.NullInt64
+	var runeSlashed sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String(), slashEventAddress)
 
-	if err := row.Scan(&runeSlahed); err != nil {
-		return 0, errors.Wrap(err, "runeSlahed failed")
+	if err := row.Scan(&runeSlashed); err != nil {
+		return 0, errors.Wrap(err, "runeSlashed failed")
 	}
 
-	return runeSlahed.Int64, nil
+	return runeSlashed.Int64, nil
 }
 
 func (s *Client) runeStaked12m(asset common.Asset) (int64, error) {
@@ -1051,7 +1051,7 @@ func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth failed")
 	}
-	slash, err := s.runeSlahed(asset)
+	slash, err := s.runeSlashed(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth failed")
 	}

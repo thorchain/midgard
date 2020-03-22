@@ -40,7 +40,7 @@ func (s *Client) CreateSlashRecord(record models.EventSlash) error {
 		_, err := s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
-			slash.Pool.String(),
+			record.Pool.String(),
 			assetAmt,
 			runeAmt,
 			slashEventAddress,
