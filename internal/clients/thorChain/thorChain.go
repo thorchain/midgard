@@ -185,6 +185,12 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				api.logger.Err(err).Msg("processRefundEvent failed")
 				continue
 			}
+		case "slash":
+			err = api.processSlashEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processSlashEvent failed")
+				continue
+			}
 		default:
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 			continue
@@ -308,6 +314,21 @@ func (api *API) processRefundEvent(evt types.Event) error {
 	err = api.store.CreateRefundRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create refund record")
+	}
+	return nil
+}
+
+func (api *API) processSlashEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processSlashEvent")
+	var slash types.EventSlash
+	err := json.Unmarshal(evt.Event, &slash)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal slash event")
+	}
+	record := models.NewSlashEvent(slash, evt)
+	err = api.store.CreateSlashRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create slash record")
 	}
 	return nil
 }
