@@ -3,6 +3,7 @@ package thorChain
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"net/http"
 	"sort"
 	"strings"
@@ -127,6 +128,14 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 			maxID = evt.ID
 			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		}
+		if evt.OutTxs == nil {
+			outTx, err := api.GetOutTx(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("GetOutTx failed")
+			} else {
+				evt.OutTxs = outTx
+			}
+		}
 		switch strings.ToLower(evt.Type) {
 		case "swap":
 			err = api.processSwapEvent(evt)
@@ -174,6 +183,12 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 			err = api.processRefundEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processRefundEvent failed")
+				continue
+			}
+		case "slash":
+			err = api.processSlashEvent(evt)
+			if err != nil {
+				api.logger.Err(err).Msg("processSlashEvent failed")
 				continue
 			}
 		default:
@@ -303,6 +318,21 @@ func (api *API) processRefundEvent(evt types.Event) error {
 	return nil
 }
 
+func (api *API) processSlashEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processSlashEvent")
+	var slash types.EventSlash
+	err := json.Unmarshal(evt.Event, &slash)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal slash event")
+	}
+	record := models.NewSlashEvent(slash, evt)
+	err = api.store.CreateSlashRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create slash record")
+	}
+	return nil
+}
+
 // StartScan start to scan
 func (api *API) StartScan() error {
 	api.logger.Info().Msg("start thorchain event scanning")
@@ -372,4 +402,49 @@ func (api *API) StopScan() error {
 	api.wg.Wait()
 
 	return nil
+}
+
+//Query output transaction for a given event from THORNode
+func (api *API) GetOutTx(event types.Event) (common.Txs, error) {
+	if event.InTx.ID.IsEmpty() {
+		return nil, nil
+	}
+	uri := fmt.Sprintf("%s/keysign/%d", api.baseUrl, event.Height)
+	api.logger.Debug().Msg(uri)
+	resp, err := api.netClient.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			api.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var chainTxout types.QueryResTxOut
+	if err := json.NewDecoder(resp.Body).Decode(&chainTxout); nil != err {
+		return nil, errors.Wrap(err, "failed to unmarshal chainTxout")
+	}
+	var outTxs common.Txs
+	for _, chain := range chainTxout.Chains {
+		for _, tx := range chain.TxArray {
+			if tx.InHash == event.InTx.ID {
+				outTx := common.Tx{
+					ID:        tx.OutHash,
+					ToAddress: tx.ToAddress,
+					Memo:      tx.Memo,
+					Chain:     tx.Chain,
+					Coins: common.Coins{
+						tx.Coin,
+					},
+				}
+				if outTx.ID.IsEmpty() {
+					outTx.ID = common.UnknownTxID
+				}
+				outTxs = append(outTxs, outTx)
+			}
+		}
+	}
+	return outTxs, nil
 }

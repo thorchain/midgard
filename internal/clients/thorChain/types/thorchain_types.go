@@ -136,3 +136,28 @@ type EventGas struct {
 	GasType     string         `json:"gas_type"`
 	ReimburseTo []common.Asset `json:"reimburse_to"` // Determine which pool we are reimbursing to
 }
+
+type QueryResTxOut struct {
+	Chains map[common.Chain]ResTxOut `json:"chains"`
+}
+
+type ResTxOut struct {
+	Height  int64        `json:"height,string"`
+	Hash    common.TxID  `json:"hash"`
+	Chain   common.Chain `json:"chain"`
+	TxArray []TxOutItem  `json:"tx_array"`
+}
+
+type TxOutItem struct {
+	Chain     common.Chain   `json:"chain"`
+	ToAddress common.Address `json:"to"`
+	Coin      common.Coin    `json:"coin"`
+	Memo      common.Memo    `json:"memo"`
+	InHash    common.TxID    `json:"in_hash"`
+	OutHash   common.TxID    `json:"out_hash"`
+}
+
+type EventSlash struct {
+	Pool        common.Asset `json:"pool"`
+	SlashAmount []PoolAmt    `json:"slash_amount"`
+}

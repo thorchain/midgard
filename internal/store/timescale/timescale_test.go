@@ -1711,6 +1711,38 @@ var (
 			},
 		},
 	}
+	slashBNBEvent0 = models.EventSlash{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     24,
+			Status: "Success",
+			Height: 15,
+			Type:   "slash",
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		SlashAmount: []models.PoolAmount{
+			{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "RUNE-B1A",
+					Ticker: "RUNE",
+				},
+				Amount: 100,
+			},
+			{
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "BNB",
+					Ticker: "BNB",
+				},
+				Amount: -10,
+			},
+		},
+	}
 )
 
 type TimeScaleSuite struct {
