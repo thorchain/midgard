@@ -59,56 +59,34 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "OK")
 }
 
-// (GET /v1/tx/{address})
-func (h *Handlers) GetTxDetails(ctx echo.Context, address string) error {
-	addr, _ := common.NewAddress(address)
-	txData, err := h.store.GetTxData(addr)
+// (GET /v1/events?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
+func (h *Handlers) GetEvents(ctx echo.Context, params api.GetEventsParams) error {
+	err := helpers.ValidatePagination(params.Offset, params.Limit)
 	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxData")
+		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	var address *common.Address
+	if params.Address != nil {
+		addr, _ := common.NewAddress(*params.Address)
+		address = &addr
+	}
+	var txID *common.TxID
+	if params.Txid != nil {
+		id, _ := common.NewTxID(*params.Txid)
+		txID = &id
+	}
+	var asset *common.Asset
+	if params.Asset != nil {
+		ast, _ := common.NewAsset(*params.Asset)
+		asset = &ast
+	}
+	events, err := h.store.GetEvents(address, txID, asset, params.Offset, params.Limit)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetEvents")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := helpers.PrepareTxDataResponseForAPI(txData)
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/tx/{address}/asset/{asset})
-func (h *Handlers) GetTxDetailsByAddressAsset(ctx echo.Context, address, asset string) error {
-	addr, _ := common.NewAddress(address)
-	ass, _ := common.NewAsset(asset)
-	txData, err := h.store.GetTxDataByAddressAsset(addr, ass)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	response := helpers.PrepareTxDataResponseForAPI(txData)
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/tx/{address}/txid/{txid})
-func (h *Handlers) GetTxDetailsByAddressTxId(ctx echo.Context, address, txid string) error {
-	addr, _ := common.NewAddress(address)
-	txData, err := h.store.GetTxDataByAddressTxId(addr, txid)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	response := helpers.PrepareTxDataResponseForAPI(txData)
-	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/tx/asset/{asset})
-func (h *Handlers) GetTxDetailsByAsset(ctx echo.Context, asset string) error {
-	ass, _ := common.NewAsset(asset)
-	txData, err := h.store.GetTxDataByAsset(ass)
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetTxDataByAddressAsset")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	response := helpers.PrepareTxDataResponseForAPI(txData)
+	response := helpers.PrepareEventsResponseForAPI(events)
 	return ctx.JSON(http.StatusOK, response)
 }
 

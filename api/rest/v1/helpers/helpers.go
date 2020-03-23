@@ -12,6 +12,8 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
+const paginationMaxLimit = 50
+
 func ConvertAssetForAPI(asset common.Asset) *api.Asset {
 	assetString := api.Asset(asset.String())
 	return &assetString
@@ -90,10 +92,10 @@ func ConvertOptionsForAPI(options models.Options) *api.Option {
 	}
 }
 
-func PrepareTxDataResponseForAPI(txData []models.TxDetails) api.TxDetailedResponse {
-	var response api.TxDetailedResponse
+func PrepareEventsResponseForAPI(txData []models.EventDetails) api.EventsResponse {
+	var response api.EventsResponse
 	for _, d := range txData {
-		txD := api.TxDetails{
+		txD := api.EventDetails{
 			Date:    pointy.Int64(int64(d.Date)),
 			Events:  ConvertEventDataForAPI(d.Events),
 			Gas:     ConvertGasForAPI(d.Gas),
@@ -138,4 +140,15 @@ func ParseAssets(str string) (asts []common.Asset, err error) {
 		}
 	}
 	return asts, nil
+}
+
+// ValidatePagination validates offset and limit of request pagination.
+func ValidatePagination(offset, limit int64) error {
+	if offset < 0 {
+		return errors.New("offset value can not be negative")
+	}
+	if limit < 1 || paginationMaxLimit < limit {
+		return errors.Errorf("limit should be between 1 and %d", paginationMaxLimit)
+	}
+	return nil
 }
