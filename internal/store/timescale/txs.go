@@ -377,7 +377,7 @@ func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, err
 		return 0, 0, "eventBasic failed", "eventBasic failed", errors.Wrap(err, "eventBasic failed")
 	}
 
-	eventTime, err := s.txDate(height)
+	eventTime, err := s.getTimeOfBlock(height)
 	if err != nil {
 		return 0, 0, "", "", errors.Wrap(err, "")
 	}
