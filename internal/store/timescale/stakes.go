@@ -322,12 +322,12 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, 
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		runeStakedTotal, err := s.runeStakedTotal(asset)
+		runeStaked, err := s.runeStaked(asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		return int64(stakeUnits/poolUnits) * (int64(runeDepth) - int64(runeStakedTotal)), nil
+		return int64(stakeUnits/poolUnits) * (int64(runeDepth) - runeStaked), nil
 	}
 
 	return 0, nil
@@ -354,12 +354,12 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		assetStakedTotal, err := s.assetStakedTotal(asset)
+		assetStaked, err := s.assetStaked(asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		return int64(stakeUnits/poolUnits) * (int64(assetDepth) - int64(assetStakedTotal)), nil
+		return int64(stakeUnits/poolUnits) * (int64(assetDepth) - assetStaked), nil
 	}
 
 	return 0, nil
