@@ -1675,12 +1675,12 @@ func (s *Client) assetROI(asset common.Asset) (float64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "assetROI failed")
 	}
-	assetStakedTotal, err := s.assetStakedTotal(asset)
+	assetStaked, err := s.assetStaked(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetROI failed")
 	}
 
-	staked := float64(assetStakedTotal)
+	staked := float64(assetStaked)
 	depth := float64(assetDepth)
 
 	var roi float64
@@ -1696,12 +1696,12 @@ func (s *Client) assetROI12(asset common.Asset) (float64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "assetROI12 failed")
 	}
-	assetStakedTotal12m, err := s.assetStakedTotal12m(asset)
+	assetStaked12m, err := s.assetStaked12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetROI12 failed")
 	}
 
-	staked := float64(assetStakedTotal12m)
+	staked := float64(assetStaked12m)
 	depth := float64(assetDepth12m)
 
 	var roi float64
@@ -1717,11 +1717,11 @@ func (s *Client) runeROI(asset common.Asset) (float64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI failed")
 	}
-	runeStakedTotal, err := s.runeStakedTotal(asset)
+	runeStaked, err := s.runeStaked(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI failed")
 	}
-	staked := float64(runeStakedTotal)
+	staked := float64(runeStaked)
 	depth := float64(runeDepth)
 
 	var roi float64
@@ -1737,11 +1737,11 @@ func (s *Client) runeROI12(asset common.Asset) (float64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI12 failed")
 	}
-	runeStakedTotal12m, err := s.runeStakedTotal12m(asset)
+	runeStaked12m, err := s.runeStaked12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI12 failed")
 	}
-	staked := float64(runeStakedTotal12m)
+	staked := float64(runeStaked12m)
 	depth := float64(runeDepth12m)
 
 	var roi float64
