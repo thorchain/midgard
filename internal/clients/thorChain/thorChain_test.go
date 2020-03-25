@@ -68,7 +68,7 @@ package thorChain
 // 	// create the client , but we don't actually use it
 // 	client := &influxdb.Client{}
 //
-// 	thorchainApi, err := NewAPIClient(config.ThorChainConfiguration{
+// 	thorchainApi, err := NewClient(config.ThorChainConfiguration{
 // 		Scheme:      "http",
 // 		Host:        srv.Listener.Addr().String(),
 // 		ReadTimeout: time.Second,
