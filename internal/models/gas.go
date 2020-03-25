@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
