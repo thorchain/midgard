@@ -78,7 +78,7 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	// Setup thorchain BinanceClient scanner
-	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)
+	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, timescale)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create thorchain api instance")
 	}
