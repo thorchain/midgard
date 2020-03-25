@@ -15,7 +15,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -24,19 +23,18 @@ import (
 
 // API to talk to thorchain
 type API struct {
-	logger        zerolog.Logger
-	cfg           config.ThorChainConfiguration
-	baseUrl       string
-	baseRPCUrl    string
-	netClient     *http.Client
-	wg            *sync.WaitGroup
-	stopChan      chan struct{}
-	store         *timescale.Client
-	binanceClient *binance.Client
+	logger     zerolog.Logger
+	cfg        config.ThorChainConfiguration
+	baseUrl    string
+	baseRPCUrl string
+	netClient  *http.Client
+	wg         *sync.WaitGroup
+	stopChan   chan struct{}
+	store      *timescale.Client
 }
 
 // NewBinanceClient create a new instance of API which can talk to thorChain
-func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.Client, timescale *timescale.Client) (*API, error) {
+func NewAPIClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (*API, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
@@ -46,12 +44,11 @@ func NewAPIClient(cfg config.ThorChainConfiguration, binanceClient *binance.Clie
 		netClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
-		baseUrl:       fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
-		baseRPCUrl:    fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
-		stopChan:      make(chan struct{}),
-		wg:            &sync.WaitGroup{},
-		store:         timescale,
-		binanceClient: binanceClient,
+		baseUrl:    fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
+		baseRPCUrl: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
+		stopChan:   make(chan struct{}),
+		wg:         &sync.WaitGroup{},
+		store:      timescale,
 	}, nil
 }
 
