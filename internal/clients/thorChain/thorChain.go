@@ -31,6 +31,7 @@ type API struct {
 	wg         *sync.WaitGroup
 	stopChan   chan struct{}
 	store      *timescale.Client
+	handlerMap map[string]interface{}
 }
 
 // NewClient create a new instance of client which can talk to thorChain
@@ -38,6 +39,16 @@ func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
+	handlerMap := make(map[string]interface{})
+	handlerMap[types.EventStake{}.Type()] = types.EventStake{}
+	handlerMap[types.EventSwap{}.Type()] = types.EventSwap{}
+	handlerMap[types.EventUnstake{}.Type()] = types.EventUnstake{}
+	handlerMap[types.EventRewards{}.Type()] = types.EventRewards{}
+	handlerMap[types.EventRefund{}.Type()] = types.EventRefund{}
+	handlerMap[types.EventAdd{}.Type()] = types.EventAdd{}
+	handlerMap[types.EventPool{}.Type()] = types.EventPool{}
+	handlerMap[types.EventGas{}.Type()] = types.EventGas{}
+	handlerMap[types.EventSlash{}.Type()] = types.EventSlash{}
 	return &API{
 		cfg:    cfg,
 		logger: log.With().Str("module", "thorchain").Logger(),
@@ -49,6 +60,7 @@ func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (
 		stopChan:   make(chan struct{}),
 		wg:         &sync.WaitGroup{},
 		store:      timescale,
+		handlerMap: handlerMap,
 	}, nil
 }
 
@@ -130,6 +142,14 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				evt.OutTxs = outTx
 			}
 		}
+		ev, ok := api.handlerMap[evt.Type]
+		if ok {
+			t := ev.(types.ThorchainEvent)
+			api.logger.Debug().Msg("process " + t.Type())
+			err := json.Unmarshal(evt.Event, &ev)
+			fmt.Println(err)
+		}
+
 		switch strings.ToLower(evt.Type) {
 		case "swap":
 			err = api.processSwapEvent(evt)
