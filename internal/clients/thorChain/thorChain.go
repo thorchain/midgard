@@ -33,8 +33,8 @@ type API struct {
 	store      *timescale.Client
 }
 
-// NewBinanceClient create a new instance of API which can talk to thorChain
-func NewAPIClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (*API, error) {
+// NewClient create a new instance of client which can talk to thorChain
+func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (*API, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
@@ -106,7 +106,7 @@ func (api *API) getEvents(id int64) ([]types.Event, error) {
 	return events, nil
 }
 
-// returns (maxID, events, err)
+// returns (maxID, len(events), err)
 func (api *API) processEvents(id int64) (int64, int, error) {
 	events, err := api.getEvents(id)
 	if err != nil {
@@ -119,12 +119,9 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 	})
 
 	maxID := id
-	// pts := make([]client.Point, 0)
 	for _, evt := range events {
-		if maxID < evt.ID {
-			maxID = evt.ID
-			api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
-		}
+		maxID = evt.ID
+		api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		if evt.OutTxs == nil {
 			outTx, err := api.GetOutTx(evt)
 			if err != nil {
@@ -138,59 +135,49 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 			err = api.processSwapEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processSwapEvent failed")
-				continue
 			}
 		case "stake":
 			err = api.processStakingEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processStakingEvent failed")
-				continue
 			}
 		case "unstake":
 			err = api.processUnstakeEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processUnstakeEvent failed")
-				continue
 			}
 		case "rewards":
 			err = api.processRewardEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processRewardEvent failed")
-				continue
 			}
 		case "add":
 			err = api.processAddEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processAddEvent failed")
-				continue
 			}
 		case "pool":
 			err = api.processPoolEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processPoolEvent failed")
-				continue
 			}
 		case "gas":
 			err = api.processGasEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processGasEvent failed")
-				continue
 			}
 		case "refund":
 			err = api.processRefundEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processRefundEvent failed")
-				continue
 			}
 		case "slash":
 			err = api.processSlashEvent(evt)
 			if err != nil {
 				api.logger.Err(err).Msg("processSlashEvent failed")
-				continue
 			}
 		default:
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
-			continue
 		}
 	}
 	return maxID, len(events), nil
