@@ -31,7 +31,7 @@ type API struct {
 	wg         *sync.WaitGroup
 	stopChan   chan struct{}
 	store      *timescale.Client
-	handlerMap map[string]interface{}
+	handlerMap map[string]types.ThorchainEvent
 }
 
 // NewClient create a new instance of client which can talk to thorChain
@@ -39,7 +39,7 @@ func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
-	handlerMap := make(map[string]interface{})
+	handlerMap := make(map[string]types.ThorchainEvent)
 	handlerMap[types.EventStake{}.Type()] = types.EventStake{}
 	handlerMap[types.EventSwap{}.Type()] = types.EventSwap{}
 	handlerMap[types.EventUnstake{}.Type()] = types.EventUnstake{}
