@@ -1,28 +1,25 @@
-package thorChain
+package thorchain
 
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/thorchain/midgard/internal/common"
 	"net/http"
 	"sort"
-	"strings"
-
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
 )
 
-// API to talk to thorchain
-type API struct {
+// Client to talk to thorchain
+type Client struct {
 	logger     zerolog.Logger
 	cfg        config.ThorChainConfiguration
 	baseUrl    string
@@ -31,25 +28,18 @@ type API struct {
 	wg         *sync.WaitGroup
 	stopChan   chan struct{}
 	store      *timescale.Client
-	handlerMap map[string]types.ThorchainEvent
+	handlers   map[string]handlerFunc
 }
 
+type handlerFunc func(types.Event) error
+
 // NewClient create a new instance of client which can talk to thorChain
-func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (*API, error) {
+func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (*Client, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
-	handlerMap := make(map[string]types.ThorchainEvent)
-	handlerMap[types.EventStake{}.Type()] = types.EventStake{}
-	handlerMap[types.EventSwap{}.Type()] = types.EventSwap{}
-	handlerMap[types.EventUnstake{}.Type()] = types.EventUnstake{}
-	handlerMap[types.EventRewards{}.Type()] = types.EventRewards{}
-	handlerMap[types.EventRefund{}.Type()] = types.EventRefund{}
-	handlerMap[types.EventAdd{}.Type()] = types.EventAdd{}
-	handlerMap[types.EventPool{}.Type()] = types.EventPool{}
-	handlerMap[types.EventGas{}.Type()] = types.EventGas{}
-	handlerMap[types.EventSlash{}.Type()] = types.EventSlash{}
-	return &API{
+
+	cli := &Client{
 		cfg:    cfg,
 		logger: log.With().Str("module", "thorchain").Logger(),
 		netClient: &http.Client{
@@ -60,11 +50,21 @@ func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (
 		stopChan:   make(chan struct{}),
 		wg:         &sync.WaitGroup{},
 		store:      timescale,
-		handlerMap: handlerMap,
-	}, nil
+		handlers:   map[string]handlerFunc{},
+	}
+	cli.handlers[types.StakeEventType] = cli.processStakeEvent
+	cli.handlers[types.SwapEventType] = cli.processSwapEvent
+	cli.handlers[types.UnstakeEventType] = cli.processUnstakeEvent
+	cli.handlers[types.RewardEventType] = cli.processRewardEvent
+	cli.handlers[types.RefundEventType] = cli.processRefundEvent
+	cli.handlers[types.AddEventType] = cli.processAddEvent
+	cli.handlers[types.PoolEventType] = cli.processPoolEvent
+	cli.handlers[types.GasEventType] = cli.processGasEvent
+	cli.handlers[types.SlashEventType] = cli.processSlashEvent
+	return cli, nil
 }
 
-func (api *API) getGenesis() (types.Genesis, error) {
+func (api *Client) getGenesis() (types.Genesis, error) {
 	uri := fmt.Sprintf("%s/genesis", api.baseRPCUrl)
 	api.logger.Debug().Msg(uri)
 	resp, err := api.netClient.Get(uri)
@@ -86,7 +86,7 @@ func (api *API) getGenesis() (types.Genesis, error) {
 	return genesis, nil
 }
 
-func (api *API) processGenesis(genesisTime types.Genesis) error {
+func (api *Client) processGenesis(genesisTime types.Genesis) error {
 	api.logger.Debug().Msg("processGenesisTime")
 
 	record := models.NewGenesis(genesisTime)
@@ -97,7 +97,7 @@ func (api *API) processGenesis(genesisTime types.Genesis) error {
 	return nil
 }
 
-func (api *API) getEvents(id int64) ([]types.Event, error) {
+func (api *Client) getEvents(id int64) ([]types.Event, error) {
 	uri := fmt.Sprintf("%s/events/%d", api.baseUrl, id)
 	api.logger.Debug().Msg(uri)
 	resp, err := api.netClient.Get(uri)
@@ -119,7 +119,7 @@ func (api *API) getEvents(id int64) ([]types.Event, error) {
 }
 
 // returns (maxID, len(events), err)
-func (api *API) processEvents(id int64) (int64, int, error) {
+func (api *Client) processEvents(id int64) (int64, int, error) {
 	events, err := api.getEvents(id)
 	if err != nil {
 		return id, 0, errors.Wrap(err, "failed to get events")
@@ -142,68 +142,22 @@ func (api *API) processEvents(id int64) (int64, int, error) {
 				evt.OutTxs = outTx
 			}
 		}
-		ev, ok := api.handlerMap[evt.Type]
-		if ok {
-			t := ev.(types.ThorchainEvent)
-			api.logger.Debug().Msg("process " + t.Type())
-			err := json.Unmarshal(evt.Event, &ev)
-			fmt.Println(err)
-		}
 
-		switch strings.ToLower(evt.Type) {
-		case "swap":
-			err = api.processSwapEvent(evt)
+		h, ok := api.handlers[evt.Type]
+		if ok {
+			api.logger.Debug().Msg("process " + evt.Type)
+			err = h(evt)
 			if err != nil {
-				api.logger.Err(err).Msg("processSwapEvent failed")
+				api.logger.Err(err).Msg("process event failed")
 			}
-		case "stake":
-			err = api.processStakingEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processStakingEvent failed")
-			}
-		case "unstake":
-			err = api.processUnstakeEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processUnstakeEvent failed")
-			}
-		case "rewards":
-			err = api.processRewardEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processRewardEvent failed")
-			}
-		case "add":
-			err = api.processAddEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processAddEvent failed")
-			}
-		case "pool":
-			err = api.processPoolEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processPoolEvent failed")
-			}
-		case "gas":
-			err = api.processGasEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processGasEvent failed")
-			}
-		case "refund":
-			err = api.processRefundEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processRefundEvent failed")
-			}
-		case "slash":
-			err = api.processSlashEvent(evt)
-			if err != nil {
-				api.logger.Err(err).Msg("processSlashEvent failed")
-			}
-		default:
+		} else {
 			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 		}
 	}
 	return maxID, len(events), nil
 }
 
-func (api *API) processSwapEvent(evt types.Event) error {
+func (api *Client) processSwapEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processSwapEvent")
 	var swap types.EventSwap
 	err := json.Unmarshal(evt.Event, &swap)
@@ -218,8 +172,8 @@ func (api *API) processSwapEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processStakingEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processStakingEvent")
+func (api *Client) processStakeEvent(evt types.Event) error {
+	api.logger.Debug().Msg("processStakeEvent")
 	var stake types.EventStake
 	err := json.Unmarshal(evt.Event, &stake)
 	if err != nil {
@@ -233,7 +187,7 @@ func (api *API) processStakingEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processUnstakeEvent(evt types.Event) error {
+func (api *Client) processUnstakeEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processUnstakeEvent")
 	var unstake types.EventUnstake
 	err := json.Unmarshal(evt.Event, &unstake)
@@ -248,7 +202,7 @@ func (api *API) processUnstakeEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processRewardEvent(evt types.Event) error {
+func (api *Client) processRewardEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processRewardEvent")
 	var rewards types.EventRewards
 	err := json.Unmarshal(evt.Event, &rewards)
@@ -263,7 +217,7 @@ func (api *API) processRewardEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processAddEvent(evt types.Event) error {
+func (api *Client) processAddEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processAddEvent")
 	var add types.EventAdd
 	err := json.Unmarshal(evt.Event, &add)
@@ -278,7 +232,7 @@ func (api *API) processAddEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processPoolEvent(evt types.Event) error {
+func (api *Client) processPoolEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processPoolEvent")
 	var pool types.EventPool
 	err := json.Unmarshal(evt.Event, &pool)
@@ -293,7 +247,7 @@ func (api *API) processPoolEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processGasEvent(evt types.Event) error {
+func (api *Client) processGasEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processGasEvent")
 	var gas types.EventGas
 	err := json.Unmarshal(evt.Event, &gas)
@@ -307,7 +261,7 @@ func (api *API) processGasEvent(evt types.Event) error {
 	}
 	return nil
 }
-func (api *API) processRefundEvent(evt types.Event) error {
+func (api *Client) processRefundEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processRefundEvent")
 	var refund types.EventRefund
 	err := json.Unmarshal(evt.Event, &refund)
@@ -322,7 +276,7 @@ func (api *API) processRefundEvent(evt types.Event) error {
 	return nil
 }
 
-func (api *API) processSlashEvent(evt types.Event) error {
+func (api *Client) processSlashEvent(evt types.Event) error {
 	api.logger.Debug().Msg("processSlashEvent")
 	var slash types.EventSlash
 	err := json.Unmarshal(evt.Event, &slash)
@@ -338,7 +292,7 @@ func (api *API) processSlashEvent(evt types.Event) error {
 }
 
 // StartScan start to scan
-func (api *API) StartScan() error {
+func (api *Client) StartScan() error {
 	api.logger.Info().Msg("start thorchain event scanning")
 	if !api.cfg.EnableScan {
 		api.logger.Debug().Msg("Scan not enabled.")
@@ -349,7 +303,7 @@ func (api *API) StartScan() error {
 	return nil
 }
 
-func (api *API) scan() {
+func (api *Client) scan() {
 	api.logger.Info().Msg("getting thorchain genesis")
 	genesisTime, err := api.getGenesis()
 	if err != nil {
@@ -400,7 +354,7 @@ func (api *API) scan() {
 	}
 }
 
-func (api *API) StopScan() error {
+func (api *Client) StopScan() error {
 	api.logger.Info().Msg("stop scan request received")
 	close(api.stopChan)
 	api.wg.Wait()
@@ -409,7 +363,7 @@ func (api *API) StopScan() error {
 }
 
 //Query output transaction for a given event from THORNode
-func (api *API) GetOutTx(event types.Event) (common.Txs, error) {
+func (api *Client) GetOutTx(event types.Event) (common.Txs, error) {
 	if event.InTx.ID.IsEmpty() {
 		return nil, nil
 	}
