@@ -11,6 +11,7 @@ var (
 	BNBAsset     = Asset{"BNB", "BNB", "BNB"}
 	RuneA1FAsset = Asset{"BNB", "RUNE-A1F", "RUNE"} // testnet
 	RuneB1AAsset = Asset{"BNB", "RUNE-B1A", "RUNE"} // mainnet
+	EmptyAsset   = Asset{}
 )
 
 type Asset struct {
