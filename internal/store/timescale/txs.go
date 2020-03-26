@@ -26,7 +26,7 @@ func (s *Client) GetEvents(address common.Address, txID common.TxID, asset commo
 
 func (s *Client) getEvents(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.EventDetails, error) {
 	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), false, limit, offset)
-	rows, err := s.db.Queryx(q, args)
+	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "getEvents failed")
 	}
@@ -48,7 +48,7 @@ func (s *Client) getEvents(address common.Address, txID common.TxID, asset commo
 
 func (s *Client) getEventsCount(address common.Address, txID common.TxID, asset common.Asset) (int64, error) {
 	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), true, 0, 0)
-	row := s.db.QueryRow(q, args)
+	row := s.db.QueryRow(q, args...)
 
 	var count sql.NullInt64
 	if err := row.Scan(&count); err != nil {
@@ -61,7 +61,7 @@ func (s *Client) getEventsCount(address common.Address, txID common.TxID, asset 
 }
 
 func (s *Client) buildEventsQuery(address, txID, asset string, isCount bool, limit, offset int64) (string, []interface{}) {
-	sb := sqlbuilder.NewSelectBuilder()
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	if isCount {
 		sb.Select("COUNT(DISTINCT(txs.event_id))")
 	} else {
