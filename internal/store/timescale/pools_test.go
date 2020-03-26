@@ -953,13 +953,13 @@ func (s *TimeScaleSuite) TestBuyTxAverage(c *C) {
 
 func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	// No stake
-	asset, _ := common.NewAsset("BNB.BOLT-014")
+	asset, _ := common.NewAsset("BNB.TUSDB-000")
 	txAverage, err := s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(0))
 
 	// Stake
-	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
+	err = s.Store.CreateStakeRecord(stakeTusdbEvent0)
 	c.Assert(err, IsNil)
 
 	txAverage, err = s.Store.poolTxAverage(asset)
@@ -967,22 +967,30 @@ func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	c.Assert(txAverage, Equals, uint64(0))
 
 	// Sell Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	err = s.Store.CreateSwapRecord(swapSellTusdb2RuneEvent0)
 	c.Assert(err, IsNil)
 
 	txAverage, err = s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(txAverage, Equals, uint64(66211075), Commentf("%d", txAverage))
+	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
 
-	// Buy Swap
-	swap := swapBuyRune2BoltEvent1
+	// Sell Swap
+	swap := swapSellTusdb2RuneEvent0
 	swap.ID += 2
 	err = s.Store.CreateSwapRecord(swap)
 	c.Assert(err, IsNil)
 
 	txAverage, err = s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(txAverage, Equals, uint64(140331491), Commentf("%d", txAverage))
+	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
+
+	//Buy Swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2TusdbEvent0)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.poolTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
 }
 
 func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
