@@ -1358,12 +1358,12 @@ func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
 	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&avg); err != nil {
-		return 0, errors.Wrap(err, "buyTxAverage failed")
+		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 
 	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
-		return 0, errors.Wrap(err, "buyTxAverage failed")
+		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 
 	return uint64(avg.Float64 * priceInRune), nil

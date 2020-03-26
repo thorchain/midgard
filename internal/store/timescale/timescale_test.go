@@ -1743,6 +1743,157 @@ var (
 			},
 		},
 	}
+	stakeTusdbEvent0 = models.EventStake{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     25,
+			Status: "Success",
+			Height: 15,
+			Type:   "stake",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1020DF",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 1e+10,
+					},
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "TUSDB-000",
+							Ticker: "TUSDB",
+						},
+						Amount: 1e+10,
+					},
+				},
+				Memo: "stake:TUSDB-000",
+			},
+			OutTxs: []common.Tx{
+				common.Tx{
+					ID: "0000000000000000000000000000000000000000000000000000000000000000",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TUSDB-000",
+			Ticker: "TUSDB",
+		},
+		StakeUnits: 1342175000,
+	}
+	swapSellTusdb2RuneEvent0 = models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     26,
+			Status: "Success",
+			Height: 15,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "15D604F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024B8",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "TUSDB-000",
+							Ticker: "TUSDB",
+						},
+						Amount: 10,
+					},
+				},
+				Memo: "swap:RUNE-B1A",
+			},
+			OutTxs: []common.Tx{
+				common.Tx{
+					ID:          "CDA6548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-B1A",
+								Ticker: "RUNE",
+							},
+							Amount: 10,
+						},
+					},
+					Memo: "OUTBOUND:15D604F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024B8",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TUSDB-000",
+			Ticker: "TUSDB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
+	swapBuyRune2TusdbEvent0 = models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     30,
+			Status: "Success",
+			Height: 15,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "64D614F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 10,
+					},
+				},
+				Memo: "swap:TUSDB-000",
+			},
+			OutTxs: []common.Tx{
+				common.Tx{
+					ID:          "C7D6648D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "TUSDB-000",
+								Ticker: "TUSDB",
+							},
+							Amount: 10,
+						},
+					},
+					Memo: "OUTBOUND:64D614F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "TUSDB-000",
+			Ticker: "TUSDB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
 )
 
 type TimeScaleSuite struct {
