@@ -77,13 +77,13 @@ func (h *Handlers) GetEvents(ctx echo.Context, params api.GetEventsParams) error
 	if params.Asset != nil {
 		asset, _ = common.NewAsset(*params.Asset)
 	}
-	events, _, err := h.store.GetEvents(address, txID, asset, params.Offset, params.Limit)
+	events, count, err := h.store.GetEvents(address, txID, asset, params.Offset, params.Limit)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetEvents")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := helpers.PrepareEventsResponseForAPI(events)
+	response := helpers.PrepareEventsResponseForAPI(events, count)
 	return ctx.JSON(http.StatusOK, response)
 }
 
