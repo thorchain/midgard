@@ -2,80 +2,85 @@ package timescale
 
 import (
 	"database/sql"
-	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
+	"github.com/huandu/go-sqlbuilder"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 // GetEvents returns events with pagination and given query params.
-func (s *Client) GetEvents(address *common.Address, txID *common.TxID, asset *common.Asset, offset, limit int64) ([]models.EventDetails, error) {
-	hasAddress := address != nil
-	hasTxID := txID != nil
-	hasAsset := asset != nil
-	q := s.buildEventsQuery(hasAddress, hasTxID, hasAsset)
-
-	params := map[string]interface{}{
-		"offset": offset,
-		"limit":  limit,
-	}
-	if address != nil {
-		params["address"] = address.String()
-	}
-	if txID != nil {
-		params["txid"] = txID.String()
-	}
-	if asset != nil {
-		params["asset_ticker"] = asset.Ticker.String()
-	}
-	rows, err := s.db.NamedQuery(q, params)
+func (s *Client) GetEvents(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.EventDetails, int64, error) {
+	events, err := s.getEvents(address, txID, asset, offset, limit)
 	if err != nil {
-		s.logger.Err(err).Msg("Failed")
+		return nil, 0, errors.Wrap(err, "GetEvents failed")
 	}
-	events := s.eventsResults(rows)
-	return s.processEvents(events)
+
+	count, err := s.getEventsCount(address, txID, asset)
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "GetEvents failed")
+	}
+	return events, count, nil
 }
 
-func (s *Client) buildEventsQuery(hasAddress, hasTxID, hasAsset bool) string {
-	q := `SELECT DISTINCT(txs.event_id) FROM txs`
-	where := []string{}
-	if hasAddress {
-		where = append(where, "(txs.from_address = :address OR txs.to_address = :address)")
-	}
-	if hasTxID {
-		where = append(where, "txs.tx_hash = :txid")
-	}
-	if hasAsset {
-		q += " LEFT JOIN coins ON txs.tx_hash = coins.tx_hash"
-		where = append(where, "coins.ticker = :asset_ticker")
+func (s *Client) getEvents(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.EventDetails, error) {
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), false, limit, offset)
+	rows, err := s.db.Queryx(q, args)
+	if err != nil {
+		return nil, errors.Wrap(err, "getEvents failed")
 	}
 
-	if len(where) > 0 {
-		q += " WHERE " + strings.Join(where, " AND ")
-	}
-	q += " LIMIT :limit OFFSET :offset"
-	return q
-}
-
-func (s *Client) eventsResults(rows *sqlx.Rows) []uint64 {
 	var events []uint64
-
 	for rows.Next() {
 		results := make(map[string]interface{})
 		err := rows.MapScan(results)
 		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
+			return nil, errors.Wrap(err, "MapScan error")
 		}
 
-		eventId, _ := results["event_id"].(int64)
-		events = append(events, uint64(eventId))
+		eventID, _ := results["event_id"].(int64)
+		events = append(events, uint64(eventID))
 	}
 
-	return events
+	return s.processEvents(events)
+}
+
+func (s *Client) getEventsCount(address common.Address, txID common.TxID, asset common.Asset) (int64, error) {
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), true, 0, 0)
+	row := s.db.QueryRow(q, args)
+
+	var count sql.NullInt64
+	if err := row.Scan(&count); err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, errors.Wrap(err, "getEventsCount failed")
+	}
+	return count.Int64, nil
+}
+
+func (s *Client) buildEventsQuery(address, txID, asset string, isCount bool, limit, offset int64) (string, []interface{}) {
+	sb := sqlbuilder.NewSelectBuilder()
+	if isCount {
+		sb.Select("COUNT(DISTINCT(txs.event_id))")
+	} else {
+		sb.Select("DISTINCT(txs.event_id)")
+		sb.Limit(int(limit))
+		sb.Offset(int(offset))
+	}
+	sb.From("txs")
+	if address != "" {
+		sb.Where(sb.Or(sb.Equal("txs.from_address", address), sb.Equal("txs.to_address", address)))
+	}
+	if txID != "" {
+		sb.Where(sb.Equal("txs.tx_hash", txID))
+	}
+	if asset != "" {
+		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
+		sb.Where(sb.Equal("coins.ticker", asset))
+	}
+	return sb.Build()
 }
 
 func (s *Client) processEvents(events []uint64) ([]models.EventDetails, error) {

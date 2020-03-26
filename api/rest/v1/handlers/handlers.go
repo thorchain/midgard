@@ -65,22 +65,19 @@ func (h *Handlers) GetEvents(ctx echo.Context, params api.GetEventsParams) error
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 	}
-	var address *common.Address
+	var address common.Address
 	if params.Address != nil {
-		addr, _ := common.NewAddress(*params.Address)
-		address = &addr
+		address, _ = common.NewAddress(*params.Address)
 	}
-	var txID *common.TxID
+	var txID common.TxID
 	if params.Txid != nil {
-		id, _ := common.NewTxID(*params.Txid)
-		txID = &id
+		txID, _ = common.NewTxID(*params.Txid)
 	}
-	var asset *common.Asset
+	var asset common.Asset
 	if params.Asset != nil {
-		ast, _ := common.NewAsset(*params.Asset)
-		asset = &ast
+		asset, _ = common.NewAsset(*params.Asset)
 	}
-	events, err := h.store.GetEvents(address, txID, asset, params.Offset, params.Limit)
+	events, _, err := h.store.GetEvents(address, txID, asset, params.Offset, params.Limit)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetEvents")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
