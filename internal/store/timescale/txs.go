@@ -52,7 +52,10 @@ func (s *Client) buildEventsQuery(hasAddress, hasTxID, hasAsset bool) string {
 		q += " LEFT JOIN coins ON txs.tx_hash = coins.tx_hash"
 		where = append(where, "coins.ticker = :asset_ticker")
 	}
-	q += " WHERE " + strings.Join(where, " AND ")
+
+	if len(where) > 0 {
+		q += " WHERE " + strings.Join(where, " AND ")
+	}
 	q += " LIMIT :limit OFFSET :offset"
 	return q
 }
