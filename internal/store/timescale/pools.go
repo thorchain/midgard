@@ -1406,16 +1406,19 @@ func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
-	buySlipAverage, err := s.buySlipAverage(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolSlipAverage failed")
-	}
+	stmnt := `
+		SELECT AVG(trade_slip)
+		FROM swaps
+		WHERE pool = $1
+	`
 
-	sellSlipAverage, err := s.sellSlipAverage(asset)
-	if err != nil {
+	var poolSlipAverage sql.NullFloat64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&poolSlipAverage); err != nil {
 		return 0, errors.Wrap(err, "poolSlipAverage failed")
 	}
-	return (buySlipAverage + sellSlipAverage) / 2, nil
+	return poolSlipAverage.Float64, nil
 }
 
 func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
