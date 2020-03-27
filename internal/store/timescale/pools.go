@@ -1455,7 +1455,11 @@ func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
 
-	return uint64(buyFeeAverage.Float64), nil
+	priceInRune, err := s.GetPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "buyFeeAverage failed")
+	}
+	return uint64((buyFeeAverage.Float64) * priceInRune), nil
 }
 
 func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
