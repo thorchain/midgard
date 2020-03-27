@@ -15,42 +15,56 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
 )
 
 // Client to talk to thorchain
 type Client struct {
-	logger     zerolog.Logger
-	cfg        config.ThorChainConfiguration
-	baseUrl    string
-	baseRPCUrl string
-	netClient  *http.Client
-	wg         *sync.WaitGroup
-	stopChan   chan struct{}
-	store      *timescale.Client
-	handlers   map[string]handlerFunc
+	thorchainEndpoint  string
+	tendermintEndpoint string
+	readTimeout        time.Duration
+	noEventsBackoff    time.Duration
+	store              store
+	httpClient         *http.Client
+	handlers           map[string]handlerFunc
+	logger             zerolog.Logger
+	stopChan           chan struct{}
+	wg                 sync.WaitGroup
+}
+
+type store interface {
+	CreateGenesis(genesis models.Genesis) (int64, error)
+	CreateSwapRecord(record models.EventSwap) error
+	CreateStakeRecord(record models.EventStake) error
+	CreateUnStakesRecord(record models.EventUnstake) error
+	CreateRewardRecord(record models.EventReward) error
+	CreateAddRecord(record models.EventAdd) error
+	CreatePoolRecord(record models.EventPool) error
+	CreateGasRecord(record models.EventGas) error
+	CreateRefundRecord(record models.EventRefund) error
+	CreateSlashRecord(record models.EventSlash) error
+	GetMaxID() (int64, error)
 }
 
 type handlerFunc func(types.Event) error
 
 // NewClient create a new instance of client which can talk to thorChain
-func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (*Client, error) {
+func NewClient(cfg config.ThorChainConfiguration, s store) (*Client, error) {
 	if len(cfg.Host) == 0 {
 		return nil, errors.New("thorchain host is empty")
 	}
 
 	cli := &Client{
-		cfg:    cfg,
-		logger: log.With().Str("module", "thorchain").Logger(),
-		netClient: &http.Client{
+		thorchainEndpoint:  fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
+		tendermintEndpoint: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
+		readTimeout:        cfg.ReadTimeout,
+		noEventsBackoff:    cfg.NoEventsBackoff,
+		store:              s,
+		httpClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
-		baseUrl:    fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
-		baseRPCUrl: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
-		stopChan:   make(chan struct{}),
-		wg:         &sync.WaitGroup{},
-		store:      timescale,
-		handlers:   map[string]handlerFunc{},
+		handlers: map[string]handlerFunc{},
+		logger:   log.With().Str("module", "thorchain").Logger(),
+		stopChan: make(chan struct{}),
 	}
 	cli.handlers[types.StakeEventType] = cli.processStakeEvent
 	cli.handlers[types.SwapEventType] = cli.processSwapEvent
@@ -65,9 +79,9 @@ func NewClient(cfg config.ThorChainConfiguration, timescale *timescale.Client) (
 }
 
 func (api *Client) getGenesis() (types.Genesis, error) {
-	uri := fmt.Sprintf("%s/genesis", api.baseRPCUrl)
+	uri := fmt.Sprintf("%s/genesis", api.tendermintEndpoint)
 	api.logger.Debug().Msg(uri)
-	resp, err := api.netClient.Get(uri)
+	resp, err := api.httpClient.Get(uri)
 	if err != nil {
 		return types.Genesis{}, err
 	}
@@ -98,9 +112,9 @@ func (api *Client) processGenesis(genesisTime types.Genesis) error {
 }
 
 func (api *Client) getEvents(id int64) ([]types.Event, error) {
-	uri := fmt.Sprintf("%s/events/%d", api.baseUrl, id)
+	uri := fmt.Sprintf("%s/events/%d", api.thorchainEndpoint, id)
 	api.logger.Debug().Msg(uri)
-	resp, err := api.netClient.Get(uri)
+	resp, err := api.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -294,10 +308,6 @@ func (api *Client) processSlashEvent(evt types.Event) error {
 // StartScan start to scan
 func (api *Client) StartScan() error {
 	api.logger.Info().Msg("start thorchain event scanning")
-	if !api.cfg.EnableScan {
-		api.logger.Debug().Msg("Scan not enabled.")
-		return nil
-	}
 	api.wg.Add(1)
 	go api.scan()
 	return nil
@@ -344,8 +354,8 @@ func (api *Client) scan() {
 			if events == 0 { // nothing in it
 				select {
 				case <-api.stopChan:
-				case <-time.After(api.cfg.NoEventsBackoff):
-					api.logger.Debug().Str("NoEventsBackoff", api.cfg.NoEventsBackoff.String()).Msg("Finished executing NoEventsBackoff")
+				case <-time.After(api.noEventsBackoff):
+					api.logger.Debug().Str("NoEventsBackoff", api.noEventsBackoff.String()).Msg("Finished executing NoEventsBackoff")
 				}
 				continue
 			}
@@ -367,9 +377,9 @@ func (api *Client) GetOutTx(event types.Event) (common.Txs, error) {
 	if event.InTx.ID.IsEmpty() {
 		return nil, nil
 	}
-	uri := fmt.Sprintf("%s/keysign/%d", api.baseUrl, event.Height)
+	uri := fmt.Sprintf("%s/keysign/%d", api.thorchainEndpoint, event.Height)
 	api.logger.Debug().Msg(uri)
-	resp, err := api.netClient.Get(uri)
+	resp, err := api.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
