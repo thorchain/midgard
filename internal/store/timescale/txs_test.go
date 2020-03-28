@@ -5,7 +5,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *TimeScaleSuite) TestGetEventsByAddress(c *C) {
+func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
 		c.Fatal(err)
@@ -16,7 +16,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddress(c *C) {
 	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	events, err := s.Store.GetEvents(&address, nil, nil, 0, 1)
+	events, _, err := s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
@@ -53,7 +53,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddress(c *C) {
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	events, err = s.Store.GetEvents(&address, nil, nil, 0, 2)
+	events, _, err = s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, 0, 2)
 	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[1].Height * 3)
@@ -87,7 +87,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddress(c *C) {
 	c.Assert(events[1].Events.Fee, Equals, uint64(0))
 }
 
-func (s *TimeScaleSuite) TestGetEventsByAddressAsset(c *C) {
+func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
 		c.Fatal(err)
@@ -99,7 +99,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddressAsset(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
-	events, err := s.Store.GetEvents(&address, nil, &asset, 0, 1)
+	events, _, err := s.Store.GetTxDetails(address, common.EmptyTxID, asset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
@@ -138,7 +138,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddressAsset(c *C) {
 
 	address, _ = common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	events, err = s.Store.GetEvents(&address, nil, &asset, 0, 1)
+	events, _, err = s.Store.GetTxDetails(address, common.EmptyTxID, asset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
@@ -172,7 +172,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddressAsset(c *C) {
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 }
 
-func (s *TimeScaleSuite) TestGetEventsByAddressTxID(c *C) {
+func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
 		c.Fatal(err)
@@ -184,7 +184,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddressTxID(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid, _ := common.NewTxID("2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
-	events, err := s.Store.GetEvents(&address, &txid, nil, 0, 1)
+	events, _, err := s.Store.GetTxDetails(address, txid, common.EmptyAsset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
@@ -222,7 +222,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddressTxID(c *C) {
 	c.Assert(err, IsNil)
 
 	txid, _ = common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
-	events, err = s.Store.GetEvents(&address, &txid, nil, 0, 1)
+	events, _, err = s.Store.GetTxDetails(address, txid, common.EmptyAsset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
@@ -256,7 +256,7 @@ func (s *TimeScaleSuite) TestGetEventsByAddressTxID(c *C) {
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 }
 
-func (s *TimeScaleSuite) TestGetEventsByAsset(c *C) {
+func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
 		c.Fatal(err)
@@ -267,7 +267,7 @@ func (s *TimeScaleSuite) TestGetEventsByAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB")
-	events, err := s.Store.GetEvents(nil, nil, &asset, 0, 1)
+	events, _, err := s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
@@ -305,7 +305,7 @@ func (s *TimeScaleSuite) TestGetEventsByAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	events, err = s.Store.GetEvents(nil, nil, &asset, 0, 1)
+	events, _, err = s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, 0, 1)
 	c.Assert(err, IsNil)
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
