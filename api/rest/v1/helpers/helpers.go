@@ -92,10 +92,10 @@ func ConvertOptionsForAPI(options models.Options) *api.Option {
 	}
 }
 
-func PrepareEventsResponseForAPI(txData []models.EventDetails, count int64) api.EventsResponse {
-	events := make([]api.EventDetails, len(txData))
+func PrepareTxDetailsResponseForAPI(txData []models.TxDetails, count int64) api.TxsResponse {
+	txs := make([]api.TxDetails, len(txData))
 	for i, d := range txData {
-		event := api.EventDetails{
+		tx := api.TxDetails{
 			Date:    pointy.Int64(int64(d.Date)),
 			Events:  ConvertEventDataForAPI(d.Events),
 			Gas:     ConvertGasForAPI(d.Gas),
@@ -107,12 +107,12 @@ func PrepareEventsResponseForAPI(txData []models.EventDetails, count int64) api.
 			Status:  pointy.String(d.Status),
 			Type:    pointy.String(d.Type),
 		}
-		events[i] = event
+		txs[i] = tx
 	}
 
-	return api.EventsResponse{
-		Count:  &count,
-		Events: &events,
+	return api.TxsResponse{
+		Count: &count,
+		Txs:   &txs,
 	}
 }
 

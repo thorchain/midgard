@@ -10,25 +10,25 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-// GetEvents returns events with pagination and given query params.
-func (s *Client) GetEvents(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.EventDetails, int64, error) {
-	events, err := s.getEvents(address, txID, asset, offset, limit)
+// GetTxDetails returns events with pagination and given query params.
+func (s *Client) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.TxDetails, int64, error) {
+	txs, err := s.getTxDetails(address, txID, asset, offset, limit)
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "GetEvents failed")
+		return nil, 0, errors.Wrap(err, "GetTxDetails failed")
 	}
 
-	count, err := s.getEventsCount(address, txID, asset)
+	count, err := s.getTxsCount(address, txID, asset)
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "GetEvents failed")
+		return nil, 0, errors.Wrap(err, "GetTxDetails failed")
 	}
-	return events, count, nil
+	return txs, count, nil
 }
 
-func (s *Client) getEvents(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.EventDetails, error) {
+func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.TxDetails, error) {
 	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), false, limit, offset)
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "getEvents failed")
+		return nil, errors.Wrap(err, "getTxDetails failed")
 	}
 
 	var events []uint64
@@ -46,7 +46,7 @@ func (s *Client) getEvents(address common.Address, txID common.TxID, asset commo
 	return s.processEvents(events)
 }
 
-func (s *Client) getEventsCount(address common.Address, txID common.TxID, asset common.Asset) (int64, error) {
+func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset common.Asset) (int64, error) {
 	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), true, 0, 0)
 	row := s.db.QueryRow(q, args...)
 
@@ -55,7 +55,7 @@ func (s *Client) getEventsCount(address common.Address, txID common.TxID, asset 
 		if err == sql.ErrNoRows {
 			return 0, nil
 		}
-		return 0, errors.Wrap(err, "getEventsCount failed")
+		return 0, errors.Wrap(err, "getTxsCount failed")
 	}
 	return count.Int64, nil
 }
@@ -83,8 +83,8 @@ func (s *Client) buildEventsQuery(address, txID, asset string, isCount bool, lim
 	return sb.Build()
 }
 
-func (s *Client) processEvents(events []uint64) ([]models.EventDetails, error) {
-	var txData []models.EventDetails
+func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
+	var txData []models.TxDetails
 
 	for _, eventId := range events {
 
@@ -92,7 +92,7 @@ func (s *Client) processEvents(events []uint64) ([]models.EventDetails, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "processEvents failed")
 		}
-		txData = append(txData, models.EventDetails{
+		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
 			Type:    eventType,
 			Status:  status,

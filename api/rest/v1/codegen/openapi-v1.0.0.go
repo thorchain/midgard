@@ -29,20 +29,6 @@ type Error struct {
 	Error string `json:"error"`
 }
 
-// EventDetails defines model for EventDetails.
-type EventDetails struct {
-	Date    *int64  `json:"date,omitempty"`
-	Events  *Event  `json:"events,omitempty"`
-	Gas     *Gas    `json:"gas,omitempty"`
-	Height  *string `json:"height,omitempty"`
-	In      *Tx     `json:"in,omitempty"`
-	Options *Option `json:"options,omitempty"`
-	Out     *[]Tx   `json:"out,omitempty"`
-	Pool    *Asset  `json:"pool,omitempty"`
-	Status  *string `json:"status,omitempty"`
-	Type    *string `json:"type,omitempty"`
-}
-
 // PoolDetail defines model for PoolDetail.
 type PoolDetail struct {
 	Asset            *Asset  `json:"asset,omitempty"`
@@ -144,6 +130,20 @@ type ThorchainEndpoints struct {
 	Current *[]ThorchainEndpoint `json:"current,omitempty"`
 }
 
+// TxDetails defines model for TxDetails.
+type TxDetails struct {
+	Date    *int64  `json:"date,omitempty"`
+	Events  *Event  `json:"events,omitempty"`
+	Gas     *Gas    `json:"gas,omitempty"`
+	Height  *string `json:"height,omitempty"`
+	In      *Tx     `json:"in,omitempty"`
+	Options *Option `json:"options,omitempty"`
+	Out     *[]Tx   `json:"out,omitempty"`
+	Pool    *Asset  `json:"pool,omitempty"`
+	Status  *string `json:"status,omitempty"`
+	Type    *string `json:"type,omitempty"`
+}
+
 // Asset defines model for asset.
 type Asset string
 
@@ -187,12 +187,6 @@ type Tx struct {
 // AssetsDetailedResponse defines model for AssetsDetailedResponse.
 type AssetsDetailedResponse []AssetDetail
 
-// EventsResponse defines model for EventsResponse.
-type EventsResponse struct {
-	Count  *int64          `json:"count,omitempty"`
-	Events *[]EventDetails `json:"events,omitempty"`
-}
-
 // GeneralErrorResponse defines model for GeneralErrorResponse.
 type GeneralErrorResponse Error
 
@@ -217,6 +211,12 @@ type StatsResponse StatsData
 // ThorchainEndpointsResponse defines model for ThorchainEndpointsResponse.
 type ThorchainEndpointsResponse ThorchainEndpoints
 
+// TxsResponse defines model for TxsResponse.
+type TxsResponse struct {
+	Count *int64       `json:"count,omitempty"`
+	Txs   *[]TxDetails `json:"txs,omitempty"`
+}
+
 // GetAssetInfoParams defines parameters for GetAssetInfo.
 type GetAssetInfoParams struct {
 
@@ -224,8 +224,22 @@ type GetAssetInfoParams struct {
 	Asset string `json:"asset"`
 }
 
-// GetEventsParams defines parameters for GetEvents.
-type GetEventsParams struct {
+// GetPoolsDataParams defines parameters for GetPoolsData.
+type GetPoolsDataParams struct {
+
+	// One or more comma separated unique asset (CHAIN.SYMBOL)
+	Asset string `json:"asset"`
+}
+
+// GetStakersAddressAndAssetDataParams defines parameters for GetStakersAddressAndAssetData.
+type GetStakersAddressAndAssetDataParams struct {
+
+	// One or more comma separated unique asset (CHAIN.SYMBOL)
+	Asset string `json:"asset"`
+}
+
+// GetTxDetailsParams defines parameters for GetTxDetails.
+type GetTxDetailsParams struct {
 
 	// Address of sender or recipient of any in/out tx in event
 	Address *string `json:"address,omitempty"`
@@ -243,28 +257,12 @@ type GetEventsParams struct {
 	Limit int64 `json:"limit"`
 }
 
-// GetPoolsDataParams defines parameters for GetPoolsData.
-type GetPoolsDataParams struct {
-
-	// One or more comma separated unique asset (CHAIN.SYMBOL)
-	Asset string `json:"asset"`
-}
-
-// GetStakersAddressAndAssetDataParams defines parameters for GetStakersAddressAndAssetData.
-type GetStakersAddressAndAssetDataParams struct {
-
-	// One or more comma separated unique asset (CHAIN.SYMBOL)
-	Asset string `json:"asset"`
-}
-
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get Asset Information// (GET /v1/assets)
 	GetAssetInfo(ctx echo.Context, params GetAssetInfoParams) error
 	// Get Documents// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
-	// Get events by address, asset or tx-id// (GET /v1/events)
-	GetEvents(ctx echo.Context, params GetEventsParams) error
 	// Get Health// (GET /v1/health)
 	GetHealth(ctx echo.Context) error
 	// Get Asset Pools// (GET /v1/pools)
@@ -283,6 +281,8 @@ type ServerInterface interface {
 	GetSwagger(ctx echo.Context) error
 	// Get the Proxied Pool Addresses// (GET /v1/thorchain/pool_addresses)
 	GetThorchainProxiedEndpoints(ctx echo.Context) error
+	// Get details of a tx by address, asset or tx-id// (GET /v1/txs)
+	GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -319,71 +319,6 @@ func (w *ServerInterfaceWrapper) GetDocs(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetDocs(ctx)
-	return err
-}
-
-// GetEvents converts echo context to params.
-func (w *ServerInterfaceWrapper) GetEvents(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetEventsParams
-	// ------------- Optional query parameter "address" -------------
-	if paramValue := ctx.QueryParam("address"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "address", ctx.QueryParams(), &params.Address)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
-	}
-
-	// ------------- Optional query parameter "txid" -------------
-	if paramValue := ctx.QueryParam("txid"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "txid", ctx.QueryParams(), &params.Txid)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter txid: %s", err))
-	}
-
-	// ------------- Optional query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
-	}
-
-	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
-	}
-
-	// ------------- Required query parameter "offset" -------------
-	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument offset is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "offset", ctx.QueryParams(), &params.Offset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
-	}
-
-	// ------------- Required query parameter "limit" -------------
-	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
-
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument limit is required, but not found"))
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "limit", ctx.QueryParams(), &params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetEvents(ctx, params)
 	return err
 }
 
@@ -510,6 +445,71 @@ func (w *ServerInterfaceWrapper) GetThorchainProxiedEndpoints(ctx echo.Context) 
 	return err
 }
 
+// GetTxDetails converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTxDetailsParams
+	// ------------- Optional query parameter "address" -------------
+	if paramValue := ctx.QueryParam("address"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "address", ctx.QueryParams(), &params.Address)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter address: %s", err))
+	}
+
+	// ------------- Optional query parameter "txid" -------------
+	if paramValue := ctx.QueryParam("txid"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "txid", ctx.QueryParams(), &params.Txid)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter txid: %s", err))
+	}
+
+	// ------------- Optional query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter asset: %s", err))
+	}
+
+	// ------------- Required query parameter "offset" -------------
+	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument offset is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// ------------- Required query parameter "limit" -------------
+	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument limit is required, but not found"))
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetTxDetails(ctx, params)
+	return err
+}
+
 // RegisterHandlers adds each server route to the EchoRouter.
 func RegisterHandlers(router interface {
 	CONNECT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
@@ -529,7 +529,6 @@ func RegisterHandlers(router interface {
 
 	router.GET("/v1/assets", wrapper.GetAssetInfo)
 	router.GET("/v1/doc", wrapper.GetDocs)
-	router.GET("/v1/events", wrapper.GetEvents)
 	router.GET("/v1/health", wrapper.GetHealth)
 	router.GET("/v1/pools", wrapper.GetPools)
 	router.GET("/v1/pools/detail", wrapper.GetPoolsData)
@@ -539,67 +538,68 @@ func RegisterHandlers(router interface {
 	router.GET("/v1/stats", wrapper.GetStats)
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
 	router.GET("/v1/thorchain/pool_addresses", wrapper.GetThorchainProxiedEndpoints)
+	router.GET("/v1/txs", wrapper.GetTxDetails)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"z41nwafn/wUAAP//+uWpl5Q8AAA=",
+	"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",
+	"AA==",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

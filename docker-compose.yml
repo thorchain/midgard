@@ -8,6 +8,9 @@ services:
       args:
         thornode_host: thormock:8081
         pg_host: pg
+    environment: 
+      THORCHAIN_HOST: 159.89.252.210:1317
+      TIMESCALE_USER_NAME: postgres
     image: midgard
     ports:
       - 8080:8080

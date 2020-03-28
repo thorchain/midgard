@@ -29,7 +29,7 @@ type TxData struct {
 	TxID    string
 }
 
-type EventDetails struct {
+type TxDetails struct {
 	Pool    common.Asset
 	Type    string
 	Status  string
