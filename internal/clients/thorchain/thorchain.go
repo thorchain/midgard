@@ -17,21 +17,22 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-// Client to talk to thorchain
-type Client struct {
+// Scanner will fetch and store events sequence from thorchain node.
+type Scanner struct {
 	thorchainEndpoint  string
 	tendermintEndpoint string
 	readTimeout        time.Duration
 	noEventsBackoff    time.Duration
-	store              store
+	store              Store
 	httpClient         *http.Client
 	handlers           map[string]handlerFunc
 	logger             zerolog.Logger
 	stopChan           chan struct{}
-	wg                 sync.WaitGroup
+	mu                 sync.Mutex
 }
 
-type store interface {
+// Store represents methods for storing data coming from thochain.
+type Store interface {
 	CreateGenesis(genesis models.Genesis) (int64, error)
 	CreateSwapRecord(record models.EventSwap) error
 	CreateStakeRecord(record models.EventStake) error
@@ -47,18 +48,18 @@ type store interface {
 
 type handlerFunc func(types.Event) error
 
-// NewClient create a new instance of client which can talk to thorChain
-func NewClient(cfg config.ThorChainConfiguration, s store) (*Client, error) {
-	if len(cfg.Host) == 0 {
+// NewScanner create a new instance of Scanner.
+func NewScanner(cfg config.ThorChainConfiguration, store Store) (*Scanner, error) {
+	if cfg.Host == "" {
 		return nil, errors.New("thorchain host is empty")
 	}
 
-	cli := &Client{
+	sc := &Scanner{
 		thorchainEndpoint:  fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
 		tendermintEndpoint: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
 		readTimeout:        cfg.ReadTimeout,
 		noEventsBackoff:    cfg.NoEventsBackoff,
-		store:              s,
+		store:              store,
 		httpClient: &http.Client{
 			Timeout: cfg.ReadTimeout,
 		},
@@ -66,62 +67,136 @@ func NewClient(cfg config.ThorChainConfiguration, s store) (*Client, error) {
 		logger:   log.With().Str("module", "thorchain").Logger(),
 		stopChan: make(chan struct{}),
 	}
-	cli.handlers[types.StakeEventType] = cli.processStakeEvent
-	cli.handlers[types.SwapEventType] = cli.processSwapEvent
-	cli.handlers[types.UnstakeEventType] = cli.processUnstakeEvent
-	cli.handlers[types.RewardEventType] = cli.processRewardEvent
-	cli.handlers[types.RefundEventType] = cli.processRefundEvent
-	cli.handlers[types.AddEventType] = cli.processAddEvent
-	cli.handlers[types.PoolEventType] = cli.processPoolEvent
-	cli.handlers[types.GasEventType] = cli.processGasEvent
-	cli.handlers[types.SlashEventType] = cli.processSlashEvent
-	return cli, nil
+	sc.handlers[types.StakeEventType] = sc.processStakeEvent
+	sc.handlers[types.SwapEventType] = sc.processSwapEvent
+	sc.handlers[types.UnstakeEventType] = sc.processUnstakeEvent
+	sc.handlers[types.RewardEventType] = sc.processRewardEvent
+	sc.handlers[types.RefundEventType] = sc.processRefundEvent
+	sc.handlers[types.AddEventType] = sc.processAddEvent
+	sc.handlers[types.PoolEventType] = sc.processPoolEvent
+	sc.handlers[types.GasEventType] = sc.processGasEvent
+	sc.handlers[types.SlashEventType] = sc.processSlashEvent
+	return sc, nil
 }
 
-func (api *Client) getGenesis() (types.Genesis, error) {
-	uri := fmt.Sprintf("%s/genesis", api.tendermintEndpoint)
-	api.logger.Debug().Msg(uri)
-	resp, err := api.httpClient.Get(uri)
+// Start will start the scanner.
+func (sc *Scanner) Start() error {
+	sc.logger.Info().Msg("starting thorchain scanner")
+
+	go sc.scan()
+	return nil
+}
+
+// Stop will attempt to stop the scanner (blocking until the scanner stops completely).
+func (sc *Scanner) Stop() error {
+	sc.logger.Info().Msg("stoping thorchain scanner")
+
+	close(sc.stopChan)
+	sc.mu.Lock()
+	sc.mu.Unlock()
+	return nil
+}
+
+func (sc *Scanner) scan() {
+	sc.mu.Lock()
+	defer sc.mu.Unlock()
+
+	sc.logger.Info().Msg("getting thorchain genesis")
+	genesisTime, err := sc.getGenesis()
+	if err != nil {
+		sc.logger.Error().Err(err).Msg("failed to get genesis from thorchain")
+	}
+
+	err = sc.processGenesis(genesisTime)
+	if err != nil {
+		sc.logger.Error().Err(err).Msg("failed to set genesis in db")
+	}
+	sc.logger.Info().Msg("processed thorchain genesis")
+
+	sc.logger.Info().Msg("thorchain event scanning started")
+	defer sc.logger.Info().Msg("thorchain event scanning stopped")
+
+	currentPos := int64(1) // We start from 1
+	maxID, err := sc.store.GetMaxID()
+	if err != nil {
+		sc.logger.Error().Err(err).Msg("failed to get currentPos from data store")
+	} else {
+		sc.logger.Info().Int64("previous pos", maxID).Msg("find previous maxID")
+		currentPos = maxID + 1
+	}
+
+	for {
+		sc.logger.Debug().Msg("sleeping thorchain scan")
+		time.Sleep(time.Second * 1)
+
+		select {
+		case <-sc.stopChan:
+			return
+		default:
+			sc.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
+
+			maxID, eventsCount, err := sc.processEvents(currentPos)
+			if err != nil {
+				sc.logger.Error().Err(err).Msg("failed to get events from thorchain")
+				continue
+			}
+			if eventsCount == 0 {
+				select {
+				case <-sc.stopChan:
+				case <-time.After(sc.noEventsBackoff):
+					sc.logger.Debug().Str("NoEventsBackoff", sc.noEventsBackoff.String()).Msg("finished waiting NoEventsBackoff")
+				}
+				continue
+			}
+			currentPos = maxID + 1
+		}
+	}
+}
+
+func (sc *Scanner) getGenesis() (types.Genesis, error) {
+	uri := fmt.Sprintf("%s/genesis", sc.tendermintEndpoint)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
 		return types.Genesis{}, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("failed to close response body")
+			sc.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
 	var genesis types.Genesis
 	if err := json.NewDecoder(resp.Body).Decode(&genesis); nil != err {
-		return types.Genesis{}, errors.Wrap(err, "failed to unmarshal events")
+		return types.Genesis{}, errors.Wrap(err, "failed to unmarshal genesis")
 	}
 
 	return genesis, nil
 }
 
-func (api *Client) processGenesis(genesisTime types.Genesis) error {
-	api.logger.Debug().Msg("processGenesisTime")
+func (sc *Scanner) processGenesis(genesisTime types.Genesis) error {
+	sc.logger.Debug().Msg("processGenesisTime")
 
 	record := models.NewGenesis(genesisTime)
-	_, err := api.store.CreateGenesis(record)
+	_, err := sc.store.CreateGenesis(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create genesis record")
 	}
 	return nil
 }
 
-func (api *Client) getEvents(id int64) ([]types.Event, error) {
-	uri := fmt.Sprintf("%s/events/%d", api.thorchainEndpoint, id)
-	api.logger.Debug().Msg(uri)
-	resp, err := api.httpClient.Get(uri)
+func (sc *Scanner) getEvents(id int64) ([]types.Event, error) {
+	uri := fmt.Sprintf("%s/events/%d", sc.thorchainEndpoint, id)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("failed to close response body")
+			sc.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -133,8 +208,8 @@ func (api *Client) getEvents(id int64) ([]types.Event, error) {
 }
 
 // returns (maxID, len(events), err)
-func (api *Client) processEvents(id int64) (int64, int, error) {
-	events, err := api.getEvents(id)
+func (sc *Scanner) processEvents(id int64) (int64, int, error) {
+	events, err := sc.getEvents(id)
 	if err != nil {
 		return id, 0, errors.Wrap(err, "failed to get events")
 	}
@@ -147,246 +222,178 @@ func (api *Client) processEvents(id int64) (int64, int, error) {
 	maxID := id
 	for _, evt := range events {
 		maxID = evt.ID
-		api.logger.Info().Int64("maxID", maxID).Msg("new maxID")
+		sc.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		if evt.OutTxs == nil {
-			outTx, err := api.GetOutTx(evt)
+			outTx, err := sc.getOutTx(evt)
 			if err != nil {
-				api.logger.Err(err).Msg("GetOutTx failed")
+				sc.logger.Err(err).Msg("GetOutTx failed")
 			} else {
 				evt.OutTxs = outTx
 			}
 		}
 
-		h, ok := api.handlers[evt.Type]
+		h, ok := sc.handlers[evt.Type]
 		if ok {
-			api.logger.Debug().Msg("process " + evt.Type)
+			sc.logger.Debug().Msg("process " + evt.Type)
 			err = h(evt)
 			if err != nil {
-				api.logger.Err(err).Msg("process event failed")
+				sc.logger.Err(err).Msg("process event failed")
 			}
 		} else {
-			api.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
+			sc.logger.Info().Str("evt.Type", evt.Type).Msg("Unknown event type")
 		}
 	}
 	return maxID, len(events), nil
 }
 
-func (api *Client) processSwapEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processSwapEvent")
+func (sc *Scanner) processSwapEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processSwapEvent")
 	var swap types.EventSwap
 	err := json.Unmarshal(evt.Event, &swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal swap event")
 	}
 	record := models.NewSwapEvent(swap, evt)
-	err = api.store.CreateSwapRecord(record)
+	err = sc.store.CreateSwapRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create swap record")
 	}
 	return nil
 }
 
-func (api *Client) processStakeEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processStakeEvent")
+func (sc *Scanner) processStakeEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processStakeEvent")
 	var stake types.EventStake
 	err := json.Unmarshal(evt.Event, &stake)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal stake event")
 	}
 	record := models.NewStakeEvent(stake, evt)
-	err = api.store.CreateStakeRecord(record)
+	err = sc.store.CreateStakeRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create stake record")
 	}
 	return nil
 }
 
-func (api *Client) processUnstakeEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processUnstakeEvent")
+func (sc *Scanner) processUnstakeEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processUnstakeEvent")
 	var unstake types.EventUnstake
 	err := json.Unmarshal(evt.Event, &unstake)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal unstake event")
 	}
 	record := models.NewUnstakeEvent(unstake, evt)
-	err = api.store.CreateUnStakesRecord(record)
+	err = sc.store.CreateUnStakesRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create unstake record")
 	}
 	return nil
 }
 
-func (api *Client) processRewardEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processRewardEvent")
+func (sc *Scanner) processRewardEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processRewardEvent")
 	var rewards types.EventRewards
 	err := json.Unmarshal(evt.Event, &rewards)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal rewards event")
 	}
 	record := models.NewRewardEvent(rewards, evt)
-	err = api.store.CreateRewardRecord(record)
+	err = sc.store.CreateRewardRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create rewards record")
 	}
 	return nil
 }
 
-func (api *Client) processAddEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processAddEvent")
+func (sc *Scanner) processAddEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processAddEvent")
 	var add types.EventAdd
 	err := json.Unmarshal(evt.Event, &add)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal add event")
 	}
 	record := models.NewAddEvent(add, evt)
-	err = api.store.CreateAddRecord(record)
+	err = sc.store.CreateAddRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create add record")
 	}
 	return nil
 }
 
-func (api *Client) processPoolEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processPoolEvent")
+func (sc *Scanner) processPoolEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processPoolEvent")
 	var pool types.EventPool
 	err := json.Unmarshal(evt.Event, &pool)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal pool event")
 	}
 	record := models.NewPoolEvent(pool, evt)
-	err = api.store.CreatePoolRecord(record)
+	err = sc.store.CreatePoolRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create pool record")
 	}
 	return nil
 }
 
-func (api *Client) processGasEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processGasEvent")
+func (sc *Scanner) processGasEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processGasEvent")
 	var gas types.EventGas
 	err := json.Unmarshal(evt.Event, &gas)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal gas event")
 	}
 	record := models.NewGasEvent(gas, evt)
-	err = api.store.CreateGasRecord(record)
+	err = sc.store.CreateGasRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create gas record")
 	}
 	return nil
 }
-func (api *Client) processRefundEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processRefundEvent")
+func (sc *Scanner) processRefundEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processRefundEvent")
 	var refund types.EventRefund
 	err := json.Unmarshal(evt.Event, &refund)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal refund event")
 	}
 	record := models.NewRefundEvent(refund, evt)
-	err = api.store.CreateRefundRecord(record)
+	err = sc.store.CreateRefundRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create refund record")
 	}
 	return nil
 }
 
-func (api *Client) processSlashEvent(evt types.Event) error {
-	api.logger.Debug().Msg("processSlashEvent")
+func (sc *Scanner) processSlashEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processSlashEvent")
 	var slash types.EventSlash
 	err := json.Unmarshal(evt.Event, &slash)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal slash event")
 	}
 	record := models.NewSlashEvent(slash, evt)
-	err = api.store.CreateSlashRecord(record)
+	err = sc.store.CreateSlashRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create slash record")
 	}
 	return nil
 }
 
-// StartScan start to scan
-func (api *Client) StartScan() error {
-	api.logger.Info().Msg("start thorchain event scanning")
-	api.wg.Add(1)
-	go api.scan()
-	return nil
-}
-
-func (api *Client) scan() {
-	api.logger.Info().Msg("getting thorchain genesis")
-	genesisTime, err := api.getGenesis()
-	if err != nil {
-		api.logger.Error().Err(err).Msg("failed to get genesis from thorchain")
-	}
-
-	err = api.processGenesis(genesisTime)
-	if err != nil {
-		api.logger.Error().Err(err).Msg("failed to set genesis in db")
-	}
-	api.logger.Info().Msg("processed thorchain genesis")
-
-	defer api.wg.Done()
-
-	api.logger.Info().Msg("start thorchain event scanning")
-	defer api.logger.Info().Msg("thorchain event scanning stopped")
-	currentPos := int64(1) // we start from 1
-	maxID, err := api.store.GetMaxID()
-	if err != nil {
-		api.logger.Error().Err(err).Msg("failed to get currentPos from data store")
-	} else {
-		api.logger.Info().Int64("previous pos", maxID).Msg("find previous maxID")
-		currentPos = maxID + 1
-	}
-	for {
-		api.logger.Debug().Msg("sleeping thorchain scan")
-		time.Sleep(time.Second * 1)
-		select {
-		case <-api.stopChan:
-			return
-		default:
-			api.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
-			maxID, events, err := api.processEvents(currentPos)
-			if err != nil {
-				api.logger.Error().Err(err).Msg("failed to get events from thorchain")
-				continue // we will retry a bit later
-			}
-			if events == 0 { // nothing in it
-				select {
-				case <-api.stopChan:
-				case <-time.After(api.noEventsBackoff):
-					api.logger.Debug().Str("NoEventsBackoff", api.noEventsBackoff.String()).Msg("Finished executing NoEventsBackoff")
-				}
-				continue
-			}
-			currentPos = maxID + 1
-		}
-	}
-}
-
-func (api *Client) StopScan() error {
-	api.logger.Info().Msg("stop scan request received")
-	close(api.stopChan)
-	api.wg.Wait()
-
-	return nil
-}
-
-//Query output transaction for a given event from THORNode
-func (api *Client) GetOutTx(event types.Event) (common.Txs, error) {
+func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	if event.InTx.ID.IsEmpty() {
 		return nil, nil
 	}
-	uri := fmt.Sprintf("%s/keysign/%d", api.thorchainEndpoint, event.Height)
-	api.logger.Debug().Msg(uri)
-	resp, err := api.httpClient.Get(uri)
+	uri := fmt.Sprintf("%s/keysign/%d", sc.thorchainEndpoint, event.Height)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			api.logger.Error().Err(err).Msg("failed to close response body")
+			sc.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
