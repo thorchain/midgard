@@ -1074,7 +1074,7 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.061500001698732376)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 
 	// Buy swap
 	swap := swapBuyRune2BoltEvent1
