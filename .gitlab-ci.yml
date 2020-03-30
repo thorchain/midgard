@@ -87,7 +87,7 @@ smoke-test:
     - make build
     - make smoke
   after_script:
-    - ./scripts/docker_logs.sh
+    - ./thornode/scripts/docker_logs.sh
 
 # Build docker image
 build-gitlab-docker:
