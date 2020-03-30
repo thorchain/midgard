@@ -34,10 +34,10 @@ paths:
       responses:
         "200":
           description: health response of the API.
-  "/v1/events":
+  "/v1/txs":
     get:
-      operationId: GetEvents
-      summary: Get events by address, asset or tx-id
+      operationId: GetTxDetails
+      summary: Get details of a tx by address, asset or tx-id
       description: Return an array containing the event details
       parameters:
         - in: query
@@ -80,7 +80,7 @@ paths:
             maximum: 50
       responses:
         "200":
-          $ref: '#/components/responses/EventsResponse'
+          $ref: '#/components/responses/TxsResponse'
   "/v1/stats":
     get:
       operationId: GetStats
@@ -208,14 +208,20 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/StatsData'
-    EventsResponse:
-      description: Returns an array of transaction events
+    TxsResponse:
+      description: Returns an array of transactions
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/EventDetails'        
+            type: object
+            properties:
+              count:
+                type: integer
+                format: int64
+              txs:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TxDetails'        
 
     StakersAddressDataResponse:
       description: array of all the pools the staker is staking in
@@ -275,7 +281,7 @@ components:
             $ref: '#/components/schemas/ThorchainEndpoints'
 
   schemas:
-    EventDetails:
+    TxDetails:
       properties:
         pool:
           $ref: '#/components/schemas/asset'

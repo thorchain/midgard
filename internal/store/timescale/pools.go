@@ -1348,16 +1348,25 @@ func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
-	buyTxAverage, err := s.buyTxAverage(asset)
+	stmnt := `
+		SELECT AVG(ABS(assetAmt))
+		FROM swaps
+		WHERE pool = $1
+	`
+
+	var avg sql.NullFloat64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&avg); err != nil {
+		return 0, errors.Wrap(err, "poolTxAverage failed")
+	}
+
+	priceInRune, err := s.GetPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 
-	sellTxAverage, err := s.sellTxAverage(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolTxAverage failed")
-	}
-	return (buyTxAverage + sellTxAverage) / 2, nil
+	return uint64(avg.Float64 * priceInRune), nil
 }
 
 func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
@@ -1397,16 +1406,19 @@ func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
-	buySlipAverage, err := s.buySlipAverage(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolSlipAverage failed")
-	}
+	stmnt := `
+		SELECT AVG(trade_slip)
+		FROM swaps
+		WHERE pool = $1
+	`
 
-	sellSlipAverage, err := s.sellSlipAverage(asset)
-	if err != nil {
+	var poolSlipAverage sql.NullFloat64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&poolSlipAverage); err != nil {
 		return 0, errors.Wrap(err, "poolSlipAverage failed")
 	}
-	return (buySlipAverage + sellSlipAverage) / 2, nil
+	return poolSlipAverage.Float64, nil
 }
 
 func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
@@ -1424,11 +1436,7 @@ func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "sellFeeAverage failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "sellFeeAverage failed")
-	}
-	return uint64((sellFeeAverage.Float64) * priceInRune), nil
+	return uint64(sellFeeAverage.Float64), nil
 }
 
 func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
@@ -1446,7 +1454,11 @@ func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
 
-	return uint64(buyFeeAverage.Float64), nil
+	priceInRune, err := s.GetPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "buyFeeAverage failed")
+	}
+	return uint64(buyFeeAverage.Float64 * priceInRune), nil
 }
 
 func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
@@ -1477,11 +1489,7 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "sellFeesTotal failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "sellFeesTotal failed")
-	}
-	return uint64(float64(sellFeesTotal.Int64) * priceInRune), nil
+	return uint64(sellFeesTotal.Int64), nil
 }
 
 func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
@@ -1499,7 +1507,12 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyFeesTotal failed")
 	}
 
-	return uint64(buyFeesTotal.Int64), nil
+	priceInRune, err := s.GetPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "buyFeesTotal failed")
+	}
+
+	return uint64(float64(buyFeesTotal.Int64) * priceInRune), nil
 }
 
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {

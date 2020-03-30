@@ -953,13 +953,13 @@ func (s *TimeScaleSuite) TestBuyTxAverage(c *C) {
 
 func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	// No stake
-	asset, _ := common.NewAsset("BNB.BOLT-014")
+	asset, _ := common.NewAsset("BNB.TUSDB-000")
 	txAverage, err := s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(0))
 
 	// Stake
-	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
+	err = s.Store.CreateStakeRecord(stakeTusdbEvent0)
 	c.Assert(err, IsNil)
 
 	txAverage, err = s.Store.poolTxAverage(asset)
@@ -967,22 +967,30 @@ func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	c.Assert(txAverage, Equals, uint64(0))
 
 	// Sell Swap
-	err = s.Store.CreateSwapRecord(swapSellBolt2RuneEvent1)
+	err = s.Store.CreateSwapRecord(swapSellTusdb2RuneEvent0)
 	c.Assert(err, IsNil)
 
 	txAverage, err = s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(txAverage, Equals, uint64(66211075), Commentf("%d", txAverage))
+	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
 
-	// Buy Swap
-	swap := swapBuyRune2BoltEvent1
+	// Sell Swap
+	swap := swapSellTusdb2RuneEvent0
 	swap.ID += 2
 	err = s.Store.CreateSwapRecord(swap)
 	c.Assert(err, IsNil)
 
 	txAverage, err = s.Store.poolTxAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(txAverage, Equals, uint64(140331491), Commentf("%d", txAverage))
+	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
+
+	//Buy Swap
+	err = s.Store.CreateSwapRecord(swapBuyRune2TusdbEvent0)
+	c.Assert(err, IsNil)
+
+	txAverage, err = s.Store.poolTxAverage(asset)
+	c.Assert(err, IsNil)
+	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
 }
 
 func (s *TimeScaleSuite) TestSellSlipAverage(c *C) {
@@ -1066,7 +1074,7 @@ func (s *TimeScaleSuite) TestPoolSlipAverage(c *C) {
 
 	slipAverage, err = s.Store.poolSlipAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(slipAverage, Equals, 0.061500001698732376)
+	c.Assert(slipAverage, Equals, 0.12300000339746475)
 
 	// Buy swap
 	swap := swapBuyRune2BoltEvent1
@@ -1109,7 +1117,7 @@ func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.sellFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(52368597), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, uint64(7463556), Commentf("feeAverage: %v", feeAverage))
 
 	// Sell Swap
 	swap.ID = +1
@@ -1118,7 +1126,7 @@ func (s *TimeScaleSuite) TestSellFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.sellFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(49417006), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, uint64(7463556), Commentf("feeAverage: %v", feeAverage))
 }
 
 func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
@@ -1151,7 +1159,7 @@ func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.buyFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(7463556), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, uint64(52368597), Commentf("feeAverage: %v", feeAverage))
 
 	// Buy Swap
 	swap.ID = +1
@@ -1160,7 +1168,7 @@ func (s *TimeScaleSuite) TestBuyFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.buyFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(7463556), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, uint64(55695171), Commentf("feeAverage: %v", feeAverage))
 }
 
 func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
@@ -1184,7 +1192,7 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.poolFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, uint64(24708503), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, uint64(3731778), Commentf("feeAverage: %v", feeAverage))
 
 	// Buy Swap
 	swap := swapBuyRune2BoltEvent1
@@ -1231,7 +1239,7 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.sellFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7463), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
 
 	// Another sell Swap
 	swap := swapSellBnb2RuneEvent5
@@ -1241,7 +1249,7 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.sellFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(11939), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(14927112), Commentf("feesTotal: %v", feesTotal))
 
 	// Buy swap
 	swap = swapBuyRune2BnbEvent2
@@ -1251,7 +1259,7 @@ func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.sellFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(11944), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(14927112), Commentf("feesTotal: %v", feesTotal))
 }
 
 func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
@@ -1281,7 +1289,7 @@ func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.buyFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(7463), Commentf("feesTotal: %v", feesTotal))
 
 	// Sell swap
 	swap = swapSellBnb2RuneEvent4
@@ -1291,7 +1299,7 @@ func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.buyFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(7460), Commentf("feesTotal: %v", feesTotal))
 }
 
 func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
@@ -1312,7 +1320,7 @@ func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.poolFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(7466), Commentf("feesTotal: %v", feesTotal))
 
 	// Sell Swap
 	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
@@ -1330,7 +1338,7 @@ func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.poolFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7475495), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(14933081), Commentf("feesTotal: %v", feesTotal))
 
 	// Buy swap
 	swap = swapBuyRune2BnbEvent2
