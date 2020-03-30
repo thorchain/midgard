@@ -80,7 +80,7 @@ smoke-test:
   except:
     - schedules
   environment:
-    name: devellopment
+    name: development
   script:
     - git clone --single-branch -b $CI_COMMIT_BRANCH https://gitlab.com/thorchain/heimdall.git || git clone --single-branch -b master https://gitlab.com/thorchain/heimdall.git
     - cd ./heimdall
