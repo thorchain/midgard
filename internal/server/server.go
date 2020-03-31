@@ -22,7 +22,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
 
 	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
-	"gitlab.com/thorchain/midgard/internal/clients/thorChain"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/logo"
@@ -34,7 +34,7 @@ type Server struct {
 	srv             *http.Server
 	logger          zerolog.Logger
 	echoEngine      *echo.Echo
-	thorChainClient *thorChain.API
+	thorChainClient *thorchain.Scanner
 }
 
 func initLog(level string, pretty bool) zerolog.Logger {
@@ -78,7 +78,7 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	// Setup thorchain BinanceClient scanner
-	thorChainApi, err := thorChain.NewAPIClient(cfg.ThorChain, binanceClient, timescale)
+	thorChainApi, err := thorchain.NewScanner(cfg.ThorChain, timescale)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create thorchain api instance")
 	}
@@ -121,11 +121,11 @@ func (s *Server) Start() error {
 	go func() {
 		s.echoEngine.Logger.Fatal(s.echoEngine.StartServer(s.srv))
 	}()
-	return s.thorChainClient.StartScan()
+	return s.thorChainClient.Start()
 }
 
 func (s *Server) Stop() error {
-	if err := s.thorChainClient.StopScan(); nil != err {
+	if err := s.thorChainClient.Stop(); nil != err {
 		s.logger.Error().Err(err).Msg("failed to stop thorchain scan")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)

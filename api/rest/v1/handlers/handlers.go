@@ -12,7 +12,7 @@ import (
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
 	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
-	"gitlab.com/thorchain/midgard/internal/clients/thorChain"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/logo"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
@@ -23,14 +23,14 @@ import (
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
 	store           *timescale.Client
-	thorChainClient *thorChain.API // TODO Move out of handler (Handler should only talk to the DB)
+	thorChainClient *thorchain.Scanner // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 	binanceClient   *binance.Client // TODO Move out of handler (Handler should only talk to the DB)
 	logoClient      *logo.LogoClient
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *timescale.Client, thorChainClient *thorChain.API, logger zerolog.Logger, binanceClient *binance.Client, logoClient *logo.LogoClient) *Handlers {
+func New(store *timescale.Client, thorChainClient *thorchain.Scanner, logger zerolog.Logger, binanceClient *binance.Client, logoClient *logo.LogoClient) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,

@@ -2,7 +2,7 @@ package models
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"gitlab.com/thorchain/midgard/internal/clients/thorChain/types"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 )
 
 type EventRefund struct {
