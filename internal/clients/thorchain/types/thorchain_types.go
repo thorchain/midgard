@@ -10,17 +10,19 @@ import (
 
 	"gitlab.com/thorchain/midgard/internal/common"
 )
+
 const (
-	SwapEventType        = `swap`
-	StakeEventType       = `stake`
-	UnstakeEventType     = `unstake`
-	AddEventType         = `add`
-	PoolEventType        = `pool`
-	RewardEventType      = `rewards`
-	RefundEventType      = `refund`
-	GasEventType         = `gas`
-	SlashEventType       = `slash`
+	SwapEventType    = `swap`
+	StakeEventType   = `stake`
+	UnstakeEventType = `unstake`
+	AddEventType     = `add`
+	PoolEventType    = `pool`
+	RewardEventType  = `rewards`
+	RefundEventType  = `refund`
+	GasEventType     = `gas`
+	SlashEventType   = `slash`
 )
+
 type Event struct {
 	ID     int64           `json:"id,string"`
 	Status string          `json:"status"`
@@ -37,21 +39,23 @@ type ThorchainEvent interface {
 	//handle() error
 }
 
-
 type EventStake struct {
 	Pool       common.Asset `json:"pool"`
 	StakeUnits int64        `json:"stake_units,string"`
 }
+
 func (e EventStake) Type() string {
 	return StakeEventType
 }
 
 type EventSwap struct {
-	Pool         common.Asset `json:"pool"`
-	PriceTarget  int64        `json:"price_target,string"`
-	TradeSlip    int64        `json:"trade_slip,string"`
-	LiquidityFee int64        `json:"liquidity_fee,string"`
+	Pool               common.Asset `json:"pool"`
+	PriceTarget        int64        `json:"price_target,string"`
+	TradeSlip          int64        `json:"trade_slip,string"`
+	LiquidityFee       int64        `json:"liquidity_fee"`         //liquidityFee in non-rune asset
+	LiquidityFeeInRune int64        `json:"liquidity_fee_in_rune"` //liquidityFee in rune asset
 }
+
 func (e EventSwap) Type() string {
 	return SwapEventType
 }
@@ -60,6 +64,7 @@ type EventUnstake struct {
 	Pool       common.Asset `json:"pool"`
 	StakeUnits int64        `json:"stake_units,string"`
 }
+
 func (e EventUnstake) Type() string {
 	return UnstakeEventType
 }
@@ -68,6 +73,7 @@ type EventRewards struct {
 	BondReward  uint64    `json:"bond_reward,string"` // we are ignoring bond rewards for now
 	PoolRewards []PoolAmt `json:"pool_rewards"`
 }
+
 func (e EventRewards) Type() string {
 	return RewardEventType
 }
@@ -94,6 +100,7 @@ type EventRefund struct {
 	Code   sdk.CodeType `json:"code"`
 	Reason string       `json:"reason"`
 }
+
 func (e EventRefund) Type() string {
 	return RefundEventType
 }
@@ -101,6 +108,7 @@ func (e EventRefund) Type() string {
 type EventAdd struct {
 	Pool common.Asset `json:"pool"`
 }
+
 func (e EventAdd) Type() string {
 	return AddEventType
 }
@@ -110,6 +118,7 @@ type EventPool struct {
 	Pool   common.Asset `json:"pool"`
 	Status PoolStatus   `json:"status"`
 }
+
 func (e EventPool) Type() string {
 	return PoolEventType
 }
@@ -175,6 +184,7 @@ type EventGas struct {
 	GasType     string         `json:"gas_type"`
 	ReimburseTo []common.Asset `json:"reimburse_to"` // Determine which pool we are reimbursing to
 }
+
 func (e EventGas) Type() string {
 	return GasEventType
 }
@@ -203,6 +213,7 @@ type EventSlash struct {
 	Pool        common.Asset `json:"pool"`
 	SlashAmount []PoolAmt    `json:"slash_amount"`
 }
+
 func (e EventSlash) Type() string {
 	return SlashEventType
 }
