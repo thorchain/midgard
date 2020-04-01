@@ -423,3 +423,65 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	}
 	return outTxs, nil
 }
+func (sc *Scanner) getBondMetrics() (models.BondMetrics, error) {
+	uri := fmt.Sprintf("%s/nodeaccounts", sc.thorchainEndpoint)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
+	if err != nil {
+		return models.BondMetrics{}, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var nodeAccounts []types.NodeAccount
+	if err := json.NewDecoder(resp.Body).Decode(&nodeAccounts); nil != err {
+		return models.BondMetrics{}, errors.Wrap(err, "failed to unmarshal nodeAccount")
+	}
+	grouped := make(map[types.NodeStatus][]types.NodeAccount)
+	var metric models.BondMetrics
+
+	for _, nodeAccount := range nodeAccounts {
+		_, ok := grouped[nodeAccount.Status]
+		if !ok {
+			grouped[nodeAccount.Status] = make([]types.NodeAccount, 1)
+		}
+		grouped[nodeAccount.Status] = append(grouped[nodeAccount.Status], nodeAccount)
+	}
+	if _, ok := grouped[types.Active]; ok && len(grouped[types.Active]) > 0 {
+		for _, node := range grouped[types.Active] {
+			if metric.TotalActiveBond == 0 {
+				metric.MinimumActiveBond = node.Bond
+			}
+			metric.TotalActiveBond += node.Bond
+			if node.Bond > metric.MaximumActiveBond {
+				metric.MaximumActiveBond = node.Bond
+			}
+			if node.Bond < metric.MinimumActiveBond {
+				metric.MinimumActiveBond = node.Bond
+			}
+		}
+		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(grouped[types.Active]))
+		metric.MedianActiveBond = grouped[types.Active][len(grouped[types.Active])/2].Bond
+	}
+	if _, ok := grouped[types.Standby]; ok && len(grouped[types.Standby]) > 0 {
+		for _, node := range grouped[types.Standby] {
+			if metric.TotalStandbyBond == 0 {
+				metric.MinimumStandbyBond = node.Bond
+			}
+			metric.TotalStandbyBond += node.Bond
+			if node.Bond > metric.MaximumStandbyBond {
+				metric.MaximumStandbyBond = node.Bond
+			}
+			if node.Bond < metric.MinimumStandbyBond {
+				metric.MinimumStandbyBond = node.Bond
+			}
+		}
+		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(grouped[types.Standby]))
+		metric.MedianStandbyBond = grouped[types.Standby][len(grouped[types.Standby])/2].Bond
+	}
+	return metric, nil
+}
