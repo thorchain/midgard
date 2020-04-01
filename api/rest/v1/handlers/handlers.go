@@ -77,7 +77,11 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams)
 	if params.Asset != nil {
 		asset, _ = common.NewAsset(*params.Asset)
 	}
-	txs, count, err := h.store.GetTxDetails(address, txID, asset, params.Offset, params.Limit)
+	var eventType string
+	if params.Type != nil {
+		eventType = *params.Type
+	}
+	txs, count, err := h.store.GetTxDetails(address, txID, asset, eventType, params.Offset, params.Limit)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxDetails")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
