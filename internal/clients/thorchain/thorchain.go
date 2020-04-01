@@ -44,6 +44,7 @@ type Store interface {
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
 	GetMaxID() (int64, error)
+	TotalRuneStaked() (uint64, error)
 }
 
 type handlerFunc func(types.Event) error
@@ -423,7 +424,55 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	}
 	return outTxs, nil
 }
-func (sc *Scanner) getNodeAccounts(status types.NodeStatus) ([]types.NodeAccount, error) {
+
+func (sc *Scanner) getNetInfo() (models.NetworkInfo, error) {
+	var netInfo models.NetworkInfo
+	nodeAccounts, err := sc.getNodeAccounts()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "getNetInfo failed")
+	}
+
+	var activeNodes []types.NodeAccount
+	var standbyNodes []types.NodeAccount
+	for _, node := range nodeAccounts {
+		if node.Status == types.Active {
+			activeNodes = append(activeNodes, node)
+			netInfo.ActiveBonds = append(netInfo.ActiveBonds, node.Bond)
+		} else if node.Status == types.Standby {
+			standbyNodes = append(standbyNodes, node)
+			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
+		}
+	}
+
+	vault, err := sc.getVaultData()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "getNetInfo failed")
+	}
+	runeStaked, err := sc.store.TotalRuneStaked()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "getNetInfo failed")
+	}
+
+	netInfo.TotalStaked = runeStaked
+	netInfo.BondMetric = sc.calcBondMetrics(activeNodes, standbyNodes)
+	netInfo.ActiveNodeCount = len(activeNodes)
+	netInfo.StandbyNodeCount = len(standbyNodes)
+	netInfo.TotalReserve = vault.TotalReserve
+
+	//	1 / (totalBond + totalStaked) / (totalBond - totalStaked)
+	netInfo.PoolShareFactor = float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond - netInfo.TotalStaked)
+	netInfo.PoolShareFactor /= float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond + netInfo.TotalStaked)
+
+	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(models.NetConstant)
+	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
+	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
+
+	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetric.TotalActiveBond+netInfo.BondMetric.TotalStandbyBond)
+	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * models.NetConstant) / float64(netInfo.TotalStaked)
+	return netInfo, nil
+}
+
+func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
 	uri := fmt.Sprintf("%s/nodeaccounts", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -439,22 +488,35 @@ func (sc *Scanner) getNodeAccounts(status types.NodeStatus) ([]types.NodeAccount
 
 	var nodeAccounts []types.NodeAccount
 	if err := json.NewDecoder(resp.Body).Decode(&nodeAccounts); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal nodeAccount")
+		return nil, errors.Wrap(err, "getNodeAccounts failed")
 	}
-	var nodes []types.NodeAccount
-	for i, _ := range nodeAccounts {
-		if nodeAccounts[i].Status == status {
-			nodes = append(nodes, nodeAccounts[i])
-		}
-	}
-	return nodes, nil
+	return nodeAccounts, nil
 }
-func (sc *Scanner) getBondMetrics() (models.BondMetrics, error) {
-	var metric models.BondMetrics
-	activeNodes, err := sc.getNodeAccounts(types.Active)
+
+func (sc *Scanner) getVaultData() (types.VaultData, error) {
+	uri := fmt.Sprintf("%s/vault", sc.thorchainEndpoint)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
-		return models.BondMetrics{}, errors.Wrap(err, "failed to get node accounts")
+		return types.VaultData{}, err
 	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var vault types.VaultData
+	if err := json.NewDecoder(resp.Body).Decode(&vault); nil != err {
+		return types.VaultData{}, errors.Wrap(err, "failed to unmarshal VaultData")
+	}
+	return vault, nil
+}
+
+func (sc *Scanner) calcBondMetrics(activeNodes, standbyNodes []types.NodeAccount) models.BondMetrics {
+	var metric models.BondMetrics
+
 	if len(activeNodes) > 0 {
 		for _, node := range activeNodes {
 			if metric.TotalActiveBond == 0 {
@@ -471,10 +533,7 @@ func (sc *Scanner) getBondMetrics() (models.BondMetrics, error) {
 		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(activeNodes))
 		metric.MedianActiveBond = activeNodes[len(activeNodes)/2].Bond
 	}
-	standbyNodes, err := sc.getNodeAccounts(types.Standby)
-	if err != nil {
-		return models.BondMetrics{}, errors.Wrap(err, "failed to get node accounts")
-	}
+
 	if len(standbyNodes) > 0 {
 		for _, node := range standbyNodes {
 			if metric.TotalStandbyBond == 0 {
@@ -491,5 +550,5 @@ func (sc *Scanner) getBondMetrics() (models.BondMetrics, error) {
 		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(standbyNodes))
 		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
 	}
-	return metric, nil
+	return metric
 }
