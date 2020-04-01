@@ -422,7 +422,7 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		netInfo.PoolShareFactor = float64(netInfo.BondMetrics.TotalActiveBond + netInfo.BondMetrics.TotalStandbyBond - netInfo.TotalStaked)
 		netInfo.PoolShareFactor /= float64(netInfo.BondMetrics.TotalActiveBond + netInfo.BondMetrics.TotalStandbyBond + netInfo.TotalStaked)
 	}
-	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(models.NetConstant)
+	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*models.NetConstant)
 	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
 	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
 	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetrics.TotalActiveBond+netInfo.BondMetrics.TotalStandbyBond)
