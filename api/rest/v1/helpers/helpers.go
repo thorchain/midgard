@@ -121,6 +121,14 @@ func Uint64ToString(v uint64) *string {
 	return &str
 }
 
+func Uint64ArrayToStringArray(vs []uint64) *[]string {
+	var str []string
+	for _, v := range vs {
+		str = append(str, strconv.FormatUint(v, 10))
+	}
+	return &str
+}
+
 func Int64ToString(v int64) *string {
 	str := strconv.FormatInt(v, 10)
 	return &str

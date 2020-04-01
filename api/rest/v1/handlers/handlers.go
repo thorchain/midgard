@@ -353,7 +353,7 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 }
 
 // (GET /v1/network)
-func (h *Handlers) GetNetwork(ctx echo.Context) error {
+func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 	var netInfo models.NetworkInfo
 	nodeAccounts, err := h.thorChainClient.GetNodeAccounts()
 	if err != nil {
@@ -384,10 +384,8 @@ func (h *Handlers) GetNetwork(ctx echo.Context) error {
 	var metric models.BondMetrics
 
 	if len(activeNodes) > 0 {
+		metric.MinimumActiveBond = activeNodes[0].Bond
 		for _, node := range activeNodes {
-			if metric.TotalActiveBond == 0 {
-				metric.MinimumActiveBond = node.Bond
-			}
 			metric.TotalActiveBond += node.Bond
 			if node.Bond > metric.MaximumActiveBond {
 				metric.MaximumActiveBond = node.Bond
@@ -401,10 +399,8 @@ func (h *Handlers) GetNetwork(ctx echo.Context) error {
 	}
 
 	if len(standbyNodes) > 0 {
+		metric.MinimumStandbyBond = standbyNodes[0].Bond
 		for _, node := range standbyNodes {
-			if metric.TotalStandbyBond == 0 {
-				metric.MinimumStandbyBond = node.Bond
-			}
 			metric.TotalStandbyBond += node.Bond
 			if node.Bond > metric.MaximumStandbyBond {
 				metric.MaximumStandbyBond = node.Bond
@@ -418,16 +414,48 @@ func (h *Handlers) GetNetwork(ctx echo.Context) error {
 	}
 
 	netInfo.TotalStaked = runeStaked
-	netInfo.BondMetric = metric
+	netInfo.BondMetrics = metric
 	netInfo.ActiveNodeCount = len(activeNodes)
 	netInfo.StandbyNodeCount = len(standbyNodes)
 	netInfo.TotalReserve = vault.TotalReserve
-	netInfo.PoolShareFactor = float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond - netInfo.TotalStaked)
-	netInfo.PoolShareFactor /= float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond + netInfo.TotalStaked)
+	if netInfo.BondMetrics.TotalActiveBond+netInfo.BondMetrics.TotalStandbyBond+netInfo.TotalStaked != 0 {
+		netInfo.PoolShareFactor = float64(netInfo.BondMetrics.TotalActiveBond + netInfo.BondMetrics.TotalStandbyBond - netInfo.TotalStaked)
+		netInfo.PoolShareFactor /= float64(netInfo.BondMetrics.TotalActiveBond + netInfo.BondMetrics.TotalStandbyBond + netInfo.TotalStaked)
+	}
 	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(models.NetConstant)
 	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
 	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
-	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetric.TotalActiveBond+netInfo.BondMetric.TotalStandbyBond)
+	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetrics.TotalActiveBond+netInfo.BondMetrics.TotalStandbyBond)
 	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * models.NetConstant) / float64(netInfo.TotalStaked)
-	return nil
+
+	response := api.NetworkResponse{
+		BondMetrics: &api.BondMetrics{
+			TotalActiveBond:    helpers.Uint64ToString(netInfo.BondMetrics.TotalActiveBond),
+			AverageActiveBond:  helpers.Float64ToString(netInfo.BondMetrics.AverageActiveBond),
+			MedianActiveBond:   helpers.Uint64ToString(netInfo.BondMetrics.MedianActiveBond),
+			MinimumActiveBond:  helpers.Uint64ToString(netInfo.BondMetrics.MinimumActiveBond),
+			MaximumActiveBond:  helpers.Uint64ToString(netInfo.BondMetrics.MaximumActiveBond),
+			TotalStandbyBond:   helpers.Uint64ToString(netInfo.BondMetrics.TotalStandbyBond),
+			AverageStandbyBond: helpers.Float64ToString(netInfo.BondMetrics.AverageStandbyBond),
+			MedianStandbyBond:  helpers.Uint64ToString(netInfo.BondMetrics.MedianStandbyBond),
+			MinimumStandbyBond: helpers.Uint64ToString(netInfo.BondMetrics.MinimumStandbyBond),
+			MaximumStandbyBond: helpers.Uint64ToString(netInfo.BondMetrics.MaximumStandbyBond),
+		},
+		ActiveBonds:      helpers.Uint64ArrayToStringArray(netInfo.ActiveBonds),
+		StandbyBonds:     helpers.Uint64ArrayToStringArray(netInfo.StandbyBonds),
+		TotalStaked:      helpers.Uint64ToString(netInfo.TotalStaked),
+		ActiveNodeCount:  &netInfo.ActiveNodeCount,
+		StandbyNodeCount: &netInfo.StandbyNodeCount,
+		TotalReserve:     helpers.Uint64ToString(netInfo.TotalReserve),
+		PoolShareFactor:  helpers.Float64ToString(netInfo.PoolShareFactor),
+		BlockRewards: &api.BlockRewards{
+			BlockReward: helpers.Float64ToString(netInfo.BlockReward.BlockReward),
+			BondReward:  helpers.Float64ToString(netInfo.BlockReward.BondReward),
+			StakeReward: helpers.Float64ToString(netInfo.BlockReward.StakeReward),
+		},
+		BondingROI:      helpers.Float64ToString(netInfo.BondingROI),
+		StakingROI:      helpers.Float64ToString(netInfo.StakingROI),
+		NextChurnHeight: &netInfo.NextChurnHeight,
+	}
+	return ctx.JSON(http.StatusOK, response)
 }

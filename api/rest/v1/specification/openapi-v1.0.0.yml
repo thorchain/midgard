@@ -191,6 +191,15 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/ThorchainEndpointsResponse'
+  "/v1/network":
+    get:
+      operationId: GetNetworkData
+      summary: Get Network Data
+      description: Returns an object containing Network data
+      responses:
+        "200":
+          "$ref": "#/components/responses/NetworkResponse"
+
 components:
   responses:
     PoolsDetailedResponse:
@@ -279,6 +288,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ThorchainEndpoints'
+
+    NetworkResponse:
+      description: Returns an object containing Network data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NetworkInfo'
 
   schemas:
     TxDetails:
@@ -628,6 +644,86 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ThorchainEndpoint'
+
+    BondMetrics:
+      type: object
+      properties:
+        totalActiveBond:
+          type: string
+          description: Total bond of active nodes
+        averageActiveBond:
+          type: string
+          description: Average bond of active nodes
+        medianActiveBond:
+          type: string
+          description: Median bond of active nodes
+        minimumActiveBond:
+          type: string
+          description: Minumum bond of active nodes
+        maximumActiveBond:
+          type: string
+          description: Maxinum bond of active nodes
+        totalStandbyBond:
+          type: string
+          description: Total bond of standby nodes
+        averageStandbyBond:
+          type: string
+          description: Average bond of standby nodes
+        medianStandbyBond:
+          type: string
+          description: Median bond of standby nodes
+        minimumStandbyBond:
+          type: string
+          description: Minumum bond of standby nodes
+        maximumStandbyBond:
+          type: string
+          description: Maximum bond of standby nodes
+    BlockRewards:
+      type: object
+      properties:
+        blockReward:
+          type: string
+        bondReward:
+          type: string
+        stakeReward:
+          type: string
+    NetworkInfo:
+      type: object
+      properties:
+        bondMetrics:
+          $ref: '#/components/schemas/BondMetrics'
+        activeBonds:
+          type: array
+          description: Array of Active Bonds
+          items:
+            type: string
+        standbyBonds:
+          type: array
+          description: Array of Standby Bonds
+          items:
+            type: string
+        totalStaked:
+          type: string
+          description: Total Rune Staked in Pools
+        activeNodeCount:
+          type: integer
+          description: Number of Active Nodes
+        standbyNodeCount:
+          type: integer
+          description: Number of Standby Nodes
+        totalReserve:
+          type: string
+          description: Total left in Reserve
+        poolShareFactor:
+          type: string
+        blockRewards:
+          $ref: '#/components/schemas/BlockRewards'
+        bondingROI:
+          type: string
+        stakingROI:
+          type: string
+        nextChurnHeight:
+          type: integer
 
 servers:
   - url: http://127.0.0.1:8080
