@@ -11,21 +11,21 @@ import (
 )
 
 // GetTxDetails returns events with pagination and given query params.
-func (s *Client) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.TxDetails, int64, error) {
-	txs, err := s.getTxDetails(address, txID, asset, offset, limit)
+func (s *Client) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, int64, error) {
+	txs, err := s.getTxDetails(address, txID, asset, eventType, offset, limit)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "GetTxDetails failed")
 	}
 
-	count, err := s.getTxsCount(address, txID, asset)
+	count, err := s.getTxsCount(address, txID, asset, eventType)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "GetTxDetails failed")
 	}
 	return txs, count, nil
 }
 
-func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset common.Asset, offset, limit int64) ([]models.TxDetails, error) {
-	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), false, limit, offset)
+func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, error) {
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventType, false, limit, offset)
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "getTxDetails failed")
@@ -46,8 +46,8 @@ func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset co
 	return s.processEvents(events)
 }
 
-func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset common.Asset) (int64, error) {
-	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), true, 0, 0)
+func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset common.Asset, eventType string) (int64, error) {
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventType, true, 0, 0)
 	row := s.db.QueryRow(q, args...)
 
 	var count sql.NullInt64
@@ -60,7 +60,7 @@ func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset com
 	return count.Int64, nil
 }
 
-func (s *Client) buildEventsQuery(address, txID, asset string, isCount bool, limit, offset int64) (string, []interface{}) {
+func (s *Client) buildEventsQuery(address, txID, asset, eventType string, isCount bool, limit, offset int64) (string, []interface{}) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	if isCount {
 		sb.Select("COUNT(DISTINCT(txs.event_id))")
@@ -79,6 +79,10 @@ func (s *Client) buildEventsQuery(address, txID, asset string, isCount bool, lim
 	if asset != "" {
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
 		sb.Where(sb.Equal("coins.ticker", asset))
+	}
+	if eventType != "" {
+		sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
+		sb.Where(sb.Equal("events.type", eventType))
 	}
 	return sb.Build()
 }
