@@ -367,6 +367,7 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 
 	var activeNodes []types.NodeAccount
 	var standbyNodes []types.NodeAccount
+	var totalBond uint64
 	for _, node := range nodeAccounts {
 		if node.Status == types.Active {
 			activeNodes = append(activeNodes, node)
@@ -375,6 +376,7 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 			standbyNodes = append(standbyNodes, node)
 			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
 		}
+		totalBond += node.Bond
 	}
 
 	runeStaked, err := h.store.TotalRuneStaked()
@@ -418,14 +420,13 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 	netInfo.ActiveNodeCount = len(activeNodes)
 	netInfo.StandbyNodeCount = len(standbyNodes)
 	netInfo.TotalReserve = vault.TotalReserve
-	if netInfo.BondMetrics.TotalActiveBond+netInfo.BondMetrics.TotalStandbyBond+netInfo.TotalStaked != 0 {
-		netInfo.PoolShareFactor = float64(netInfo.BondMetrics.TotalActiveBond + netInfo.BondMetrics.TotalStandbyBond - netInfo.TotalStaked)
-		netInfo.PoolShareFactor /= float64(netInfo.BondMetrics.TotalActiveBond + netInfo.BondMetrics.TotalStandbyBond + netInfo.TotalStaked)
+	if totalBond+netInfo.TotalStaked != 0 {
+		netInfo.PoolShareFactor = float64(totalBond-netInfo.TotalStaked) / float64(totalBond+netInfo.TotalStaked)
 	}
 	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*models.NetConstant)
 	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
 	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
-	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetrics.TotalActiveBond+netInfo.BondMetrics.TotalStandbyBond)
+	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(totalBond)
 	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * models.NetConstant) / float64(netInfo.TotalStaked)
 
 	response := api.NetworkResponse{
