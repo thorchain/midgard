@@ -9,6 +9,7 @@ before_script:
 stages:
   - test
   - build
+  - smoke-test
   - deploy
 
 unit:
@@ -55,6 +56,38 @@ build:
     name: develop
   script: make docker-build
 
+smoke-test:
+  stage: smoke-test
+  image: docker/compose:alpine-1.25.4
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+  artifacts:
+    when: on_failure
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./logs/
+  before_script:
+    - apk update
+    - apk add make git jq curl
+    - make docker-gitlab-build
+    - git clone --single-branch -b $CI_COMMIT_BRANCH https://gitlab.com/thorchain/thornode.git || git clone --single-branch -b master https://gitlab.com/thorchain/thornode.git
+    - cd thornode
+    - test master = $(git rev-parse --abbrev-ref HEAD) && docker pull registry.gitlab.com/thorchain/thornode:mocknet
+    - make -C build/docker reset-mocknet-standalone
+  except:
+    - schedules
+  environment:
+    name: develop
+  script:
+    - git clone --single-branch -b $CI_COMMIT_BRANCH https://gitlab.com/thorchain/heimdall.git || git clone --single-branch -b master https://gitlab.com/thorchain/heimdall.git
+    - cd ./heimdall
+    - make build
+    - make smoke
+  after_script:
+    - ./thornode/scripts/docker_logs.sh
 
 # Build docker image
 build-gitlab-docker:
@@ -131,4 +164,3 @@ deploy:production:
   only:
     - master
   when: manual
-

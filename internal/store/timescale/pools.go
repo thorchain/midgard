@@ -1462,16 +1462,24 @@ func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
-	sellFeeAverage, err := s.sellFeeAverage(asset)
+	sellFeesTotal, err := s.sellFeesTotal(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolFeeAverage failed")
 	}
 
-	buyFeeAverage, err := s.buyFeeAverage(asset)
+	buyFeesTotal, err := s.buyFeesTotal(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolFeeAverage failed")
 	}
-	return (buyFeeAverage + sellFeeAverage) / 2, nil
+
+	swappingTxCount, err := s.swappingTxCount(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "poolFeeAverage failed")
+	}
+	if swappingTxCount == 0 {
+		return 0, nil
+	}
+	return (sellFeesTotal + buyFeesTotal) / (swappingTxCount), nil
 }
 
 func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {

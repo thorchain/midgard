@@ -62,6 +62,14 @@ paths:
             type: string
           example: BNB.TOMOB-1E1
         - in: query
+          name: type
+          description: Requested type of events
+          required: false
+          schema:
+            type: string
+            enum: [swap, stake, unstake, add, refund]
+          example: [swap, stake, unstake, add, refund]
+        - in: query
           name: offset
           description: pagination offset
           required: true
