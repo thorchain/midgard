@@ -425,54 +425,7 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	return outTxs, nil
 }
 
-func (sc *Scanner) getNetInfo() (models.NetworkInfo, error) {
-	var netInfo models.NetworkInfo
-	nodeAccounts, err := sc.getNodeAccounts()
-	if err != nil {
-		return models.NetworkInfo{}, errors.Wrap(err, "getNetInfo failed")
-	}
-
-	var activeNodes []types.NodeAccount
-	var standbyNodes []types.NodeAccount
-	for _, node := range nodeAccounts {
-		if node.Status == types.Active {
-			activeNodes = append(activeNodes, node)
-			netInfo.ActiveBonds = append(netInfo.ActiveBonds, node.Bond)
-		} else if node.Status == types.Standby {
-			standbyNodes = append(standbyNodes, node)
-			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
-		}
-	}
-
-	vault, err := sc.getVaultData()
-	if err != nil {
-		return models.NetworkInfo{}, errors.Wrap(err, "getNetInfo failed")
-	}
-	runeStaked, err := sc.store.TotalRuneStaked()
-	if err != nil {
-		return models.NetworkInfo{}, errors.Wrap(err, "getNetInfo failed")
-	}
-
-	netInfo.TotalStaked = runeStaked
-	netInfo.BondMetric = sc.calcBondMetrics(activeNodes, standbyNodes)
-	netInfo.ActiveNodeCount = len(activeNodes)
-	netInfo.StandbyNodeCount = len(standbyNodes)
-	netInfo.TotalReserve = vault.TotalReserve
-
-	//	1 / (totalBond + totalStaked) / (totalBond - totalStaked)
-	netInfo.PoolShareFactor = float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond - netInfo.TotalStaked)
-	netInfo.PoolShareFactor /= float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond + netInfo.TotalStaked)
-
-	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(models.NetConstant)
-	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
-	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
-
-	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetric.TotalActiveBond+netInfo.BondMetric.TotalStandbyBond)
-	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * models.NetConstant) / float64(netInfo.TotalStaked)
-	return netInfo, nil
-}
-
-func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
+func (sc *Scanner) GetNodeAccounts() ([]types.NodeAccount, error) {
 	uri := fmt.Sprintf("%s/nodeaccounts", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -493,7 +446,7 @@ func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
 	return nodeAccounts, nil
 }
 
-func (sc *Scanner) getVaultData() (types.VaultData, error) {
+func (sc *Scanner) GetVaultData() (types.VaultData, error) {
 	uri := fmt.Sprintf("%s/vault", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -512,43 +465,4 @@ func (sc *Scanner) getVaultData() (types.VaultData, error) {
 		return types.VaultData{}, errors.Wrap(err, "failed to unmarshal VaultData")
 	}
 	return vault, nil
-}
-
-func (sc *Scanner) calcBondMetrics(activeNodes, standbyNodes []types.NodeAccount) models.BondMetrics {
-	var metric models.BondMetrics
-
-	if len(activeNodes) > 0 {
-		for _, node := range activeNodes {
-			if metric.TotalActiveBond == 0 {
-				metric.MinimumActiveBond = node.Bond
-			}
-			metric.TotalActiveBond += node.Bond
-			if node.Bond > metric.MaximumActiveBond {
-				metric.MaximumActiveBond = node.Bond
-			}
-			if node.Bond < metric.MinimumActiveBond {
-				metric.MinimumActiveBond = node.Bond
-			}
-		}
-		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(activeNodes))
-		metric.MedianActiveBond = activeNodes[len(activeNodes)/2].Bond
-	}
-
-	if len(standbyNodes) > 0 {
-		for _, node := range standbyNodes {
-			if metric.TotalStandbyBond == 0 {
-				metric.MinimumStandbyBond = node.Bond
-			}
-			metric.TotalStandbyBond += node.Bond
-			if node.Bond > metric.MaximumStandbyBond {
-				metric.MaximumStandbyBond = node.Bond
-			}
-			if node.Bond < metric.MinimumStandbyBond {
-				metric.MinimumStandbyBond = node.Bond
-			}
-		}
-		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(standbyNodes))
-		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
-	}
-	return metric
 }

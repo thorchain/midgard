@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/models"
 	"net/http"
 
 	"github.com/99designs/gqlgen/handler"
@@ -347,5 +349,85 @@ func (h *Handlers) PostGraphqlQuery(ctx echo.Context) error {
 // GetThorchainProxiedEndpoints is just here to meet the golang interface.
 // As the endpoints are generated dynamically the implemented is in server.go
 func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
+	return nil
+}
+
+// (GET /v1/network)
+func (h *Handlers) GetNetwork(ctx echo.Context) error {
+	var netInfo models.NetworkInfo
+	nodeAccounts, err := h.thorChainClient.GetNodeAccounts()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	vault, err := h.thorChainClient.GetVaultData()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	var activeNodes []types.NodeAccount
+	var standbyNodes []types.NodeAccount
+	for _, node := range nodeAccounts {
+		if node.Status == types.Active {
+			activeNodes = append(activeNodes, node)
+			netInfo.ActiveBonds = append(netInfo.ActiveBonds, node.Bond)
+		} else if node.Status == types.Standby {
+			standbyNodes = append(standbyNodes, node)
+			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
+		}
+	}
+
+	runeStaked, err := h.store.TotalRuneStaked()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	var metric models.BondMetrics
+
+	if len(activeNodes) > 0 {
+		for _, node := range activeNodes {
+			if metric.TotalActiveBond == 0 {
+				metric.MinimumActiveBond = node.Bond
+			}
+			metric.TotalActiveBond += node.Bond
+			if node.Bond > metric.MaximumActiveBond {
+				metric.MaximumActiveBond = node.Bond
+			}
+			if node.Bond < metric.MinimumActiveBond {
+				metric.MinimumActiveBond = node.Bond
+			}
+		}
+		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(activeNodes))
+		metric.MedianActiveBond = activeNodes[len(activeNodes)/2].Bond
+	}
+
+	if len(standbyNodes) > 0 {
+		for _, node := range standbyNodes {
+			if metric.TotalStandbyBond == 0 {
+				metric.MinimumStandbyBond = node.Bond
+			}
+			metric.TotalStandbyBond += node.Bond
+			if node.Bond > metric.MaximumStandbyBond {
+				metric.MaximumStandbyBond = node.Bond
+			}
+			if node.Bond < metric.MinimumStandbyBond {
+				metric.MinimumStandbyBond = node.Bond
+			}
+		}
+		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(standbyNodes))
+		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
+	}
+
+	netInfo.TotalStaked = runeStaked
+	netInfo.BondMetric = metric
+	netInfo.ActiveNodeCount = len(activeNodes)
+	netInfo.StandbyNodeCount = len(standbyNodes)
+	netInfo.TotalReserve = vault.TotalReserve
+	netInfo.PoolShareFactor = float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond - netInfo.TotalStaked)
+	netInfo.PoolShareFactor /= float64(netInfo.BondMetric.TotalActiveBond + netInfo.BondMetric.TotalStandbyBond + netInfo.TotalStaked)
+	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(models.NetConstant)
+	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
+	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
+	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(netInfo.BondMetric.TotalActiveBond+netInfo.BondMetric.TotalStandbyBond)
+	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * models.NetConstant) / float64(netInfo.TotalStaked)
 	return nil
 }
