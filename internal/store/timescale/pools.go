@@ -659,6 +659,25 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
 	return -assetWithdrawnTotal.Int64, nil
 }
 
+// runeBondedTotal - total amount of rune bonded on the network.
+func (s *Client) runeBondedTotal(asset common.Asset) (uint64, error) {
+	stmnt := `
+		SELECT SUM(runeAmt)
+		FROM stakes
+		WHERE from_address = $1
+		AND runeAmt > 0
+	`
+
+	var runeStakedTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, bondEventAddress)
+
+	if err := row.Scan(&runeStakedTotal); err != nil {
+		return 0, errors.Wrap(err, "runeBondedTotal failed")
+	}
+
+	return uint64(runeStakedTotal.Int64), nil
+}
+
 // runeStakedTotal - total amount of rune staked on the network for given pool.
 func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
