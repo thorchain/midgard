@@ -226,4 +226,3 @@ type EventBond struct {
 func (e EventBond) Type() string {
 	return BondEventType
 }
-
