@@ -283,6 +283,37 @@ func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 	c.Assert(assetWithdrawnTotal, Equals, int64(10), Commentf("assetWithdrawnTotal: %v", assetWithdrawnTotal))
 }
 
+func (s *TimeScaleSuite) TestRuneBondedTotal(c *C) {
+	// No bond
+	runeBondedTotal, err := s.Store.runeBondedTotal()
+	c.Assert(err, IsNil)
+	c.Assert(runeBondedTotal, Equals, uint64(0))
+
+	// Single bond
+	err = s.Store.CreateBondRecord(bondEvent0)
+	c.Assert(err, IsNil)
+
+	runeBondedTotal, err = s.Store.runeBondedTotal()
+	c.Assert(err, IsNil)
+	c.Assert(runeBondedTotal, Equals, uint64(100000))
+
+	// Another bond
+	err = s.Store.CreateBondRecord(bondEvent1)
+	c.Assert(err, IsNil)
+
+	runeBondedTotal, err = s.Store.runeBondedTotal()
+	c.Assert(err, IsNil)
+	c.Assert(runeBondedTotal, Equals, uint64(300000))
+
+	// Level
+	err = s.Store.CreateBondRecord(bondEvent2)
+	c.Assert(err, IsNil)
+
+	runeBondedTotal, err = s.Store.runeBondedTotal()
+	c.Assert(err, IsNil)
+	c.Assert(runeBondedTotal, Equals, uint64(300000))
+}
+
 func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")

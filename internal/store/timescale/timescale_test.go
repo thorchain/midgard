@@ -1894,6 +1894,111 @@ var (
 		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
+	bondEvent0 = models.EventBond{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     31,
+			Status: "Success",
+			Height: 16,
+			Type:   "bond",
+			InTx: common.Tx{
+				ID:          "E4700637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 100000,
+					},
+				},
+				Memo: "bond:tbnb1hjzfknndeaqychcr85k2h2scgngfm72c6xgwge",
+			},
+			OutTxs: nil,
+		},
+		Amount:   100000,
+		BondType: models.BondPaid,
+	}
+	bondEvent1 = models.EventBond{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     32,
+			Status: "Success",
+			Height: 16,
+			Type:   "bond",
+			InTx: common.Tx{
+				ID:          "4A800637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000,
+					},
+				},
+				Memo: "bond:tbnb1hjzfknndeaqychcr85k2h2scgngfm72c6xgwge",
+			},
+			OutTxs: nil,
+		},
+		Amount:   200000,
+		BondType: models.BondPaid,
+	}
+	bondEvent2 = models.EventBond{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     33,
+			Status: "Success",
+			Height: 16,
+			Type:   "bond",
+			InTx: common.Tx{
+				ID:          "EFA00637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 1,
+					},
+				},
+				Memo: "leave",
+			},
+			OutTxs: common.Txs{
+				{
+					ID:          "D6600137DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "RUNE-B1A",
+								Ticker: "RUNE",
+							},
+							Amount: 300000,
+						},
+					},
+					Memo: "OUTBOUND:EFA00637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4",
+				},
+			},
+		},
+		Amount:   300000,
+		BondType: models.BondReturned,
+	}
 )
 
 type TimeScaleSuite struct {

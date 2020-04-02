@@ -660,7 +660,7 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
 }
 
 // runeBondedTotal - total amount of rune bonded on the network.
-func (s *Client) runeBondedTotal(asset common.Asset) (uint64, error) {
+func (s *Client) runeBondedTotal() (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
 		FROM stakes

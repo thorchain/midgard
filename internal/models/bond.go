@@ -13,7 +13,7 @@ const (
 
 type EventBond struct {
 	Event
-	Amount   uint64   `json:"amount"`
+	Amount   int64   `json:"amount"`
 	BondType BondType `json:"bond_type"`
 }
 

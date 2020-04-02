@@ -18,25 +18,21 @@ func (s *Client) CreateBondRecord(record models.EventBond) error {
 		INSERT INTO %v (
 			time,
 			event_id,
+			pool,
 			runeAmt,
 			from_address
-		)  VALUES ( $1, $2, $3, $4 ) RETURNING event_id`, models.ModelStakesTable)
+		)  VALUES ( $1, $2,'', $3, $4 ) RETURNING event_id`, models.ModelStakesTable)
 
-	if record.BondType == models.BondPaid {
-		_, err = s.db.Exec(query,
-			record.Event.Time,
-			record.Event.ID,
-			record.Amount,
-			bondEventAddress,
-		)
-	} else {
-		_, err = s.db.Exec(query,
-			record.Event.Time,
-			record.Event.ID,
-			-record.Amount,
-			bondEventAddress,
-		)
+	runeAmt := record.Amount
+	if record.BondType == models.BondReturned {
+		runeAmt = -record.Amount
 	}
+	_, err = s.db.Exec(query,
+		record.Event.Time,
+		record.Event.ID,
+		runeAmt,
+		bondEventAddress,
+	)
 
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
