@@ -382,10 +382,11 @@ func (s *Client) assetStaked(asset common.Asset) (int64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 		`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStaked failed")
@@ -481,10 +482,11 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 		`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStakedTotal failed")
@@ -502,11 +504,12 @@ func (s *Client) assetStaked12m(asset common.Asset) (int64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&assetStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "assetStaked12m failed")
@@ -666,11 +669,12 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 		AND runeAmt > 0
 	`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
@@ -689,10 +693,11 @@ func (s *Client) runeStaked(asset common.Asset) (int64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 	`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal failed")
@@ -804,11 +809,12 @@ func (s *Client) runeStaked12m(asset common.Asset) (int64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
 	var runeStaked12m sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&runeStaked12m); err != nil {
 		return 0, errors.Wrap(err, "runeStaked12m failed")
@@ -829,11 +835,12 @@ func (s *Client) runeStakedTotal12m(asset common.Asset) (uint64, error) {
 		AND from_address != $3
 		AND from_address != $4
 		AND from_address != $5
+		AND from_address != $6
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		`
 
 	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&runeStakedTotal); err != nil {
 		return 0, errors.Wrap(err, "runeStakedTotal12m failed")
@@ -1676,13 +1683,14 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 			AND from_address != $3
 			AND from_address != $4
 			AND from_address != $5
+			AND from_address != $6
 			GROUP BY from_address
 		) AS sub
 		WHERE sub.total_units > 0
 	`
 
 	var stakersCount sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, asset.String(), addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, bondEventAddress)
 
 	if err := row.Scan(&stakersCount); err != nil {
 		return 0, errors.Wrap(err, "stakersCount failed")
