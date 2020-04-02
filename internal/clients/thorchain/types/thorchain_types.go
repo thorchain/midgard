@@ -53,8 +53,8 @@ type EventSwap struct {
 	Pool               common.Asset `json:"pool"`
 	PriceTarget        int64        `json:"price_target,string"`
 	TradeSlip          int64        `json:"trade_slip,string"`
-	LiquidityFee       int64        `json:"liquidity_fee"`         //liquidityFee in non-rune asset
-	LiquidityFeeInRune int64        `json:"liquidity_fee_in_rune"` //liquidityFee in rune asset
+	LiquidityFee       int64        `json:"liquidity_fee,string"`         //liquidityFee in non-rune asset
+	LiquidityFeeInRune int64        `json:"liquidity_fee_in_rune,string"` //liquidityFee in rune asset
 }
 
 func (e EventSwap) Type() string {
