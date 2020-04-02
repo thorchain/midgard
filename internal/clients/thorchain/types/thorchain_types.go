@@ -218,7 +218,7 @@ func (e EventSlash) Type() string {
 }
 
 type EventBond struct {
-	Amount   int64  `json:"amount"`
+	Amount   int64  `json:"amount,string"`
 	BondType string `json:"bond_type"`
 }
 
