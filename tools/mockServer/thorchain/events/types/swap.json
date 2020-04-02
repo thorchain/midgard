@@ -52,7 +52,8 @@
       "pool": "BNB.RUNE-A1F",
       "price_target": "0",
       "trade_slip": "40",
-      "liquidity_fee": "199000"
+      "liquidity_fee": "199000",
+      "liquidity_fee_in_rune": "66600000"
     },
     "status": "Success"
   }
