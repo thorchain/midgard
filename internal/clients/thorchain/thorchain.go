@@ -43,6 +43,7 @@ type Store interface {
 	CreateGasRecord(record models.EventGas) error
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
+	CreateBondRecord(record models.EventBond) error
 	GetMaxID() (int64, error)
 }
 
@@ -76,6 +77,7 @@ func NewScanner(cfg config.ThorChainConfiguration, store Store) (*Scanner, error
 	sc.handlers[types.PoolEventType] = sc.processPoolEvent
 	sc.handlers[types.GasEventType] = sc.processGasEvent
 	sc.handlers[types.SlashEventType] = sc.processSlashEvent
+	sc.handlers[types.BondEventType] = sc.processBondEvent
 	return sc, nil
 }
 
@@ -376,6 +378,21 @@ func (sc *Scanner) processSlashEvent(evt types.Event) error {
 	err = sc.store.CreateSlashRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create slash record")
+	}
+	return nil
+}
+
+func (sc *Scanner) processBondEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processBondEvent")
+	var bond types.EventBond
+	err := json.Unmarshal(evt.Event, &bond)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal bond event")
+	}
+	record := models.NewBondEvent(bond, evt)
+	err = sc.store.CreateBondRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create bond record")
 	}
 	return nil
 }
