@@ -29,6 +29,7 @@ type Scanner struct {
 	logger             zerolog.Logger
 	stopChan           chan struct{}
 	mu                 sync.Mutex
+	constants          types.ConstantValues
 }
 
 // Store represents methods for storing data coming from thochain.
@@ -45,6 +46,7 @@ type Store interface {
 	CreateSlashRecord(record models.EventSlash) error
 	GetMaxID() (int64, error)
 	TotalRuneStaked() (uint64, error)
+	TotalDepth() (uint64, error)
 }
 
 type handlerFunc func(types.Event) error
@@ -425,7 +427,119 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	return outTxs, nil
 }
 
-func (sc *Scanner) GetNodeAccounts() ([]types.NodeAccount, error) {
+func (sc *Scanner) NetworkInfo() (models.NetworkInfo, error) {
+	var netInfo models.NetworkInfo
+	nodeAccounts, err := sc.getNodeAccounts()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get NodeAccounts")
+	}
+
+	vaultData, err := sc.getVaultData()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get VaultData")
+	}
+
+	vaults, err := sc.getAsgardVaults()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get Vaults")
+	}
+
+	consts, err := sc.getConstants()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get Constants")
+	}
+	churnInterval, ok := consts.Int64Values["RotatePerBlockHeight"]
+	if !ok {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get RotatePerBlockHeight")
+	}
+	churnRetry, ok := consts.Int64Values["RotateRetryBlocks"]
+	if !ok {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get RotateRetryBlocks")
+	}
+	lastHeight, err := sc.getLastChainHeight()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get LastChainHeight")
+	}
+
+	var lastChurn int64
+	for _, v := range vaults {
+		if v.Status == types.ActiveVault && v.BlockHeight > lastChurn {
+			lastChurn = v.BlockHeight
+		}
+	}
+
+	if lastHeight.Statechain-lastChurn < churnInterval {
+		netInfo.NextChurnHeight = lastChurn + churnInterval
+	} else {
+		netInfo.NextChurnHeight = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
+	}
+
+	var activeNodes []types.NodeAccount
+	var standbyNodes []types.NodeAccount
+	var totalBond uint64
+	for _, node := range nodeAccounts {
+		if node.Status == types.Active {
+			activeNodes = append(activeNodes, node)
+			netInfo.ActiveBonds = append(netInfo.ActiveBonds, node.Bond)
+		} else if node.Status == types.Standby {
+			standbyNodes = append(standbyNodes, node)
+			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
+		}
+		totalBond += node.Bond
+	}
+
+	runeStaked, err := sc.store.TotalDepth()
+	if err != nil {
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get TotalDepth")
+	}
+	var metric models.BondMetrics
+
+	if len(activeNodes) > 0 {
+		metric.MinimumActiveBond = activeNodes[0].Bond
+		for _, node := range activeNodes {
+			metric.TotalActiveBond += node.Bond
+			if node.Bond > metric.MaximumActiveBond {
+				metric.MaximumActiveBond = node.Bond
+			}
+			if node.Bond < metric.MinimumActiveBond {
+				metric.MinimumActiveBond = node.Bond
+			}
+		}
+		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(activeNodes))
+		metric.MedianActiveBond = activeNodes[len(activeNodes)/2].Bond
+	}
+
+	if len(standbyNodes) > 0 {
+		metric.MinimumStandbyBond = standbyNodes[0].Bond
+		for _, node := range standbyNodes {
+			metric.TotalStandbyBond += node.Bond
+			if node.Bond > metric.MaximumStandbyBond {
+				metric.MaximumStandbyBond = node.Bond
+			}
+			if node.Bond < metric.MinimumStandbyBond {
+				metric.MinimumStandbyBond = node.Bond
+			}
+		}
+		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(standbyNodes))
+		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
+	}
+
+	netInfo.TotalStaked = runeStaked
+	netInfo.BondMetrics = metric
+	netInfo.ActiveNodeCount = len(activeNodes)
+	netInfo.StandbyNodeCount = len(standbyNodes)
+	netInfo.TotalReserve = vaultData.TotalReserve
+	if totalBond+netInfo.TotalStaked != 0 {
+		netInfo.PoolShareFactor = float64(totalBond-netInfo.TotalStaked) / float64(totalBond+netInfo.TotalStaked)
+	}
+	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*6307200)
+	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
+	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
+	netInfo.BondingROI = (netInfo.BlockReward.BondReward * 6307200) / float64(totalBond)
+	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * 6307200) / float64(netInfo.TotalStaked)
+	return netInfo, nil
+}
+func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
 	uri := fmt.Sprintf("%s/nodeaccounts", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -446,7 +560,7 @@ func (sc *Scanner) GetNodeAccounts() ([]types.NodeAccount, error) {
 	return nodeAccounts, nil
 }
 
-func (sc *Scanner) GetVaultData() (types.VaultData, error) {
+func (sc *Scanner) getVaultData() (types.VaultData, error) {
 	uri := fmt.Sprintf("%s/vault", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -467,7 +581,10 @@ func (sc *Scanner) GetVaultData() (types.VaultData, error) {
 	return vault, nil
 }
 
-func (sc *Scanner) GetConstants() (types.ConstantValues, error) {
+func (sc *Scanner) getConstants() (types.ConstantValues, error) {
+	if !sc.constants.IsEmpty() {
+		return sc.constants, nil
+	}
 	uri := fmt.Sprintf("%s/constants", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -481,14 +598,13 @@ func (sc *Scanner) GetConstants() (types.ConstantValues, error) {
 		}
 	}()
 
-	var constantValues types.ConstantValues
-	if err := json.NewDecoder(resp.Body).Decode(&constantValues); nil != err {
+	if err := json.NewDecoder(resp.Body).Decode(&sc.constants); nil != err {
 		return types.ConstantValues{}, errors.Wrap(err, "failed to unmarshal constantValues")
 	}
-	return constantValues, nil
+	return sc.constants, nil
 }
 
-func (sc *Scanner) GetAsgardVaults() ([]types.Vault, error) {
+func (sc *Scanner) getAsgardVaults() ([]types.Vault, error) {
 	uri := fmt.Sprintf("%s/vaults/asgard", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
@@ -509,7 +625,7 @@ func (sc *Scanner) GetAsgardVaults() ([]types.Vault, error) {
 	return vaults, nil
 }
 
-func (sc *Scanner) GetLastChainHeight() (types.LastHeights, error) {
+func (sc *Scanner) getLastChainHeight() (types.LastHeights, error) {
 	uri := fmt.Sprintf("%s/lastblock", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)

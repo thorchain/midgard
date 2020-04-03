@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-	"gitlab.com/thorchain/midgard/internal/models"
 	"net/http"
 
 	"github.com/99designs/gqlgen/handler"
@@ -358,116 +356,10 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 
 // (GET /v1/network)
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
-	var netInfo models.NetworkInfo
-	nodeAccounts, err := h.thorChainClient.GetNodeAccounts()
+	netInfo, err := h.thorChainClient.NetworkInfo()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
-
-	vaultData, err := h.thorChainClient.GetVaultData()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	vaults, err := h.thorChainClient.GetAsgardVaults()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	consts, err := h.thorChainClient.GetConstants()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-	churnInterval, ok := consts.Int64Values["RotatePerBlockHeight"]
-	if !ok {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: "failed to get RotatePerBlockHeight"})
-	}
-	churnRetry, ok := consts.Int64Values["RotateRetryBlocks"]
-	if !ok {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: "failed to get RotateRetryBlocks"})
-	}
-	lastHeight, err := h.thorChainClient.GetLastChainHeight()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: "failed to get RotateRetryBlocks"})
-	}
-
-	var lastChurn int64
-	for _, v := range vaults {
-		if v.Status == types.ActiveVault && v.BlockHeight > lastChurn {
-			lastChurn = v.BlockHeight
-		}
-	}
-
-	if lastHeight.Statechain-lastChurn < churnInterval {
-		netInfo.NextChurnHeight = lastChurn + churnInterval
-	} else {
-		netInfo.NextChurnHeight = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
-	}
-
-	var activeNodes []types.NodeAccount
-	var standbyNodes []types.NodeAccount
-	var totalBond uint64
-	for _, node := range nodeAccounts {
-		if node.Status == types.Active {
-			activeNodes = append(activeNodes, node)
-			netInfo.ActiveBonds = append(netInfo.ActiveBonds, node.Bond)
-		} else if node.Status == types.Standby {
-			standbyNodes = append(standbyNodes, node)
-			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
-		}
-		totalBond += node.Bond
-	}
-
-	runeStaked, err := h.store.TotalDepth()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-	var metric models.BondMetrics
-
-	if len(activeNodes) > 0 {
-		metric.MinimumActiveBond = activeNodes[0].Bond
-		for _, node := range activeNodes {
-			metric.TotalActiveBond += node.Bond
-			if node.Bond > metric.MaximumActiveBond {
-				metric.MaximumActiveBond = node.Bond
-			}
-			if node.Bond < metric.MinimumActiveBond {
-				metric.MinimumActiveBond = node.Bond
-			}
-		}
-		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(activeNodes))
-		metric.MedianActiveBond = activeNodes[len(activeNodes)/2].Bond
-	}
-
-	if len(standbyNodes) > 0 {
-		metric.MinimumStandbyBond = standbyNodes[0].Bond
-		for _, node := range standbyNodes {
-			metric.TotalStandbyBond += node.Bond
-			if node.Bond > metric.MaximumStandbyBond {
-				metric.MaximumStandbyBond = node.Bond
-			}
-			if node.Bond < metric.MinimumStandbyBond {
-				metric.MinimumStandbyBond = node.Bond
-			}
-		}
-		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(standbyNodes))
-		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
-	}
-
-	netInfo.TotalStaked = runeStaked
-	netInfo.BondMetrics = metric
-	netInfo.ActiveNodeCount = len(activeNodes)
-	netInfo.StandbyNodeCount = len(standbyNodes)
-	netInfo.TotalReserve = vaultData.TotalReserve
-	if totalBond+netInfo.TotalStaked != 0 {
-		netInfo.PoolShareFactor = float64(totalBond-netInfo.TotalStaked) / float64(totalBond+netInfo.TotalStaked)
-	}
-	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*6307200)
-	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
-	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
-	netInfo.BondingROI = (netInfo.BlockReward.BondReward * 6307200) / float64(totalBond)
-	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * 6307200) / float64(netInfo.TotalStaked)
-
 	response := api.NetworkResponse{
 		BondMetrics: &api.BondMetrics{
 			TotalActiveBond:    helpers.Uint64ToString(netInfo.BondMetrics.TotalActiveBond),
