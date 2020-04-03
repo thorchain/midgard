@@ -467,7 +467,7 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 		}
 	}
 
-	if lastHeight.Statechain-lastChurn < churnInterval {
+	if lastHeight.Statechain-lastChurn <= churnInterval {
 		netInfo.NextChurnHeight = lastChurn + churnInterval
 	} else {
 		netInfo.NextChurnHeight = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
