@@ -1,10 +1,23 @@
 [![pipeline status](https://gitlab.com/thorchain/midgard/badges/master/pipeline.svg)](https://gitlab.com/thorchain/midgard/commits/master)
 
-Chain Service 
+Midgard API 
+
+****
+
+> **Mirror**
+>
+> This repo mirrors from THORChain Gitlab to Github. 
+> To contribute, please contact the team and commit to the Gitlab repo:
+>
+> https://gitlab.com/thorchain/midgard
+
+
+****
+
 =============
 
-### Run chain service
-To run the chain service you will need two terminal windows or tabs. In the
+### Run Midgard API
+To run Midgard you will need two terminal windows or tabs. In the
 first tab, run...
 ```bash
 make pg
@@ -20,7 +33,7 @@ make install run
 ```
 
 ### Run mock server
-To use a mock server run everything as described in `Run chain service`. After that, run following command in another terminal:
+To use a mock server run everything as described in `Run Midgard API`. After that, run following command in another terminal:
 
 ```bash
 make run-thormock
