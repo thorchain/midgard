@@ -467,12 +467,12 @@ func (sc *Scanner) GetVaultData() (types.VaultData, error) {
 	return vault, nil
 }
 
-func (sc *Scanner) GetConstants() (map[string]interface{}, error) {
+func (sc *Scanner) GetConstants() (types.ConstantValues, error) {
 	uri := fmt.Sprintf("%s/constants", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
-		return nil, err
+		return types.ConstantValues{}, err
 	}
 
 	defer func() {
@@ -481,9 +481,9 @@ func (sc *Scanner) GetConstants() (map[string]interface{}, error) {
 		}
 	}()
 
-	var constantValues map[string]interface{}
+	var constantValues types.ConstantValues
 	if err := json.NewDecoder(resp.Body).Decode(&constantValues); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal constantValues")
+		return types.ConstantValues{}, errors.Wrap(err, "failed to unmarshal constantValues")
 	}
 	return constantValues, nil
 }

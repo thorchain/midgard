@@ -21,15 +21,15 @@ const (
 )
 
 type Vault struct {
-	BlockHeight           int64        `json:"block_height"`
+	BlockHeight           int64        `json:"block_height,string"`
 	PubKey                string       `json:"pub_key"`
 	Coins                 common.Coins `json:"coins"`
 	Type                  VaultType    `json:"type"`
 	Status                VaultStatus  `json:"status"`
-	StatusSince           int64        `json:"status_since"`
-	Membership            string       `json:"membership"`
-	InboundTxCount        int64        `json:"inbound_tx_count"`
-	OutboundTxCount       int64        `json:"outbound_tx_count"`
+	StatusSince           int64        `json:"status_since,string"`
+	Membership            []string     `json:"membership"`
+	InboundTxCount        int64        `json:"inbound_tx_count,string"`
+	OutboundTxCount       int64        `json:"outbound_tx_count,string"`
 	PendingTxBlockHeights []int64      `json:"pending_tx_heights"`
 }
 

@@ -1,7 +1,5 @@
 package models
 
-const NetConstant = 6307200
-
 type NetworkInfo struct {
 	BondMetrics      BondMetrics
 	ActiveBonds      []uint64
@@ -14,7 +12,7 @@ type NetworkInfo struct {
 	BlockReward      BlockRewards
 	BondingROI       float64
 	StakingROI       float64
-	NextChurnHeight  int
+	NextChurnHeight  int64
 }
 
 type BlockRewards struct {

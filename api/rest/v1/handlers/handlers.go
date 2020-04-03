@@ -364,9 +364,44 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
-	vault, err := h.thorChainClient.GetVaultData()
+	vaultData, err := h.thorChainClient.GetVaultData()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	vaults, err := h.thorChainClient.GetAsgardVaults()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	consts, err := h.thorChainClient.GetConstants()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	churnInterval, ok := consts.Int64Values["RotatePerBlockHeight"]
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: "failed to get RotatePerBlockHeight"})
+	}
+	churnRetry, ok := consts.Int64Values["RotateRetryBlocks"]
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: "failed to get RotateRetryBlocks"})
+	}
+	lastHeight, err := h.thorChainClient.GetLastChainHeight()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: "failed to get RotateRetryBlocks"})
+	}
+
+	var lastChurn int64
+	for _, v := range vaults {
+		if v.Status == types.ActiveVault && v.BlockHeight > lastChurn {
+			lastChurn = v.BlockHeight
+		}
+	}
+
+	if lastHeight.Statechain-lastChurn < churnInterval {
+		netInfo.NextChurnHeight = lastChurn + churnInterval
+	} else {
+		netInfo.NextChurnHeight = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
 	}
 
 	var activeNodes []types.NodeAccount
@@ -423,15 +458,15 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 	netInfo.BondMetrics = metric
 	netInfo.ActiveNodeCount = len(activeNodes)
 	netInfo.StandbyNodeCount = len(standbyNodes)
-	netInfo.TotalReserve = vault.TotalReserve
+	netInfo.TotalReserve = vaultData.TotalReserve
 	if totalBond+netInfo.TotalStaked != 0 {
 		netInfo.PoolShareFactor = float64(totalBond-netInfo.TotalStaked) / float64(totalBond+netInfo.TotalStaked)
 	}
-	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*models.NetConstant)
+	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*6307200)
 	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
 	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
-	netInfo.BondingROI = (netInfo.BlockReward.BondReward * models.NetConstant) / float64(totalBond)
-	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * models.NetConstant) / float64(netInfo.TotalStaked)
+	netInfo.BondingROI = (netInfo.BlockReward.BondReward * 6307200) / float64(totalBond)
+	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * 6307200) / float64(netInfo.TotalStaked)
 
 	response := api.NetworkResponse{
 		BondMetrics: &api.BondMetrics{
@@ -460,7 +495,7 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		},
 		BondingROI:      helpers.Float64ToString(netInfo.BondingROI),
 		StakingROI:      helpers.Float64ToString(netInfo.StakingROI),
-		NextChurnHeight: &netInfo.NextChurnHeight,
+		NextChurnHeight: helpers.Int64ToString(netInfo.NextChurnHeight),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
