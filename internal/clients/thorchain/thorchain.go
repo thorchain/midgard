@@ -441,7 +441,7 @@ func (sc *Scanner) GetNodeAccounts() ([]types.NodeAccount, error) {
 
 	var nodeAccounts []types.NodeAccount
 	if err := json.NewDecoder(resp.Body).Decode(&nodeAccounts); nil != err {
-		return nil, errors.Wrap(err, "getNodeAccounts failed")
+		return nil, errors.Wrap(err, "failed to unmarshal nodeAccounts")
 	}
 	return nodeAccounts, nil
 }
@@ -465,4 +465,67 @@ func (sc *Scanner) GetVaultData() (types.VaultData, error) {
 		return types.VaultData{}, errors.Wrap(err, "failed to unmarshal VaultData")
 	}
 	return vault, nil
+}
+
+func (sc *Scanner) GetConstants() (map[string]interface{}, error) {
+	uri := fmt.Sprintf("%s/constants", sc.thorchainEndpoint)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var constantValues map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&constantValues); nil != err {
+		return nil, errors.Wrap(err, "failed to unmarshal constantValues")
+	}
+	return constantValues, nil
+}
+
+func (sc *Scanner) GetAsgardVaults() ([]types.Vault, error) {
+	uri := fmt.Sprintf("%s/vaults/asgard", sc.thorchainEndpoint)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var vaults []types.Vault
+	if err := json.NewDecoder(resp.Body).Decode(&vaults); nil != err {
+		return nil, errors.Wrap(err, "failed to unmarshal Vault")
+	}
+	return vaults, nil
+}
+
+func (sc *Scanner) GetLastChainHeight() (types.LastHeights, error) {
+	uri := fmt.Sprintf("%s/lastblock", sc.thorchainEndpoint)
+	sc.logger.Debug().Msg(uri)
+	resp, err := sc.httpClient.Get(uri)
+	if err != nil {
+		return types.LastHeights{}, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			sc.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var last types.LastHeights
+	if err := json.NewDecoder(resp.Body).Decode(&last); nil != err {
+		return types.LastHeights{}, errors.Wrap(err, "failed to unmarshal LastHeights")
+	}
+	return last, nil
 }

@@ -383,7 +383,7 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		totalBond += node.Bond
 	}
 
-	runeStaked, err := h.store.TotalRuneStaked()
+	runeStaked, err := h.store.TotalDepth()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
