@@ -27,7 +27,8 @@ go.sum: go.mod
 	GO111MODULE=on go mod verify
 
 lint-pre:
-	@test -z "$(shell gofumpt -l .)"
+	@gofumpt -l . # for display
+	@test -z "$(shell gofumpt -l .)" # cause error
 	@go mod verify
 
 lint: lint-pre

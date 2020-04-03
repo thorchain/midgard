@@ -35,6 +35,8 @@ lint:
   stage: test
   except:
     - master
+  before_script:
+    - go get mvdan.cc/gofumpt
   script:
     - make lint-verbose
 
