@@ -19,18 +19,11 @@ type EventSwap struct {
 }
 
 func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {
-	var liquidityFee int64
-	if common.IsRune(event.InTx.Coins[0].Asset.Ticker) {
-		// output side of the swap transaction is non-rune asset
-		liquidityFee = swap.LiquidityFee
-	} else {
-		liquidityFee = swap.LiquidityFeeInRune
-	}
 	return EventSwap{
 		Pool:         swap.Pool,
 		PriceTarget:  swap.PriceTarget,
 		TradeSlip:    swap.TradeSlip,
-		LiquidityFee: liquidityFee,
+		LiquidityFee: swap.LiquidityFee,
 		Event:        newEvent(event),
 	}
 }
