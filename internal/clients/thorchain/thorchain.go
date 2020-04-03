@@ -45,7 +45,6 @@ type Store interface {
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
 	GetMaxID() (int64, error)
-	TotalRuneStaked() (uint64, error)
 	TotalDepth() (uint64, error)
 }
 
