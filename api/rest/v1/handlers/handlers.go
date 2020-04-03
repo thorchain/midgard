@@ -356,7 +356,7 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 
 // (GET /v1/network)
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
-	netInfo, err := h.thorChainClient.NetworkInfo()
+	netInfo, err := h.thorChainClient.GetNetworkInfo()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}

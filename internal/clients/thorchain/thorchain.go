@@ -426,7 +426,7 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	return outTxs, nil
 }
 
-func (sc *Scanner) NetworkInfo() (models.NetworkInfo, error) {
+func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 	var netInfo models.NetworkInfo
 	nodeAccounts, err := sc.getNodeAccounts()
 	if err != nil {
