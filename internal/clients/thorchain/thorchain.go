@@ -29,7 +29,7 @@ type Scanner struct {
 	logger             zerolog.Logger
 	stopChan           chan struct{}
 	mu                 sync.Mutex
-	constants          types.ConstantValues
+	networkConsts      types.ConstantValues
 }
 
 // Store represents methods for storing data coming from thochain.
@@ -45,7 +45,7 @@ type Store interface {
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
 	GetMaxID() (int64, error)
-	TotalDepth() (uint64, error)
+	GetTotalDepth() (uint64, error)
 }
 
 type handlerFunc func(types.Event) error
@@ -443,9 +443,9 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get Vaults")
 	}
 
-	consts, err := sc.getConstants()
+	consts, err := sc.getNetworkConstants()
 	if err != nil {
-		return models.NetworkInfo{}, errors.Wrap(err, "failed to get Constants")
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get NetworkConstants")
 	}
 	churnInterval, ok := consts.Int64Values["RotatePerBlockHeight"]
 	if !ok {
@@ -487,9 +487,9 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 		totalBond += node.Bond
 	}
 
-	runeStaked, err := sc.store.TotalDepth()
+	runeStaked, err := sc.store.GetTotalDepth()
 	if err != nil {
-		return models.NetworkInfo{}, errors.Wrap(err, "failed to get TotalDepth")
+		return models.NetworkInfo{}, errors.Wrap(err, "failed to get GetTotalDepth")
 	}
 	var metric models.BondMetrics
 
@@ -580,11 +580,11 @@ func (sc *Scanner) getVaultData() (types.VaultData, error) {
 	return vault, nil
 }
 
-func (sc *Scanner) getConstants() (types.ConstantValues, error) {
-	if !sc.constants.IsEmpty() {
-		return sc.constants, nil
+func (sc *Scanner) getNetworkConstants() (types.ConstantValues, error) {
+	if !sc.networkConsts.IsEmpty() {
+		return sc.networkConsts, nil
 	}
-	uri := fmt.Sprintf("%s/constants", sc.thorchainEndpoint)
+	uri := fmt.Sprintf("%s/networkConsts", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
@@ -597,10 +597,10 @@ func (sc *Scanner) getConstants() (types.ConstantValues, error) {
 		}
 	}()
 
-	if err := json.NewDecoder(resp.Body).Decode(&sc.constants); nil != err {
+	if err := json.NewDecoder(resp.Body).Decode(&sc.networkConsts); nil != err {
 		return types.ConstantValues{}, errors.Wrap(err, "failed to unmarshal constantValues")
 	}
-	return sc.constants, nil
+	return sc.networkConsts, nil
 }
 
 func (sc *Scanner) getAsgardVaults() ([]types.Vault, error) {
