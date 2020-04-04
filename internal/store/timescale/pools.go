@@ -419,11 +419,10 @@ func (s *Client) assetGas(asset common.Asset) (int64, error) {
 		SELECT SUM(assetAmt)
 		FROM gas
 		WHERE pool = $1
-		AND gas_type = $2
 		`
 
 	var assetGasTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), models.GasSpend)
+	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetGasTotal); err != nil {
 		return 0, errors.Wrap(err, "assetGas failed")
@@ -539,12 +538,11 @@ func (s *Client) assetGas12m(asset common.Asset) (int64, error) {
 		SELECT SUM(assetAmt)
 		FROM gas
 		WHERE pool = $1 
-		AND gas_type = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var assetGasTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), models.GasSpend)
+	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&assetGasTotal); err != nil {
 		return 0, errors.Wrap(err, "assetGas12m failed")
@@ -745,11 +743,10 @@ func (s *Client) runeGas(asset common.Asset) (int64, error) {
 		SELECT SUM(runeAmt)
 		FROM gas
 		WHERE pool = $1
-		AND gas_type = $2
 		`
 
 	var runeGasTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), models.GasReimburse)
+	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&runeGasTotal); err != nil {
 		return 0, errors.Wrap(err, "runeGas failed")
@@ -889,12 +886,11 @@ func (s *Client) runeGas12m(asset common.Asset) (int64, error) {
 		SELECT SUM(runeAmt)
 		FROM gas
 		WHERE pool = $1 
-		AND gas_type = $2
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var runeGasTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), models.GasReimburse)
+	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&runeGasTotal); err != nil {
 		return 0, errors.Wrap(err, "runeGas12m failed")
