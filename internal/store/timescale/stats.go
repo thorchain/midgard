@@ -289,7 +289,6 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 	return depth, nil
 }
 
-
 func (s *Client) TotalRuneStaked() (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt) FROM stakes 
