@@ -15,7 +15,7 @@ type EventSwap struct {
 	Pool         common.Asset
 	PriceTarget  int64
 	TradeSlip    int64
-	LiquidityFee int64 //Same asset as output side of the swap transaction
+	LiquidityFee int64 // Same asset as output side of the swap transaction
 }
 
 func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {

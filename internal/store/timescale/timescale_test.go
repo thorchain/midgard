@@ -1533,24 +1533,25 @@ var (
 			Status: "Refund",
 			Height: 11,
 			Type:   "refund",
-			InTx: common.Tx{Coins: common.Coins{
-				common.Coin{
-					Asset: common.Asset{
-						Chain:  "BNB",
-						Symbol: "BOLT-014",
-						Ticker: "BLOT",
+			InTx: common.Tx{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BLOT",
+						},
+						Amount: 10,
 					},
-					Amount: 10,
-				},
-				common.Coin{
-					Asset: common.Asset{
-						Chain:  "BNB",
-						Symbol: "RUNE-A1F",
-						Ticker: "RUNE",
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-A1F",
+							Ticker: "RUNE",
+						},
+						Amount: 5,
 					},
-					Amount: 5,
 				},
-			},
 			},
 			OutTxs: common.Txs{
 				common.Tx{
@@ -1595,24 +1596,25 @@ var (
 			Status: "Refund",
 			Height: 12,
 			Type:   "refund",
-			InTx: common.Tx{Coins: common.Coins{
-				common.Coin{
-					Asset: common.Asset{
-						Chain:  "BNB",
-						Symbol: "BOLT-014",
-						Ticker: "BLOT",
+			InTx: common.Tx{
+				Coins: common.Coins{
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BLOT",
+						},
+						Amount: 10,
 					},
-					Amount: 10,
-				},
-				common.Coin{
-					Asset: common.Asset{
-						Chain:  "BNB",
-						Symbol: "RUNE-A1F",
-						Ticker: "RUNE",
+					common.Coin{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-A1F",
+							Ticker: "RUNE",
+						},
+						Amount: 5,
 					},
-					Amount: 5,
 				},
-			},
 			},
 			OutTxs: common.Txs{
 				common.Tx{

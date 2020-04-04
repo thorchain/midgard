@@ -43,5 +43,4 @@ func (s *TimeScaleSuite) TestRefund(c *C) {
 	runeDepth, err = s.Store.runeDepth(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(0))
-
 }

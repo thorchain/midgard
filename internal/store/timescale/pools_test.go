@@ -984,7 +984,7 @@ func (s *TimeScaleSuite) TestPoolTxAverage(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(txAverage, Equals, uint64(9), Commentf("%d", txAverage))
 
-	//Buy Swap
+	// Buy Swap
 	err = s.Store.CreateSwapRecord(swapBuyRune2TusdbEvent0)
 	c.Assert(err, IsNil)
 

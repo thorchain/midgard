@@ -352,6 +352,7 @@ func (sc *Scanner) processGasEvent(evt types.Event) error {
 	}
 	return nil
 }
+
 func (sc *Scanner) processRefundEvent(evt types.Event) error {
 	sc.logger.Debug().Msg("processRefundEvent")
 	var refund types.EventRefund
@@ -538,6 +539,7 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * 6307200) / float64(netInfo.TotalStaked)
 	return netInfo, nil
 }
+
 func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
 	uri := fmt.Sprintf("%s/nodeaccounts", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
