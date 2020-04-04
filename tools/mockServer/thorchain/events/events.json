@@ -228,11 +228,6 @@
         {
           "asset": "BNB.BNB",
           "rune_amt": "5500",
-          "asset_amt": "0"
-        },
-        {
-          "asset": "BNB.BNB",
-          "rune_amt": "0",
           "asset_amt": "50"
         }
       ]
@@ -255,11 +250,6 @@
         {
           "asset": "BNB.BNB",
           "rune_amt": "4420",
-          "asset_amt": "0"
-        },
-        {
-          "asset": "BNB.BNB",
-          "rune_amt": "0",
           "asset_amt": "10"
         }
       ]
