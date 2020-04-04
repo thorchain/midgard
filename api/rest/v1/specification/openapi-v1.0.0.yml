@@ -101,7 +101,7 @@ paths:
     get:
       operationId: GetAssetInfo
       summary: Get Asset Information
-      description: Detailed information about a specific asset. Returns enough information to display a unique asset in various user interfaces, including latest price. The logo is sourced from an internal database. 
+      description: Detailed information about a specific asset. Returns enough information to display a unique asset in various user interfaces, including latest price.
       parameters:
         - in: query
           name: asset
@@ -109,7 +109,7 @@ paths:
           required: true
           schema:
             type: string
-          example: [BNB.TOMOB-1E1,BNB.TCAN-014]
+          example: [BNB.TOMOB-1E1, BNB.TCAN-014]
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
@@ -568,13 +568,9 @@ components:
       properties:
         asset:
           $ref: '#/components/schemas/asset'
-        name:
-          type: string
         dateCreated:
           type: integer
           format: int64
-        logo:
-          type: string
         priceRune:
           type: string
 
