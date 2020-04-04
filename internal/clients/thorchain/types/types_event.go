@@ -185,6 +185,7 @@ type GasPool struct {
 	AssetAmt uint64       `json:"asset_amt,string"`
 	RuneAmt  uint64       `json:"rune_amt,string"`
 }
+
 type EventGas struct {
 	Pools []GasPool `json:"pools"`
 }

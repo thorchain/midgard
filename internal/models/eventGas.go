@@ -10,6 +10,7 @@ type GasPool struct {
 	AssetAmt uint64
 	RuneAmt  uint64
 }
+
 type EventGas struct {
 	Event
 	Pools []GasPool
