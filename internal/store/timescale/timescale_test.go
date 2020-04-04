@@ -1494,15 +1494,14 @@ var (
 			Height: 10,
 			Type:   "pool",
 		},
-		GasType: models.GasSpend,
-		Gas: common.Coins{
+		Pools: []models.GasPool{
 			{
 				Asset: common.Asset{
 					Chain:  "BNB",
 					Symbol: "BOLT-014",
 					Ticker: "BOLT",
 				},
-				Amount: 8400,
+				AssetAmt: 8400,
 			},
 		},
 	}
@@ -1514,15 +1513,14 @@ var (
 			Height: 10,
 			Type:   "pool",
 		},
-		GasType: models.GasTopup,
-		Gas: common.Coins{
+		Pools: []models.GasPool{
 			{
 				Asset: common.Asset{
 					Chain:  "BNB",
 					Symbol: "TCAN-014",
 					Ticker: "TCAN",
 				},
-				Amount: 4000,
+				RuneAmt: 4000,
 			},
 		},
 	}
