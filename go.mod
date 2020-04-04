@@ -8,7 +8,7 @@ require (
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/cosmos/cosmos-sdk v0.37.3
 	github.com/davecgh/go-spew v1.1.1
-	github.com/deepmap/oapi-codegen v1.3.0
+	github.com/deepmap/oapi-codegen v1.3.6
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gobuffalo/packr/v2 v2.7.1 // indirect
@@ -18,7 +18,6 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/onsi/ginkgo v1.10.3 // indirect
@@ -31,12 +30,11 @@ require (
 	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
+	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/tendermint/go-amino v0.15.1 // indirect
-	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vektah/gqlparser v1.1.2
 	github.com/ziflex/lecho/v2 v2.0.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/net v0.0.0-20191007182048-72f939374954 // indirect
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect

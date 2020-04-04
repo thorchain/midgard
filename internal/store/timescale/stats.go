@@ -64,7 +64,7 @@ func (s *Client) GetStatsData() (StatsData, error) {
 	if err != nil {
 		return StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
-	totalDepth, err := s.totalDepth()
+	totalDepth, err := s.GetTotalDepth()
 	if err != nil {
 		return StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
@@ -275,21 +275,22 @@ func (s *Client) bTotalStaked() (uint64, error) {
 	return totalStaked, nil
 }
 
-func (s *Client) totalDepth() (uint64, error) {
-	stakes, err := s.totalRuneStaked()
+func (s *Client) GetTotalDepth() (uint64, error) {
+	stakes, err := s.TotalRuneStaked()
 	if err != nil {
-		return 0, errors.Wrap(err, "totalDepth failed")
+		return 0, errors.Wrap(err, "GetTotalDepth failed")
 	}
 	swaps, err := s.runeSwaps()
 	if err != nil {
-		return 0, errors.Wrap(err, "totalDepth failed")
+		return 0, errors.Wrap(err, "GetTotalDepth failed")
 	}
 
 	depth := (stakes + swaps)
 	return depth, nil
 }
 
-func (s *Client) totalRuneStaked() (uint64, error) {
+
+func (s *Client) TotalRuneStaked() (uint64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt) FROM stakes 
 		WHERE from_address != $1

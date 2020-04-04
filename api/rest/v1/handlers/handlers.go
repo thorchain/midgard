@@ -353,3 +353,41 @@ func (h *Handlers) PostGraphqlQuery(ctx echo.Context) error {
 func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 	return nil
 }
+
+// (GET /v1/network)
+func (h *Handlers) GetNetworkData(ctx echo.Context) error {
+	netInfo, err := h.thorChainClient.GetNetworkInfo()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	response := api.NetworkResponse{
+		BondMetrics: &api.BondMetrics{
+			TotalActiveBond:    helpers.Uint64ToString(netInfo.BondMetrics.TotalActiveBond),
+			AverageActiveBond:  helpers.Float64ToString(netInfo.BondMetrics.AverageActiveBond),
+			MedianActiveBond:   helpers.Uint64ToString(netInfo.BondMetrics.MedianActiveBond),
+			MinimumActiveBond:  helpers.Uint64ToString(netInfo.BondMetrics.MinimumActiveBond),
+			MaximumActiveBond:  helpers.Uint64ToString(netInfo.BondMetrics.MaximumActiveBond),
+			TotalStandbyBond:   helpers.Uint64ToString(netInfo.BondMetrics.TotalStandbyBond),
+			AverageStandbyBond: helpers.Float64ToString(netInfo.BondMetrics.AverageStandbyBond),
+			MedianStandbyBond:  helpers.Uint64ToString(netInfo.BondMetrics.MedianStandbyBond),
+			MinimumStandbyBond: helpers.Uint64ToString(netInfo.BondMetrics.MinimumStandbyBond),
+			MaximumStandbyBond: helpers.Uint64ToString(netInfo.BondMetrics.MaximumStandbyBond),
+		},
+		ActiveBonds:      helpers.Uint64ArrayToStringArray(netInfo.ActiveBonds),
+		StandbyBonds:     helpers.Uint64ArrayToStringArray(netInfo.StandbyBonds),
+		TotalStaked:      helpers.Uint64ToString(netInfo.TotalStaked),
+		ActiveNodeCount:  &netInfo.ActiveNodeCount,
+		StandbyNodeCount: &netInfo.StandbyNodeCount,
+		TotalReserve:     helpers.Uint64ToString(netInfo.TotalReserve),
+		PoolShareFactor:  helpers.Float64ToString(netInfo.PoolShareFactor),
+		BlockRewards: &api.BlockRewards{
+			BlockReward: helpers.Float64ToString(netInfo.BlockReward.BlockReward),
+			BondReward:  helpers.Float64ToString(netInfo.BlockReward.BondReward),
+			StakeReward: helpers.Float64ToString(netInfo.BlockReward.StakeReward),
+		},
+		BondingROI:      helpers.Float64ToString(netInfo.BondingROI),
+		StakingROI:      helpers.Float64ToString(netInfo.StakingROI),
+		NextChurnHeight: helpers.Int64ToString(netInfo.NextChurnHeight),
+	}
+	return ctx.JSON(http.StatusOK, response)
+}
