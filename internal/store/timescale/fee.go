@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"fmt"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
@@ -9,7 +10,6 @@ import (
 const feeAddress = "FEE"
 
 func (s *Client) CreateFeeRecord(event models.Event, pool common.Asset) error {
-
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,

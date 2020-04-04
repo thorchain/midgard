@@ -350,6 +350,7 @@ func (sc *Scanner) processGasEvent(evt types.Event) error {
 	}
 	return nil
 }
+
 func (sc *Scanner) processRefundEvent(evt types.Event) error {
 	sc.logger.Debug().Msg("processRefundEvent")
 	var refund types.EventRefund

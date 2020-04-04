@@ -883,6 +883,7 @@ func (s *Client) runeAdded12m(asset common.Asset) (int64, error) {
 
 	return runeAdded12m.Int64, nil
 }
+
 func (s *Client) runeGas12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)
@@ -901,6 +902,7 @@ func (s *Client) runeGas12m(asset common.Asset) (int64, error) {
 
 	return runeGasTotal.Int64, nil
 }
+
 func (s *Client) runeFee12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt)

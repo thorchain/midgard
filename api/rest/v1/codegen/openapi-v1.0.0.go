@@ -8,11 +8,12 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"strings"
 )
 
 // AssetDetail defines model for AssetDetail.
@@ -301,7 +302,6 @@ func (w *ServerInterfaceWrapper) GetAssetInfo(ctx echo.Context) error {
 	var params GetAssetInfoParams
 	// ------------- Required query parameter "asset" -------------
 	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
 	} else {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
 	}
@@ -351,7 +351,6 @@ func (w *ServerInterfaceWrapper) GetPoolsData(ctx echo.Context) error {
 	var params GetPoolsDataParams
 	// ------------- Required query parameter "asset" -------------
 	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
 	} else {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
 	}
@@ -406,7 +405,6 @@ func (w *ServerInterfaceWrapper) GetStakersAddressAndAssetData(ctx echo.Context)
 	var params GetStakersAddressAndAssetDataParams
 	// ------------- Required query parameter "asset" -------------
 	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
 	} else {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
 	}
@@ -456,7 +454,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	var params GetTxDetailsParams
 	// ------------- Optional query parameter "address" -------------
 	if paramValue := ctx.QueryParam("address"); paramValue != "" {
-
 	}
 
 	err = runtime.BindQueryParameter("form", true, false, "address", ctx.QueryParams(), &params.Address)
@@ -466,7 +463,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 
 	// ------------- Optional query parameter "txid" -------------
 	if paramValue := ctx.QueryParam("txid"); paramValue != "" {
-
 	}
 
 	err = runtime.BindQueryParameter("form", true, false, "txid", ctx.QueryParams(), &params.Txid)
@@ -476,7 +472,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 
 	// ------------- Optional query parameter "asset" -------------
 	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-
 	}
 
 	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
@@ -486,7 +481,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 
 	// ------------- Optional query parameter "type" -------------
 	if paramValue := ctx.QueryParam("type"); paramValue != "" {
-
 	}
 
 	err = runtime.BindQueryParameter("form", true, false, "type", ctx.QueryParams(), &params.Type)
@@ -496,7 +490,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 
 	// ------------- Required query parameter "offset" -------------
 	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
-
 	} else {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument offset is required, but not found"))
 	}
@@ -508,7 +501,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 
 	// ------------- Required query parameter "limit" -------------
 	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
-
 	} else {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument limit is required, but not found"))
 	}
@@ -535,7 +527,6 @@ func RegisterHandlers(router interface {
 	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 }, si ServerInterface) {
-
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
@@ -552,7 +543,6 @@ func RegisterHandlers(router interface {
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
 	router.GET("/v1/thorchain/pool_addresses", wrapper.GetThorchainProxiedEndpoints)
 	router.GET("/v1/txs", wrapper.GetTxDetails)
-
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
@@ -638,4 +628,3 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
-

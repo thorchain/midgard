@@ -1,9 +1,10 @@
 package timescale
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
-	"time"
 )
 
 func (s *TimeScaleSuite) TestStakeUnits(c *C) {
@@ -614,6 +615,7 @@ func (s *TimeScaleSuite) TestGetStakerAddresses(c *C) {
 	c.Assert(stakerAddresses[0].String(), Equals, "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	c.Assert(stakerAddresses[1].String(), Equals, "tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
 }
+
 func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	err := s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)

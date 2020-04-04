@@ -13,6 +13,7 @@ func (fee *Fee) AssetFee() int64 {
 	}
 	return 0
 }
+
 func (fee *Fee) RuneFee() int64 {
 	for _, coin := range fee.Coins {
 		if IsRune(coin.Asset.Ticker) {
@@ -21,6 +22,7 @@ func (fee *Fee) RuneFee() int64 {
 	}
 	return 0
 }
+
 func (fee *Fee) Asset() Asset {
 	for _, coin := range fee.Coins {
 		if !IsRune(coin.Asset.Ticker) {
