@@ -77,7 +77,6 @@ CREATE TABLE gas (
     pool varchar not null,
     runeAmt bigint,
     assetAmt bigint,
-    gas_type  varchar,
     tx_hash varchar,
     primary key (time, event_id, pool)
 );
