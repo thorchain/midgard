@@ -72,13 +72,14 @@ CREATE TABLE coins (
 );
 
 CREATE TABLE gas (
+    id SERIAL,
     time        TIMESTAMPTZ       NOT NULL,
     event_id bigint not null,
     pool varchar not null,
     runeAmt bigint,
     assetAmt bigint,
     tx_hash varchar,
-    primary key (time, event_id, pool)
+    primary key (id, time)
 );
 CREATE TABLE pools (
     time        TIMESTAMPTZ       NOT NULL,
