@@ -18,7 +18,6 @@ type Configuration struct {
 	WriteTimeout    time.Duration          `json:"write_timeout" mapstructure:"write_timeout"`
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
-	Binance         BinanceConfiguration   `json:"binance" mapstructure:"binance"`
 	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
 	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
 }
@@ -41,15 +40,6 @@ type ThorChainConfiguration struct {
 	EnableScan                  bool          `json:"enable_scan" mapstructure:"enable_scan"` // TODO: Remove this field
 	NoEventsBackoff             time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
 	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
-}
-
-// BinanceConfiguration settings for binance client
-type BinanceConfiguration struct {
-	DEXHost              string        `json:"dex_host" mapstructure:"dex_host"`
-	Scheme               string        `json:"scheme" mapstructure:"scheme"`
-	RequestTimeout       time.Duration `json:"request_timeout" mapstructure:"request_timeout"`
-	MarketsCacheDuration time.Duration `json:"markets_cache_duration" mapstructure:"markets_cache_duration"`
-	TokensCacheDuration  time.Duration `json:"tokens_cache_duration" mapstructure:"tokens_cache_duration"`
 }
 
 func applyDefaultConfig() {

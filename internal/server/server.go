@@ -19,13 +19,9 @@ import (
 
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
-
-	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
-
 	"gitlab.com/thorchain/midgard/internal/config"
-	"gitlab.com/thorchain/midgard/internal/logo"
+	"gitlab.com/thorchain/midgard/internal/store/timescale"
 )
 
 // Server
@@ -64,14 +60,6 @@ func New(cfgFile *string) (*Server, error) {
 
 	log := initLog(cfg.LogLevel, false)
 
-	logoClient := logo.NewLogoClient(cfg)
-
-	// Setup binance client
-	binanceClient, err := binance.NewClient(cfg.Binance)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create binance client")
-	}
-
 	timescale, err := timescale.NewClient(cfg.TimeScale)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create timescale client instance")
@@ -94,7 +82,7 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	h := handlers.New(timescale, thorChainApi, logger, binanceClient, logoClient)
+	h := handlers.New(timescale, thorChainApi, logger)
 
 	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, h)

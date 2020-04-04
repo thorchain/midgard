@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/handler"
+	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
@@ -11,13 +12,9 @@ import (
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/resolvers"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
-	"gitlab.com/thorchain/midgard/internal/clients/blockchains/binance"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/logo"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
-
-	"github.com/labstack/echo/v4"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
@@ -25,18 +22,14 @@ type Handlers struct {
 	store           *timescale.Client
 	thorChainClient *thorchain.Scanner // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
-	binanceClient   *binance.Client // TODO Move out of handler (Handler should only talk to the DB)
-	logoClient      *logo.LogoClient
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *timescale.Client, thorChainClient *thorchain.Scanner, logger zerolog.Logger, binanceClient *binance.Client, logoClient *logo.LogoClient) *Handlers {
+func New(store *timescale.Client, thorChainClient *thorchain.Scanner, logger zerolog.Logger) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
 		logger:          logger,
-		binanceClient:   binanceClient,
-		logoClient:      logoClient,
 	}
 }
 
@@ -124,12 +117,6 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 		}
 
-		tokenData, err := h.binanceClient.GetToken(pool)
-		if err != nil {
-			h.logger.Error().Err(err).Msg("failed to get token data from binance")
-			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
-		}
-
 		priceInRune, err := h.store.GetPriceInRune(pool)
 		if err != nil {
 			h.logger.Error().Err(err).Msg("failed to GetPriceInRune")
@@ -145,8 +132,6 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 		response[i] = api.AssetDetail{
 			Asset:       helpers.ConvertAssetForAPI(pool),
 			DateCreated: pointy.Int64(int64(dateCreated)),
-			Logo:        pointy.String(h.logoClient.GetLogoUrl(pool)),
-			Name:        pointy.String(tokenData.Name),
 			PriceRune:   helpers.Float64ToString(priceInRune),
 		}
 	}

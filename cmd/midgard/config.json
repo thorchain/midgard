@@ -21,10 +21,5 @@
     "database": "midgard",
     "sslmode": "disable",
     "migrationsDir": "./db/migrations/"
-  },
-  "binance": {
-    "scheme": "https",
-    "dex_host": "testnet-dex.binance.org",
-    "tokens_cache_duration": 5000000000
   }
 }
