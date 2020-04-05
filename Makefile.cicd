@@ -2,6 +2,11 @@
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD | sed 's/master/mocknet/g')
 GITREF=$(shell git rev-parse --short HEAD)
 
+# pull branch name from CI, if available
+ifdef CI_COMMIT_BRANCH
+	BRANCH=$(shell echo ${CI_COMMIT_BRANCH} | sed 's/master/mocknet/g')
+endif
+
 # -------------------------- Gitlab -------------------------------- #
 docker-gitlab-login:
 	docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
