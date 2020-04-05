@@ -17,8 +17,6 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}
-	var pool common.Asset
-	var runeAmt, assetAmt int64
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -26,27 +24,16 @@ func (s *Client) CreateGasRecord(record models.EventGas) error {
 			pool,
 			runeAmt,
 			assetAmt,
-			gas_type,
 			tx_hash
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelGasTable)
+		)  VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING event_id`, models.ModelGasTable)
 
-	for i, coin := range record.Gas {
-		if record.GasType == models.GasReimburse {
-			pool = record.ReimburseTo[i]
-			runeAmt = coin.Amount
-			assetAmt = 0
-		} else {
-			pool = coin.Asset
-			runeAmt = 0
-			assetAmt = coin.Amount
-		}
+	for _, pool := range record.Pools {
 		_, err = s.db.Exec(query,
 			record.Event.Time,
 			record.Event.ID,
-			pool.String(),
-			runeAmt,
-			assetAmt,
-			record.GasType,
+			pool.Asset.String(),
+			pool.RuneAmt,
+			pool.AssetAmt,
 			txHash,
 		)
 		if err != nil {

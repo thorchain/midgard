@@ -3,7 +3,7 @@
     "id": "9",
     "height": "22",
     "type": "gas",
-    "in_tx": { },
+    "in_tx": {},
     "out_txs": [],
     "gas": null,
     "fee": {
@@ -11,13 +11,13 @@
       "pool_deduct": "0"
     },
     "event": {
-      "gas": [
+      "pools": [
         {
           "asset": "BNB.BNB",
-          "amount": "5500"
+          "rune_amt": "5500",
+          "asset_amt": "50"
         }
-      ],
-      "gas_type": "gas_spend"
+      ]
     },
     "status": "Success"
   },
@@ -25,7 +25,7 @@
     "id": "10",
     "height": "23",
     "type": "gas",
-    "in_tx": { },
+    "in_tx": {},
     "out_txs": [],
     "gas": null,
     "fee": {
@@ -33,13 +33,13 @@
       "pool_deduct": "0"
     },
     "event": {
-      "gas": [
+      "pools": [
         {
           "asset": "BNB.BNB",
-          "amount": "4420"
+          "rune_amt": "4420",
+          "asset_amt": "10"
         }
-      ],
-      "gas_type": "gas_topup"
+      ]
     },
     "status": "Success"
   }

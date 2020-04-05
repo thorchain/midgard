@@ -180,10 +180,14 @@ func GetPoolStatus(ps string) PoolStatus {
 	return Suspended
 }
 
+type GasPool struct {
+	Asset    common.Asset `json:"asset"`
+	AssetAmt uint64       `json:"asset_amt,string"`
+	RuneAmt  uint64       `json:"rune_amt,string"`
+}
+
 type EventGas struct {
-	Gas         common.Coins   `json:"gas"`
-	GasType     string         `json:"gas_type"`
-	ReimburseTo []common.Asset `json:"reimburse_to"` // Determine which pool we are reimbursing to
+	Pools []GasPool `json:"pools"`
 }
 
 func (e EventGas) Type() string {
