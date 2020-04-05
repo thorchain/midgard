@@ -1,5 +1,5 @@
 
-BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+BRANCH=$(shell git rev-parse --abbrev-ref HEAD | sed 's/master/mocknet/g')
 GITREF=$(shell git rev-parse --short HEAD)
 
 # -------------------------- Gitlab -------------------------------- #

@@ -78,6 +78,7 @@ build-gitlab-docker:
   stage: build
   image: docker:stable
   only:
+    - master # build mocknet image
     - testnet
     - chaosnet
     - mainnet
