@@ -8,8 +8,8 @@ before_script:
 
 stages:
   - test
-  - build
   - smoke-test
+  - build
   - deploy
 
 unit:
@@ -39,24 +39,6 @@ lint:
     - go get mvdan.cc/gofumpt
   script:
     - make lint-verbose
-
-build:
-  stage: build
-  image: docker:stable
-  except:
-    - master
-  services:
-    - docker:19.03.5-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-  before_script:
-    - apk update
-    - apk add python py-pip make git
-    - pip install awscli
-  environment:
-    name: develop
-  script: make docker-build
 
 smoke-test:
   stage: smoke-test
@@ -96,7 +78,10 @@ build-gitlab-docker:
   stage: build
   image: docker:stable
   only:
-    - master
+    - master # build mocknet image
+    - testnet
+    - chaosnet
+    - mainnet
   services:
     - docker:19.03.5-dind
   variables:
@@ -109,60 +94,3 @@ build-gitlab-docker:
   script:
     - make docker-gitlab-build
     - make docker-gitlab-push
-
-deploy:develop:
-  stage: deploy
-  image: docker:stable
-  services:
-    - docker:19.03.5-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-  before_script:
-    - apk update
-    - apk add python py-pip make git
-    - pip install awscli
-  except:
-    - schedules
-  environment:
-    name: develop
-  script: make docker-deploy
-  only:
-    - master
-
-deploy:staging:
-  stage: deploy
-  image: docker:stable
-  services:
-    - docker:19.03.5-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-  before_script:
-    - apk update
-    - apk add python py-pip make git
-    - pip install awscli
-  environment:
-    name: staging
-  script: make docker-deploy
-  only:
-    - schedules
-
-deploy:production:
-  stage: deploy
-  image: docker:stable
-  services:
-    - docker:19.03.5-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-  before_script:
-    - apk update
-    - apk add python py-pip make git
-    - pip install awscli
-  environment:
-    name: production
-  script: make docker-deploy
-  only:
-    - master
-  when: manual

@@ -1,60 +1,21 @@
-# Image Hashes
-CHAIN_SERVICE_IMAGE_HASH=$(shell  grep "Successfully built" ./log/chain-service-build.log | cut -d ' ' -f 3)
 
-# Turn off cache
-ifeq (${NOCACHE}, TRUE)
-CACHE=--no-cache
+BRANCH=$(shell git rev-parse --abbrev-ref HEAD | sed 's/master/mocknet/g')
+GITREF=$(shell git rev-parse --short HEAD)
+
+# pull branch name from CI, if available
+ifdef CI_COMMIT_BRANCH
+	BRANCH=$(shell echo ${CI_COMMIT_BRANCH} | sed 's/master/mocknet/g')
 endif
-
-config:
-	@echo CACHE: ${CACHE}
-	@echo ECS_CLUSTER: ${ECS_CLUSTER}
-	@echo PG_HOST: ${PG_HOST}
-	@echo REGISTRY_ID: ${REGISTRY_ID}
-	@echo REPOSITORY: ${REPOSITORY}
-	@echo ECR_CHAIN_SVC: ${ECR_CHAIN_SVC}
-	@echo CHAIN_SERVICE_IMAGE_HASH: ${CHAIN_SERVICE_IMAGE_HASH}
-
-.PHONY: clean
-clean:
-	rm -rf ./log
-
-.PHONY: login
-login:
-	aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
-	aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
-	aws configure set region ${AWS_REGION}
-	$(shell aws ecr get-login --no-include-email --region ap-southeast-2)
-
-.PHONY: logger
-logger: login
-	mkdir -p ./log
-
-# Step 1
-docker-build: logger
-	docker build -t ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest --build-arg pg_host=${PG_HOST} --build-arg thornode_host=${THORNODE_HOST} . | tee ./log/chain-service-build.log
-
-# Step 2
-docker-tag: docker-build
-	docker tag ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:${CHAIN_SERVICE_IMAGE_HASH}
-
-# Step 3
-docker-push: docker-tag
-	docker push ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:${CHAIN_SERVICE_IMAGE_HASH}
-	docker push ${REGISTRY_ID}.${REPOSITORY}/${ECR_CHAIN_SVC}:latest
-
-# Step 4
-docker-deploy: config docker-push
-	aws ecs update-service --force-new-deployment --cluster ${ECS_CLUSTER} --service ${ECR_CHAIN_SVC}
 
 # -------------------------- Gitlab -------------------------------- #
 docker-gitlab-login:
 	docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
 
 docker-gitlab-push:
-	docker push registry.gitlab.com/thorchain/midgard:latest
+	docker push registry.gitlab.com/thorchain/midgard
 
 docker-gitlab-build:
 	docker build -t registry.gitlab.com/thorchain/midgard .
-	docker tag registry.gitlab.com/thorchain/midgard $$(git rev-parse --short HEAD)
+	docker tag registry.gitlab.com/thorchain/midgard ${GITREF}
+	docker tag registry.gitlab.com/thorchain/midgard ${BRANCH}
 # ------------------------------------------------------------------ #
