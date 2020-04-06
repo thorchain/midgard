@@ -327,7 +327,7 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, 
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		return int64(stakeUnits/poolUnits) * (int64(runeDepth) - runeStaked), nil
+		return int64(float64(stakeUnits) / float64(poolUnits) * float64(int64(runeDepth)-runeStaked)), nil
 	}
 
 	return 0, nil
@@ -359,7 +359,7 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		return int64(stakeUnits/poolUnits) * (int64(assetDepth) - assetStaked), nil
+		return int64(float64(stakeUnits) / float64(poolUnits) * float64(int64(assetDepth)-assetStaked)), nil
 	}
 
 	return 0, nil
