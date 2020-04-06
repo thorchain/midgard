@@ -1342,7 +1342,7 @@ func (s *Client) buyTxAverage(asset common.Asset) (float64, error) {
 		return 0, errors.Wrap(err, "buyTxAverage failed")
 	}
 
-	return float64(-avg.Float64 * priceInRune), nil
+	return -avg.Float64 * priceInRune, nil
 }
 
 func (s *Client) poolTxAverage(asset common.Asset) (float64, error) {
