@@ -586,7 +586,7 @@ func (sc *Scanner) getNetworkConstants() (types.ConstantValues, error) {
 	if !sc.networkConsts.IsEmpty() {
 		return sc.networkConsts, nil
 	}
-	uri := fmt.Sprintf("%s/networkConsts", sc.thorchainEndpoint)
+	uri := fmt.Sprintf("%s/constants", sc.thorchainEndpoint)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
 	if err != nil {
