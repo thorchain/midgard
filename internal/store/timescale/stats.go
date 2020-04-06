@@ -285,25 +285,28 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 		return 0, errors.Wrap(err, "GetTotalDepth failed")
 	}
 
-	depth := (stakes + swaps)
-	return depth, nil
+	depth := stakes + int64(swaps)
+	return uint64(depth), nil
 }
 
-func (s *Client) TotalRuneStaked() (uint64, error) {
+func (s *Client) TotalRuneStaked() (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt) FROM stakes 
 		WHERE from_address != $1
 		AND from_address != $2
+		AND from_address != $3
+		AND from_address != $4
+		
 	`
 
 	var totalRuneStaked sql.NullInt64
-	row := s.db.QueryRow(stmnt, addEventAddress, rewardEventAddress)
+	row := s.db.QueryRow(stmnt, addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
 
 	if err := row.Scan(&totalRuneStaked); err != nil {
 		return 0, errors.Wrap(err, "totalRuneStaked failed")
 	}
 
-	return uint64(totalRuneStaked.Int64), nil
+	return totalRuneStaked.Int64, nil
 }
 
 func (s *Client) runeSwaps() (uint64, error) {
