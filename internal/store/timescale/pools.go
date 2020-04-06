@@ -15,19 +15,19 @@ type PoolData struct {
 	AssetROI         float64
 	AssetStakedTotal uint64
 	BuyAssetCount    uint64
-	BuyFeeAverage    uint64
+	BuyFeeAverage    float64
 	BuyFeesTotal     uint64
 	BuySlipAverage   float64
-	BuyTxAverage     uint64
+	BuyTxAverage     float64
 	BuyVolume        uint64
 	PoolDepth        uint64
-	PoolFeeAverage   uint64
+	PoolFeeAverage   float64
 	PoolFeesTotal    uint64
 	PoolROI          float64
 	PoolROI12        float64
 	PoolSlipAverage  float64
 	PoolStakedTotal  uint64
-	PoolTxAverage    uint64
+	PoolTxAverage    float64
 	PoolUnits        uint64
 	PoolVolume       uint64
 	PoolVolume24hr   uint64
@@ -36,10 +36,10 @@ type PoolData struct {
 	RuneROI          float64
 	RuneStakedTotal  uint64
 	SellAssetCount   uint64
-	SellFeeAverage   uint64
+	SellFeeAverage   float64
 	SellFeesTotal    uint64
 	SellSlipAverage  float64
-	SellTxAverage    uint64
+	SellTxAverage    float64
 	SellVolume       uint64
 	StakeTxCount     uint64
 	StakersCount     uint64
@@ -1300,7 +1300,7 @@ func (s *Client) poolVolume24hr(asset common.Asset) (uint64, error) {
 	return buyVolume24hr + sellVolume24hr, nil
 }
 
-func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
+func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(assetAmt)
 		FROM swaps
@@ -1319,10 +1319,10 @@ func (s *Client) sellTxAverage(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "sellTxAverage failed")
 	}
-	return uint64(avg.Float64 * priceInRune), nil
+	return avg.Float64 * priceInRune, nil
 }
 
-func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
+func (s *Client) buyTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(assetAmt)
 		FROM swaps
@@ -1342,10 +1342,10 @@ func (s *Client) buyTxAverage(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyTxAverage failed")
 	}
 
-	return uint64(-avg.Float64 * priceInRune), nil
+	return float64(-avg.Float64 * priceInRune), nil
 }
 
-func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
+func (s *Client) poolTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(ABS(assetAmt))
 		FROM swaps
@@ -1364,7 +1364,7 @@ func (s *Client) poolTxAverage(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 
-	return uint64(avg.Float64 * priceInRune), nil
+	return avg.Float64 * priceInRune, nil
 }
 
 func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
@@ -1419,7 +1419,7 @@ func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
 	return poolSlipAverage.Float64, nil
 }
 
-func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
+func (s *Client) sellFeeAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(liquidity_fee)
 		FROM swaps
@@ -1434,10 +1434,10 @@ func (s *Client) sellFeeAverage(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "sellFeeAverage failed")
 	}
 
-	return uint64(sellFeeAverage.Float64), nil
+	return sellFeeAverage.Float64, nil
 }
 
-func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
+func (s *Client) buyFeeAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(liquidity_fee)
 		FROM swaps
@@ -1456,10 +1456,10 @@ func (s *Client) buyFeeAverage(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
-	return uint64(buyFeeAverage.Float64 * priceInRune), nil
+	return buyFeeAverage.Float64 * priceInRune, nil
 }
 
-func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
+func (s *Client) poolFeeAverage(asset common.Asset) (float64, error) {
 	sellFeesTotal, err := s.sellFeesTotal(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolFeeAverage failed")
@@ -1477,7 +1477,7 @@ func (s *Client) poolFeeAverage(asset common.Asset) (uint64, error) {
 	if swappingTxCount == 0 {
 		return 0, nil
 	}
-	return (sellFeesTotal + buyFeesTotal) / (swappingTxCount), nil
+	return float64(sellFeesTotal+buyFeesTotal) / float64(swappingTxCount), nil
 }
 
 func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
