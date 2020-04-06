@@ -285,7 +285,7 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 		return 0, errors.Wrap(err, "GetTotalDepth failed")
 	}
 
-	depth := stakes + int64(swaps)
+	depth := stakes + swaps
 	return uint64(depth), nil
 }
 
@@ -309,7 +309,7 @@ func (s *Client) TotalRuneStaked() (int64, error) {
 	return totalRuneStaked.Int64, nil
 }
 
-func (s *Client) runeSwaps() (uint64, error) {
+func (s *Client) runeSwaps() (int64, error) {
 	stmnt := `
 		SELECT SUM(runeAmt) FROM swaps
 	`
@@ -321,7 +321,7 @@ func (s *Client) runeSwaps() (uint64, error) {
 		return 0, errors.Wrap(err, "runeSwaps failed")
 	}
 
-	return uint64(runeIncomingSwaps.Int64), nil
+	return runeIncomingSwaps.Int64, nil
 }
 
 // TODO Reivew ??

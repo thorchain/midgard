@@ -389,7 +389,7 @@ func (s *TimeScaleSuite) TestTotalRuneStaked(c *C) {
 func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 	runeSwaps, err := s.Store.runeSwaps()
 	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
+	c.Assert(runeSwaps, Equals, int64(0))
 
 	// Single stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
@@ -397,7 +397,7 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 
 	runeSwaps, err = s.Store.runeSwaps()
 	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
+	c.Assert(runeSwaps, Equals, int64(0))
 
 	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
@@ -405,14 +405,14 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 
 	runeSwaps, err = s.Store.runeSwaps()
 	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
+	c.Assert(runeSwaps, Equals, int64(0))
 
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
 	runeSwaps, err = s.Store.runeSwaps()
 	c.Assert(err, IsNil)
-	c.Assert(runeSwaps, Equals, uint64(0))
+	c.Assert(runeSwaps, Equals, int64(0))
 }
 
 func (s *TimeScaleSuite) TestbTotalEarned(c *C) {
