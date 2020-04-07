@@ -56,10 +56,10 @@ func (s *Client) getGenesis() (time.Time, error) {
 
 func (s *Client) getBlockHeight(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT MAX(events.height)
+		SELECT MIN(events.height)
 			FROM events
 		WHERE events.id = (
-		    SELECT MAX(event_id)
+		    SELECT MIN(event_id)
 		    	FROM coins
 		    WHERE coins.ticker = $1)`
 
