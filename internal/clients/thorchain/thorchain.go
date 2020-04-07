@@ -387,6 +387,9 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	if event.InTx.ID.IsEmpty() {
 		return nil, nil
 	}
+	if event.Type != types.SwapEventType && event.Type != types.UnstakeEventType && event.Type != types.RefundEventType {
+		return nil, nil
+	}
 	uri := fmt.Sprintf("%s/keysign/%d", sc.thorchainEndpoint, event.Height)
 	sc.logger.Debug().Msg(uri)
 	resp, err := sc.httpClient.Get(uri)
