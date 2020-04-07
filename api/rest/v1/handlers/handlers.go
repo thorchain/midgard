@@ -213,7 +213,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataPar
 			RuneStakedTotal:  helpers.Uint64ToString(poolData.RuneStakedTotal),
 			SellAssetCount:   helpers.Uint64ToString(poolData.SellAssetCount),
 			SellFeeAverage:   helpers.Float64ToString(poolData.SellFeeAverage),
-			SellFeesTotal:    helpers.Float64ToString(poolData.SellFeeAverage),
+			SellFeesTotal:    helpers.Uint64ToString(poolData.SellFeesTotal),
 			SellSlipAverage:  helpers.Float64ToString(poolData.SellSlipAverage),
 			SellTxAverage:    helpers.Float64ToString(poolData.SellTxAverage),
 			SellVolume:       helpers.Uint64ToString(poolData.SellVolume),
