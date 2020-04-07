@@ -1879,23 +1879,3 @@ func (s *Client) poolStatus(asset common.Asset) (string, error) {
 	}
 	return models.PoolStatus(poolStatus.Int32).String(), nil
 }
-
-func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
-	query := `
-		SELECT MIN(stakes.time) 
-		FROM stakes
-		WHERE pool = $1
-		`
-
-	dateCreated := sql.NullTime{}
-	err := s.db.Get(&dateCreated, query, asset.String())
-	if err != nil {
-		return 0, errors.Wrap(err, "GetDateCreated failed")
-	}
-
-	if dateCreated.Valid {
-		return uint64(dateCreated.Time.Unix()), nil
-	}
-
-	return 0, nil
-}
