@@ -31,12 +31,8 @@ func (s *Client) getTimeOfBlock(assetBlockHeight uint64) (uint64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "getTimeOfBlock failed")
 	}
-
-	currentTime := uint64(time.Now().Unix())
 	genesisTime := uint64(getGenesis.Unix())
-	currentBlockHeight := (currentTime - genesisTime) / blockSpeed
-
-	timeOfBlock := (((currentTime - genesisTime) / currentBlockHeight) * assetBlockHeight) + genesisTime
+	timeOfBlock := blockSpeed*assetBlockHeight + genesisTime
 
 	return timeOfBlock, nil
 }
