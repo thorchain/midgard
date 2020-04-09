@@ -3,8 +3,6 @@ package timescale
 import (
 	"database/sql"
 	"fmt"
-	"math"
-
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -536,10 +534,6 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (int6
 		}
 
 		totalEarned += (float64(runeEarned) + float64(assetEarned)*priceInRune)
-	}
-
-	if math.IsNaN(totalEarned) {
-		return 0, nil
 	}
 
 	return int64(totalEarned), nil
