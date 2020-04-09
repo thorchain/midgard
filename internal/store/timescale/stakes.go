@@ -3,7 +3,6 @@ package timescale
 import (
 	"database/sql"
 	"fmt"
-	"math"
 
 	"github.com/pkg/errors"
 
@@ -535,11 +534,7 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (int6
 			return 0, errors.Wrap(err, "totalEarned failed")
 		}
 
-		totalEarned += (float64(runeEarned) + float64(assetEarned)) / priceInRune
-	}
-
-	if math.IsNaN(totalEarned) {
-		return 0, nil
+		totalEarned += (float64(runeEarned) + float64(assetEarned)*priceInRune)
 	}
 
 	return int64(totalEarned), nil
