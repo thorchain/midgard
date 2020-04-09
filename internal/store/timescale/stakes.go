@@ -535,7 +535,7 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (int6
 			return 0, errors.Wrap(err, "totalEarned failed")
 		}
 
-		totalEarned += (float64(runeEarned) + float64(assetEarned)) / priceInRune
+		totalEarned += (float64(runeEarned) + float64(assetEarned)*priceInRune)
 	}
 
 	if math.IsNaN(totalEarned) {
