@@ -3,6 +3,7 @@ package timescale
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/midgard/internal/common"
