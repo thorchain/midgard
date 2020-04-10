@@ -8,7 +8,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 
-	"gitlab.com/thorchain/midgard/internal/server"
+	"gitlab.com/thorchain/midgard/pkg/server"
 )
 
 func main() {

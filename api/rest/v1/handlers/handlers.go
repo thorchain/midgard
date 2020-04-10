@@ -12,9 +12,9 @@ import (
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/resolvers"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
-	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
+	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/pkg/store/timescale"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service

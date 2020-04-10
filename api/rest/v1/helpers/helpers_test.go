@@ -3,7 +3,7 @@ package helpers
 import (
 	"testing"
 
-	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/pkg/common"
 	. "gopkg.in/check.v1"
 )
 

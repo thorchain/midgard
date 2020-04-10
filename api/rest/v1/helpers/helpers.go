@@ -6,10 +6,10 @@ import (
 
 	"github.com/openlyinc/pointy"
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/pkg/models"
 
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
-	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/pkg/common"
 )
 
 const paginationMaxLimit = 50
