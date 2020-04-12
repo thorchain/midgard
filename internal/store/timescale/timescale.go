@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 
-	"gitlab.com/thorchain/midgard/pkg/config"
+	"gitlab.com/thorchain/midgard/internal/config"
 )
 
 type Client struct {

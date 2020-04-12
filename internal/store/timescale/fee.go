@@ -3,8 +3,8 @@ package timescale
 import (
 	"fmt"
 
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/pkg/common"
-	"gitlab.com/thorchain/midgard/pkg/models"
 )
 
 const feeAddress = "FEE"

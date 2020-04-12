@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/store"
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
-	"gitlab.com/thorchain/midgard/pkg/models"
-	"gitlab.com/thorchain/midgard/pkg/store"
 )
 
 // Usecase describes the logic layer and it needs to get it's data from

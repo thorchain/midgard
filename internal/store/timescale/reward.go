@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gitlab.com/thorchain/midgard/pkg/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 const addEventAddress = "BLOCK_REWARD"

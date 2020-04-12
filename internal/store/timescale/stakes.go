@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/pkg/common"
-	"gitlab.com/thorchain/midgard/pkg/models"
 )
 
 func (s *Client) CreateStakeRecord(record models.EventStake) error {

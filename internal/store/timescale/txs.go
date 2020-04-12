@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/huandu/go-sqlbuilder"
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/pkg/common"
-	"gitlab.com/thorchain/midgard/pkg/models"
 )
 
 // GetTxDetails returns events with pagination and given query params.

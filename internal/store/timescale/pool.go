@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/pkg/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreatePoolRecord(record models.EventPool) error {

@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
-	"gitlab.com/thorchain/midgard/pkg/models"
 )
 
 // Scanner will fetch and store events sequence from thorchain client.

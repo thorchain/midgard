@@ -2,7 +2,7 @@ package timescale
 
 import (
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/pkg/models"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateRefundRecord(record models.EventRefund) error {
