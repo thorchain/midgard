@@ -12,24 +12,22 @@ import (
 	"gitlab.com/thorchain/midgard/api/graphQL/v1/resolvers"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
-	"gitlab.com/thorchain/midgard/pkg/thorchain"
+	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/usecase"
 	"gitlab.com/thorchain/midgard/pkg/common"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           *timescale.Client
-	thorChainClient *thorchain.Scanner // TODO Move out of handler (Handler should only talk to the DB)
-	logger          zerolog.Logger
+	uc     *usecase.Usecase
+	logger zerolog.Logger
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *timescale.Client, thorChainClient *thorchain.Scanner, logger zerolog.Logger) *Handlers {
+func New(uc *usecase.Usecase, logger zerolog.Logger) *Handlers {
 	return &Handlers{
-		store:           store,
-		thorChainClient: thorChainClient,
-		logger:          logger,
+		uc:     uc,
+		logger: logger,
 	}
 }
 
@@ -46,7 +44,7 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	if err := h.store.Ping(); err != nil {
+	if err := h.uc.GetHealth(); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 	return ctx.JSON(http.StatusOK, "OK")
@@ -54,10 +52,6 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 
 // (GET /v1/txs?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
 func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams) error {
-	err := helpers.ValidatePagination(params.Offset, params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
-	}
 	var address common.Address
 	if params.Address != nil {
 		address, _ = common.NewAddress(*params.Address)
@@ -74,7 +68,8 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams)
 	if params.Type != nil {
 		eventType = *params.Type
 	}
-	txs, count, err := h.store.GetTxDetails(address, txID, asset, eventType, params.Offset, params.Limit)
+	page := models.NewPage(params.Offset, params.Limit)
+	txs, count, err := h.uc.GetTxDetails(address, txID, asset, eventType, page)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxDetails")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -87,7 +82,7 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams)
 // (GET /v1/pools)
 func (h *Handlers) GetPools(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
-	pools, err := h.store.GetPools()
+	pools, err := h.uc.GetPools()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to GetPools")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -111,28 +106,16 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 
 	response := make(api.AssetsDetailedResponse, len(asts))
 	for i, ast := range asts {
-		pool, err := h.store.GetPool(ast)
+		details, err := h.uc.GetAssetDetails(ast)
 		if err != nil {
 			h.logger.Error().Err(err).Str("asset", ast.String()).Msg("failed to get pool")
 			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 		}
 
-		priceInRune, err := h.store.GetPriceInRune(pool)
-		if err != nil {
-			h.logger.Error().Err(err).Msg("failed to GetPriceInRune")
-			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-		}
-
-		dateCreated, err := h.store.GetDateCreated(pool)
-		if err != nil {
-			h.logger.Err(err).Msg("failed to GetDataCrated")
-			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-		}
-
 		response[i] = api.AssetDetail{
-			Asset:       helpers.ConvertAssetForAPI(pool),
-			DateCreated: pointy.Int64(int64(dateCreated)),
-			PriceRune:   helpers.Float64ToString(priceInRune),
+			Asset:       helpers.ConvertAssetForAPI(ast),
+			DateCreated: pointy.Int64(details.DateCreated),
+			PriceRune:   helpers.Float64ToString(details.PriceInRune),
 		}
 	}
 
@@ -141,7 +124,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 
 // (GET /v1/stats)
 func (h *Handlers) GetStats(ctx echo.Context) error {
-	StatsData, err := h.store.GetStatsData()
+	StatsData, err := h.uc.GetNetworkStats()
 	if err != nil {
 		h.logger.Err(err).Msg("failure with GetStatsData")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -178,7 +161,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataPar
 
 	response := make(api.PoolsDetailedResponse, len(asts))
 	for i, ast := range asts {
-		poolData, err := h.store.GetPoolData(ast)
+		poolData, err := h.uc.GetPoolDetails(ast)
 		if err != nil {
 			h.logger.Err(err).Msg("GetPoolData failed")
 			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -231,7 +214,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataPar
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	addresses, err := h.store.GetStakerAddresses()
+	addresses, err := h.uc.GetStakers()
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetStakerAddresses")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -251,7 +234,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 			Error: err.Error(),
 		})
 	}
-	details, err := h.store.GetStakerAddressDetails(addr)
+	details, err := h.uc.GetStakerDetails(addr)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 			Error: err.Error(),
@@ -259,7 +242,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 	}
 
 	var assets []api.Asset
-	for _, asset := range details.PoolsDetails {
+	for _, asset := range details.Pools {
 		assets = append(assets, *helpers.ConvertAssetForAPI(asset))
 	}
 
@@ -289,7 +272,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 
 	response := make(api.StakersAssetDataResponse, len(asts))
 	for i, ast := range asts {
-		details, err := h.store.GetStakersAddressAndAssetDetails(addr, ast)
+		details, err := h.uc.GetStakerAssetDetails(addr, ast)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 				Error: err.Error(),
@@ -297,7 +280,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		}
 
 		response[i] = api.StakersAssetData{
-			Asset:           helpers.ConvertAssetForAPI(details.Asset),
+			Asset:           helpers.ConvertAssetForAPI(ast),
 			AssetEarned:     helpers.Int64ToString(details.AssetEarned),
 			AssetROI:        helpers.Float64ToString(details.AssetROI),
 			AssetStaked:     helpers.Int64ToString(details.AssetStaked),
@@ -341,7 +324,7 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 
 // (GET /v1/network)
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
-	netInfo, err := h.thorChainClient.GetNetworkInfo()
+	netInfo, err := h.uc.GetNetworkInfo()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}

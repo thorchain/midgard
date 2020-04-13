@@ -21,16 +21,17 @@ import (
 	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
+	"gitlab.com/thorchain/midgard/internal/usecase"
+	"gitlab.com/thorchain/midgard/pkg/thorchain"
 )
 
 // Server
 type Server struct {
-	cfg             config.Configuration
-	srv             *http.Server
-	logger          zerolog.Logger
-	echoEngine      *echo.Echo
-	thorChainClient *thorchain.Scanner
+	cfg        config.Configuration
+	srv        *http.Server
+	logger     zerolog.Logger
+	echoEngine *echo.Echo
+	uc         *usecase.Usecase
 }
 
 func initLog(level string, pretty bool) zerolog.Logger {
@@ -60,15 +61,24 @@ func New(cfgFile *string) (*Server, error) {
 
 	log := initLog(cfg.LogLevel, false)
 
-	timescale, err := timescale.NewClient(cfg.TimeScale)
+	store, err := timescale.NewClient(cfg.TimeScale)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create timescale client instance")
 	}
 
-	// Setup thorchain BinanceClient scanner
-	thorChainApi, err := thorchain.NewScanner(cfg.ThorChain, timescale)
+	// Setup thorchain scanner
+	thor, err := thorchain.NewClient(cfg.ThorChain)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create thorchain api instance")
+		return nil, errors.Wrap(err, "failed to create thorchain client instance")
+	}
+
+	// Setup usecase
+	conf := usecase.Config{
+		ScannerInterval: cfg.ThorChain.NoEventsBackoff,
+	}
+	uc, err := usecase.NewUsecase(thor, store, &conf)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create usecase instance")
 	}
 
 	// Setup echo
@@ -82,7 +92,7 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	h := handlers.New(timescale, thorChainApi, logger)
+	h := handlers.New(uc, logger)
 
 	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, h)
@@ -94,11 +104,11 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	return &Server{
-		echoEngine:      echoEngine,
-		cfg:             *cfg,
-		srv:             srv,
-		logger:          logger,
-		thorChainClient: thorChainApi,
+		echoEngine: echoEngine,
+		cfg:        *cfg,
+		srv:        srv,
+		logger:     logger,
+		uc:         uc,
 	}, nil
 }
 
@@ -109,11 +119,11 @@ func (s *Server) Start() error {
 	go func() {
 		s.echoEngine.Logger.Fatal(s.echoEngine.StartServer(s.srv))
 	}()
-	return s.thorChainClient.Start()
+	return s.uc.StartScanner()
 }
 
 func (s *Server) Stop() error {
-	if err := s.thorChainClient.Stop(); nil != err {
+	if err := s.uc.StopScanner(); nil != err {
 		s.logger.Error().Err(err).Msg("failed to stop thorchain scan")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
