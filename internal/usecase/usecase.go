@@ -31,12 +31,15 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 	}
 
 	scanner, err := thorchain.NewScanner(client, store, conf.ScannerInterval)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create thorchain scanner")
+	}
 	uc := Usecase{
 		store:     store,
 		thorchain: client,
 		scanner:   scanner,
 	}
-	return nil, nil
+	return &uc, nil
 }
 
 // StartScanner starts the scanner.
