@@ -11,26 +11,26 @@ func (s *TimeScaleSuite) TestPool(c *C) {
 	assetTcan, _ := common.NewAsset("TCAN-014")
 
 	// No pool status (default value)
-	poolStatus, err := s.Store.poolStatus(assetBolt)
+	poolStatus, err := s.Store.GetPoolStatus(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(poolStatus, Equals, models.Enabled.String())
 
 	// First pool status
 	err = s.Store.CreatePoolRecord(poolStatusEvent0)
 	c.Assert(err, IsNil)
-	poolStatus, err = s.Store.poolStatus(assetBolt)
+	poolStatus, err = s.Store.GetPoolStatus(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(poolStatus, Equals, models.Bootstrap.String())
 
 	// Unchanged pool status
-	poolStatus, err = s.Store.poolStatus(assetTcan)
+	poolStatus, err = s.Store.GetPoolStatus(assetTcan)
 	c.Assert(err, IsNil)
 	c.Assert(poolStatus, Equals, models.Enabled.String())
 
 	// Second pool status
 	err = s.Store.CreatePoolRecord(poolStatusEvent1)
 	c.Assert(err, IsNil)
-	poolStatus, err = s.Store.poolStatus(assetBolt)
+	poolStatus, err = s.Store.GetPoolStatus(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(poolStatus, Equals, models.Enabled.String())
 

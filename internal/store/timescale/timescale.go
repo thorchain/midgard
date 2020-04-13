@@ -12,7 +12,10 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 
 	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/internal/store"
 )
+
+var _ store.Store = (*Client)(nil)
 
 type Client struct {
 	logger zerolog.Logger
