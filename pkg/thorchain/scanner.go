@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 )
 
 // Scanner will fetch and store events sequence from thorchain client.
@@ -37,7 +37,6 @@ type Store interface {
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
 	GetMaxID() (int64, error)
-	GetTotalDepth() (uint64, error)
 }
 
 type handlerFunc func(types.Event) error

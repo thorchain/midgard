@@ -1,13 +1,20 @@
 package usecase
 
 import (
+	"time"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/pkg/thorchain"
+	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 )
+
+// Config contains configuration params to create a new Usecase with NewUsecase.
+type Config struct {
+	ScannerInterval time.Duration
+}
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
@@ -18,8 +25,28 @@ type Usecase struct {
 }
 
 // NewUsecase initiate a new Usecase.
-func NewUsecase(thorchain thorchain.Thorchain, store store.Store) (*Usecase, error) {
+func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*Usecase, error) {
+	if conf == nil {
+		return nil, errors.New("conf can't be nil")
+	}
+
+	scanner, err := thorchain.NewScanner(client, store, conf.ScannerInterval)
+	uc := Usecase{
+		store:     store,
+		thorchain: client,
+		scanner:   scanner,
+	}
 	return nil, nil
+}
+
+// StartScanner starts the scanner.
+func (uc *Usecase) StartScanner() error {
+	return uc.scanner.Start()
+}
+
+// StopScanner stops the scanner.
+func (uc *Usecase) StopScanner() error {
+	return uc.scanner.Stop()
 }
 
 // GetHealth returns error if database connection has problem.

@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/thorchain/midgard/internal/config"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 	"gitlab.com/thorchain/midgard/pkg/common"
 )
 

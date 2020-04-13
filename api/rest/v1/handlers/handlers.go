@@ -13,7 +13,7 @@ import (
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
+	"gitlab.com/thorchain/midgard/pkg/thorchain"
 	"gitlab.com/thorchain/midgard/pkg/common"
 )
 

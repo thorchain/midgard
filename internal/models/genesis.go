@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 )
 
 type Genesis struct {

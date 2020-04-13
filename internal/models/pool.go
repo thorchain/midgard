@@ -1,8 +1,8 @@
 package models
 
 import (
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 )
 
 type PoolStatus int
