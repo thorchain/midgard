@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -91,6 +92,12 @@ func New(cfgFile *string) (*Server, error) {
 		Addr:         fmt.Sprintf(":%v", cfg.ListenPort),
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
+	}
+
+	cer, err := tls.LoadX509KeyPair("server.crt", "server.key")
+	if err == nil {
+		fmt.Println("<<<<<<< TLS >>>>>>>>>")
+		srv.TLSConfig = &tls.Config{Certificates: []tls.Certificate{cer}}
 	}
 
 	return &Server{
