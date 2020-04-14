@@ -45,12 +45,12 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o midgard /tmp/midg
 #
 # Main
 #
-FROM alpine
+FROM golang:alpine
 
 ENV PATH="${PATH}:/go/bin"
 
 RUN apk update
-RUN apk add make
+RUN apk add make openssl bind-tools
 
 COPY --from=build /tmp/midgard/ .
 
@@ -66,6 +66,4 @@ COPY --from=build /etc/midgard /etc/midgard
 # Copy the chain service public folder ie generated docs
 COPY --from=build /tmp/midgard/public/ /go/public/
 
-EXPOSE 8080
-
-CMD ["midgard", "-c", "/etc/midgard/config.json"]
+CMD [ "midgard", "-c", "/etc/midgard/config.json" ]
