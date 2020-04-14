@@ -13,6 +13,7 @@ docker-gitlab-login:
 
 docker-gitlab-push:
 	docker push registry.gitlab.com/thorchain/midgard
+	docker push registry.gitlab.com/thorchain/midgard:${BRANCH}
 
 docker-gitlab-build:
 	docker build -t registry.gitlab.com/thorchain/midgard .
