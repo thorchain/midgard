@@ -1,7 +1,10 @@
 #!/bin/sh
 
 if [ ! -z "$EXTERNAL_IP" ]; then
-    go run $GOROOT/src/crypto/tls/generate_cert.go --host $EXTERNAL_IP
+    openssl ecparam -genkey -name secp384r1 -out server.key
+    openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650 -batch
 fi
+
+midgard -c /etc/midgard/config.json
 
 exec "$@"

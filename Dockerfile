@@ -68,7 +68,3 @@ COPY --from=build /tmp/midgard/public/ /go/public/
 
 # generate TLS files
 ENTRYPOINT scripts/entrypoint.sh
-
-EXPOSE 8080
-
-CMD ["midgard", "-c", "/etc/midgard/config.json"]
