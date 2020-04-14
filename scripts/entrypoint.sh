@@ -5,6 +5,4 @@ if [ ! -z "$EXTERNAL_IP" ]; then
     openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650 -batch
 fi
 
-midgard -c /etc/midgard/config.json
-
 exec "$@"

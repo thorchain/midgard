@@ -66,5 +66,8 @@ COPY --from=build /etc/midgard /etc/midgard
 # Copy the chain service public folder ie generated docs
 COPY --from=build /tmp/midgard/public/ /go/public/
 
-# generate TLS files
+# Generate TLS files
+# TODO: Add Generation of html document here
 ENTRYPOINT scripts/entrypoint.sh
+
+CMD [ "midgard", "-c", "/etc/midgard/config.json" ]
