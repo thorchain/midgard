@@ -8,8 +8,8 @@ before_script:
 
 stages:
   - test
-  - smoke-test
   - build
+  - smoke-test
   - deploy
 
 unit:
