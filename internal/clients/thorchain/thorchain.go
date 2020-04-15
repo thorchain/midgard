@@ -366,45 +366,22 @@ func NewClient(cfg config.ThorChainConfiguration) (*Client, error) {
 
 // GetGenesis fetch chain genesis info from tendermint.
 func (c *Client) GetGenesis() (types.Genesis, error) {
-	uri := fmt.Sprintf("%s/genesis", c.tendermintEndpoint)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/genesis", c.tendermintEndpoint)
+	var genesis types.Genesis
+	err := c.requestEndpoint(url, &genesis)
 	if err != nil {
 		return types.Genesis{}, err
 	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var genesis types.Genesis
-	if err := json.NewDecoder(resp.Body).Decode(&genesis); nil != err {
-		return types.Genesis{}, errors.Wrap(err, "failed to unmarshal genesis")
-	}
-
 	return genesis, nil
 }
 
 // GetEvents fetch next 100 events occurred after id.
 func (c *Client) GetEvents(id int64) ([]types.Event, error) {
-	uri := fmt.Sprintf("%s/events/%d", c.thorchainEndpoint, id)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/events/%d", c.thorchainEndpoint, id)
+	var events []types.Event
+	err := c.requestEndpoint(url, &events)
 	if err != nil {
 		return nil, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var events []types.Event
-	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal events")
 	}
 	return events, nil
 }
@@ -414,23 +391,13 @@ func (c *Client) GetOutTx(event types.Event) (common.Txs, error) {
 	if event.InTx.ID.IsEmpty() {
 		return nil, nil
 	}
-	uri := fmt.Sprintf("%s/keysign/%d", c.thorchainEndpoint, event.Height)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/keysign/%d", c.thorchainEndpoint, event.Height)
+	var chainTxout types.QueryResTxOut
+	err := c.requestEndpoint(url, &chainTxout)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var chainTxout types.QueryResTxOut
-	if err := json.NewDecoder(resp.Body).Decode(&chainTxout); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal chainTxout")
-	}
 	var outTxs common.Txs
 	for _, chain := range chainTxout.Chains {
 		for _, tx := range chain.TxArray {
@@ -564,110 +531,73 @@ func (c *Client) GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error) {
 
 // GetNodeAccounts fetch account info of chain nodes.
 func (c *Client) GetNodeAccounts() ([]types.NodeAccount, error) {
-	uri := fmt.Sprintf("%s/nodeaccounts", c.thorchainEndpoint)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/nodeaccounts", c.thorchainEndpoint)
+	var nodeAccounts []types.NodeAccount
+	err := c.requestEndpoint(url, &nodeAccounts)
 	if err != nil {
 		return nil, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var nodeAccounts []types.NodeAccount
-	if err := json.NewDecoder(resp.Body).Decode(&nodeAccounts); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal nodeAccounts")
 	}
 	return nodeAccounts, nil
 }
 
 // GetVaultData fetch the chain vault data.
 func (c *Client) GetVaultData() (types.VaultData, error) {
-	uri := fmt.Sprintf("%s/vault", c.thorchainEndpoint)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/vault", c.thorchainEndpoint)
+	var vault types.VaultData
+	err := c.requestEndpoint(url, &vault)
 	if err != nil {
 		return types.VaultData{}, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var vault types.VaultData
-	if err := json.NewDecoder(resp.Body).Decode(&vault); nil != err {
-		return types.VaultData{}, errors.Wrap(err, "failed to unmarshal VaultData")
 	}
 	return vault, nil
 }
 
 // GetConstants fetch network constants values.
 func (c *Client) GetConstants() (types.ConstantValues, error) {
-	uri := fmt.Sprintf("%s/constants", c.thorchainEndpoint)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/constants", c.thorchainEndpoint)
+	var consts types.ConstantValues
+	err := c.requestEndpoint(url, &consts)
 	if err != nil {
 		return types.ConstantValues{}, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var consts types.ConstantValues
-	if err := json.NewDecoder(resp.Body).Decode(&consts); nil != err {
-		return types.ConstantValues{}, errors.Wrap(err, "failed to unmarshal constantValues")
 	}
 	return consts, nil
 }
 
 // GetAsgardVaults fetch asgard vaults info.
 func (c *Client) GetAsgardVaults() ([]types.Vault, error) {
-	uri := fmt.Sprintf("%s/vaults/asgard", c.thorchainEndpoint)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/vaults/asgard", c.thorchainEndpoint)
+	var vaults []types.Vault
+	err := c.requestEndpoint(url, &vaults)
 	if err != nil {
 		return nil, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var vaults []types.Vault
-	if err := json.NewDecoder(resp.Body).Decode(&vaults); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal Vault")
 	}
 	return vaults, nil
 }
 
 // GetLastChainHeight fetch the last block info.
 func (c *Client) GetLastChainHeight() (types.LastHeights, error) {
-	uri := fmt.Sprintf("%s/lastblock", c.thorchainEndpoint)
-	c.logger.Debug().Msg(uri)
-	resp, err := c.httpClient.Get(uri)
+	url := fmt.Sprintf("%s/lastblock", c.thorchainEndpoint)
+	var last types.LastHeights
+	err := c.requestEndpoint(url, &last)
 	if err != nil {
 		return types.LastHeights{}, err
 	}
+	return last, nil
+}
 
+func (c *Client) requestEndpoint(url string, result interface{}) error {
+	c.logger.Debug().Msg(url)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return err
+	}
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("could not close the http response properly")
 		}
 	}()
 
-	var last types.LastHeights
-	if err := json.NewDecoder(resp.Body).Decode(&last); nil != err {
-		return types.LastHeights{}, errors.Wrap(err, "failed to unmarshal LastHeights")
+	if err := json.NewDecoder(resp.Body).Decode(result); nil != err {
+		return errors.Wrapf(err, "failed to unmarshal result as %T", result)
 	}
-	return last, nil
+	return nil
 }
