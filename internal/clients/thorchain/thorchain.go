@@ -17,22 +17,18 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-// Scanner will fetch and store events sequence from thorchain node.
+// Scanner will fetch and store events sequence from thorchain client.
 type Scanner struct {
-	thorchainEndpoint  string
-	tendermintEndpoint string
-	readTimeout        time.Duration
-	noEventsBackoff    time.Duration
-	store              Store
-	httpClient         *http.Client
-	handlers           map[string]handlerFunc
-	logger             zerolog.Logger
-	stopChan           chan struct{}
-	mu                 sync.Mutex
-	networkConsts      types.ConstantValues
+	client   Thorchain
+	store    Store
+	interval time.Duration
+	handlers map[string]handlerFunc
+	stopChan chan struct{}
+	mu       sync.Mutex
+	logger   zerolog.Logger
 }
 
-// Store represents methods for storing data coming from thochain.
+// Store represents methods required by Scanner to store thorchain events.
 type Store interface {
 	CreateGenesis(genesis models.Genesis) (int64, error)
 	CreateSwapRecord(record models.EventSwap) error
@@ -45,29 +41,19 @@ type Store interface {
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
 	GetMaxID() (int64, error)
-	GetTotalDepth() (uint64, error)
 }
 
 type handlerFunc func(types.Event) error
 
 // NewScanner create a new instance of Scanner.
-func NewScanner(cfg config.ThorChainConfiguration, store Store) (*Scanner, error) {
-	if cfg.Host == "" {
-		return nil, errors.New("thorchain host is empty")
-	}
-
+func NewScanner(client Thorchain, store Store, interval time.Duration) (*Scanner, error) {
 	sc := &Scanner{
-		thorchainEndpoint:  fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
-		tendermintEndpoint: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
-		readTimeout:        cfg.ReadTimeout,
-		noEventsBackoff:    cfg.NoEventsBackoff,
-		store:              store,
-		httpClient: &http.Client{
-			Timeout: cfg.ReadTimeout,
-		},
+		client:   client,
+		store:    store,
+		interval: interval,
 		handlers: map[string]handlerFunc{},
-		logger:   log.With().Str("module", "thorchain").Logger(),
 		stopChan: make(chan struct{}),
+		logger:   log.With().Str("module", "thorchain_scanner").Logger(),
 	}
 	sc.handlers[types.StakeEventType] = sc.processStakeEvent
 	sc.handlers[types.SwapEventType] = sc.processSwapEvent
@@ -104,7 +90,7 @@ func (sc *Scanner) scan() {
 	defer sc.mu.Unlock()
 
 	sc.logger.Info().Msg("getting thorchain genesis")
-	genesisTime, err := sc.getGenesis()
+	genesisTime, err := sc.client.GetGenesis()
 	if err != nil {
 		sc.logger.Error().Err(err).Msg("failed to get genesis from thorchain")
 	}
@@ -145,36 +131,14 @@ func (sc *Scanner) scan() {
 			if eventsCount == 0 {
 				select {
 				case <-sc.stopChan:
-				case <-time.After(sc.noEventsBackoff):
-					sc.logger.Debug().Str("NoEventsBackoff", sc.noEventsBackoff.String()).Msg("finished waiting NoEventsBackoff")
+				case <-time.After(sc.interval):
+					sc.logger.Debug().Str("ScanInterval", sc.interval.String()).Msg("finished waiting ScanInterval")
 				}
 				continue
 			}
 			currentPos = maxID + 1
 		}
 	}
-}
-
-func (sc *Scanner) getGenesis() (types.Genesis, error) {
-	uri := fmt.Sprintf("%s/genesis", sc.tendermintEndpoint)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
-	if err != nil {
-		return types.Genesis{}, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var genesis types.Genesis
-	if err := json.NewDecoder(resp.Body).Decode(&genesis); nil != err {
-		return types.Genesis{}, errors.Wrap(err, "failed to unmarshal genesis")
-	}
-
-	return genesis, nil
 }
 
 func (sc *Scanner) processGenesis(genesisTime types.Genesis) error {
@@ -188,30 +152,9 @@ func (sc *Scanner) processGenesis(genesisTime types.Genesis) error {
 	return nil
 }
 
-func (sc *Scanner) getEvents(id int64) ([]types.Event, error) {
-	uri := fmt.Sprintf("%s/events/%d", sc.thorchainEndpoint, id)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
-		}
-	}()
-
-	var events []types.Event
-	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
-		return nil, errors.Wrap(err, "failed to unmarshal events")
-	}
-	return events, nil
-}
-
 // returns (maxID, len(events), err)
 func (sc *Scanner) processEvents(id int64) (int64, int, error) {
-	events, err := sc.getEvents(id)
+	events, err := sc.client.GetEvents(id)
 	if err != nil {
 		return id, 0, errors.Wrap(err, "failed to get events")
 	}
@@ -226,7 +169,7 @@ func (sc *Scanner) processEvents(id int64) (int64, int, error) {
 		maxID = evt.ID
 		sc.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		if evt.OutTxs == nil {
-			outTx, err := sc.getOutTx(evt)
+			outTx, err := sc.client.GetOutTx(evt)
 			if err != nil {
 				sc.logger.Err(err).Msg("GetOutTx failed")
 			} else {
@@ -383,20 +326,104 @@ func (sc *Scanner) processSlashEvent(evt types.Event) error {
 	return nil
 }
 
-func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
-	if event.InTx.ID.IsEmpty() {
-		return nil, nil
+// Thorchain represents api that any thorchain client should provide.
+type Thorchain interface {
+	GetGenesis() (types.Genesis, error)
+	GetEvents(id int64) ([]types.Event, error)
+	GetOutTx(event types.Event) (common.Txs, error)
+	GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error)
+	GetNodeAccounts() ([]types.NodeAccount, error)
+	GetVaultData() (types.VaultData, error)
+	GetConstants() (types.ConstantValues, error)
+	GetAsgardVaults() ([]types.Vault, error)
+	GetLastChainHeight() (types.LastHeights, error)
+}
+
+// Client implements Thorchain and uses http to get requested data from thorchain.
+type Client struct {
+	thorchainEndpoint  string
+	tendermintEndpoint string
+	httpClient         *http.Client
+	logger             zerolog.Logger
+}
+
+// NewClient create a new instance of Client.
+func NewClient(cfg config.ThorChainConfiguration) (*Client, error) {
+	if cfg.Host == "" {
+		return nil, errors.New("thorchain host is empty")
 	}
-	uri := fmt.Sprintf("%s/keysign/%d", sc.thorchainEndpoint, event.Height)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
+
+	sc := &Client{
+		thorchainEndpoint:  fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
+		tendermintEndpoint: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
+		httpClient: &http.Client{
+			Timeout: cfg.ReadTimeout,
+		},
+		logger: log.With().Str("module", "thorchain_client").Logger(),
+	}
+	return sc, nil
+}
+
+// GetGenesis fetch chain genesis info from tendermint.
+func (c *Client) GetGenesis() (types.Genesis, error) {
+	uri := fmt.Sprintf("%s/genesis", c.tendermintEndpoint)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
+	if err != nil {
+		return types.Genesis{}, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			c.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var genesis types.Genesis
+	if err := json.NewDecoder(resp.Body).Decode(&genesis); nil != err {
+		return types.Genesis{}, errors.Wrap(err, "failed to unmarshal genesis")
+	}
+
+	return genesis, nil
+}
+
+// GetEvents fetch next 100 events occurred after id.
+func (c *Client) GetEvents(id int64) ([]types.Event, error) {
+	uri := fmt.Sprintf("%s/events/%d", c.thorchainEndpoint, id)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
+
+	var events []types.Event
+	if err := json.NewDecoder(resp.Body).Decode(&events); nil != err {
+		return nil, errors.Wrap(err, "failed to unmarshal events")
+	}
+	return events, nil
+}
+
+// GetOutTx fetch output txs of an event by input tx id.
+func (c *Client) GetOutTx(event types.Event) (common.Txs, error) {
+	if event.InTx.ID.IsEmpty() {
+		return nil, nil
+	}
+	uri := fmt.Sprintf("%s/keysign/%d", c.thorchainEndpoint, event.Height)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); nil != err {
+			c.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -427,24 +454,24 @@ func (sc *Scanner) getOutTx(event types.Event) (common.Txs, error) {
 	return outTxs, nil
 }
 
-func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
+func (c *Client) GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error) {
 	var netInfo models.NetworkInfo
-	nodeAccounts, err := sc.getNodeAccounts()
+	nodeAccounts, err := c.GetNodeAccounts()
 	if err != nil {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get NodeAccounts")
 	}
 
-	vaultData, err := sc.getVaultData()
+	vaultData, err := c.GetVaultData()
 	if err != nil {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get VaultData")
 	}
 
-	vaults, err := sc.getAsgardVaults()
+	vaults, err := c.GetAsgardVaults()
 	if err != nil {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get Vaults")
 	}
 
-	consts, err := sc.getNetworkConstants()
+	consts, err := c.GetConstants()
 	if err != nil {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get NetworkConstants")
 	}
@@ -456,7 +483,7 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 	if !ok {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get RotateRetryBlocks")
 	}
-	lastHeight, err := sc.getLastChainHeight()
+	lastHeight, err := c.GetLastChainHeight()
 	if err != nil {
 		return models.NetworkInfo{}, errors.Wrap(err, "failed to get LastChainHeight")
 	}
@@ -488,12 +515,7 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 		totalBond += node.Bond
 	}
 
-	runeStaked, err := sc.store.GetTotalDepth()
-	if err != nil {
-		return models.NetworkInfo{}, errors.Wrap(err, "failed to get GetTotalDepth")
-	}
 	var metric models.BondMetrics
-
 	if len(activeNodes) > 0 {
 		metric.MinimumActiveBond = activeNodes[0].Bond
 		for _, node := range activeNodes {
@@ -524,7 +546,7 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
 	}
 
-	netInfo.TotalStaked = runeStaked
+	netInfo.TotalStaked = totalDepth
 	netInfo.BondMetrics = metric
 	netInfo.ActiveNodeCount = len(activeNodes)
 	netInfo.StandbyNodeCount = len(standbyNodes)
@@ -540,17 +562,18 @@ func (sc *Scanner) GetNetworkInfo() (models.NetworkInfo, error) {
 	return netInfo, nil
 }
 
-func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
-	uri := fmt.Sprintf("%s/nodeaccounts", sc.thorchainEndpoint)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
+// GetNodeAccounts fetch account info of chain nodes.
+func (c *Client) GetNodeAccounts() ([]types.NodeAccount, error) {
+	uri := fmt.Sprintf("%s/nodeaccounts", c.thorchainEndpoint)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -561,17 +584,18 @@ func (sc *Scanner) getNodeAccounts() ([]types.NodeAccount, error) {
 	return nodeAccounts, nil
 }
 
-func (sc *Scanner) getVaultData() (types.VaultData, error) {
-	uri := fmt.Sprintf("%s/vault", sc.thorchainEndpoint)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
+// GetVaultData fetch the chain vault data.
+func (c *Client) GetVaultData() (types.VaultData, error) {
+	uri := fmt.Sprintf("%s/vault", c.thorchainEndpoint)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
 	if err != nil {
 		return types.VaultData{}, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -582,40 +606,40 @@ func (sc *Scanner) getVaultData() (types.VaultData, error) {
 	return vault, nil
 }
 
-func (sc *Scanner) getNetworkConstants() (types.ConstantValues, error) {
-	if !sc.networkConsts.IsEmpty() {
-		return sc.networkConsts, nil
-	}
-	uri := fmt.Sprintf("%s/constants", sc.thorchainEndpoint)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
+// GetConstants fetch network constants values.
+func (c *Client) GetConstants() (types.ConstantValues, error) {
+	uri := fmt.Sprintf("%s/constants", c.thorchainEndpoint)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
 	if err != nil {
 		return types.ConstantValues{}, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
-	if err := json.NewDecoder(resp.Body).Decode(&sc.networkConsts); nil != err {
+	var consts types.ConstantValues
+	if err := json.NewDecoder(resp.Body).Decode(&consts); nil != err {
 		return types.ConstantValues{}, errors.Wrap(err, "failed to unmarshal constantValues")
 	}
-	return sc.networkConsts, nil
+	return consts, nil
 }
 
-func (sc *Scanner) getAsgardVaults() ([]types.Vault, error) {
-	uri := fmt.Sprintf("%s/vaults/asgard", sc.thorchainEndpoint)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
+// GetAsgardVaults fetch asgard vaults info.
+func (c *Client) GetAsgardVaults() ([]types.Vault, error) {
+	uri := fmt.Sprintf("%s/vaults/asgard", c.thorchainEndpoint)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
@@ -626,17 +650,18 @@ func (sc *Scanner) getAsgardVaults() ([]types.Vault, error) {
 	return vaults, nil
 }
 
-func (sc *Scanner) getLastChainHeight() (types.LastHeights, error) {
-	uri := fmt.Sprintf("%s/lastblock", sc.thorchainEndpoint)
-	sc.logger.Debug().Msg(uri)
-	resp, err := sc.httpClient.Get(uri)
+// GetLastChainHeight fetch the last block info.
+func (c *Client) GetLastChainHeight() (types.LastHeights, error) {
+	uri := fmt.Sprintf("%s/lastblock", c.thorchainEndpoint)
+	c.logger.Debug().Msg(uri)
+	resp, err := c.httpClient.Get(uri)
 	if err != nil {
 		return types.LastHeights{}, err
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); nil != err {
-			sc.logger.Error().Err(err).Msg("failed to close response body")
+			c.logger.Error().Err(err).Msg("failed to close response body")
 		}
 	}()
 
