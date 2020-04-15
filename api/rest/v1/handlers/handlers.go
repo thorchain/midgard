@@ -20,12 +20,12 @@ import (
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
 	store           *timescale.Client
-	thorChainClient *thorchain.Scanner // TODO Move out of handler (Handler should only talk to the DB)
+	thorChainClient thorchain.Thorchain // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *timescale.Client, thorChainClient *thorchain.Scanner, logger zerolog.Logger) *Handlers {
+func New(store *timescale.Client, thorChainClient thorchain.Thorchain, logger zerolog.Logger) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
@@ -341,7 +341,12 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 
 // (GET /v1/network)
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
-	netInfo, err := h.thorChainClient.GetNetworkInfo()
+	totalDepth, err := h.store.GetTotalDepth()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	netInfo, err := h.thorChainClient.GetNetworkInfo(totalDepth)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
