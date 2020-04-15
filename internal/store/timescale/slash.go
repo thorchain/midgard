@@ -3,7 +3,7 @@ package timescale
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 
 	"github.com/pkg/errors"
 

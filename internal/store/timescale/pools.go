@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/pkg/common"
 )
 
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {

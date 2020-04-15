@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
-	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type Tx struct {

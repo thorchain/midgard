@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type Events struct {

@@ -1,6 +1,6 @@
 package models
 
-import "gitlab.com/thorchain/midgard/pkg/common"
+import "gitlab.com/thorchain/midgard/internal/common"
 
 // StakerDetails contains general details of a staker.
 type StakerDetails struct {

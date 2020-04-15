@@ -8,9 +8,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
-	"gitlab.com/thorchain/midgard/pkg/common"
-	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 )
 
 // Thorchain represents api that any thorchain client should provide.

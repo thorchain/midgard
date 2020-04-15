@@ -3,7 +3,7 @@ package timescale
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {

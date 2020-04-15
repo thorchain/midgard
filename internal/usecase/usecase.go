@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
-	"gitlab.com/thorchain/midgard/pkg/common"
-	"gitlab.com/thorchain/midgard/pkg/thorchain"
-	"gitlab.com/thorchain/midgard/pkg/thorchain/types"
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.

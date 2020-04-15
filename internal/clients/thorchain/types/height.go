@@ -1,7 +1,7 @@
 package types
 
 import (
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type LastHeights struct {

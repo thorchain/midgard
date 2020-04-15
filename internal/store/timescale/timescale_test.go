@@ -9,9 +9,9 @@ import (
 
 	. "gopkg.in/check.v1"
 
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/pkg/common"
 )
 
 var tables = []string{"coins", "events", "gas", "stakes", "swaps", "txs"}

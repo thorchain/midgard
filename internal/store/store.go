@@ -1,8 +1,8 @@
 package store
 
 import (
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/pkg/common"
 )
 
 // Store represents methods required by Usecase to store and load data from pkg data store.

@@ -1,7 +1,7 @@
 package timescale
 
 import (
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
 )
 

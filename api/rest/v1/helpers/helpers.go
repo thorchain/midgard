@@ -9,7 +9,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
-	"gitlab.com/thorchain/midgard/pkg/common"
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 const paginationMaxLimit = 50
