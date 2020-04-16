@@ -1,6 +1,6 @@
 package store
 
-//go:generate mockgen -destination mock_store.go . Store
+//go:generate mockgen -destination mock_store.go -package store . Store
 import (
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
