@@ -210,8 +210,8 @@ paths:
   "/v1/nodes":
     get:
       operationId: GetNodes
-      summary: Get Node keys
-      description: Returns an object containing Node keys
+      summary: Get Node public keys
+      description: Returns an object containing Node public keys
       responses:
         "200":
           "$ref": "#/components/responses/NodeKeyResponse"
@@ -227,11 +227,11 @@ paths:
           required: true
           schema:
             type: string
-          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
+          example: 'thor1ta8zg6xacafrjqp8jzz563e6spdvqzes422dz2'
       responses:
         "200":
-          "$ref": "#/components/responses/NetworkResponse"
-  "/v1/node/{address}/session":
+          "$ref": "#/components/responses/NodeInfoResponse"
+  "/v1/node/{address}/{session}":
     get:
       operationId: GetNodeSession
       summary: Get Node Session Info
@@ -243,11 +243,17 @@ paths:
           required: true
           schema:
             type: string
-          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
+          example: 'thor1ta8zg6xacafrjqp8jzz563e6spdvqzes422dz2'
+        - in: path
+          name: session
+          description: session number
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         "200":
-          "$ref": "#/components/responses/NetworkResponse"
-
+          "$ref": "#/components/responses/SessionInfoResponse"
 components:
   responses:
     PoolsDetailedResponse:
@@ -351,8 +357,25 @@ components:
           schema:
             type: array
             items:
-              type: string
+              $ref: '#/components/schemas/NodeKey'
 
+    NodeInfoResponse:
+      description: Returns an object containing Node data
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NodeInfo'
+
+    SessionInfoResponse:
+      description: Returns an object containing Session data
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SessionInfo'
   schemas:
     TxDetails:
       properties:
@@ -777,7 +800,49 @@ components:
           type: string
         nextChurnHeight:
           type: string
+    NodeKey:
+      type: object
+      properties:
+        secp256k1:
+          type: string
+          description: secp256k1 public key
+        ed25519:
+          type: string
+          description: ed25519 public key
+    NodeInfo:
+      type: object
+      properties:
+        sessionCount:
+          type: integer
+          format: int64
+          description: number of sessions
+        totalEarned:
+          type: string
+          description: Sum of Rune earned
+        totalSlashPoints:
+          type: string
+          description: Sum of Slashpoints ever earned
+        version:
+          type: string
+          description: THORNode Version
 
+    SessionInfo:
+      type: object
+      properties:
+        bond:
+          type: integer
+          format: int64
+          description: Bond
+        status:
+          type: string
+          enum: [standby, active, churned]
+          description: session status
+        totalRewards:
+          type: string
+          description: Total Rewards
+        blockHeightEntered:
+          type: integer
+          format: int64
 servers:
   - url: http://127.0.0.1:8080
   - url: https://127.0.0.1:8080
