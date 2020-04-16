@@ -5,91 +5,73 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-type StatsData struct {
-	DailyActiveUsers   uint64
-	MonthlyActiveUsers uint64
-	TotalUsers         uint64
-	DailyTx            uint64
-	MonthlyTx          uint64
-	TotalTx            uint64
-	TotalVolume24hr    uint64
-	TotalVolume        uint64
-	TotalStaked        uint64
-	TotalDepth         uint64
-	TotalEarned        uint64
-	PoolCount          uint64
-	TotalAssetBuys     uint64
-	TotalAssetSells    uint64
-	TotalStakeTx       uint64
-	TotalWithdrawTx    uint64
-}
-
-func (s *Client) GetStatsData() (StatsData, error) {
+func (s *Client) GetStatsData() (models.StatsData, error) {
 	dailyActiveUsers, err := s.dailyActiveUsers()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 
 	monthlyActiveUsers, err := s.monthlyActiveUsers()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalUsers, err := s.totalUsers()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	dailyTx, err := s.dailyTx()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	monthlyTx, err := s.monthlyTx()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalTx, err := s.totalTx()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalVolume24hr, err := s.totalVolume24hr()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalVolume, err := s.totalVolume()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	bTotalStaked, err := s.bTotalStaked()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalDepth, err := s.GetTotalDepth()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	poolCount, err := s.poolCount()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalAssetBuys, err := s.totalAssetBuys()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalAssetSells, err := s.totalAssetSells()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalStakeTx, err := s.totalStakeTx()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 	totalWithdrawTx, err := s.totalWithdrawTx()
 	if err != nil {
-		return StatsData{}, errors.Wrap(err, "getStatsData failed")
+		return models.StatsData{}, errors.Wrap(err, "getStatsData failed")
 	}
 
-	return StatsData{
+	return models.StatsData{
 		DailyActiveUsers:   dailyActiveUsers,
 		MonthlyActiveUsers: monthlyActiveUsers,
 		TotalUsers:         totalUsers,
