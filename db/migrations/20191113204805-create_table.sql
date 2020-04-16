@@ -80,7 +80,21 @@ CREATE TABLE gas (
     tx_hash varchar,
     primary key (time, event_id, pool)
 );
-CREATE TABLE pools (
+
+CREATE TABLE sessions (
+     time           TIMESTAMPTZ NOT NULL,
+     address        VARCHAR NOT NULL,
+     entered_height BIGINT NOT NULL,
+     bond           BIGINT NOT NULL,
+     status         VARCHAR NOT NULL,
+     total_rewards  BIGINT,
+     churned_height BIGINT,
+     churn_reason   VARCHAR,
+     version        VARCHAR,
+     PRIMARY KEY (time, address, entered_height)
+);
+
+CREATE TABLE nodes (
     time        TIMESTAMPTZ       NOT NULL,
     event_id bigint not null,
     pool varchar not null,
@@ -107,5 +121,6 @@ DROP TABLE txs;
 DROP TABLE coins;
 DROP TABLE gas;
 DROP TABLE pools;
+DROP TABLE nodes;
 
 DROP TYPE tx_direction;
