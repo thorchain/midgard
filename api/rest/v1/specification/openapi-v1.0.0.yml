@@ -207,6 +207,46 @@ paths:
       responses:
         "200":
           "$ref": "#/components/responses/NetworkResponse"
+  "/v1/nodes":
+    get:
+      operationId: GetNodes
+      summary: Get Node keys
+      description: Returns an object containing Node keys
+      responses:
+        "200":
+          "$ref": "#/components/responses/NodeKeyResponse"
+  "/v1/node/{address}":
+    get:
+      operationId: GetNodeInfo
+      summary: Get Node Info
+      description: Returns an object containing Node info
+      parameters:
+        - in: path
+          name: address
+          description: Unique node address
+          required: true
+          schema:
+            type: string
+          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
+      responses:
+        "200":
+          "$ref": "#/components/responses/NetworkResponse"
+  "/v1/node/{address}/session":
+    get:
+      operationId: GetNodeSession
+      summary: Get Node Session Info
+      description: Returns an object containing Node session info
+      parameters:
+        - in: path
+          name: address
+          description: Unique node address
+          required: true
+          schema:
+            type: string
+          example: 'bnb1jxfh2g85q3v0tdq56fnevx6xcxtcnhtsmcu64m'
+      responses:
+        "200":
+          "$ref": "#/components/responses/NetworkResponse"
 
 components:
   responses:
@@ -303,6 +343,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/NetworkInfo'
+
+    NodeKeyResponse:
+      description: Returns an object containing Network data
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
 
   schemas:
     TxDetails:
