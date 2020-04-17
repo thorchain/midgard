@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 	. "gopkg.in/check.v1"
 )
 
@@ -621,7 +622,7 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	c.Assert(err, IsNil)
 	assest, err := common.NewAsset("BNB.TOML-4BC")
 	c.Assert(err, IsNil)
-	expectedDetails := StakerAddressAndAssetDetails{
+	expectedDetails := models.StakerAddressAndAssetDetails{
 		Asset: common.Asset{
 			Chain:  "BNB",
 			Symbol: "TOML-4BC",
@@ -645,7 +646,7 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent1)
 	c.Assert(err, IsNil)
-	expectedDetails = StakerAddressAndAssetDetails{
+	expectedDetails = models.StakerAddressAndAssetDetails{
 		Asset: common.Asset{
 			Chain:  "BNB",
 			Symbol: "TOML-4BC",

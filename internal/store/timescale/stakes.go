@@ -91,35 +91,28 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 	return addresses, nil
 }
 
-type StakerAddressDetails struct {
-	PoolsDetails []common.Asset
-	TotalEarned  int64
-	TotalROI     float64
-	TotalStaked  int64
-}
-
-func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressDetails, error) {
+func (s *Client) GetStakerAddressDetails(address common.Address) (models.StakerAddressDetails, error) {
 	pools, err := s.getPools(address)
 	if err != nil {
-		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
+		return models.StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	totalEarned, err := s.totalEarned(address, pools)
 	if err != nil {
-		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
+		return models.StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	totalROI, err := s.totalROI(address)
 	if err != nil {
-		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
+		return models.StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
 	totalStaked, err := s.totalStaked(address)
 	if err != nil {
-		return StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
+		return models.StakerAddressDetails{}, errors.Wrap(err, "getStakerAddressDetails failed")
 	}
 
-	return StakerAddressDetails{
+	return models.StakerAddressDetails{
 		PoolsDetails: pools,
 		TotalEarned:  totalEarned,
 		TotalROI:     totalROI,
@@ -127,27 +120,12 @@ func (s *Client) GetStakerAddressDetails(address common.Address) (StakerAddressD
 	}, nil
 }
 
-type StakerAddressAndAssetDetails struct {
-	Asset           common.Asset
-	StakeUnits      uint64
-	RuneStaked      int64
-	AssetStaked     int64
-	PoolStaked      int64
-	RuneEarned      int64
-	AssetEarned     int64
-	PoolEarned      int64
-	RuneROI         float64
-	AssetROI        float64
-	PoolROI         float64
-	DateFirstStaked uint64
-}
-
 // GetStakersAddressAndAssetDetails:
-func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (StakerAddressAndAssetDetails, error) {
+func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (models.StakerAddressAndAssetDetails, error) {
 	// confirm asset in addresses pools
 	pools, err := s.getPools(address)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 	found := false
 	for _, v := range pools {
@@ -157,65 +135,65 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	}
 
 	if !found {
-		return StakerAddressAndAssetDetails{}, errors.New("no pool exists for that asset")
+		return models.StakerAddressAndAssetDetails{}, errors.New("no pool exists for that asset")
 	}
 
 	stakeUnits, err := s.stakeUnits(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	runeStaked, err := s.runeStakedForAddress(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	assetStaked, err := s.assetStakedForAddress(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	poolStaked, err := s.poolStaked(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	runeEarned, err := s.runeEarned(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	assetEarned, err := s.assetEarned(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	poolEarned, err := s.poolEarned(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	stakersRuneROI, err := s.stakersRuneROI(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	stakersAssetROI, err := s.stakersAssetROI(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	dateFirstStaked, err := s.dateFirstStaked(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	stakersPoolROI, err := s.stakersPoolROI(address, asset)
 	if err != nil {
-		return StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
-	details := StakerAddressAndAssetDetails{
+	details := models.StakerAddressAndAssetDetails{
 		Asset:           asset,
 		StakeUnits:      stakeUnits,
 		RuneStaked:      runeStaked,
