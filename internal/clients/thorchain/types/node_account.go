@@ -7,8 +7,14 @@ import (
 )
 
 type NodeAccount struct {
-	Status NodeStatus `json:"status"`
-	Bond   uint64     `json:"bond,string"`
+	PubKeySet PubKeySet  `json:"pub_key_set"`
+	Status    NodeStatus `json:"status"`
+	Bond      uint64     `json:"bond,string"`
+}
+
+type PubKeySet struct {
+	Secp256k1 string `json:"secp256k1"`
+	Ed25519   string `json:"ed25519"`
 }
 
 type NodeStatus uint8
