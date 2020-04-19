@@ -24,6 +24,10 @@ type Handlers struct {
 	logger          zerolog.Logger
 }
 
+func (h *Handlers) GetNodes(ctx echo.Context) error {
+	panic("implement me")
+}
+
 // NewBinanceClient creates a new service interface with the Datastore of your choise
 func New(store store.Store, thorChainClient thorchain.Thorchain, logger zerolog.Logger) *Handlers {
 	return &Handlers{
