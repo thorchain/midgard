@@ -225,7 +225,7 @@ func (sc *Scanner) processEvents(id int64) (int64, int, error) {
 	for _, evt := range events {
 		maxID = evt.ID
 		sc.logger.Info().Int64("maxID", maxID).Msg("new maxID")
-		if evt.OutTxs == nil {
+		if evt.HasOutboundTx() && evt.OutTxs == nil {
 			outTx, err := sc.getOutTx(evt)
 			if err != nil {
 				sc.logger.Err(err).Msg("GetOutTx failed")
