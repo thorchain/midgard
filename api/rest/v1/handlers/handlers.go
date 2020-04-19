@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+
 	"github.com/99designs/gqlgen/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
@@ -14,18 +16,30 @@ import (
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
+	"gitlab.com/thorchain/midgard/internal/store"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           *timescale.Client
-	thorChainClient *thorchain.Scanner // TODO Move out of handler (Handler should only talk to the DB)
+	store           store.Store
+	thorChainClient thorchain.Thorchain // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 }
 
+func (h *Handlers) GetNodes(ctx echo.Context) error {
+	nodes, err := h.thorChainClient.GetNodeAccounts()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	response := make([]types.PubKeySet, 0)
+	for _, node := range nodes {
+		response = append(response, node.PubKeySet)
+	}
+	return ctx.JSON(http.StatusOK, response)
+}
+
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store *timescale.Client, thorChainClient *thorchain.Scanner, logger zerolog.Logger) *Handlers {
+func New(store store.Store, thorChainClient thorchain.Thorchain, logger zerolog.Logger) *Handlers {
 	return &Handlers{
 		store:           store,
 		thorChainClient: thorChainClient,
@@ -341,7 +355,12 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 
 // (GET /v1/network)
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
-	netInfo, err := h.thorChainClient.GetNetworkInfo()
+	totalDepth, err := h.store.GetTotalDepth()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+
+	netInfo, err := h.thorChainClient.GetNetworkInfo(totalDepth)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}

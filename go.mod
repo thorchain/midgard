@@ -12,6 +12,7 @@ require (
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gobuffalo/packr/v2 v2.7.1 // indirect
+	github.com/golang/mock v1.3.1-0.20190508161146-9fa652df1129
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/huandu/go-sqlbuilder v1.7.0
@@ -19,7 +20,6 @@ require (
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/lib/pq v1.2.0
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
-	github.com/mitchellh/mapstructure v1.1.2
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
 	github.com/openlyinc/pointy v1.1.2
