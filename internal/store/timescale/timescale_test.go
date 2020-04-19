@@ -1284,7 +1284,7 @@ var (
 			},
 		},
 	}
-	rewardRuneEvent0 = models.EventReward{
+	rewardBNBEvent0 = models.EventReward{
 		Event: models.Event{
 			Time:   time.Now(),
 			ID:     11,
@@ -1296,8 +1296,8 @@ var (
 			models.PoolAmount{
 				Pool: common.Asset{
 					Chain:  "BNB",
-					Symbol: "RUNE-B1A",
-					Ticker: "RUNE",
+					Symbol: "BNB",
+					Ticker: "BNB",
 				},
 				Amount: 1000,
 			},
@@ -1313,7 +1313,7 @@ var (
 		},
 		PoolRewards: nil,
 	}
-	rewardRuneEvent1 = models.EventReward{
+	rewardBNBEvent1 = models.EventReward{
 		Event: models.Event{
 			Time:   time.Now(),
 			ID:     12,
@@ -1325,8 +1325,8 @@ var (
 			models.PoolAmount{
 				Pool: common.Asset{
 					Chain:  "BNB",
-					Symbol: "RUNE-B1A",
-					Ticker: "RUNE",
+					Symbol: "BNB",
+					Ticker: "BNB",
 				},
 				Amount: 2000,
 			},
