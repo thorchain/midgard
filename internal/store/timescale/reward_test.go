@@ -6,7 +6,7 @@ import (
 )
 
 func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
-	asset, _ := common.NewAsset("RUNE-B1A")
+	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No rewards
 	runeRewarded, err := s.Store.runeRewarded(asset)
@@ -28,7 +28,7 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	c.Assert(depth, Equals, uint64(0))
 
 	// Single reward
-	err = s.Store.CreateRewardRecord(rewardRuneEvent0)
+	err = s.Store.CreateRewardRecord(rewardBNBEvent0)
 	c.Assert(err, IsNil)
 
 	runeRewarded, err = s.Store.runeRewarded(asset)
@@ -42,7 +42,7 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	c.Assert(depth, Equals, uint64(0))
 
 	// Additional reward
-	err = s.Store.CreateRewardRecord(rewardRuneEvent1)
+	err = s.Store.CreateRewardRecord(rewardBNBEvent1)
 	c.Assert(err, IsNil)
 
 	runeRewarded, err = s.Store.runeRewarded(asset)

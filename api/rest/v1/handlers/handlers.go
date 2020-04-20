@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+
 	"github.com/99designs/gqlgen/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
@@ -22,6 +24,18 @@ type Handlers struct {
 	store           store.Store
 	thorChainClient thorchain.Thorchain // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
+}
+
+func (h *Handlers) GetNodes(ctx echo.Context) error {
+	nodes, err := h.thorChainClient.GetNodeAccounts()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+	}
+	response := make([]types.PubKeySet, 0)
+	for _, node := range nodes {
+		response = append(response, node.PubKeySet)
+	}
+	return ctx.JSON(http.StatusOK, response)
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise

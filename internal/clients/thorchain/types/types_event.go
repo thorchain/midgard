@@ -34,6 +34,10 @@ type Event struct {
 	Fee    common.Fee      `json:"fee"`
 }
 
+func (event *Event) HasOutboundTx() bool {
+	return event.Type == SwapEventType || event.Type == UnstakeEventType || event.Type == RefundEventType
+}
+
 type ThorchainEvent interface {
 	Type() string
 	// handle() error
