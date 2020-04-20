@@ -95,8 +95,8 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 	return &details, nil
 }
 
-// GetNetworkStats returns some historical statistic data of network.
-func (uc *Usecase) GetNetworkStats() (*models.StatsData, error) {
+// GetStats returns some historical statistic data of network.
+func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	stats, err := uc.store.GetStatsData()
 	if err != nil {
 		return nil, err

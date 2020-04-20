@@ -13,8 +13,7 @@ var ErrNotImplemented = errors.New("not implemented")
 var _ store.Store = (*StoreDummy)(nil)
 
 // StoreDummy is test purpose implementation of Store.
-type StoreDummy struct {
-}
+type StoreDummy struct{}
 
 func (s *StoreDummy) CreateGenesis(_ models.Genesis) (int64, error) {
 	return 0, ErrNotImplemented
