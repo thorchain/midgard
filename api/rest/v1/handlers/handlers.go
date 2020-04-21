@@ -131,7 +131,7 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 
 		response[i] = api.AssetDetail{
 			Asset:       helpers.ConvertAssetForAPI(ast),
-			DateCreated: pointy.Int64(int64(details.DateCreated)),
+			DateCreated: pointy.Int64(details.DateCreated),
 			PriceRune:   helpers.Float64ToString(details.PriceInRune),
 		}
 	}
