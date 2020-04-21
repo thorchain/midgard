@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/usecase"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/labstack/echo/v4"
@@ -16,12 +18,11 @@ import (
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/store"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
 type Handlers struct {
-	store           store.Store
+	uc              *usecase.Usecase
 	thorChainClient thorchain.Thorchain // TODO Move out of handler (Handler should only talk to the DB)
 	logger          zerolog.Logger
 }
@@ -39,10 +40,10 @@ func (h *Handlers) GetNodes(ctx echo.Context) error {
 }
 
 // NewBinanceClient creates a new service interface with the Datastore of your choise
-func New(store store.Store, thorChainClient thorchain.Thorchain, logger zerolog.Logger) *Handlers {
+func New(uc *usecase.Usecase, client thorchain.Thorchain, logger zerolog.Logger) *Handlers {
 	return &Handlers{
-		store:           store,
-		thorChainClient: thorChainClient,
+		uc:              uc,
+		thorChainClient: client,
 		logger:          logger,
 	}
 }
@@ -60,7 +61,7 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	if err := h.store.Ping(); err != nil {
+	if err := h.uc.GetHealth(); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 	return ctx.JSON(http.StatusOK, "OK")
@@ -68,10 +69,6 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 
 // (GET /v1/txs?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
 func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams) error {
-	err := helpers.ValidatePagination(params.Offset, params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
-	}
 	var address common.Address
 	if params.Address != nil {
 		address, _ = common.NewAddress(*params.Address)
@@ -88,7 +85,8 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams)
 	if params.Type != nil {
 		eventType = *params.Type
 	}
-	txs, count, err := h.store.GetTxDetails(address, txID, asset, eventType, params.Offset, params.Limit)
+	page := models.NewPage(params.Offset, params.Limit)
+	txs, count, err := h.uc.GetTxDetails(address, txID, asset, eventType, page)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxDetails")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -101,7 +99,7 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams)
 // (GET /v1/pools)
 func (h *Handlers) GetPools(ctx echo.Context) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
-	pools, err := h.store.GetPools()
+	pools, err := h.uc.GetPools()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to GetPools")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
@@ -125,28 +123,16 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 
 	response := make(api.AssetsDetailedResponse, len(asts))
 	for i, ast := range asts {
-		pool, err := h.store.GetPool(ast)
+		details, err := h.uc.GetAssetDetails(ast)
 		if err != nil {
 			h.logger.Error().Err(err).Str("asset", ast.String()).Msg("failed to get pool")
 			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
 		}
 
-		priceInRune, err := h.store.GetPriceInRune(pool)
-		if err != nil {
-			h.logger.Error().Err(err).Msg("failed to GetPriceInRune")
-			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-		}
-
-		dateCreated, err := h.store.GetDateCreated(pool)
-		if err != nil {
-			h.logger.Err(err).Msg("failed to GetDataCrated")
-			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-		}
-
 		response[i] = api.AssetDetail{
-			Asset:       helpers.ConvertAssetForAPI(pool),
-			DateCreated: pointy.Int64(int64(dateCreated)),
-			PriceRune:   helpers.Float64ToString(priceInRune),
+			Asset:       helpers.ConvertAssetForAPI(ast),
+			DateCreated: pointy.Int64(int64(details.DateCreated)),
+			PriceRune:   helpers.Float64ToString(details.PriceInRune),
 		}
 	}
 
@@ -155,29 +141,29 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoPar
 
 // (GET /v1/stats)
 func (h *Handlers) GetStats(ctx echo.Context) error {
-	StatsData, err := h.store.GetStatsData()
+	stats, err := h.uc.GetStats()
 	if err != nil {
-		h.logger.Err(err).Msg("failure with GetStatsData")
+		h.logger.Err(err).Msg("failure with GetStats")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 
 	response := api.StatsResponse{
-		DailyActiveUsers:   helpers.Uint64ToString(StatsData.DailyActiveUsers),
-		DailyTx:            helpers.Uint64ToString(StatsData.DailyTx),
-		MonthlyActiveUsers: helpers.Uint64ToString(StatsData.MonthlyActiveUsers),
-		MonthlyTx:          helpers.Uint64ToString(StatsData.MonthlyTx),
-		PoolCount:          helpers.Uint64ToString(StatsData.PoolCount),
-		TotalAssetBuys:     helpers.Uint64ToString(StatsData.TotalAssetBuys),
-		TotalAssetSells:    helpers.Uint64ToString(StatsData.TotalAssetSells),
-		TotalDepth:         helpers.Uint64ToString(StatsData.TotalDepth),
-		TotalEarned:        helpers.Uint64ToString(StatsData.TotalEarned),
-		TotalStakeTx:       helpers.Uint64ToString(StatsData.TotalStakeTx),
-		TotalStaked:        helpers.Uint64ToString(StatsData.TotalStaked),
-		TotalTx:            helpers.Uint64ToString(StatsData.TotalTx),
-		TotalUsers:         helpers.Uint64ToString(StatsData.TotalUsers),
-		TotalVolume:        helpers.Uint64ToString(StatsData.TotalVolume),
-		TotalVolume24hr:    helpers.Uint64ToString(StatsData.TotalVolume24hr),
-		TotalWithdrawTx:    helpers.Uint64ToString(StatsData.TotalWithdrawTx),
+		DailyActiveUsers:   helpers.Uint64ToString(stats.DailyActiveUsers),
+		DailyTx:            helpers.Uint64ToString(stats.DailyTx),
+		MonthlyActiveUsers: helpers.Uint64ToString(stats.MonthlyActiveUsers),
+		MonthlyTx:          helpers.Uint64ToString(stats.MonthlyTx),
+		PoolCount:          helpers.Uint64ToString(stats.PoolCount),
+		TotalAssetBuys:     helpers.Uint64ToString(stats.TotalAssetBuys),
+		TotalAssetSells:    helpers.Uint64ToString(stats.TotalAssetSells),
+		TotalDepth:         helpers.Uint64ToString(stats.TotalDepth),
+		TotalEarned:        helpers.Uint64ToString(stats.TotalEarned),
+		TotalStakeTx:       helpers.Uint64ToString(stats.TotalStakeTx),
+		TotalStaked:        helpers.Uint64ToString(stats.TotalStaked),
+		TotalTx:            helpers.Uint64ToString(stats.TotalTx),
+		TotalUsers:         helpers.Uint64ToString(stats.TotalUsers),
+		TotalVolume:        helpers.Uint64ToString(stats.TotalVolume),
+		TotalVolume24hr:    helpers.Uint64ToString(stats.TotalVolume24hr),
+		TotalWithdrawTx:    helpers.Uint64ToString(stats.TotalWithdrawTx),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
@@ -192,51 +178,51 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataPar
 
 	response := make(api.PoolsDetailedResponse, len(asts))
 	for i, ast := range asts {
-		poolData, err := h.store.GetPoolData(ast)
+		details, err := h.uc.GetPoolDetails(ast)
 		if err != nil {
-			h.logger.Err(err).Msg("GetPoolData failed")
+			h.logger.Err(err).Msg("GetPoolDetails failed")
 			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 		}
 
 		response[i] = api.PoolDetail{
-			Status:           pointy.String(poolData.Status),
+			Status:           pointy.String(details.Status),
 			Asset:            helpers.ConvertAssetForAPI(ast),
-			AssetDepth:       helpers.Uint64ToString(poolData.AssetDepth),
-			AssetROI:         helpers.Float64ToString(poolData.AssetROI),
-			AssetStakedTotal: helpers.Uint64ToString(poolData.AssetStakedTotal),
-			BuyAssetCount:    helpers.Uint64ToString(poolData.BuyAssetCount),
-			BuyFeeAverage:    helpers.Float64ToString(poolData.BuyFeeAverage),
-			BuyFeesTotal:     helpers.Uint64ToString(poolData.BuyFeesTotal),
-			BuySlipAverage:   helpers.Float64ToString(poolData.BuySlipAverage),
-			BuyTxAverage:     helpers.Float64ToString(poolData.BuyTxAverage),
-			BuyVolume:        helpers.Uint64ToString(poolData.BuyVolume),
-			PoolDepth:        helpers.Uint64ToString(poolData.PoolDepth),
-			PoolFeeAverage:   helpers.Float64ToString(poolData.PoolFeeAverage),
-			PoolFeesTotal:    helpers.Uint64ToString(poolData.PoolFeesTotal),
-			PoolROI:          helpers.Float64ToString(poolData.PoolROI),
-			PoolROI12:        helpers.Float64ToString(poolData.PoolROI12),
-			PoolSlipAverage:  helpers.Float64ToString(poolData.PoolSlipAverage),
-			PoolStakedTotal:  helpers.Uint64ToString(poolData.PoolStakedTotal),
-			PoolTxAverage:    helpers.Float64ToString(poolData.PoolTxAverage),
-			PoolUnits:        helpers.Uint64ToString(poolData.PoolUnits),
-			PoolVolume:       helpers.Uint64ToString(poolData.PoolVolume),
-			PoolVolume24hr:   helpers.Uint64ToString(poolData.PoolVolume24hr),
-			Price:            helpers.Float64ToString(poolData.Price),
-			RuneDepth:        helpers.Uint64ToString(poolData.RuneDepth),
-			RuneROI:          helpers.Float64ToString(poolData.RuneROI),
-			RuneStakedTotal:  helpers.Uint64ToString(poolData.RuneStakedTotal),
-			SellAssetCount:   helpers.Uint64ToString(poolData.SellAssetCount),
-			SellFeeAverage:   helpers.Float64ToString(poolData.SellFeeAverage),
-			SellFeesTotal:    helpers.Uint64ToString(poolData.SellFeesTotal),
-			SellSlipAverage:  helpers.Float64ToString(poolData.SellSlipAverage),
-			SellTxAverage:    helpers.Float64ToString(poolData.SellTxAverage),
-			SellVolume:       helpers.Uint64ToString(poolData.SellVolume),
-			StakeTxCount:     helpers.Uint64ToString(poolData.StakeTxCount),
-			StakersCount:     helpers.Uint64ToString(poolData.StakersCount),
-			StakingTxCount:   helpers.Uint64ToString(poolData.StakingTxCount),
-			SwappersCount:    helpers.Uint64ToString(poolData.SwappersCount),
-			SwappingTxCount:  helpers.Uint64ToString(poolData.SwappingTxCount),
-			WithdrawTxCount:  helpers.Uint64ToString(poolData.WithdrawTxCount),
+			AssetDepth:       helpers.Uint64ToString(details.AssetDepth),
+			AssetROI:         helpers.Float64ToString(details.AssetROI),
+			AssetStakedTotal: helpers.Uint64ToString(details.AssetStakedTotal),
+			BuyAssetCount:    helpers.Uint64ToString(details.BuyAssetCount),
+			BuyFeeAverage:    helpers.Float64ToString(details.BuyFeeAverage),
+			BuyFeesTotal:     helpers.Uint64ToString(details.BuyFeesTotal),
+			BuySlipAverage:   helpers.Float64ToString(details.BuySlipAverage),
+			BuyTxAverage:     helpers.Float64ToString(details.BuyTxAverage),
+			BuyVolume:        helpers.Uint64ToString(details.BuyVolume),
+			PoolDepth:        helpers.Uint64ToString(details.PoolDepth),
+			PoolFeeAverage:   helpers.Float64ToString(details.PoolFeeAverage),
+			PoolFeesTotal:    helpers.Uint64ToString(details.PoolFeesTotal),
+			PoolROI:          helpers.Float64ToString(details.PoolROI),
+			PoolROI12:        helpers.Float64ToString(details.PoolROI12),
+			PoolSlipAverage:  helpers.Float64ToString(details.PoolSlipAverage),
+			PoolStakedTotal:  helpers.Uint64ToString(details.PoolStakedTotal),
+			PoolTxAverage:    helpers.Float64ToString(details.PoolTxAverage),
+			PoolUnits:        helpers.Uint64ToString(details.PoolUnits),
+			PoolVolume:       helpers.Uint64ToString(details.PoolVolume),
+			PoolVolume24hr:   helpers.Uint64ToString(details.PoolVolume24hr),
+			Price:            helpers.Float64ToString(details.Price),
+			RuneDepth:        helpers.Uint64ToString(details.RuneDepth),
+			RuneROI:          helpers.Float64ToString(details.RuneROI),
+			RuneStakedTotal:  helpers.Uint64ToString(details.RuneStakedTotal),
+			SellAssetCount:   helpers.Uint64ToString(details.SellAssetCount),
+			SellFeeAverage:   helpers.Float64ToString(details.SellFeeAverage),
+			SellFeesTotal:    helpers.Uint64ToString(details.SellFeesTotal),
+			SellSlipAverage:  helpers.Float64ToString(details.SellSlipAverage),
+			SellTxAverage:    helpers.Float64ToString(details.SellTxAverage),
+			SellVolume:       helpers.Uint64ToString(details.SellVolume),
+			StakeTxCount:     helpers.Uint64ToString(details.StakeTxCount),
+			StakersCount:     helpers.Uint64ToString(details.StakersCount),
+			StakingTxCount:   helpers.Uint64ToString(details.StakingTxCount),
+			SwappersCount:    helpers.Uint64ToString(details.SwappersCount),
+			SwappingTxCount:  helpers.Uint64ToString(details.SwappingTxCount),
+			WithdrawTxCount:  helpers.Uint64ToString(details.WithdrawTxCount),
 		}
 	}
 
@@ -245,14 +231,14 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataPar
 
 // (GET /v1/stakers)
 func (h *Handlers) GetStakersData(ctx echo.Context) error {
-	addresses, err := h.store.GetStakerAddresses()
+	stakers, err := h.uc.GetStakers()
 	if err != nil {
-		h.logger.Err(err).Msg("failed to GetStakerAddresses")
+		h.logger.Err(err).Msg("failed to GetStakers")
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
 	response := api.StakersResponse{}
-	for _, addr := range addresses {
-		response = append(response, api.Stakers(addr.String()))
+	for _, staker := range stakers {
+		response = append(response, api.Stakers(staker.String()))
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
@@ -265,7 +251,7 @@ func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error
 			Error: err.Error(),
 		})
 	}
-	details, err := h.store.GetStakerAddressDetails(addr)
+	details, err := h.uc.GetStakerDetails(addr)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 			Error: err.Error(),
@@ -303,7 +289,7 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 
 	response := make(api.StakersAssetDataResponse, len(asts))
 	for i, ast := range asts {
-		details, err := h.store.GetStakersAddressAndAssetDetails(addr, ast)
+		details, err := h.uc.GetStakerAssetDetails(addr, ast)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
 				Error: err.Error(),
@@ -355,12 +341,7 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 
 // (GET /v1/network)
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
-	totalDepth, err := h.store.GetTotalDepth()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-
-	netInfo, err := h.thorChainClient.GetNetworkInfo(totalDepth)
+	netInfo, err := h.uc.GetNetworkInfo()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
 	}
