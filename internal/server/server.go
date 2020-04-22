@@ -23,16 +23,17 @@ import (
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
+	"gitlab.com/thorchain/midgard/internal/usecase"
 )
 
 // Server
 type Server struct {
-	cfg              config.Configuration
-	srv              *http.Server
-	logger           zerolog.Logger
-	echoEngine       *echo.Echo
-	thorchainClient  thorchain.Thorchain
-	thorchainScanner *thorchain.Scanner
+	cfg             config.Configuration
+	srv             *http.Server
+	logger          zerolog.Logger
+	echoEngine      *echo.Echo
+	thorchainClient thorchain.Thorchain
+	uc              *usecase.Usecase
 }
 
 func initLog(level string, pretty bool) zerolog.Logger {
@@ -74,9 +75,15 @@ func New(cfgFile *string) (*Server, error) {
 			return nil, errors.Wrap(err, "failed to create thorchain client instance")
 		}
 	}
-	thorchainScanner, err := thorchain.NewScanner(thorchainClient, timescale, cfg.ThorChain.NoEventsBackoff)
+
+	usecaseConf := &usecase.Config{
+		ScannerInterval: cfg.ThorChain.NoEventsBackoff,
+	}
+	uc, err := usecase.NewUsecase(thorchainClient, timescale, usecaseConf)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create thorchain scanner instance")
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create usecase instance")
+		}
 	}
 
 	// Setup echo
@@ -90,7 +97,7 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	h := handlers.New(timescale, thorchainClient, logger)
+	h := handlers.New(uc, thorchainClient, logger)
 
 	// Register handlers with BinanceClient handlers
 	api.RegisterHandlers(echoEngine, h)
@@ -108,12 +115,12 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	return &Server{
-		echoEngine:       echoEngine,
-		cfg:              *cfg,
-		srv:              srv,
-		logger:           logger,
-		thorchainClient:  thorchainClient,
-		thorchainScanner: thorchainScanner,
+		echoEngine:      echoEngine,
+		cfg:             *cfg,
+		srv:             srv,
+		logger:          logger,
+		thorchainClient: thorchainClient,
+		uc:              uc,
 	}, nil
 }
 
@@ -124,11 +131,11 @@ func (s *Server) Start() error {
 	go func() {
 		s.echoEngine.Logger.Fatal(s.echoEngine.StartServer(s.srv))
 	}()
-	return s.thorchainScanner.Start()
+	return s.uc.StartScanner()
 }
 
 func (s *Server) Stop() error {
-	if err := s.thorchainScanner.Stop(); nil != err {
+	if err := s.uc.StopScanner(); nil != err {
 		s.logger.Error().Err(err).Msg("failed to stop thorchain scan")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.ShutdownTimeout)
