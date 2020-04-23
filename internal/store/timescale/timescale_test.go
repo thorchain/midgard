@@ -1894,6 +1894,30 @@ var (
 		TradeSlip:    1230,
 		LiquidityFee: 7463556,
 	}
+	emptyBNBEvent0 = models.Event{
+		Time:   time.Now(),
+		ID:     31,
+		Status: "Success",
+		Height: 15,
+		Type:   "",
+		Chain:  "BNB",
+	}
+	emptyBNBEvent1 = models.Event{
+		Time:   time.Now(),
+		ID:     32,
+		Status: "Success",
+		Height: 15,
+		Type:   "",
+		Chain:  "BNB",
+	}
+	emptyBTCEvent0 = models.Event{
+		Time:   time.Now(),
+		ID:     33,
+		Status: "Success",
+		Height: 15,
+		Type:   "",
+		Chain:  "BTC",
+	}
 )
 
 type TimeScaleSuite struct {

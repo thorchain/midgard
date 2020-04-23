@@ -28,6 +28,7 @@ type Event struct {
 	InTx   common.Tx
 	OutTxs common.Txs
 	Fee    common.Fee `json:"fee"`
+	Chain  common.Chain
 }
 
 func newEvent(e types.Event) Event {
@@ -40,5 +41,6 @@ func newEvent(e types.Event) Event {
 		InTx:   e.InTx,
 		OutTxs: e.OutTxs,
 		Fee:    e.Fee,
+		Chain:  e.Chain,
 	}
 }
