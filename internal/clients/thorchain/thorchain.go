@@ -620,11 +620,21 @@ func (c *Client) requestEndpoint(url string, result interface{}) error {
 
 // GetChains fetch list of chains
 func (c *Client) GetChains() ([]common.Chain, error) {
-	url := fmt.Sprintf("%s/chains", c.thorchainEndpoint)
-	var chains []common.Chain
-	err := c.requestEndpoint(url, &chains)
+	url := fmt.Sprintf("%s/vaults/asgard", c.thorchainEndpoint)
+	var vaults []types.Vault
+	err := c.requestEndpoint(url, &vaults)
 	if err != nil {
 		return nil, err
+	}
+	visited := make(map[common.Chain]bool)
+	chains := []common.Chain{}
+	for _, vault := range vaults {
+		for _, chain := range vault.Chains {
+			if _, val := visited[chain]; !val {
+				visited[chain] = true
+				chains = append(chains, chain)
+			}
+		}
 	}
 	return chains, nil
 }
