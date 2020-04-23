@@ -32,7 +32,7 @@ type Event struct {
 	OutTxs common.Txs      `json:"out_txs"`
 	Event  json.RawMessage `json:"event"`
 	Fee    common.Fee      `json:"fee"`
-	Chain  common.Chain
+	Chain  common.Chain    `json:"-"`
 }
 
 func (event *Event) HasOutboundTx() bool {
