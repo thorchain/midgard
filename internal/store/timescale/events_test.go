@@ -5,7 +5,7 @@ import (
 )
 
 func (s *TimeScaleSuite) TestGetMaxID(c *C) {
-	maxID, err := s.Store.GetMaxID("BNB.BNB")
+	maxID, err := s.Store.GetMaxID("BNB")
 	c.Assert(err, IsNil)
 	c.Assert(maxID, Equals, int64(0))
 }
