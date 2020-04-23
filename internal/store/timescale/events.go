@@ -10,13 +10,13 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetMaxID(pool string) (int64, error) {
+func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
 	query := fmt.Sprintf(`
 		SELECT Max(id) 
 		FROM   %s 
-		WHERE  pool = $1`, models.ModelEventsTable)
+		WHERE  chain = $1`, models.ModelEventsTable)
 	var maxId sql.NullInt64
-	err := s.db.Get(&maxId, query, pool)
+	err := s.db.Get(&maxId, query, chain)
 	if err != nil {
 		return 0, errors.Wrap(err, "maxID query return null or failed")
 	}

@@ -13,6 +13,7 @@ CREATE TABLE events (
     height bigint not null,
     type varchar not null,
     status varchar not null,
+    chain varchar not null,
     primary key (id, time)
 );
 

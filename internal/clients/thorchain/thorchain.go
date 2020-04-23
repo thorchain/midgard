@@ -40,7 +40,7 @@ type Store interface {
 	CreateGasRecord(record models.EventGas) error
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
-	GetMaxID(pool string) (int64, error)
+	GetMaxID(chain common.Chain) (int64, error)
 }
 
 type handlerFunc func(types.Event) error
@@ -118,7 +118,7 @@ func (sc *Scanner) scan() {
 }
 
 func (sc *Scanner) scanChain(chain common.Chain) {
-	maxID, err := sc.store.GetMaxID(chain.String())
+	maxID, err := sc.store.GetMaxID(chain)
 	currentPos := int64(1) // We start from 1
 	if err != nil {
 		sc.logger.Error().Err(err).Msg("failed to get currentPos from data store")
