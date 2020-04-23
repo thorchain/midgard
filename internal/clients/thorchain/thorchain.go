@@ -22,6 +22,7 @@ type Scanner struct {
 	client   Thorchain
 	store    Store
 	interval time.Duration
+	chain    common.Chain
 	handlers map[string]handlerFunc
 	stopChan chan struct{}
 	mu       sync.Mutex
@@ -46,11 +47,12 @@ type Store interface {
 type handlerFunc func(types.Event) error
 
 // NewScanner create a new instance of Scanner.
-func NewScanner(client Thorchain, store Store, interval time.Duration) (*Scanner, error) {
+func NewScanner(client Thorchain, store Store, interval time.Duration, chain common.Chain) (*Scanner, error) {
 	sc := &Scanner{
 		client:   client,
 		store:    store,
 		interval: interval,
+		chain:    chain,
 		handlers: map[string]handlerFunc{},
 		stopChan: make(chan struct{}),
 		logger:   log.With().Str("module", "thorchain_scanner").Logger(),
@@ -103,23 +105,9 @@ func (sc *Scanner) scan() {
 
 	sc.logger.Info().Msg("thorchain event scanning started")
 	defer sc.logger.Info().Msg("thorchain event scanning stopped")
-	chains, err := sc.client.GetChains()
-	if err != nil {
-		sc.logger.Error().Err(err).Msg("failed to get chains")
-		return
-	}
-	for _, chain := range chains {
-		go sc.scanChain(chain)
-	}
-	select {
-	case <-sc.stopChan:
-		return
-	}
-}
 
-func (sc *Scanner) scanChain(chain common.Chain) {
-	maxID, err := sc.store.GetMaxID(chain)
 	currentPos := int64(1) // We start from 1
+	maxID, err := sc.store.GetMaxID(sc.chain)
 	if err != nil {
 		sc.logger.Error().Err(err).Msg("failed to get currentPos from data store")
 	} else {
@@ -137,7 +125,7 @@ func (sc *Scanner) scanChain(chain common.Chain) {
 		default:
 			sc.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
 
-			maxID, eventsCount, err := sc.processEvents(currentPos, chain)
+			maxID, eventsCount, err := sc.processEvents(currentPos)
 			if err != nil {
 				sc.logger.Error().Err(err).Msg("failed to get events from thorchain")
 				continue
@@ -167,8 +155,8 @@ func (sc *Scanner) processGenesis(genesisTime types.Genesis) error {
 }
 
 // returns (maxID, len(events), err)
-func (sc *Scanner) processEvents(id int64, chain common.Chain) (int64, int, error) {
-	events, err := sc.client.GetEvents(id, chain)
+func (sc *Scanner) processEvents(id int64) (int64, int, error) {
+	events, err := sc.client.GetEvents(id, sc.chain)
 	if err != nil {
 		return id, 0, errors.Wrap(err, "failed to get events")
 	}
@@ -181,7 +169,7 @@ func (sc *Scanner) processEvents(id int64, chain common.Chain) (int64, int, erro
 	maxID := id
 	for _, evt := range events {
 		maxID = evt.ID
-		evt.Chain = chain
+		evt.Chain = sc.chain
 		sc.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		if evt.HasOutboundTx() && evt.OutTxs == nil {
 			outTx, err := sc.client.GetOutTx(evt)

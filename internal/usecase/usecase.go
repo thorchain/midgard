@@ -20,7 +20,8 @@ type Config struct {
 type Usecase struct {
 	store     store.Store
 	thorchain thorchain.Thorchain
-	scanner   *thorchain.Scanner
+	chains    []common.Chain
+	scanners  []*thorchain.Scanner
 }
 
 // NewUsecase initiate a new Usecase.
@@ -29,26 +30,47 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 		return nil, errors.New("conf can't be nil")
 	}
 
-	scanner, err := thorchain.NewScanner(client, store, conf.ScannerInterval)
+	chains, err := client.GetChains()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create thorchain scanner")
+		return nil, errors.Wrap(err, "could not get network supported chains")
+	}
+	scanners := make([]*thorchain.Scanner, len(chains))
+	for i, chain := range chains {
+		scanner, err := thorchain.NewScanner(client, store, conf.ScannerInterval, chain)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not create thorchain scanner")
+		}
+		scanners[i] = scanner
 	}
 	uc := Usecase{
 		store:     store,
 		thorchain: client,
-		scanner:   scanner,
+		chains:    chains,
+		scanners:  scanners,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	return uc.scanner.Start()
+	for i, scanner := range uc.scanners {
+		err := scanner.Start()
+		if err != nil {
+			return errors.Wrapf(err, "could not start scanner of chain %s", uc.chains[i])
+		}
+	}
+	return nil
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	return uc.scanner.Stop()
+	for i, scanner := range uc.scanners {
+		err := scanner.Stop()
+		if err != nil {
+			return errors.Wrapf(err, "could not stop scanner of chain %s", uc.chains[i])
+		}
+	}
+	return nil
 }
 
 // GetHealth returns error if database connection has problem.
