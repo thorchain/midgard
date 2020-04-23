@@ -16,7 +16,7 @@ func (t *ThorchainDummy) GetGenesis() (types.Genesis, error) {
 	return types.Genesis{}, ErrNotImplemented
 }
 
-func (t *ThorchainDummy) GetEvents(id int64) ([]types.Event, error) {
+func (t *ThorchainDummy) GetEvents(id int64, chain common.Chain) ([]types.Event, error) {
 	return nil, ErrNotImplemented
 }
 
@@ -46,4 +46,8 @@ func (t *ThorchainDummy) GetAsgardVaults() ([]types.Vault, error) {
 
 func (t *ThorchainDummy) GetLastChainHeight() (types.LastHeights, error) {
 	return types.LastHeights{}, ErrNotImplemented
+}
+
+func (t *ThorchainDummy) GetChains() ([]common.Chain, error) {
+	return nil, ErrNotImplemented
 }

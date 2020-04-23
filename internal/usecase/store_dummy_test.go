@@ -55,7 +55,7 @@ func (s *StoreDummy) CreateSlashRecord(_ models.EventSlash) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) GetMaxID() (int64, error) {
+func (s *StoreDummy) GetMaxID(pool string) (int64, error) {
 	return 0, ErrNotImplemented
 }
 
