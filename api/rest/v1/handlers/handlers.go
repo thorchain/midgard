@@ -7,13 +7,10 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/usecase"
 
-	"github.com/99designs/gqlgen/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 
-	"gitlab.com/thorchain/midgard/api/graphQL/v1/codegen"
-	"gitlab.com/thorchain/midgard/api/graphQL/v1/resolvers"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
@@ -313,24 +310,6 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 	}
 
 	return ctx.JSON(http.StatusOK, response)
-}
-
-// (GET /v1/graphql)
-func (h *Handlers) GetGraphqlPlayground(ctx echo.Context) error {
-	handlerFunc := handler.Playground("GraphQL playground", "/v1/graphql/query")
-	req := ctx.Request()
-	res := ctx.Response()
-	handlerFunc.ServeHTTP(res, req)
-	return nil
-}
-
-// (POST /v1/graphql/query)
-func (h *Handlers) PostGraphqlQuery(ctx echo.Context) error {
-	handleFunc := handler.GraphQL(codegen.NewExecutableSchema(codegen.Config{Resolvers: &resolvers.Resolver{}}))
-	req := ctx.Request()
-	res := ctx.Response()
-	handleFunc.ServeHTTP(res, req)
-	return nil
 }
 
 // GetThorchainProxiedEndpoints is just here to meet the golang interface.
