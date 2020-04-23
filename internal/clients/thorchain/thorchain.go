@@ -181,6 +181,7 @@ func (sc *Scanner) processEvents(id int64, chain common.Chain) (int64, int, erro
 	maxID := id
 	for _, evt := range events {
 		maxID = evt.ID
+		evt.Chain = chain
 		sc.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		if evt.HasOutboundTx() && evt.OutTxs == nil {
 			outTx, err := sc.client.GetOutTx(evt)
