@@ -1,5 +1,7 @@
 package types
 
+import "gitlab.com/thorchain/midgard/internal/common"
+
 type VaultType string
 
 type VaultStatus string
@@ -11,8 +13,9 @@ const (
 )
 
 type Vault struct {
-	BlockHeight int64       `json:"block_height,string"`
-	Status      VaultStatus `json:"status"`
+	BlockHeight int64          `json:"block_height,string"`
+	Status      VaultStatus    `json:"status"`
+	Chains      []common.Chain `json:"chains"`
 }
 
 type VaultData struct {
