@@ -40,7 +40,7 @@ type Store interface {
 	CreateGasRecord(record models.EventGas) error
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
-	GetMaxID() (int64, error)
+	GetMaxID(pool string) (int64, error)
 }
 
 type handlerFunc func(types.Event) error
@@ -103,9 +103,23 @@ func (sc *Scanner) scan() {
 
 	sc.logger.Info().Msg("thorchain event scanning started")
 	defer sc.logger.Info().Msg("thorchain event scanning stopped")
+	chains, err := sc.client.GetChains()
+	if err != nil {
+		sc.logger.Error().Err(err).Msg("failed to get chains")
+		return
+	}
+	for _, chain := range chains {
+		go sc.scanChain(chain)
+	}
+	select {
+	case <-sc.stopChan:
+		return
+	}
+}
 
+func (sc *Scanner) scanChain(chain common.Chain) {
+	maxID, err := sc.store.GetMaxID(chain.String())
 	currentPos := int64(1) // We start from 1
-	maxID, err := sc.store.GetMaxID()
 	if err != nil {
 		sc.logger.Error().Err(err).Msg("failed to get currentPos from data store")
 	} else {
@@ -123,7 +137,7 @@ func (sc *Scanner) scan() {
 		default:
 			sc.logger.Debug().Int64("currentPos", currentPos).Msg("request events")
 
-			maxID, eventsCount, err := sc.processEvents(currentPos)
+			maxID, eventsCount, err := sc.processEvents(currentPos, chain)
 			if err != nil {
 				sc.logger.Error().Err(err).Msg("failed to get events from thorchain")
 				continue
@@ -153,8 +167,8 @@ func (sc *Scanner) processGenesis(genesisTime types.Genesis) error {
 }
 
 // returns (maxID, len(events), err)
-func (sc *Scanner) processEvents(id int64) (int64, int, error) {
-	events, err := sc.client.GetEvents(id)
+func (sc *Scanner) processEvents(id int64, chain common.Chain) (int64, int, error) {
+	events, err := sc.client.GetEvents(id, chain)
 	if err != nil {
 		return id, 0, errors.Wrap(err, "failed to get events")
 	}
@@ -329,7 +343,7 @@ func (sc *Scanner) processSlashEvent(evt types.Event) error {
 // Thorchain represents api that any thorchain client should provide.
 type Thorchain interface {
 	GetGenesis() (types.Genesis, error)
-	GetEvents(id int64) ([]types.Event, error)
+	GetEvents(id int64, chain common.Chain) ([]types.Event, error)
 	GetOutTx(event types.Event) (common.Txs, error)
 	GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error)
 	GetNodeAccounts() ([]types.NodeAccount, error)
@@ -337,6 +351,7 @@ type Thorchain interface {
 	GetConstants() (types.ConstantValues, error)
 	GetAsgardVaults() ([]types.Vault, error)
 	GetLastChainHeight() (types.LastHeights, error)
+	GetChains() ([]common.Chain, error)
 }
 
 // Client implements Thorchain and uses http to get requested data from thorchain.
@@ -375,9 +390,9 @@ func (c *Client) GetGenesis() (types.Genesis, error) {
 	return genesis, nil
 }
 
-// GetEvents fetch next 100 events occurred after id.
-func (c *Client) GetEvents(id int64) ([]types.Event, error) {
-	url := fmt.Sprintf("%s/events/%d", c.thorchainEndpoint, id)
+// GetEvents fetch next 100 events occurred after id for specified chain.
+func (c *Client) GetEvents(id int64, chain common.Chain) ([]types.Event, error) {
+	url := fmt.Sprintf("%s/events/%d/%s", c.thorchainEndpoint, id, chain)
 	var events []types.Event
 	err := c.requestEndpoint(url, &events)
 	if err != nil {
@@ -600,4 +615,15 @@ func (c *Client) requestEndpoint(url string, result interface{}) error {
 		return errors.Wrapf(err, "failed to unmarshal result as %T", result)
 	}
 	return nil
+}
+
+// GetChains fetch list of chains
+func (c *Client) GetChains() ([]common.Chain, error) {
+	url := fmt.Sprintf("%s/chains", c.thorchainEndpoint)
+	var chains []common.Chain
+	err := c.requestEndpoint(url, &chains)
+	if err != nil {
+		return nil, err
+	}
+	return chains, nil
 }
