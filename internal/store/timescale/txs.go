@@ -84,6 +84,10 @@ func (s *Client) buildEventsQuery(address, txID, asset, eventType string, isCoun
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
 		sb.Where(sb.Equal("events.type", eventType))
 	}
+	if !isCount{
+		sb.OrderBy("txs.event_id")
+		sb.Desc()
+	}
 	return sb.Build()
 }
 
