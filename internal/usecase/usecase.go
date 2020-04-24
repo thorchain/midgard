@@ -3,6 +3,8 @@ package usecase
 import (
 	"time"
 
+	"github.com/rs/zerolog"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -22,6 +24,8 @@ type Usecase struct {
 	thorchain thorchain.Thorchain
 	chains    []common.Chain
 	scanners  []*thorchain.Scanner
+	conf      *Config
+	logger    zerolog.Logger
 }
 
 // NewUsecase initiate a new Usecase.
@@ -29,37 +33,57 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 	if conf == nil {
 		return nil, errors.New("conf can't be nil")
 	}
-
-	chains, err := client.GetChains()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get network supported chains")
-	}
-	scanners := make([]*thorchain.Scanner, len(chains))
-	for i, chain := range chains {
-		scanner, err := thorchain.NewScanner(client, store, conf.ScannerInterval, chain)
-		if err != nil {
-			return nil, errors.Wrapf(err, "could not create thorchain scanner")
-		}
-		scanners[i] = scanner
-	}
 	uc := Usecase{
 		store:     store,
 		thorchain: client,
-		chains:    chains,
-		scanners:  scanners,
+		conf:      conf,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	for i, scanner := range uc.scanners {
-		err := scanner.Start()
-		if err != nil {
-			return errors.Wrapf(err, "could not start scanner of chain %s", uc.chains[i])
+	go func() {
+		for {
+			uc.scanChains()
+			time.Sleep(5 * time.Second)
+		}
+	}()
+	return nil
+}
+
+func (uc *Usecase) scanChains() {
+	chains, err := uc.thorchain.GetChains()
+	if err != nil {
+		uc.logger.Error().Err(err).Msg("could not get network supported chains")
+		return
+	}
+	var newChains []common.Chain
+	for _, chain := range chains {
+		newChains = append(newChains, chain)
+		for _, oldChain := range uc.chains {
+			if oldChain.Equals(chain) {
+				newChains = newChains[0 : len(newChains)-1]
+				break
+			}
 		}
 	}
-	return nil
+	if len(newChains) > 0 {
+		for _, chain := range chains {
+			scanner, err := thorchain.NewScanner(uc.thorchain, uc.store, uc.conf.ScannerInterval, chain)
+			if err != nil {
+				uc.logger.Error().Err(err).Msg("could not create thorchain scanner")
+				continue
+			}
+			err = scanner.Start()
+			if err != nil {
+				uc.logger.Error().Err(err).Msg("could not start scanner of chain %s")
+				continue
+			}
+			uc.chains = append(uc.chains, chain)
+			uc.scanners = append(uc.scanners, scanner)
+		}
+	}
 }
 
 // StopScanner stops the scanner.

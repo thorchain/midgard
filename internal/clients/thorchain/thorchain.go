@@ -620,7 +620,7 @@ func (c *Client) GetChains() ([]common.Chain, error) {
 			chainsMap[chain] = struct{}{}
 		}
 	}
-	chains := make([]common.Chain, len(chainsMap))
+	var chains []common.Chain
 	for k := range chainsMap {
 		chains = append(chains, k)
 	}
