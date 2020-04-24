@@ -69,7 +69,7 @@ func (uc *Usecase) scanChains() {
 		}
 	}
 	if len(newChains) > 0 {
-		for _, chain := range chains {
+		for _, chain := range newChains {
 			scanner, err := thorchain.NewScanner(uc.thorchain, uc.store, uc.conf.ScannerInterval, chain)
 			if err != nil {
 				uc.logger.Error().Err(err).Msg("could not create thorchain scanner")
