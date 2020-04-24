@@ -49,5 +49,5 @@ func (t *ThorchainDummy) GetLastChainHeight() (types.LastHeights, error) {
 }
 
 func (t *ThorchainDummy) GetChains() ([]common.Chain, error) {
-	return []common.Chain{"BNB,BTC"}, nil
+	return nil, ErrNotImplemented
 }
