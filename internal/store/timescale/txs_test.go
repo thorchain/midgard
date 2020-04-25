@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 	. "gopkg.in/check.v1"
 )
 
@@ -345,6 +346,100 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
+}
+
+func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
+	// Genesis
+	if _, err := s.Store.CreateGenesis(genesis); err != nil {
+		c.Fatal(err)
+	}
+
+	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(0))
+
+	// Single stake
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	txDetail := models.TxDetails{
+		Status: stakeBnbEvent0.Status,
+		Type:   stakeBnbEvent0.Type,
+		Height: uint64(stakeBnbEvent0.Height),
+		Pool:   stakeBnbEvent0.Pool,
+		In: models.TxData{
+			Address: stakeBnbEvent0.Event.InTx.FromAddress.String(),
+			Coin:    stakeBnbEvent0.Event.InTx.Coins,
+			Memo:    string(stakeBnbEvent0.InTx.Memo),
+			TxID:    stakeBnbEvent0.InTx.ID.String(),
+		},
+		Events: models.Events{
+			StakeUnits: uint64(stakeBnbEvent0.StakeUnits),
+		},
+		Date: uint64(genesis.GenesisTime.Unix() + (stakeBnbEvent0.Height * 3)),
+		Out:  make([]models.TxData, 0),
+	}
+	for _, tx := range stakeBnbEvent0.OutTxs {
+		outTx := models.TxData{
+			Address: tx.FromAddress.String(),
+			Coin:    tx.Coins,
+			Memo:    string(tx.Memo),
+			TxID:    tx.ID.String(),
+		}
+		txDetail.Out = append(txDetail.Out, outTx)
+	}
+	evts := []models.TxDetails{
+		txDetail,
+	}
+
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "stake", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events[0], DeepEquals, evts[0])
+
+	// Additional stake
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
+
+	txDetail = models.TxDetails{
+		Status: stakeTomlEvent1.Status,
+		Type:   stakeTomlEvent1.Type,
+		Height: uint64(stakeTomlEvent1.Height),
+		Pool:   stakeTomlEvent1.Pool,
+		In: models.TxData{
+			Address: stakeTomlEvent1.Event.InTx.FromAddress.String(),
+			Coin:    stakeTomlEvent1.Event.InTx.Coins,
+			Memo:    string(stakeTomlEvent1.InTx.Memo),
+			TxID:    stakeTomlEvent1.InTx.ID.String(),
+		},
+		Events: models.Events{
+			StakeUnits: uint64(stakeTomlEvent1.StakeUnits),
+		},
+		Date: uint64(genesis.GenesisTime.Unix() + (stakeTomlEvent1.Height * 3)),
+		Out:  make([]models.TxData, 0),
+	}
+	for _, tx := range stakeTomlEvent1.OutTxs {
+		outTx := models.TxData{
+			Address: tx.FromAddress.String(),
+			Coin:    tx.Coins,
+			Memo:    string(tx.Memo),
+			TxID:    tx.ID.String(),
+		}
+		txDetail.Out = append(txDetail.Out, outTx)
+	}
+	evts = append(evts, txDetail)
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "stake", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(events[0], DeepEquals, evts[1])
+
+	err = s.Store.CreateSwapRecord(swapSellTusdb2RuneEvent0)
+	c.Assert(err, IsNil)
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "stake", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(events[0], DeepEquals, evts[1])
 }
 
 func (s *TimeScaleSuite) TestEventPool(c *C) {
