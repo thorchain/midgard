@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"math"
+	"sync"
 	"testing"
 	"time"
 
@@ -25,6 +26,113 @@ func (s *UsecaseSuite) SetUpSuite(c *C) {
 
 func Test(t *testing.T) {
 	TestingT(t)
+}
+
+type TestScanningThorchain struct {
+	ThorchainDummy
+	chains []common.Chain
+	err    error
+	mu     sync.Mutex
+}
+
+func (t *TestScanningThorchain) GetChains() ([]common.Chain, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.chains, t.err
+}
+
+func (t *TestScanningThorchain) setChains(chains []common.Chain) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.chains = chains
+}
+
+func (s *UsecaseSuite) TestScanningUpdateScanners(c *C) {
+	client := &TestScanningThorchain{
+		chains: []common.Chain{
+			common.BNBChain,
+			common.BTCChain,
+		},
+	}
+	conf := &Config{
+		// We don't want to test thorchain.Scanner
+		ScanInterval:           time.Hour,
+		ScannersUpdateInterval: time.Second,
+	}
+	uc, err := NewUsecase(client, s.dummyStore, conf)
+	c.Assert(err, IsNil)
+
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+
+	time.Sleep(conf.ScannersUpdateInterval + time.Second)
+	uc.multiScanner.mu.Lock()
+	for _, chain := range client.chains {
+		_, ok := uc.multiScanner.scanners[chain]
+		c.Assert(ok, Equals, true)
+	}
+	uc.multiScanner.mu.Unlock()
+
+	newChains := []common.Chain{
+		common.BNBChain,
+		common.BTCChain,
+		common.ETHChain,
+	}
+	client.setChains(newChains)
+
+	time.Sleep(conf.ScannersUpdateInterval + time.Second)
+	uc.multiScanner.mu.Lock()
+	for _, chain := range client.chains {
+		_, ok := uc.multiScanner.scanners[chain]
+		c.Assert(ok, Equals, true)
+	}
+	uc.multiScanner.mu.Unlock()
+}
+
+func (s *UsecaseSuite) TestScanningRestart(c *C) {
+	client := &TestScanningThorchain{
+		chains: []common.Chain{},
+	}
+	conf := &Config{
+		// We don't want to test thorchain.Scanner
+		ScanInterval:           time.Hour,
+		ScannersUpdateInterval: time.Second,
+	}
+	uc, err := NewUsecase(client, s.dummyStore, conf)
+	c.Assert(err, IsNil)
+
+	// Scanner should be able to restart.
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+	err = uc.StopScanner()
+	c.Assert(err, IsNil)
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+	err = uc.StopScanner()
+	c.Assert(err, IsNil)
+}
+
+func (s *UsecaseSuite) TestScanningFaultTolerant(c *C) {
+	client := &TestScanningThorchain{
+		chains: []common.Chain{
+			common.BNBChain,
+		},
+		err: errors.New("could not fetch chains"),
+	}
+	conf := &Config{
+		// We don't want to test thorchain.Scanner
+		ScanInterval:           time.Hour,
+		ScannersUpdateInterval: time.Second,
+	}
+	uc, err := NewUsecase(client, s.dummyStore, conf)
+	c.Assert(err, IsNil)
+
+	// Scanner should be able to restart.
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+
+	// Scanner should not be terminated in case of any error.
+	time.Sleep(conf.ScannersUpdateInterval + time.Second)
 }
 
 type TestGetTxDetailsStore struct {

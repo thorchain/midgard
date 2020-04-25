@@ -22,6 +22,7 @@ type Scanner struct {
 	client   Thorchain
 	store    Store
 	interval time.Duration
+	chain    common.Chain
 	handlers map[string]handlerFunc
 	stopChan chan struct{}
 	mu       sync.Mutex
@@ -40,17 +41,18 @@ type Store interface {
 	CreateGasRecord(record models.EventGas) error
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
-	GetMaxID() (int64, error)
+	GetMaxID(chain common.Chain) (int64, error)
 }
 
 type handlerFunc func(types.Event) error
 
 // NewScanner create a new instance of Scanner.
-func NewScanner(client Thorchain, store Store, interval time.Duration) (*Scanner, error) {
+func NewScanner(client Thorchain, store Store, interval time.Duration, chain common.Chain) (*Scanner, error) {
 	sc := &Scanner{
 		client:   client,
 		store:    store,
 		interval: interval,
+		chain:    chain,
 		handlers: map[string]handlerFunc{},
 		stopChan: make(chan struct{}),
 		logger:   log.With().Str("module", "thorchain_scanner").Logger(),
@@ -105,7 +107,7 @@ func (sc *Scanner) scan() {
 	defer sc.logger.Info().Msg("thorchain event scanning stopped")
 
 	currentPos := int64(1) // We start from 1
-	maxID, err := sc.store.GetMaxID()
+	maxID, err := sc.store.GetMaxID(sc.chain)
 	if err != nil {
 		sc.logger.Error().Err(err).Msg("failed to get currentPos from data store")
 	} else {
@@ -154,7 +156,7 @@ func (sc *Scanner) processGenesis(genesisTime types.Genesis) error {
 
 // returns (maxID, len(events), err)
 func (sc *Scanner) processEvents(id int64) (int64, int, error) {
-	events, err := sc.client.GetEvents(id)
+	events, err := sc.client.GetEvents(id, sc.chain)
 	if err != nil {
 		return id, 0, errors.Wrap(err, "failed to get events")
 	}
@@ -167,6 +169,7 @@ func (sc *Scanner) processEvents(id int64) (int64, int, error) {
 	maxID := id
 	for _, evt := range events {
 		maxID = evt.ID
+		evt.Chain = sc.chain
 		sc.logger.Info().Int64("maxID", maxID).Msg("new maxID")
 		if evt.HasOutboundTx() && evt.OutTxs == nil {
 			outTx, err := sc.client.GetOutTx(evt)
@@ -329,7 +332,7 @@ func (sc *Scanner) processSlashEvent(evt types.Event) error {
 // Thorchain represents api that any thorchain client should provide.
 type Thorchain interface {
 	GetGenesis() (types.Genesis, error)
-	GetEvents(id int64) ([]types.Event, error)
+	GetEvents(id int64, chain common.Chain) ([]types.Event, error)
 	GetOutTx(event types.Event) (common.Txs, error)
 	GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error)
 	GetNodeAccounts() ([]types.NodeAccount, error)
@@ -337,6 +340,7 @@ type Thorchain interface {
 	GetConstants() (types.ConstantValues, error)
 	GetAsgardVaults() ([]types.Vault, error)
 	GetLastChainHeight() (types.LastHeights, error)
+	GetChains() ([]common.Chain, error)
 }
 
 // Client implements Thorchain and uses http to get requested data from thorchain.
@@ -375,9 +379,9 @@ func (c *Client) GetGenesis() (types.Genesis, error) {
 	return genesis, nil
 }
 
-// GetEvents fetch next 100 events occurred after id.
-func (c *Client) GetEvents(id int64) ([]types.Event, error) {
-	url := fmt.Sprintf("%s/events/%d", c.thorchainEndpoint, id)
+// GetEvents fetch next 100 events occurred after id for specified chain.
+func (c *Client) GetEvents(id int64, chain common.Chain) ([]types.Event, error) {
+	url := fmt.Sprintf("%s/events/%d/%s", c.thorchainEndpoint, id, chain)
 	var events []types.Event
 	err := c.requestEndpoint(url, &events)
 	if err != nil {
@@ -600,4 +604,25 @@ func (c *Client) requestEndpoint(url string, result interface{}) error {
 		return errors.Wrapf(err, "failed to unmarshal result as %T", result)
 	}
 	return nil
+}
+
+// GetChains fetch list of chains
+func (c *Client) GetChains() ([]common.Chain, error) {
+	vaults, err := c.GetAsgardVaults()
+	if err != nil {
+		return nil, err
+	}
+
+	// Iterate over all chains of every vault and select distinct chains.
+	chainsMap := map[common.Chain]struct{}{}
+	for _, vault := range vaults {
+		for _, chain := range vault.Chains {
+			chainsMap[chain] = struct{}{}
+		}
+	}
+	var chains []common.Chain
+	for k := range chainsMap {
+		chains = append(chains, k)
+	}
+	return chains, nil
 }

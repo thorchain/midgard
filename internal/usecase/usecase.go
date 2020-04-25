@@ -12,15 +12,16 @@ import (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScannerInterval time.Duration
+	ScanInterval           time.Duration
+	ScannersUpdateInterval time.Duration
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store     store.Store
-	thorchain thorchain.Thorchain
-	scanner   *thorchain.Scanner
+	store        store.Store
+	thorchain    thorchain.Thorchain
+	multiScanner *multiScanner
 }
 
 // NewUsecase initiate a new Usecase.
@@ -29,26 +30,23 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 		return nil, errors.New("conf can't be nil")
 	}
 
-	scanner, err := thorchain.NewScanner(client, store, conf.ScannerInterval)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not create thorchain scanner")
-	}
+	ms := newMultiScanner(client, store, conf.ScanInterval, conf.ScannersUpdateInterval)
 	uc := Usecase{
-		store:     store,
-		thorchain: client,
-		scanner:   scanner,
+		store:        store,
+		thorchain:    client,
+		multiScanner: ms,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	return uc.scanner.Start()
+	return uc.multiScanner.start()
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	return uc.scanner.Stop()
+	return uc.multiScanner.stop()
 }
 
 // GetHealth returns error if database connection has problem.

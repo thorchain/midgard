@@ -40,6 +40,7 @@ type ThorChainConfiguration struct {
 	EnableScan                  bool          `json:"enable_scan" mapstructure:"enable_scan"` // TODO: Remove this field
 	NoEventsBackoff             time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`
 	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
+	ScannersUpdateInterval      time.Duration `json:"scanners_update_interval" mapstructure:"scanners_update_interval"`
 }
 
 func applyDefaultConfig() {
@@ -47,6 +48,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("write_timeout", "30s")
 	viper.SetDefault("thorchain.read_timeout", "10s")
 	viper.SetDefault("thorchain.no_events_backoff", "30s")
+	viper.SetDefault("thorchain.scanners_update_interval", "1m")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
 	viper.SetDefault("binance.request_timeout", "30s")
 	viper.SetDefault("binance.markets_cache_duration", "24h")

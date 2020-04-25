@@ -10,10 +10,13 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetMaxID() (int64, error) {
-	query := fmt.Sprintf("SELECT MAX(id) FROM %s", models.ModelEventsTable)
+func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
+	query := fmt.Sprintf(`
+		SELECT Max(id) 
+		FROM   %s 
+		WHERE  chain = $1`, models.ModelEventsTable)
 	var maxId sql.NullInt64
-	err := s.db.Get(&maxId, query)
+	err := s.db.Get(&maxId, query, chain)
 	if err != nil {
 		return 0, errors.Wrap(err, "maxID query return null or failed")
 	}
@@ -150,13 +153,15 @@ func (s *Client) createEventRecord(record models.Event) error {
 				id,
 				height,
 				status,
-				type
+				type,
+				chain
 			) VALUES (
 				:time,
 				:id,
 				:height,
 				:status,
-				:type
+				:type,
+				:chain
 			) RETURNING id`, models.ModelEventsTable)
 
 	stmt, err := s.db.PrepareNamed(query)
