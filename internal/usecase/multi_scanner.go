@@ -39,7 +39,7 @@ func (ms *multiScanner) start() error {
 	ms.logger.Info().Msg("starting multi scanner")
 
 	for k, scanner := range ms.scanners {
-		err := scanner.Stop()
+		err := scanner.Start()
 		if err != nil {
 			return errors.Wrapf(err, "could not stop scanner of chain %s", k)
 		}
@@ -73,7 +73,7 @@ func (ms *multiScanner) scan() {
 		select {
 		case <-ms.stopChan:
 			return
-		case <-time.After(5 * time.Second):
+		case <-time.After(ms.updateInterval):
 			ms.updateScanners()
 		}
 	}
@@ -97,6 +97,7 @@ func (ms *multiScanner) updateScanners() {
 				ms.logger.Error().Err(err).Msg("could not start scanner of chain %s")
 				continue
 			}
+			ms.scanners[chain] = scanner
 		}
 	}
 }
