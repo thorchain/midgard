@@ -16,8 +16,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	events, _, err := s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -53,8 +54,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	events, _, err = s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, "", 0, 2)
+	events, count, err = s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, "", 0, 2)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -99,8 +101,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
-	events, _, err := s.Store.GetTxDetails(address, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, asset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -138,8 +141,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 
 	address, _ = common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	events, _, err = s.Store.GetTxDetails(address, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails(address, common.EmptyTxID, asset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -184,8 +188,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid, _ := common.NewTxID("2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
-	events, _, err := s.Store.GetTxDetails(address, txid, common.EmptyAsset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(address, txid, common.EmptyAsset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -222,8 +227,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	c.Assert(err, IsNil)
 
 	txid, _ = common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
-	events, _, err = s.Store.GetTxDetails(address, txid, common.EmptyAsset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails(address, txid, common.EmptyAsset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -267,8 +273,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB")
-	events, _, err := s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -305,8 +312,9 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	events, _, err = s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, "", 0, 1)
 	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
 
 	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
