@@ -41,7 +41,7 @@ func (ms *multiScanner) start() error {
 	for k, scanner := range ms.scanners {
 		err := scanner.Start()
 		if err != nil {
-			return errors.Wrapf(err, "could not stop scanner of chain %s", k)
+			return errors.Wrapf(err, "could not start scanner of chain %s", k)
 		}
 	}
 
