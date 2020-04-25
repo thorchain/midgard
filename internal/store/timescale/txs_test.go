@@ -442,6 +442,53 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 	c.Assert(events[0], DeepEquals, evts[1])
 }
 
+func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
+	// Genesis
+	if _, err := s.Store.CreateGenesis(genesis); err != nil {
+		c.Fatal(err)
+	}
+
+	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(0))
+
+	// Single event
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
+
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(len(events), Equals, 1)
+
+	// Additional event
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(len(events), Equals, 1)
+
+	// Change page limit
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 2)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(len(events), Equals, 2)
+
+	// Change offset
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 1, 2)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(len(events), Equals, 1)
+
+	// Change offset
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 2, 2)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(len(events), Equals, 0)
+}
+
 func (s *TimeScaleSuite) TestEventPool(c *C) {
 	// Genesis
 	if _, err := s.Store.CreateGenesis(genesis); err != nil {
