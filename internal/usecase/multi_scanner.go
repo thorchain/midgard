@@ -92,6 +92,7 @@ func (ms *multiScanner) updateScanners() {
 				ms.logger.Error().Err(err).Msg("could not create thorchain scanner")
 				continue
 			}
+			ms.logger.Info().Str("chain", chain.String()).Msg("spawning a new scanner")
 			err = scanner.Start()
 			if err != nil {
 				ms.logger.Error().Err(err).Msg("could not start scanner of chain %s")
