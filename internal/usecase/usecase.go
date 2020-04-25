@@ -3,6 +3,8 @@ package usecase
 import (
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/rs/zerolog"
 
 	"github.com/pkg/errors"
@@ -25,6 +27,7 @@ type Usecase struct {
 	chains    []common.Chain
 	scanners  []*thorchain.Scanner
 	conf      *Config
+	stopChan  chan struct{}
 	logger    zerolog.Logger
 }
 
@@ -37,6 +40,8 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 		store:     store,
 		thorchain: client,
 		conf:      conf,
+		stopChan:  make(chan struct{}),
+		logger:    log.With().Str("module", "UserCase").Logger(),
 	}
 	return &uc, nil
 }
@@ -45,8 +50,12 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 func (uc *Usecase) StartScanner() error {
 	go func() {
 		for {
-			uc.scanChains()
-			time.Sleep(5 * time.Second)
+			select {
+			case <-uc.stopChan:
+				return
+			case <-time.After(5 * time.Second):
+				uc.scanChains()
+			}
 		}
 	}()
 	return nil
@@ -88,6 +97,7 @@ func (uc *Usecase) scanChains() {
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
+	close(uc.stopChan)
 	for i, scanner := range uc.scanners {
 		err := scanner.Stop()
 		if err != nil {
