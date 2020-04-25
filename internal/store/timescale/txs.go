@@ -66,13 +66,13 @@ func (s *Client) buildEventsQuery(address, txID, asset, eventType string, isCoun
 		sb.Select("COUNT(DISTINCT(txs.event_id))")
 	} else {
 		sb.Select("DISTINCT(txs.event_id), events.height")
-		sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
 		sb.OrderBy("events.height")
 		sb.Desc()
 		sb.Limit(int(limit))
 		sb.Offset(int(offset))
 	}
 	sb.From("txs")
+	sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
 	if address != "" {
 		sb.Where(sb.Or(sb.Equal("txs.from_address", address), sb.Equal("txs.to_address", address)))
 	}
