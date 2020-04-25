@@ -41,14 +41,12 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	uc.multiScanner.start()
-	return nil
+	return uc.multiScanner.start()
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	uc.multiScanner.stop()
-	return nil
+	return uc.multiScanner.stop()
 }
 
 // GetHealth returns error if database connection has problem.
