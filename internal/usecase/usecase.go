@@ -3,10 +3,6 @@ package usecase
 import (
 	"time"
 
-	"github.com/rs/zerolog/log"
-
-	"github.com/rs/zerolog"
-
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -16,19 +12,16 @@ import (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScannerInterval time.Duration
+	ScanInterval           time.Duration
+	ScannersUpdateInterval time.Duration
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store     store.Store
-	thorchain thorchain.Thorchain
-	chains    []common.Chain
-	scanners  []*thorchain.Scanner
-	conf      *Config
-	stopChan  chan struct{}
-	logger    zerolog.Logger
+	store        store.Store
+	thorchain    thorchain.Thorchain
+	multiScanner *multiScanner
 }
 
 // NewUsecase initiate a new Usecase.
@@ -36,74 +29,25 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 	if conf == nil {
 		return nil, errors.New("conf can't be nil")
 	}
+
+	ms := newMultiScanner(client, store, conf.ScanInterval, conf.ScannersUpdateInterval)
 	uc := Usecase{
-		store:     store,
-		thorchain: client,
-		conf:      conf,
-		stopChan:  make(chan struct{}),
-		logger:    log.With().Str("module", "UserCase").Logger(),
+		store:        store,
+		thorchain:    client,
+		multiScanner: ms,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	go func() {
-		for {
-			select {
-			case <-uc.stopChan:
-				return
-			case <-time.After(5 * time.Second):
-				uc.scanChains()
-			}
-		}
-	}()
+	uc.multiScanner.start()
 	return nil
-}
-
-func (uc *Usecase) scanChains() {
-	chains, err := uc.thorchain.GetChains()
-	if err != nil {
-		uc.logger.Error().Err(err).Msg("could not get network supported chains")
-		return
-	}
-	var newChains []common.Chain
-	for _, chain := range chains {
-		newChains = append(newChains, chain)
-		for _, oldChain := range uc.chains {
-			if oldChain.Equals(chain) {
-				newChains = newChains[0 : len(newChains)-1]
-				break
-			}
-		}
-	}
-	if len(newChains) > 0 {
-		for _, chain := range newChains {
-			scanner, err := thorchain.NewScanner(uc.thorchain, uc.store, uc.conf.ScannerInterval, chain)
-			if err != nil {
-				uc.logger.Error().Err(err).Msg("could not create thorchain scanner")
-				continue
-			}
-			err = scanner.Start()
-			if err != nil {
-				uc.logger.Error().Err(err).Msg("could not start scanner of chain %s")
-				continue
-			}
-			uc.chains = append(uc.chains, chain)
-			uc.scanners = append(uc.scanners, scanner)
-		}
-	}
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	close(uc.stopChan)
-	for i, scanner := range uc.scanners {
-		err := scanner.Stop()
-		if err != nil {
-			return errors.Wrapf(err, "could not stop scanner of chain %s", uc.chains[i])
-		}
-	}
+	uc.multiScanner.stop()
 	return nil
 }
 
