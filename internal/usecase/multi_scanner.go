@@ -18,8 +18,9 @@ type multiScanner struct {
 	scanners       map[common.Chain]*thorchain.Scanner
 	scanInterval   time.Duration
 	updateInterval time.Duration
-	stopChan       chan struct{}
 	mu             sync.Mutex
+	stopChan       chan struct{}
+	wg             sync.WaitGroup
 	logger         zerolog.Logger
 }
 
@@ -36,6 +37,8 @@ func newMultiScanner(client thorchain.Thorchain, store store.Store, scanInterval
 }
 
 func (ms *multiScanner) start() error {
+	// Safely check if it's not already running.
+	ms.wg.Wait()
 	ms.logger.Info().Msg("starting multi scanner")
 
 	for k, scanner := range ms.scanners {
@@ -52,9 +55,8 @@ func (ms *multiScanner) start() error {
 func (ms *multiScanner) stop() error {
 	ms.logger.Info().Msg("stoping multi scanner")
 
-	close(ms.stopChan)
-	ms.mu.Lock()
-	ms.mu.Unlock()
+	ms.stopChan <- struct{}{}
+	ms.wg.Wait()
 
 	for k, scanner := range ms.scanners {
 		err := scanner.Stop()
@@ -66,12 +68,12 @@ func (ms *multiScanner) stop() error {
 }
 
 func (ms *multiScanner) scan() {
-	ms.mu.Lock()
-	defer ms.mu.Unlock()
+	ms.wg.Add(1)
 
 	for {
 		select {
 		case <-ms.stopChan:
+			ms.wg.Done()
 			return
 		case <-time.After(ms.updateInterval):
 			ms.updateScanners()
@@ -80,6 +82,9 @@ func (ms *multiScanner) scan() {
 }
 
 func (ms *multiScanner) updateScanners() {
+	ms.mu.Lock()
+	defer ms.mu.Unlock()
+
 	chains, err := ms.thorchain.GetChains()
 	if err != nil {
 		ms.logger.Error().Err(err).Msg("could not get network supported chains")
