@@ -67,7 +67,7 @@ func NewScanner(client Thorchain, store Store, interval time.Duration, chain com
 	sc.handlers[types.PoolEventType] = sc.processPoolEvent
 	sc.handlers[types.GasEventType] = sc.processGasEvent
 	sc.handlers[types.SlashEventType] = sc.processSlashEvent
-	sc.handlers[types.SlashEventType] = sc.processErrataEvent
+	sc.handlers[types.ErrataEventType] = sc.processErrataEvent
 	return sc, nil
 }
 
