@@ -278,11 +278,12 @@ func (s *Client) TotalRuneStaked() (int64, error) {
 		AND from_address != $2
 		AND from_address != $3
 		AND from_address != $4
+		AND from_address != $5
 		
 	`
 
 	var totalRuneStaked sql.NullInt64
-	row := s.db.QueryRow(stmnt, addEventAddress, rewardEventAddress, feeAddress, slashEventAddress)
+	row := s.db.QueryRow(stmnt, addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, errataEventAddress)
 
 	if err := row.Scan(&totalRuneStaked); err != nil {
 		return 0, errors.Wrap(err, "totalRuneStaked failed")
