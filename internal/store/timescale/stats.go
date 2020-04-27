@@ -278,8 +278,7 @@ func (s *Client) TotalRuneStaked() (int64, error) {
 		AND from_address != $2
 		AND from_address != $3
 		AND from_address != $4
-		AND from_address != $5
-		
+		AND from_address != $5	
 	`
 
 	var totalRuneStaked sql.NullInt64
