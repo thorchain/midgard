@@ -21,6 +21,7 @@ const (
 	RefundEventType  = `refund`
 	GasEventType     = `gas`
 	SlashEventType   = `slash`
+	ErrataEventType  = `errata`
 )
 
 type Event struct {
@@ -226,4 +227,21 @@ type EventSlash struct {
 
 func (e EventSlash) Type() string {
 	return SlashEventType
+}
+
+type PoolMod struct {
+	Asset    common.Asset `json:"asset"`
+	RuneAmt  int64        `json:"rune_amt,string"`
+	RuneAdd  bool         `json:"rune_add"`
+	AssetAmt int64        `json:"asset_amt,string"`
+	AssetAdd bool         `json:"asset_add"`
+}
+
+// Represent a change in pool balance which caused by an errata transaction
+type EventErrata struct {
+	Pools []PoolMod `json:"pools"`
+}
+
+func (e EventErrata) Type() string {
+	return ErrataEventType
 }

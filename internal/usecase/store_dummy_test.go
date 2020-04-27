@@ -55,6 +55,10 @@ func (s *StoreDummy) CreateSlashRecord(_ models.EventSlash) error {
 	return ErrNotImplemented
 }
 
+func (s *StoreDummy) CreateErrataRecord(_ models.EventErrata) error {
+	return ErrNotImplemented
+}
+
 func (s *StoreDummy) GetMaxID(_ common.Chain) (int64, error) {
 	return 0, ErrNotImplemented
 }

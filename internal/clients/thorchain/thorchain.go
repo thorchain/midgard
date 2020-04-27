@@ -41,6 +41,7 @@ type Store interface {
 	CreateGasRecord(record models.EventGas) error
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
+	CreateErrataRecord(record models.EventErrata) error
 	GetMaxID(chain common.Chain) (int64, error)
 }
 
@@ -66,6 +67,7 @@ func NewScanner(client Thorchain, store Store, interval time.Duration, chain com
 	sc.handlers[types.PoolEventType] = sc.processPoolEvent
 	sc.handlers[types.GasEventType] = sc.processGasEvent
 	sc.handlers[types.SlashEventType] = sc.processSlashEvent
+	sc.handlers[types.SlashEventType] = sc.processErrataEvent
 	return sc, nil
 }
 
@@ -325,6 +327,21 @@ func (sc *Scanner) processSlashEvent(evt types.Event) error {
 	err = sc.store.CreateSlashRecord(record)
 	if err != nil {
 		return errors.Wrap(err, "failed to create slash record")
+	}
+	return nil
+}
+
+func (sc *Scanner) processErrataEvent(evt types.Event) error {
+	sc.logger.Debug().Msg("processErrataEvent")
+	var errata types.EventErrata
+	err := json.Unmarshal(evt.Event, &errata)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshal errata event")
+	}
+	record := models.NewErrataEvent(errata, evt)
+	err = sc.store.CreateErrataRecord(record)
+	if err != nil {
+		return errors.Wrap(err, "failed to create errata record")
 	}
 	return nil
 }
