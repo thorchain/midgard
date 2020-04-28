@@ -18,6 +18,7 @@ type Store interface {
 	CreateGasRecord(record models.EventGas) error
 	CreateRefundRecord(record models.EventRefund) error
 	CreateSlashRecord(record models.EventSlash) error
+	CreateErrataRecord(record models.EventErrata) error
 	GetMaxID(chain common.Chain) (int64, error)
 	Ping() error
 	GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, int64, error)

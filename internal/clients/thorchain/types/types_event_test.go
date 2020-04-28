@@ -25,3 +25,31 @@ func (s *TypesSuite) TestEventSwap(c *C) {
 	c.Assert(swap.LiquidityFee, Equals, int64(337))
 	c.Assert(swap.LiquidityFeeInRune, Equals, int64(105552))
 }
+
+func (s *TypesSuite) TestEventErrata(c *C) {
+	byt := []byte(`{ "pools": [ { "asset": "BNB.BNB", "rune_amt": "10", "rune_add": true, "asset_amt": "20", "asset_add":true }, { "asset": "BTC.BTC", "rune_amt": "20", "rune_add": false, "asset_amt": "3", "asset_add": false } ]}`)
+	var gotEvent EventErrata
+	err := json.Unmarshal(byt, &gotEvent)
+	c.Assert(err, IsNil)
+	asset, err := common.NewAsset("BTC.BTC")
+	c.Assert(err, IsNil)
+	expectedtEvent := EventErrata{
+		Pools: []PoolMod{
+			{
+				Asset:    common.BNBAsset,
+				RuneAdd:  true,
+				RuneAmt:  10,
+				AssetAdd: true,
+				AssetAmt: 20,
+			},
+			{
+				Asset:    asset,
+				AssetAdd: false,
+				AssetAmt: 3,
+				RuneAdd:  false,
+				RuneAmt:  20,
+			},
+		},
+	}
+	c.Assert(gotEvent, DeepEquals, expectedtEvent)
+}
