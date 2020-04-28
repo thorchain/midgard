@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/store"
 )
@@ -106,4 +107,12 @@ func (ms *multiScanner) updateScanners() {
 			ms.scanners[chain] = scanner
 		}
 	}
+}
+
+func (ms *multiScanner) getStatus() []*types.ScannerStatus {
+	status := make([]*types.ScannerStatus, 0, len(ms.scanners))
+	for _, v := range ms.scanners {
+		status = append(status, v.GetStatus())
+	}
+	return status
 }
