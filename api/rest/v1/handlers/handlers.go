@@ -58,10 +58,8 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	if err := h.uc.GetHealth(); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
-	}
-	return ctx.JSON(http.StatusOK, "OK")
+	status := h.uc.GetStatus()
+	return ctx.JSON(http.StatusOK, status)
 }
 
 // (GET /v1/txs?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})

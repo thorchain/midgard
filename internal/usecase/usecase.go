@@ -49,9 +49,12 @@ func (uc *Usecase) StopScanner() error {
 	return uc.multiScanner.stop()
 }
 
-// GetHealth returns error if database connection has problem.
-func (uc *Usecase) GetHealth() error {
-	return uc.store.Ping()
+// GetStatus returns health status and metrics of units of Midgard.
+func (uc *Usecase) GetStatus() *models.MidgardStatus {
+	return &models.MidgardStatus{
+		Database: uc.store.Ping() == nil,
+		Scanners: uc.multiScanner.getStatus(),
+	}
 }
 
 // GetTxDetails returns details and count of txs selected with query.
