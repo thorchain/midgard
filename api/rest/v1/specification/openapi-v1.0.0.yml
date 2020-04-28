@@ -33,7 +33,7 @@ paths:
       description: Returns an object containing the health response of the API.
       responses:
         "200":
-          description: health response of the API.
+          $ref: '#/components/responses/HealthResponse'
   "/v1/txs":
     get:
       operationId: GetTxDetails
@@ -232,6 +232,21 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/StatsData'
+
+    HealthResponse:
+      description: Returns an health status of Midgard
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              database:
+                type: boolean
+              scanners:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScannerStatus'  
+
     TxsResponse:
       description: Returns an array of transactions
       content:
@@ -321,6 +336,19 @@ components:
               $ref: '#/components/schemas/NodeKey'
 
   schemas:
+    ScannerStatus:
+      properties:
+        chain:
+          type: string
+        isHealthy:
+          type: boolean
+        lastEvent:
+          type: integer
+          format: int64
+        totalEvents:
+          type: integer
+          format: int64
+
     TxDetails:
       properties:
         pool:
