@@ -58,7 +58,7 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	status := h.uc.GetStatus()
+	status := h.uc.GetHealth()
 	return ctx.JSON(http.StatusOK, status)
 }
 
