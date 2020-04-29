@@ -49,9 +49,9 @@ func (uc *Usecase) StopScanner() error {
 	return uc.multiScanner.stop()
 }
 
-// GetStatus returns health status and metrics of units of Midgard.
-func (uc *Usecase) GetStatus() *models.MidgardStatus {
-	return &models.MidgardStatus{
+// GetHealth returns health status of Midgard's crucial units.
+func (uc *Usecase) GetHealth() *models.HealthStatus {
+	return &models.HealthStatus{
 		Database: uc.store.Ping() == nil,
 		Scanners: uc.multiScanner.getStatus(),
 	}
