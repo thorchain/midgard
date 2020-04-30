@@ -53,6 +53,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	if strings.ToUpper(vars["chain"]) != "BNB" {
 		fmt.Fprintf(writer, "[]")
+		return
 	}
 	offset, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
