@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	flag "github.com/spf13/pflag"
 
@@ -12,6 +15,8 @@ import (
 )
 
 var SmokeTestDataEnabled *bool
+
+const eventPageSize = 100
 
 func main() {
 	SmokeTestDataEnabled = flag.BoolP("smoke", "s", false, "event the use of the last know smoke-test data suite")
@@ -44,29 +49,50 @@ func main() {
 func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("eventsMockedEndpoint Hit!")
 	vars := mux.Vars(request)
-
-	id := vars["id"]
-
-	if id != "1" {
-		writer.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(writer, "[]")
+	offet, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	var content []byte
-	var err error
+	var input *os.File
 	if *SmokeTestDataEnabled {
-		content, err = ioutil.ReadFile("./thorchain/events/smoke-test/events.json")
+		input, err = os.Open("./thorchain/events/smoke-test/events.json")
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		content, err = ioutil.ReadFile("./thorchain/events/events.json")
+		input, err = os.Open("./thorchain/events/events.json")
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-
+	dec := json.NewDecoder(input)
+	events := make([]map[string]interface{}, 0)
+	for dec.More() {
+		var event map[string]interface{}
+		err := dec.Decode(&event)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		id,err:=strconv.ParseInt(event["id"].(string),10,64)
+		if err!=nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if id > offet+eventPageSize {
+			break
+		}
+		if id < offet {
+			continue
+		}
+		events = append(events, event)
+	}
+	content, err := json.Marshal(events)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	writer.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(writer, string(content))
 }
