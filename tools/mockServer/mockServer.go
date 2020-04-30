@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	flag "github.com/spf13/pflag"
 
@@ -28,9 +29,10 @@ func main() {
 
 	// router.HandleFunc("/", welcome).Methods("GET")
 	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
-	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/events/{id}/{chain}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/tx/{id}", eventsTxMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/pool_addresses", pool_addresses).Methods("GET")
+	router.HandleFunc("/thorchain/vaults/asgard", asgardVaultsMockedEndpoint).Methods("GET")
 
 	// used to debug incorrect dynamically generated requests
 	router.PathPrefix("/").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -49,6 +51,9 @@ func main() {
 func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("eventsMockedEndpoint Hit!")
 	vars := mux.Vars(request)
+	if strings.ToUpper(vars["chain"]) != "BNB" {
+		fmt.Fprintf(writer, "[]")
+	}
 	offset, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -68,6 +73,7 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	}
 	dec := json.NewDecoder(input)
 	events := make([]map[string]interface{}, 0)
+	dec.Token()
 	for dec.More() {
 		var event map[string]interface{}
 		err := dec.Decode(&event)
@@ -133,4 +139,10 @@ func eventsTxMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 
 	writer.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(writer, string(content))
+}
+
+func asgardVaultsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
+	log.Println("asgardVaultsMockedEndpoint Hit!")
+	writer.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(writer, "[{\"chains\":[\"BNB\"]}]")
 }
