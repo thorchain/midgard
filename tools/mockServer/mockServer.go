@@ -49,7 +49,7 @@ func main() {
 func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("eventsMockedEndpoint Hit!")
 	vars := mux.Vars(request)
-	offet, err := strconv.ParseInt(vars["id"], 10, 64)
+	offset, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
@@ -80,10 +80,10 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		if id > offet+eventPageSize {
+		if id > offset+eventPageSize {
 			break
 		}
-		if id < offet {
+		if id < offset {
 			continue
 		}
 		events = append(events, event)
