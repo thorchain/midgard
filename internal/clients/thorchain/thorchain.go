@@ -146,7 +146,6 @@ func (sc *Scanner) scan() {
 				sc.updateHealth(false)
 				continue
 			}
-			sc.updateMetrics(maxID, int64(eventsCount))
 			if eventsCount == 0 {
 				select {
 				case <-sc.stopChan:
@@ -157,6 +156,7 @@ func (sc *Scanner) scan() {
 			}
 			currentPos = maxID + 1
 			sc.updateHealth(true)
+			sc.updateMetrics(int64(eventsCount), maxID)
 		}
 	}
 }
@@ -212,7 +212,7 @@ func (sc *Scanner) processEvents(id int64) (int64, int, error) {
 	return maxID, len(events), nil
 }
 
-func (sc *Scanner) updateMetrics(lastEvent, count int64) {
+func (sc *Scanner) updateMetrics(count, lastEvent int64) {
 	atomic.AddInt64(&sc.totalEvents, count)
 	atomic.StoreInt64(&sc.lastEvent, lastEvent)
 }
