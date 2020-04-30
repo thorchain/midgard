@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+
 	. "gopkg.in/check.v1"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -1917,6 +1919,61 @@ var (
 		Height: 15,
 		Type:   "",
 		Chain:  "BTC",
+	}
+	errataEvent0 = models.EventErrata{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     34,
+			Status: "Success",
+			Height: 16,
+			Type:   "errata",
+		},
+		Pools: []types.PoolMod{
+			{
+				Asset: common.Asset{
+					Chain:  "BNB",
+					Symbol: "TUSDB-000",
+					Ticker: "TUSDB",
+				},
+				AssetAmt: 10,
+				AssetAdd: false,
+				RuneAmt:  20,
+				RuneAdd:  false,
+			},
+			{
+				Asset: common.Asset{
+					Chain:  "BNB",
+					Symbol: "BOLT-014",
+					Ticker: "BLOT",
+				},
+				AssetAmt: 5,
+				AssetAdd: false,
+				RuneAmt:  3,
+				RuneAdd:  true,
+			},
+			{
+				Asset: common.Asset{
+					Chain:  "BNB",
+					Symbol: "FSN-F1B",
+					Ticker: "FSN",
+				},
+				AssetAmt: 15,
+				AssetAdd: true,
+				RuneAmt:  2,
+				RuneAdd:  false,
+			},
+			{
+				Asset: common.Asset{
+					Chain:  "BNB",
+					Symbol: "FTM-585",
+					Ticker: "FTM",
+				},
+				AssetAmt: 6,
+				AssetAdd: true,
+				RuneAmt:  9,
+				RuneAdd:  true,
+			},
+		},
 	}
 )
 
