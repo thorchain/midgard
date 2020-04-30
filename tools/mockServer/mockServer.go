@@ -75,8 +75,8 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		id,err:=strconv.ParseInt(event["id"].(string),10,64)
-		if err!=nil {
+		id, err := strconv.ParseInt(event["id"].(string), 10, 64)
+		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
