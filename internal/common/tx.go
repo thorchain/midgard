@@ -66,7 +66,7 @@ type Tx struct {
 
 type Txs []Tx
 
-func NewTx(txID TxID, from Address, to Address, coins Coins, memo Memo) Tx {
+func NewTx(txID TxID, from, to Address, coins Coins, memo Memo) Tx {
 	var chain Chain
 	for _, coin := range coins {
 		chain = coin.Asset.Chain
