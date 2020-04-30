@@ -149,6 +149,7 @@ func (sc *Scanner) scan() {
 			if eventsCount == 0 {
 				select {
 				case <-sc.stopChan:
+					return
 				case <-time.After(sc.interval):
 					sc.logger.Debug().Str("ScanInterval", sc.interval.String()).Msg("finished waiting ScanInterval")
 				}
