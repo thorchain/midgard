@@ -3,11 +3,10 @@ module gitlab.com/thorchain/midgard
 go 1.13
 
 require (
-	github.com/99designs/gqlgen v0.10.1
+	github.com/99designs/gqlgen v0.10.1 // indirect
 	github.com/btcsuite/btcd v0.0.0-20190926002857-ba530c4abb35 // indirect
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/cosmos/cosmos-sdk v0.37.3
-	github.com/davecgh/go-spew v1.1.1
 	github.com/deepmap/oapi-codegen v1.3.6
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
@@ -31,10 +30,10 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/tendermint/go-amino v0.15.1 // indirect
-	github.com/vektah/gqlparser v1.1.2
 	github.com/ziflex/lecho/v2 v2.0.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
+	golang.org/x/tools v0.0.0-20200430192856-2840dafb9ee1 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	google.golang.org/grpc v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
