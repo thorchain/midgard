@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -19,14 +20,17 @@ import (
 
 // Scanner will fetch and store events sequence from thorchain client.
 type Scanner struct {
-	client   Thorchain
-	store    Store
-	interval time.Duration
-	chain    common.Chain
-	handlers map[string]handlerFunc
-	stopChan chan struct{}
-	mu       sync.Mutex
-	logger   zerolog.Logger
+	client      Thorchain
+	store       Store
+	interval    time.Duration
+	chain       common.Chain
+	handlers    map[string]handlerFunc
+	stopChan    chan struct{}
+	wg          sync.WaitGroup
+	isHealthy   int64
+	lastEvent   int64
+	totalEvents int64
+	logger      zerolog.Logger
 }
 
 // Store represents methods required by Scanner to store thorchain events.
@@ -83,15 +87,24 @@ func (sc *Scanner) Start() error {
 func (sc *Scanner) Stop() error {
 	sc.logger.Info().Msg("stoping thorchain scanner")
 
-	close(sc.stopChan)
-	sc.mu.Lock()
-	sc.mu.Unlock()
+	sc.stopChan <- struct{}{}
+	sc.wg.Wait()
 	return nil
 }
 
+// GetStatus returns health status and some metrics about scanner.
+func (sc *Scanner) GetStatus() *types.ScannerStatus {
+	return &types.ScannerStatus{
+		Chain:       sc.chain,
+		IsHealthy:   atomic.LoadInt64(&sc.isHealthy) == 1,
+		TotalEvents: atomic.LoadInt64(&sc.totalEvents),
+		LastEvent:   atomic.LoadInt64(&sc.lastEvent),
+	}
+}
+
 func (sc *Scanner) scan() {
-	sc.mu.Lock()
-	defer sc.mu.Unlock()
+	sc.wg.Add(1)
+	defer sc.wg.Done()
 
 	sc.logger.Info().Msg("getting thorchain genesis")
 	genesisTime, err := sc.client.GetGenesis()
@@ -130,17 +143,21 @@ func (sc *Scanner) scan() {
 			maxID, eventsCount, err := sc.processEvents(currentPos)
 			if err != nil {
 				sc.logger.Error().Err(err).Msg("failed to get events from thorchain")
+				sc.updateHealth(false)
 				continue
 			}
 			if eventsCount == 0 {
 				select {
 				case <-sc.stopChan:
+					return
 				case <-time.After(sc.interval):
 					sc.logger.Debug().Str("ScanInterval", sc.interval.String()).Msg("finished waiting ScanInterval")
 				}
 				continue
 			}
 			currentPos = maxID + 1
+			sc.updateHealth(true)
+			sc.updateMetrics(int64(eventsCount), maxID)
 		}
 	}
 }
@@ -194,6 +211,19 @@ func (sc *Scanner) processEvents(id int64) (int64, int, error) {
 		}
 	}
 	return maxID, len(events), nil
+}
+
+func (sc *Scanner) updateMetrics(count, lastEvent int64) {
+	atomic.AddInt64(&sc.totalEvents, count)
+	atomic.StoreInt64(&sc.lastEvent, lastEvent)
+}
+
+func (sc *Scanner) updateHealth(isHealthy bool) {
+	var value int64 = 0
+	if isHealthy {
+		value = 1
+	}
+	atomic.StoreInt64(&sc.isHealthy, value)
 }
 
 func (sc *Scanner) processSwapEvent(evt types.Event) error {

@@ -1,12 +1,14 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
 	"math"
 	"sync"
 	"testing"
 	"time"
 
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	. "gopkg.in/check.v1"
@@ -26,6 +28,173 @@ func (s *UsecaseSuite) SetUpSuite(c *C) {
 
 func Test(t *testing.T) {
 	TestingT(t)
+}
+
+type TestGetHealthThorchain struct {
+	ThorchainDummy
+	chains []common.Chain
+	events map[common.Chain][]types.Event
+	err    error
+}
+
+func (t *TestGetHealthThorchain) GetGenesis() (types.Genesis, error) {
+	return types.Genesis{}, nil
+}
+
+func (t *TestGetHealthThorchain) GetChains() ([]common.Chain, error) {
+	return t.chains, nil
+}
+
+func (t *TestGetHealthThorchain) GetEvents(id int64, chain common.Chain) ([]types.Event, error) {
+	events := t.events[chain]
+	if int(id) > len(events) {
+		return []types.Event{}, t.err
+	}
+	return events, t.err
+}
+
+type TestGetHealthStore struct {
+	StoreDummy
+	isHealthy   bool
+	totalEvents map[common.Chain]int64
+	lastEvent   map[common.Chain]int64
+	err         error
+	mu          sync.Mutex
+}
+
+func (s *TestGetHealthStore) CreateGenesis(_ models.Genesis) (int64, error) {
+	return 0, nil
+}
+
+func (s *TestGetHealthStore) CreateStakeRecord(stake models.EventStake) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.totalEvents[stake.Event.Chain]++
+	s.lastEvent[stake.Event.Chain] = stake.ID
+	return s.err
+}
+
+func (s *TestGetHealthStore) Ping() error {
+	if s.isHealthy {
+		return nil
+	}
+	return errors.New("store is not healthy")
+}
+
+func (s *UsecaseSuite) TestGetHealth(c *C) {
+	client := &TestGetHealthThorchain{
+		chains: []common.Chain{
+			common.BNBChain,
+			common.BTCChain,
+		},
+		events: map[common.Chain][]types.Event{
+			common.BNBChain: {
+				{
+					ID:    1,
+					Type:  "stake",
+					Event: json.RawMessage("{}"),
+				},
+				{
+					ID:    3,
+					Type:  "stake",
+					Event: json.RawMessage("{}"),
+				},
+				{
+					ID:    4,
+					Type:  "stake",
+					Event: json.RawMessage("{}"),
+				},
+			},
+			common.BTCChain: {
+				{
+					ID:    2,
+					Type:  "stake",
+					Event: json.RawMessage("{}"),
+				},
+				{
+					ID:    5,
+					Type:  "stake",
+					Event: json.RawMessage("{}"),
+				},
+			},
+		},
+	}
+	store := &TestGetHealthStore{
+		isHealthy:   true,
+		totalEvents: map[common.Chain]int64{},
+		lastEvent:   map[common.Chain]int64{},
+	}
+	conf := &Config{
+		ScanInterval:           time.Second,
+		ScannersUpdateInterval: time.Second,
+	}
+	uc, err := NewUsecase(client, store, conf)
+	c.Assert(err, IsNil)
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+	time.Sleep(conf.ScanInterval + conf.ScannersUpdateInterval + time.Second)
+
+	health := uc.GetHealth()
+	c.Assert(health.Database, Equals, store.isHealthy)
+	scanners := map[common.Chain]*types.ScannerStatus{
+		common.BNBChain: {
+			Chain:       common.BNBChain,
+			IsHealthy:   true,
+			TotalEvents: 3,
+			LastEvent:   4,
+		},
+		common.BTCChain: {
+			Chain:       common.BTCChain,
+			IsHealthy:   true,
+			TotalEvents: 2,
+			LastEvent:   5,
+		},
+	}
+	for _, s := range health.Scanners {
+		c.Assert(s, DeepEquals, scanners[s.Chain])
+	}
+	err = uc.StopScanner()
+	c.Assert(err, IsNil)
+
+	// Unhealthy situation
+	client = &TestGetHealthThorchain{
+		chains: []common.Chain{
+			common.BNBChain,
+			common.BTCChain,
+		},
+		events: map[common.Chain][]types.Event{
+			common.BNBChain: {},
+			common.BTCChain: {},
+		},
+		err: errors.New("could not fetch events"),
+	}
+	store = &TestGetHealthStore{
+		isHealthy: false,
+	}
+	uc, err = NewUsecase(client, store, conf)
+	c.Assert(err, IsNil)
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+	time.Sleep(conf.ScanInterval + conf.ScannersUpdateInterval + time.Second)
+
+	health = uc.GetHealth()
+	c.Assert(health.Database, Equals, store.isHealthy)
+	scanners = map[common.Chain]*types.ScannerStatus{
+		common.BNBChain: {
+			Chain:     common.BNBChain,
+			IsHealthy: false,
+		},
+		common.BTCChain: {
+			Chain:     common.BTCChain,
+			IsHealthy: false,
+		},
+	}
+	for _, s := range health.Scanners {
+		c.Assert(s, DeepEquals, scanners[s.Chain])
+	}
+	err = uc.StopScanner()
+	c.Assert(err, IsNil)
 }
 
 type TestScanningThorchain struct {
