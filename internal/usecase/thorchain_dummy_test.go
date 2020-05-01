@@ -4,7 +4,6 @@ import (
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 var _ thorchain.Thorchain = (*ThorchainDummy)(nil)
@@ -22,10 +21,6 @@ func (t *ThorchainDummy) GetEvents(id int64, chain common.Chain) ([]types.Event,
 
 func (t *ThorchainDummy) GetOutTx(event types.Event) (common.Txs, error) {
 	return nil, ErrNotImplemented
-}
-
-func (t *ThorchainDummy) GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error) {
-	return models.NetworkInfo{}, ErrNotImplemented
 }
 
 func (t *ThorchainDummy) GetNodeAccounts() ([]types.NodeAccount, error) {
