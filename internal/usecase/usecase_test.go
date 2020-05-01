@@ -3,7 +3,6 @@ package usecase
 import (
 	"encoding/json"
 	"errors"
-	"math"
 	"sync"
 	"testing"
 	"time"
@@ -1004,99 +1003,135 @@ func (s *TestGetNetworkInfoStore) GetTotalDepth() (uint64, error) {
 
 type TestGetNetworkInfoThorchain struct {
 	ThorchainDummy
-	bondMetrics      models.BondMetrics
-	activeBonds      []uint64
-	standbyBonds     []uint64
-	activeNodeCount  int
-	standbyNodeCount int
-	totalReserve     uint64
-	poolShareFactor  float64
-	blockReward      models.BlockRewards
-	bondingROI       float64
-	stakingROI       float64
-	nextChurnHeight  int64
-	err              error
+	nodes      []types.NodeAccount
+	vaultData  types.VaultData
+	consts     types.ConstantValues
+	vaults     []types.Vault
+	lastHeight types.LastHeights
+	err        error
 }
 
-func (s *TestGetNetworkInfoThorchain) GetNetworkInfo(totalDepth uint64) (models.NetworkInfo, error) {
-	info := models.NetworkInfo{
-		BondMetrics:      s.bondMetrics,
-		ActiveBonds:      s.activeBonds,
-		StandbyBonds:     s.standbyBonds,
-		TotalStaked:      totalDepth,
-		ActiveNodeCount:  s.activeNodeCount,
-		StandbyNodeCount: s.standbyNodeCount,
-		TotalReserve:     s.totalReserve,
-		PoolShareFactor:  s.poolShareFactor,
-		BlockReward:      s.blockReward,
-		BondingROI:       s.bondingROI,
-		StakingROI:       s.stakingROI,
-		NextChurnHeight:  s.nextChurnHeight,
-	}
-	return info, s.err
+func (t *TestGetNetworkInfoThorchain) GetNodeAccounts() ([]types.NodeAccount, error) {
+	return t.nodes, t.err
+}
+
+func (t *TestGetNetworkInfoThorchain) GetVaultData() (types.VaultData, error) {
+	return t.vaultData, t.err
+}
+
+func (t *TestGetNetworkInfoThorchain) GetConstants() (types.ConstantValues, error) {
+	return t.consts, t.err
+}
+
+func (t *TestGetNetworkInfoThorchain) GetAsgardVaults() ([]types.Vault, error) {
+	return t.vaults, t.err
+}
+
+func (t *TestGetNetworkInfoThorchain) GetLastChainHeight() (types.LastHeights, error) {
+	return t.lastHeight, t.err
 }
 
 func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	client := &TestGetNetworkInfoThorchain{
-		bondMetrics: models.BondMetrics{
-			AverageActiveBond:  50000000,
-			AverageStandbyBond: 4000000,
-			MaximumActiveBond:  100000000,
-			MaximumStandbyBond: 1000000,
-			MedianActiveBond:   10000000,
-			MedianStandbyBond:  20000,
-			MinimumActiveBond:  2500,
-			MinimumStandbyBond: 100,
-			TotalActiveBond:    100000000,
-			TotalStandbyBond:   50000000,
+		nodes: []types.NodeAccount{
+			{
+				Status: types.Active,
+				Bond:   1000,
+			},
+			{
+				Status: types.Active,
+				Bond:   1200,
+			},
+			{
+				Status: types.Active,
+				Bond:   2000,
+			},
+			{
+				Status: types.Standby,
+				Bond:   110,
+			},
+			{
+				Status: types.Standby,
+				Bond:   175,
+			},
 		},
-		activeBonds:      []uint64{2500, 10000},
-		standbyBonds:     []uint64{100, 1000},
-		activeNodeCount:  2,
-		standbyNodeCount: 2,
-		totalReserve:     17514301182,
-		poolShareFactor:  33150836.453073956,
-		blockReward: models.BlockRewards{
-			BlockReward: 462.8123726851852,
-			BondReward:  -15342616812.533314,
-			StakeReward: 15342617275.345686,
+		vaultData: types.VaultData{
+			TotalReserve: 1120,
 		},
-		bondingROI:      math.Inf(-1),
-		stakingROI:      173904.5062587643,
-		nextChurnHeight: 539690,
+		consts: types.ConstantValues{
+			Int64Values: map[string]int64{
+				"RotatePerBlockHeight": 51840,
+				"RotateRetryBlocks":    720,
+			},
+		},
+		vaults: []types.Vault{
+			{
+				Status:      types.ActiveVault,
+				BlockHeight: 1,
+			},
+			{
+				Status:      types.InactiveVault,
+				BlockHeight: 21,
+			},
+			{
+				Status:      types.ActiveVault,
+				BlockHeight: 11,
+			},
+		},
+		lastHeight: types.LastHeights{
+			Statechain: 25,
+		},
 	}
 	store := &TestGetNetworkInfoStore{
-		totalDepth: 556448810677,
+		totalDepth: 1500,
 	}
 	uc, err := NewUsecase(client, store, &Config{})
 	c.Assert(err, IsNil)
 
 	stats, err := uc.GetNetworkInfo()
 	c.Assert(err, IsNil)
+	var poolShareFactor float64 = 2985.0 / 5985.0
+	var blockReward float64 = 1120 / (6.0 * 6307200.0)
+	var bondReward float64 = (1 - poolShareFactor) * blockReward
+	stakeReward := blockReward - bondReward
 	c.Assert(stats, DeepEquals, &models.NetworkInfo{
-		BondMetrics:      client.bondMetrics,
-		ActiveBonds:      client.activeBonds,
-		StandbyBonds:     client.standbyBonds,
-		TotalStaked:      store.totalDepth,
-		ActiveNodeCount:  client.activeNodeCount,
-		StandbyNodeCount: client.standbyNodeCount,
-		TotalReserve:     client.totalReserve,
-		PoolShareFactor:  client.poolShareFactor,
-		BlockReward:      client.blockReward,
-		BondingROI:       client.bondingROI,
-		StakingROI:       client.stakingROI,
-		NextChurnHeight:  client.nextChurnHeight,
+		BondMetrics: models.BondMetrics{
+			TotalActiveBond:    4200,
+			AverageActiveBond:  4200 / 3,
+			MedianActiveBond:   1200,
+			MinimumActiveBond:  1000,
+			MaximumActiveBond:  2000,
+			TotalStandbyBond:   285,
+			AverageStandbyBond: 285.0 / 2.0,
+			MedianStandbyBond:  175,
+			MinimumStandbyBond: 110,
+			MaximumStandbyBond: 175,
+		},
+		ActiveBonds:      []uint64{1000, 1200, 2000},
+		StandbyBonds:     []uint64{110, 175},
+		TotalStaked:      1500,
+		ActiveNodeCount:  3,
+		StandbyNodeCount: 2,
+		TotalReserve:     1120,
+		PoolShareFactor:  poolShareFactor,
+		BlockReward: models.BlockRewards{
+			BlockReward: blockReward,
+			BondReward:  bondReward,
+			StakeReward: stakeReward,
+		},
+		BondingROI:      (bondReward * 6307200) / 4485,
+		StakingROI:      (stakeReward * 6307200) / 1500,
+		NextChurnHeight: 51851,
 	})
 
-	uc, err = NewUsecase(client, s.dummyStore, &Config{})
-	c.Assert(err, IsNil)
-
+	// Store error situation
+	store.err = errors.New("could not fetch requested data")
 	_, err = uc.GetNetworkInfo()
 	c.Assert(err, NotNil)
 
-	uc, err = NewUsecase(s.dummyThorchain, store, &Config{})
-	c.Assert(err, IsNil)
-
+	// Thorchain error situation
+	store.err = nil
+	client.err = errors.New("could not fetch requested data")
 	_, err = uc.GetNetworkInfo()
 	c.Assert(err, NotNil)
 }
