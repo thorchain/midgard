@@ -15,9 +15,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var SmokeTestDataEnabled *bool
-var EventPageSize *int64
-var EventNum *int64
+var (
+	SmokeTestDataEnabled *bool
+	EventPageSize        *int64
+	EventNum             *int64
+)
 
 var allEvents []map[string]interface{}
 
