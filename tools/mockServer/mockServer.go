@@ -33,7 +33,7 @@ func main() {
 	var input *os.File
 	var err error
 	if *SmokeTestDataEnabled {
-		input, err = os.Open("./thorchain/events/events.json")
+		input, err = os.Open("./thorchain/events/smoke-test/events.json")
 		if err != nil {
 			log.Fatal(err)
 		}
