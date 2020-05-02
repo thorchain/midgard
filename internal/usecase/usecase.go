@@ -146,37 +146,177 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		return nil, err
 	}
 
-	var netInfo models.NetworkInfo
 	nodeAccounts, err := uc.thorchain.GetNodeAccounts()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
+	totalBond := calculateTotalBond(nodeAccounts)
+	activeBonds := filterNodeBonds(nodeAccounts, types.Active)
+	standbyBonds := filterNodeBonds(nodeAccounts, types.Standby)
+	metrics := calculateBondMetrics(activeBonds, standbyBonds)
 
 	vaultData, err := uc.thorchain.GetVaultData()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
+	poolShareFactor := calculatePoolShareFactor(totalBond, totalStaked)
+	rewards := calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
-	vaults, err := uc.thorchain.GetAsgardVaults()
+	nextChurnHeight, err := uc.computeNextChurnHight()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get Vaults")
+		return nil, errors.Wrap(err, "failed to get NodeAccounts")
+	}
+
+	netInfo := models.NetworkInfo{
+		BondMetrics:      metrics,
+		ActiveBonds:      activeBonds,
+		StandbyBonds:     standbyBonds,
+		TotalStaked:      totalStaked,
+		ActiveNodeCount:  len(activeBonds),
+		StandbyNodeCount: len(standbyBonds),
+		TotalReserve:     vaultData.TotalReserve,
+		PoolShareFactor:  poolShareFactor,
+		BlockReward:      rewards,
+		BondingROI:       (rewards.BondReward * 6307200) / float64(totalBond),
+		StakingROI:       (rewards.StakeReward * 6307200) / float64(totalStaked),
+		NextChurnHeight:  nextChurnHeight,
+	}
+	return &netInfo, nil
+}
+
+func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics {
+	totalActiveBond := calculateUint64sTotal(activeBonds)
+	totalStandbyBond := calculateUint64sTotal(standbyBonds)
+	return models.BondMetrics{
+		TotalActiveBond:    totalActiveBond,
+		AverageActiveBond:  float64(totalActiveBond) / float64(len(activeBonds)),
+		MedianActiveBond:   calculateUint64sMedian(activeBonds),
+		MinimumActiveBond:  calculateUint64sMin(activeBonds),
+		MaximumActiveBond:  calculateUint64sMax(activeBonds),
+		TotalStandbyBond:   totalStandbyBond,
+		AverageStandbyBond: float64(totalStandbyBond) / float64(len(standbyBonds)),
+		MedianStandbyBond:  calculateUint64sMedian(standbyBonds),
+		MinimumStandbyBond: calculateUint64sMin(standbyBonds),
+		MaximumStandbyBond: calculateUint64sMax(standbyBonds),
+	}
+}
+
+func calculateTotalBond(nodes []types.NodeAccount) uint64 {
+	var totalBond uint64
+	for _, node := range nodes {
+		totalBond += node.Bond
+	}
+	return totalBond
+}
+
+func filterNodeBonds(nodes []types.NodeAccount, status types.NodeStatus) []uint64 {
+	filtered := []uint64{}
+	for _, node := range nodes {
+		if node.Status == status {
+			filtered = append(filtered, node.Bond)
+		}
+	}
+	return filtered
+}
+
+func calculateUint64sTotal(array []uint64) uint64 {
+	var total uint64
+	for _, v := range array {
+		total += v
+	}
+	return total
+}
+
+func calculateUint64sMin(array []uint64) uint64 {
+	if len(array) == 0 {
+		return 0
+	}
+
+	min := array[0]
+	for _, v := range array {
+		if min > v {
+			min = v
+		}
+	}
+	return min
+}
+
+func calculateUint64sMax(array []uint64) uint64 {
+	if len(array) == 0 {
+		return 0
+	}
+
+	max := array[0]
+	for _, v := range array {
+		if max < v {
+			max = v
+		}
+	}
+	return max
+}
+
+func calculateUint64sMedian(array []uint64) uint64 {
+	if len(array) > 0 {
+		return array[len(array)/2]
+	}
+	return 0
+}
+
+func calculatePoolShareFactor(totalBond, totalStaked uint64) float64 {
+	if totalBond+totalStaked > 0 {
+		return float64(totalBond-totalStaked) / float64(totalBond+totalStaked)
+	}
+	return 0
+}
+
+func calculateRewards(totalReserve uint64, poolShareFactor float64) models.BlockRewards {
+	blockReward := float64(totalReserve) / 6 * 6307200
+	bondReward := (1 - poolShareFactor) * blockReward
+	stakeReward := blockReward - bondReward
+	return models.BlockRewards{
+		BlockReward: blockReward,
+		BondReward:  bondReward,
+		StakeReward: stakeReward,
+	}
+}
+
+func (uc *Usecase) computeNextChurnHight() (int64, error) {
+	lastHeight, err := uc.thorchain.GetLastChainHeight()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get LastChainHeight")
+	}
+
+	lastChurn, err := uc.computeLastChurn()
+	if err != nil {
+		return 0, err
 	}
 
 	consts, err := uc.thorchain.GetConstants()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get NetworkConstants")
+		return 0, errors.Wrap(err, "failed to get NetworkConstants")
 	}
 	churnInterval, ok := consts.Int64Values["RotatePerBlockHeight"]
 	if !ok {
-		return nil, errors.Wrap(err, "failed to get RotatePerBlockHeight")
+		return 0, errors.Wrap(err, "could not find RotatePerBlockHeight in thorchain consts")
 	}
 	churnRetry, ok := consts.Int64Values["RotateRetryBlocks"]
 	if !ok {
-		return nil, errors.Wrap(err, "failed to get RotateRetryBlocks")
+		return 0, errors.Wrap(err, "could not find RotateRetryBlocks in thorchain consts")
 	}
-	lastHeight, err := uc.thorchain.GetLastChainHeight()
+
+	var next int64
+	if lastHeight.Statechain-lastChurn <= churnInterval {
+		next = lastChurn + churnInterval
+	} else {
+		next = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
+	}
+	return next, nil
+}
+
+func (uc *Usecase) computeLastChurn() (int64, error) {
+	vaults, err := uc.thorchain.GetAsgardVaults()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get LastChainHeight")
+		return 0, errors.Wrap(err, "failed to get Vaults")
 	}
 
 	var lastChurn int64
@@ -185,70 +325,5 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 			lastChurn = v.BlockHeight
 		}
 	}
-
-	if lastHeight.Statechain-lastChurn <= churnInterval {
-		netInfo.NextChurnHeight = lastChurn + churnInterval
-	} else {
-		netInfo.NextChurnHeight = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
-	}
-
-	var activeNodes []types.NodeAccount
-	var standbyNodes []types.NodeAccount
-	var totalBond uint64
-	for _, node := range nodeAccounts {
-		if node.Status == types.Active {
-			activeNodes = append(activeNodes, node)
-			netInfo.ActiveBonds = append(netInfo.ActiveBonds, node.Bond)
-		} else if node.Status == types.Standby {
-			standbyNodes = append(standbyNodes, node)
-			netInfo.StandbyBonds = append(netInfo.StandbyBonds, node.Bond)
-		}
-		totalBond += node.Bond
-	}
-
-	var metric models.BondMetrics
-	if len(activeNodes) > 0 {
-		metric.MinimumActiveBond = activeNodes[0].Bond
-		for _, node := range activeNodes {
-			metric.TotalActiveBond += node.Bond
-			if node.Bond > metric.MaximumActiveBond {
-				metric.MaximumActiveBond = node.Bond
-			}
-			if node.Bond < metric.MinimumActiveBond {
-				metric.MinimumActiveBond = node.Bond
-			}
-		}
-		metric.AverageActiveBond = float64(metric.TotalActiveBond) / float64(len(activeNodes))
-		metric.MedianActiveBond = activeNodes[len(activeNodes)/2].Bond
-	}
-
-	if len(standbyNodes) > 0 {
-		metric.MinimumStandbyBond = standbyNodes[0].Bond
-		for _, node := range standbyNodes {
-			metric.TotalStandbyBond += node.Bond
-			if node.Bond > metric.MaximumStandbyBond {
-				metric.MaximumStandbyBond = node.Bond
-			}
-			if node.Bond < metric.MinimumStandbyBond {
-				metric.MinimumStandbyBond = node.Bond
-			}
-		}
-		metric.AverageStandbyBond = float64(metric.TotalStandbyBond) / float64(len(standbyNodes))
-		metric.MedianStandbyBond = standbyNodes[len(standbyNodes)/2].Bond
-	}
-
-	netInfo.TotalStaked = totalStaked
-	netInfo.BondMetrics = metric
-	netInfo.ActiveNodeCount = len(activeNodes)
-	netInfo.StandbyNodeCount = len(standbyNodes)
-	netInfo.TotalReserve = vaultData.TotalReserve
-	if totalBond+netInfo.TotalStaked != 0 {
-		netInfo.PoolShareFactor = float64(totalBond-netInfo.TotalStaked) / float64(totalBond+netInfo.TotalStaked)
-	}
-	netInfo.BlockReward.BlockReward = float64(netInfo.TotalReserve) / float64(6*6307200)
-	netInfo.BlockReward.BondReward = (1 - netInfo.PoolShareFactor) * netInfo.BlockReward.BlockReward
-	netInfo.BlockReward.StakeReward = netInfo.BlockReward.BlockReward - netInfo.BlockReward.BondReward
-	netInfo.BondingROI = (netInfo.BlockReward.BondReward * 6307200) / float64(totalBond)
-	netInfo.StakingROI = (netInfo.BlockReward.StakeReward * 6307200) / float64(netInfo.TotalStaked)
-	return &netInfo, nil
+	return lastChurn, nil
 }
