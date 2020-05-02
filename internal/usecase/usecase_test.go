@@ -13,6 +13,13 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+const (
+	emissionCurve        = 6
+	blocksPerYear        = 6307200
+	rotatePerBlockHeight = 51840
+	rotateRetryBlocks    = 720
+)
+
 var _ = Suite(&UsecaseSuite{})
 
 type UsecaseSuite struct {
@@ -1005,9 +1012,9 @@ type TestGetNetworkInfoThorchain struct {
 	ThorchainDummy
 	nodes      []types.NodeAccount
 	vaultData  types.VaultData
-	consts     types.ConstantValues
 	vaults     []types.Vault
 	lastHeight types.LastHeights
+	consts     types.ConstantValues
 	err        error
 }
 
@@ -1020,7 +1027,14 @@ func (t *TestGetNetworkInfoThorchain) GetVaultData() (types.VaultData, error) {
 }
 
 func (t *TestGetNetworkInfoThorchain) GetConstants() (types.ConstantValues, error) {
-	return t.consts, t.err
+	return types.ConstantValues{
+		Int64Values: map[string]int64{
+			"EmissionCurve":        emissionCurve,
+			"BlocksPerYear":        blocksPerYear,
+			"RotatePerBlockHeight": rotatePerBlockHeight,
+			"RotateRetryBlocks":    rotateRetryBlocks,
+		},
+	}, nil
 }
 
 func (t *TestGetNetworkInfoThorchain) GetAsgardVaults() ([]types.Vault, error) {
@@ -1058,12 +1072,6 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 		vaultData: types.VaultData{
 			TotalReserve: 1120,
 		},
-		consts: types.ConstantValues{
-			Int64Values: map[string]int64{
-				"RotatePerBlockHeight": 51840,
-				"RotateRetryBlocks":    720,
-			},
-		},
 		vaults: []types.Vault{
 			{
 				Status:      types.ActiveVault,
@@ -1091,7 +1099,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	stats, err := uc.GetNetworkInfo()
 	c.Assert(err, IsNil)
 	var poolShareFactor float64 = 2985.0 / 5985.0
-	var blockReward float64 = 1120 / (6.0 * 6307200.0)
+	var blockReward float64 = 1120 / float64(emissionCurve*blocksPerYear)
 	var bondReward float64 = (1 - poolShareFactor) * blockReward
 	stakeReward := blockReward - bondReward
 	c.Assert(stats, DeepEquals, &models.NetworkInfo{
@@ -1119,8 +1127,8 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			BondReward:  bondReward,
 			StakeReward: stakeReward,
 		},
-		BondingROI:      (bondReward * 6307200) / 4485,
-		StakingROI:      (stakeReward * 6307200) / 1500,
+		BondingROI:      (bondReward * float64(blocksPerYear)) / 4485,
+		StakingROI:      (stakeReward * float64(blocksPerYear)) / 1500,
 		NextChurnHeight: 51851,
 	})
 
@@ -1131,6 +1139,74 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 
 	// Thorchain error situation
 	store.err = nil
+	client.err = errors.New("could not fetch requested data")
+	_, err = uc.GetNetworkInfo()
+	c.Assert(err, NotNil)
+}
+
+func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
+	client := &TestGetNetworkInfoThorchain{
+		vaults: []types.Vault{
+			{
+				Status:      types.ActiveVault,
+				BlockHeight: 4,
+			},
+		},
+		lastHeight: types.LastHeights{
+			Statechain: 51836,
+		},
+	}
+	uc, err := NewUsecase(client, s.dummyStore, &Config{})
+	c.Assert(err, IsNil)
+
+	hight, err := uc.computeNextChurnHight()
+	c.Assert(err, IsNil)
+	c.Assert(hight, Equals, int64(51844))
+
+	client.lastHeight.Statechain = 103693
+	hight, err = uc.computeNextChurnHight()
+	c.Assert(err, IsNil)
+	c.Assert(hight, Equals, int64(103702))
+
+	// Thorchain error situation
+	client.err = errors.New("could not fetch requested data")
+	_, err = uc.GetNetworkInfo()
+	c.Assert(err, NotNil)
+}
+
+func (s *UsecaseSuite) TestComputeLastChurn(c *C) {
+	client := &TestGetNetworkInfoThorchain{
+		vaults: []types.Vault{
+			{
+				Status:      types.ActiveVault,
+				BlockHeight: 3,
+			},
+			{
+				Status:      types.ActiveVault,
+				BlockHeight: 4,
+			},
+			{
+				Status:      types.InactiveVault,
+				BlockHeight: 2,
+			},
+			{
+				Status:      types.InactiveVault,
+				BlockHeight: 5,
+			},
+			{
+				Status:      types.ActiveVault,
+				BlockHeight: 1,
+			},
+		},
+	}
+	uc, err := NewUsecase(client, s.dummyStore, &Config{})
+	c.Assert(err, IsNil)
+
+	last, err := uc.computeLastChurn()
+	c.Assert(err, IsNil)
+	c.Assert(last, Equals, int64(4))
+
+	// Thorchain error situation
 	client.err = errors.New("could not fetch requested data")
 	_, err = uc.GetNetworkInfo()
 	c.Assert(err, NotNil)
