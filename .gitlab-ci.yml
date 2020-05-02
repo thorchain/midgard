@@ -27,7 +27,6 @@ unit:
   services:
     - docker:19-dind
   tags:
-    - docker
     - midgard
   before_script:
     - echo $GOPATH
