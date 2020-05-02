@@ -22,6 +22,7 @@ type Config struct {
 type Usecase struct {
 	store        store.Store
 	thorchain    thorchain.Thorchain
+	consts       types.ConstantValues
 	multiScanner *multiScanner
 }
 
@@ -31,10 +32,15 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 		return nil, errors.New("conf can't be nil")
 	}
 
+	consts, err := client.GetConstants()
+	if err != nil {
+		return nil, errors.New("could not fetch network constants")
+	}
 	ms := newMultiScanner(client, store, conf.ScanInterval, conf.ScannersUpdateInterval)
 	uc := Usecase{
 		store:        store,
 		thorchain:    client,
+		consts:       consts,
 		multiScanner: ms,
 	}
 	return &uc, nil
@@ -160,13 +166,14 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
 	poolShareFactor := calculatePoolShareFactor(totalBond, totalStaked)
-	rewards := calculateRewards(vaultData.TotalReserve, poolShareFactor)
+	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
 	nextChurnHeight, err := uc.computeNextChurnHight()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
 
+	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
 	netInfo := models.NetworkInfo{
 		BondMetrics:      metrics,
 		ActiveBonds:      activeBonds,
@@ -177,8 +184,8 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:     vaultData.TotalReserve,
 		PoolShareFactor:  poolShareFactor,
 		BlockReward:      rewards,
-		BondingROI:       (rewards.BondReward * 6307200) / float64(totalBond),
-		StakingROI:       (rewards.StakeReward * 6307200) / float64(totalStaked),
+		BondingROI:       (rewards.BondReward * blocksPerYear) / float64(totalBond),
+		StakingROI:       (rewards.StakeReward * blocksPerYear) / float64(totalStaked),
 		NextChurnHeight:  nextChurnHeight,
 	}
 	return &netInfo, nil
@@ -269,8 +276,11 @@ func calculatePoolShareFactor(totalBond, totalStaked uint64) float64 {
 	return 0
 }
 
-func calculateRewards(totalReserve uint64, poolShareFactor float64) models.BlockRewards {
-	blockReward := float64(totalReserve) / (6 * 6307200)
+func (uc *Usecase) calculateRewards(totalReserve uint64, poolShareFactor float64) models.BlockRewards {
+	emission := uc.consts.Int64Values["EmissionCurve"]
+	blocksPerYear := uc.consts.Int64Values["BlocksPerYear"]
+
+	blockReward := float64(totalReserve) / float64(emission*blocksPerYear)
 	bondReward := (1 - poolShareFactor) * blockReward
 	stakeReward := blockReward - bondReward
 	return models.BlockRewards{
@@ -291,18 +301,8 @@ func (uc *Usecase) computeNextChurnHight() (int64, error) {
 		return 0, err
 	}
 
-	consts, err := uc.thorchain.GetConstants()
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get NetworkConstants")
-	}
-	churnInterval, ok := consts.Int64Values["RotatePerBlockHeight"]
-	if !ok {
-		return 0, errors.Wrap(err, "could not find RotatePerBlockHeight in thorchain consts")
-	}
-	churnRetry, ok := consts.Int64Values["RotateRetryBlocks"]
-	if !ok {
-		return 0, errors.Wrap(err, "could not find RotateRetryBlocks in thorchain consts")
-	}
+	churnInterval := uc.consts.Int64Values["RotatePerBlockHeight"]
+	churnRetry := uc.consts.Int64Values["RotateRetryBlocks"]
 
 	var next int64
 	if lastHeight.Statechain-lastChurn <= churnInterval {
