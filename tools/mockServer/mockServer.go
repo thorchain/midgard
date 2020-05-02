@@ -16,15 +16,15 @@ import (
 )
 
 var SmokeTestDataEnabled *bool
-var eventPageSize *int64
-var maxEvent *int64
+var EventPageSize *int64
+var EventNum *int64
 
 var allEvents []map[string]interface{}
 
 func main() {
 	SmokeTestDataEnabled = flag.BoolP("smoke", "s", false, "event the use of the last know smoke-test data suite")
-	eventPageSize = flag.Int64P("page", "p", 0, "max event page size for event endpoint")
-	maxEvent = flag.Int64P("max", "m", 0, "max event id")
+	EventPageSize = flag.Int64P("page", "p", 0, "max event page size for event endpoint")
+	EventNum = flag.Int64P("num", "n", 0, "total number of events")
 	flag.Parse()
 	fmt.Println("SmokeTestDataEnabled: ", *SmokeTestDataEnabled)
 
@@ -43,8 +43,11 @@ func main() {
 	}
 
 	allEvents = make([]map[string]interface{}, 0)
-	dt, _ := ioutil.ReadAll(input)
-	json.Unmarshal(dt, &allEvents)
+	evts, err := ioutil.ReadAll(input)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(evts, &allEvents)
 
 	addr := ":8081"
 	router := mux.NewRouter()
@@ -78,23 +81,30 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "[]")
 		return
 	}
-	offset, _ := strconv.ParseInt(vars["id"], 10, 64)
+	offset, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		fmt.Fprintf(writer, "[]")
+		return
+	}
 	offset -= 1
 
 	if offset >= int64(len(allEvents)) {
 		fmt.Fprintf(writer, string("[]"))
 		return
 	}
-	end := offset + *eventPageSize
-	if *maxEvent < end {
-		end = *maxEvent
+	end := offset + *EventPageSize
+	if *EventNum < end {
+		end = *EventNum
 	}
 	if end > int64(len(allEvents)) {
 		end = int64(len(allEvents))
 	}
-	resp, _ := json.Marshal(allEvents[offset:end])
-	fmt.Fprintf(writer, string(resp))
-	return
+	resp, err := json.Marshal(allEvents[offset:end])
+	if err != nil {
+		fmt.Fprintf(writer, "[]")
+	} else {
+		fmt.Fprintf(writer, string(resp))
+	}
 }
 
 func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
