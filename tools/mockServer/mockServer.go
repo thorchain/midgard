@@ -51,9 +51,10 @@ func main() {
 
 	// router.HandleFunc("/", welcome).Methods("GET")
 	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
-	router.HandleFunc("/thorchain/events/{id}", eventsMockedEndpoint).Methods("GET")
+	router.HandleFunc("/thorchain/events/{id}/{chain}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/tx/{id}", eventsTxMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/pool_addresses", pool_addresses).Methods("GET")
+	router.HandleFunc("/thorchain/vaults/asgard", asgardVaultsMockedEndpoint).Methods("GET")
 
 	// used to debug incorrect dynamically generated requests
 	router.PathPrefix("/").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -87,6 +88,9 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	end := offset + *eventPageSize
 	if *maxEvent < end {
 		end = *maxEvent
+	}
+	if end > int64(len(allEvents)) {
+		end = int64(len(allEvents))
 	}
 	resp, _ := json.Marshal(allEvents[offset:end])
 	fmt.Fprintf(writer, string(resp))
@@ -129,4 +133,10 @@ func eventsTxMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 
 	writer.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(writer, string(content))
+}
+
+func asgardVaultsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
+	log.Println("asgardVaultsMockedEndpoint Hit!")
+	writer.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(writer, "[{\"chains\":[\"BNB\"]}]")
 }
