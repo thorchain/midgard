@@ -58,7 +58,7 @@ func main() {
 	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/{id}/{chain}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/tx/{id}", eventsTxMockedEndpoint).Methods("GET")
-	router.HandleFunc("/thorchain/pool_addresses", pool_addresses).Methods("GET")
+	router.HandleFunc("/thorchain/pool_addresses", poolAdressesMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/vaults/asgard", asgardVaultsMockedEndpoint).Methods("GET")
 
 	// used to debug incorrect dynamically generated requests
@@ -121,7 +121,7 @@ func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, string(content))
 }
 
-func pool_addresses(writer http.ResponseWriter, request *http.Request) {
+func poolAdressesMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 	log.Println("pool_addresses Hit!")
 
 	content, err := ioutil.ReadFile("./thorchain/pool_addresses/pool_addresses.json")
