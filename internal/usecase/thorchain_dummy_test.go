@@ -32,7 +32,7 @@ func (t *ThorchainDummy) GetVaultData() (types.VaultData, error) {
 }
 
 func (t *ThorchainDummy) GetConstants() (types.ConstantValues, error) {
-	return types.ConstantValues{}, ErrNotImplemented
+	return types.ConstantValues{}, nil
 }
 
 func (t *ThorchainDummy) GetAsgardVaults() ([]types.Vault, error) {
