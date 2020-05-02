@@ -1,10 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 
 	flag "github.com/spf13/pflag"
 
@@ -12,11 +16,35 @@ import (
 )
 
 var SmokeTestDataEnabled *bool
+var eventPageSize *int64
+var maxEvent *int64
+
+var allEvents []map[string]interface{}
 
 func main() {
 	SmokeTestDataEnabled = flag.BoolP("smoke", "s", false, "event the use of the last know smoke-test data suite")
+	eventPageSize = flag.Int64P("page", "p", 0, "max event page size for event endpoint")
+	maxEvent = flag.Int64P("max", "m", 0, "max event id")
 	flag.Parse()
 	fmt.Println("SmokeTestDataEnabled: ", *SmokeTestDataEnabled)
+
+	var input *os.File
+	var err error
+	if *SmokeTestDataEnabled {
+		input, err = os.Open("./thorchain/events/events.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		input, err = os.Open("./thorchain/events/events.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	allEvents = make([]map[string]interface{}, 0)
+	dt, _ := ioutil.ReadAll(input)
+	json.Unmarshal(dt, &allEvents)
 
 	addr := ":8081"
 	router := mux.NewRouter()
@@ -42,33 +70,27 @@ func main() {
 }
 
 func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
-	log.Println("eventsMockedEndpoint Hit!")
 	vars := mux.Vars(request)
-
-	id := vars["id"]
-
-	if id != "1" {
-		writer.Header().Set("Content-Type", "application/json")
+	log.Println("eventsMockedEndpoint Hit!")
+	writer.Header().Set("Content-Type", "application/json")
+	if strings.ToUpper(vars["chain"]) != "BNB" {
 		fmt.Fprintf(writer, "[]")
 		return
 	}
+	offset, _ := strconv.ParseInt(vars["id"], 10, 64)
+	offset -= 1
 
-	var content []byte
-	var err error
-	if *SmokeTestDataEnabled {
-		content, err = ioutil.ReadFile("./thorchain/events/smoke-test/events.json")
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		content, err = ioutil.ReadFile("./thorchain/events/events.json")
-		if err != nil {
-			log.Fatal(err)
-		}
+	if offset >= int64(len(allEvents)) {
+		fmt.Fprintf(writer, string("[]"))
+		return
 	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(writer, string(content))
+	end := offset + *eventPageSize
+	if *maxEvent < end {
+		end = *maxEvent
+	}
+	resp, _ := json.Marshal(allEvents[offset:end])
+	fmt.Fprintf(writer, string(resp))
+	return
 }
 
 func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
