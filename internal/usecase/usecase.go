@@ -270,7 +270,7 @@ func calculatePoolShareFactor(totalBond, totalStaked uint64) float64 {
 }
 
 func calculateRewards(totalReserve uint64, poolShareFactor float64) models.BlockRewards {
-	blockReward := float64(totalReserve) / 6 * 6307200
+	blockReward := float64(totalReserve) / (6 * 6307200)
 	bondReward := (1 - poolShareFactor) * blockReward
 	stakeReward := blockReward - bondReward
 	return models.BlockRewards{
