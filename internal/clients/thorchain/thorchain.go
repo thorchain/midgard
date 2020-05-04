@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gregjones/httpcache"
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -46,7 +47,8 @@ func NewClient(cfg config.ThorChainConfiguration) (*Client, error) {
 		thorchainEndpoint:  fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
 		tendermintEndpoint: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
 		httpClient: &http.Client{
-			Timeout: cfg.ReadTimeout,
+			Transport: newCacheWrapper(cfg.CacheTTL).newTransport(),
+			Timeout:   cfg.ReadTimeout,
 		},
 		logger: log.With().Str("module", "thorchain_client").Logger(),
 	}
@@ -229,4 +231,8 @@ func (wrapper *cacheWrapper) Set(key string, responseBytes []byte) {
 
 func (wrapper *cacheWrapper) Delete(key string) {
 	wrapper.cache.Delete(key)
+}
+
+func (wrapper *cacheWrapper) newTransport() http.RoundTripper {
+	return httpcache.NewTransport(wrapper)
 }
