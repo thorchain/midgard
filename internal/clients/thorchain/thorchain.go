@@ -206,6 +206,22 @@ func (c *Client) GetChains() ([]common.Chain, error) {
 	return chains, nil
 }
 
+// ping requests /ping endpoint of test mocked thorchain server and returns
+// the time field.
+func (c *Client) ping() (string, error) {
+	url := fmt.Sprintf("%s/ping", c.thorchainEndpoint)
+	var v map[string]interface{}
+	err := c.requestEndpoint(url, &v)
+	if err != nil {
+		return "", err
+	}
+
+	if t, ok := v["time"].(string); ok {
+		return t, nil
+	}
+	return "", errors.New("time field is not available")
+}
+
 // cacheWrapper implements httpcache.Cache on go-cache.Cache
 type cacheWrapper struct {
 	cache *cache.Cache
