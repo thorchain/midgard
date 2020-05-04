@@ -3,10 +3,9 @@ package thorchain
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	"time"
 
-	"github.com/gregjones/httpcache"
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -34,6 +33,7 @@ type Client struct {
 	thorchainEndpoint  string
 	tendermintEndpoint string
 	httpClient         *http.Client
+	cache              *cache.Cache
 	logger             zerolog.Logger
 }
 
@@ -47,9 +47,9 @@ func NewClient(cfg config.ThorChainConfiguration) (*Client, error) {
 		thorchainEndpoint:  fmt.Sprintf("%s://%s/thorchain", cfg.Scheme, cfg.Host),
 		tendermintEndpoint: fmt.Sprintf("%s://%s", cfg.Scheme, cfg.RPCHost),
 		httpClient: &http.Client{
-			Transport: newCacheWrapper(cfg.CacheTTL).newTransport(),
-			Timeout:   cfg.ReadTimeout,
+			Timeout: cfg.ReadTimeout,
 		},
+		cache:  cache.New(cfg.CacheTTL, cfg.CacheCleanup),
 		logger: log.With().Str("module", "thorchain_client").Logger(),
 	}
 	return sc, nil
@@ -168,21 +168,41 @@ func (c *Client) GetLastChainHeight() (types.LastHeights, error) {
 }
 
 func (c *Client) requestEndpoint(url string, result interface{}) error {
-	c.logger.Debug().Msg(url)
-	resp, err := c.httpClient.Get(url)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := resp.Body.Close(); nil != err {
-			c.logger.Error().Err(err).Msg("could not close the http response properly")
+	data := c.checkCache(url)
+	if data != nil {
+		c.logger.Debug().Bool("cached", true).Msg(url)
+	} else {
+		c.logger.Debug().Msg(url)
+		resp, err := c.httpClient.Get(url)
+		if err != nil {
+			return errors.Wrap(err, "http request failed")
 		}
-	}()
+		data, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return errors.Wrap(err, "could not read response body")
+		}
+		if err := resp.Body.Close(); nil != err {
+			return errors.Wrap(err, "could not close the http response properly")
+		}
+		c.updateCache(url, data)
+	}
 
-	if err := json.NewDecoder(resp.Body).Decode(result); nil != err {
+	if err := json.Unmarshal(data, result); nil != err {
 		return errors.Wrapf(err, "failed to unmarshal result as %T", result)
 	}
 	return nil
+}
+
+func (c *Client) checkCache(key string) []byte {
+	v, ok := c.cache.Get(key)
+	if ok {
+		return v.([]byte)
+	}
+	return nil
+}
+
+func (c *Client) updateCache(key string, data []byte) {
+	c.cache.Set(key, data, cache.DefaultExpiration)
 }
 
 // GetChains fetch list of chains
@@ -220,35 +240,4 @@ func (c *Client) ping() (string, error) {
 		return t, nil
 	}
 	return "", errors.New("time field is not available")
-}
-
-// cacheWrapper implements httpcache.Cache on go-cache.Cache
-type cacheWrapper struct {
-	cache *cache.Cache
-}
-
-func newCacheWrapper(ttl time.Duration) *cacheWrapper {
-	return &cacheWrapper{
-		cache: cache.New(ttl, ttl),
-	}
-}
-
-func (wrapper *cacheWrapper) Get(key string) (responseBytes []byte, ok bool) {
-	item, ok := wrapper.cache.Get(key)
-	if !ok {
-		return nil, false
-	}
-	return item.([]byte), true
-}
-
-func (wrapper *cacheWrapper) Set(key string, responseBytes []byte) {
-	wrapper.cache.Set(key, responseBytes, cache.DefaultExpiration)
-}
-
-func (wrapper *cacheWrapper) Delete(key string) {
-	wrapper.cache.Delete(key)
-}
-
-func (wrapper *cacheWrapper) newTransport() http.RoundTripper {
-	return httpcache.NewTransport(wrapper)
 }
