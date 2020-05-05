@@ -177,6 +177,7 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 		TotalVolume:        totalVolume,
 		TotalStaked:        bTotalStaked,
 		TotalDepth:         totalDepth,
+		TotalEarned:        0, // TODO: Implement a method for TotalEarned in repository layer.
 		PoolCount:          poolCount,
 		TotalAssetBuys:     totalAssetBuys,
 		TotalAssetSells:    totalAssetSells,
