@@ -36,7 +36,6 @@ type Store interface {
 	TotalVolume24hr() (uint64, error)
 	TotalVolume() (uint64, error)
 	TotalStaked() (uint64, error)
-	TotalRuneStaked() (int64, error)
 	PoolCount() (uint64, error)
 	TotalAssetBuys() (uint64, error)
 	TotalAssetSells() (uint64, error)
