@@ -105,9 +105,83 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 
 // GetStats returns some historical statistic data of network.
 func (uc *Usecase) GetStats() (*models.StatsData, error) {
-	stats, err := uc.store.GetStatsData()
+	dailyActiveUsers, err := uc.store.DailyActiveUsers()
 	if err != nil {
 		return nil, err
+	}
+	monthlyActiveUsers, err := uc.store.MonthlyActiveUsers()
+	if err != nil {
+		return nil, err
+	}
+	totalUsers, err := uc.store.TotalUsers()
+	if err != nil {
+		return nil, err
+	}
+	dailyTx, err := uc.store.DailyTx()
+	if err != nil {
+		return nil, err
+	}
+	monthlyTx, err := uc.store.MonthlyTx()
+	if err != nil {
+		return nil, err
+	}
+	totalTx, err := uc.store.TotalTx()
+	if err != nil {
+		return nil, err
+	}
+	totalVolume24hr, err := uc.store.TotalVolume24hr()
+	if err != nil {
+		return nil, err
+	}
+	totalVolume, err := uc.store.TotalVolume()
+	if err != nil {
+		return nil, err
+	}
+	bTotalStaked, err := uc.store.TotalStaked()
+	if err != nil {
+		return nil, err
+	}
+	totalDepth, err := uc.store.GetTotalDepth()
+	if err != nil {
+		return nil, err
+	}
+	poolCount, err := uc.store.PoolCount()
+	if err != nil {
+		return nil, err
+	}
+	totalAssetBuys, err := uc.store.TotalAssetBuys()
+	if err != nil {
+		return nil, err
+	}
+	totalAssetSells, err := uc.store.TotalAssetSells()
+	if err != nil {
+		return nil, err
+	}
+	totalStakeTx, err := uc.store.TotalStakeTx()
+	if err != nil {
+		return nil, err
+	}
+	totalWithdrawTx, err := uc.store.TotalWithdrawTx()
+	if err != nil {
+		return nil, err
+	}
+
+	stats := models.StatsData{
+		DailyActiveUsers:   dailyActiveUsers,
+		MonthlyActiveUsers: monthlyActiveUsers,
+		TotalUsers:         totalUsers,
+		DailyTx:            dailyTx,
+		MonthlyTx:          monthlyTx,
+		TotalTx:            totalTx,
+		TotalVolume24hr:    totalVolume24hr,
+		TotalVolume:        totalVolume,
+		TotalStaked:        bTotalStaked,
+		TotalDepth:         totalDepth,
+		PoolCount:          poolCount,
+		TotalAssetBuys:     totalAssetBuys,
+		TotalAssetSells:    totalAssetSells,
+		TotalStakeTx:       totalStakeTx,
+		TotalWithdrawTx:    totalWithdrawTx,
 	}
 	return &stats, nil
 }
