@@ -584,6 +584,10 @@ func (s *TestGetStatsStore) TotalStaked() (uint64, error) {
 	return s.totalStaked, s.err
 }
 
+func (s *TestGetStatsStore) GetTotalDepth() (uint64, error) {
+	return s.totalDepth, s.err
+}
+
 func (s *TestGetStatsStore) PoolCount() (uint64, error) {
 	return s.poolCount, s.err
 }
@@ -617,7 +621,7 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 		totalVolume:        50000,
 		totalStaked:        30000,
 		totalDepth:         35000,
-		totalEarned:        5000,
+		totalEarned:        0,
 		poolCount:          3,
 		totalAssetBuys:     50,
 		totalAssetSells:    60,
