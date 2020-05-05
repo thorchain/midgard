@@ -91,8 +91,60 @@ func (s *StoreDummy) GetTotalDepth() (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetStatsData() (models.StatsData, error) {
-	return models.StatsData{}, ErrNotImplemented
+func (s *StoreDummy) DailyActiveUsers() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) MonthlyActiveUsers() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalUsers() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) DailyTx() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) MonthlyTx() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalTx() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalVolume24hr() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalVolume() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalStaked() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) PoolCount() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalAssetBuys() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalAssetSells() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalStakeTx() (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) TotalWithdrawTx() (uint64, error) {
+	return 0, ErrNotImplemented
 }
 
 func (s *StoreDummy) GetPoolData(asset common.Asset) (models.PoolData, error) {

@@ -548,26 +548,64 @@ type TestGetStatsStore struct {
 	err                error
 }
 
-func (s *TestGetStatsStore) GetStatsData() (models.StatsData, error) {
-	stats := models.StatsData{
-		DailyActiveUsers:   s.dailyActiveUsers,
-		MonthlyActiveUsers: s.monthlyActiveUsers,
-		TotalUsers:         s.totalUsers,
-		DailyTx:            s.dailyTx,
-		MonthlyTx:          s.monthlyTx,
-		TotalTx:            s.totalTx,
-		TotalVolume24hr:    s.totalVolume24hr,
-		TotalVolume:        s.totalVolume,
-		TotalStaked:        s.totalStaked,
-		TotalDepth:         s.totalDepth,
-		TotalEarned:        s.totalEarned,
-		PoolCount:          s.poolCount,
-		TotalAssetBuys:     s.totalAssetBuys,
-		TotalAssetSells:    s.totalAssetSells,
-		TotalStakeTx:       s.totalStakeTx,
-		TotalWithdrawTx:    s.totalWithdrawTx,
-	}
-	return stats, s.err
+func (s *TestGetStatsStore) DailyActiveUsers() (uint64, error) {
+	return s.dailyActiveUsers, s.err
+}
+
+func (s *TestGetStatsStore) MonthlyActiveUsers() (uint64, error) {
+	return s.monthlyActiveUsers, s.err
+}
+
+func (s *TestGetStatsStore) TotalUsers() (uint64, error) {
+	return s.totalUsers, s.err
+}
+
+func (s *TestGetStatsStore) DailyTx() (uint64, error) {
+	return s.dailyTx, s.err
+}
+
+func (s *TestGetStatsStore) MonthlyTx() (uint64, error) {
+	return s.monthlyTx, s.err
+}
+
+func (s *TestGetStatsStore) TotalTx() (uint64, error) {
+	return s.totalTx, s.err
+}
+
+func (s *TestGetStatsStore) TotalVolume24hr() (uint64, error) {
+	return s.totalVolume24hr, s.err
+}
+
+func (s *TestGetStatsStore) TotalVolume() (uint64, error) {
+	return s.totalVolume, s.err
+}
+
+func (s *TestGetStatsStore) TotalStaked() (uint64, error) {
+	return s.totalStaked, s.err
+}
+
+func (s *TestGetStatsStore) GetTotalDepth() (uint64, error) {
+	return s.totalDepth, s.err
+}
+
+func (s *TestGetStatsStore) PoolCount() (uint64, error) {
+	return s.poolCount, s.err
+}
+
+func (s *TestGetStatsStore) TotalAssetBuys() (uint64, error) {
+	return s.totalAssetBuys, s.err
+}
+
+func (s *TestGetStatsStore) TotalAssetSells() (uint64, error) {
+	return s.totalAssetSells, s.err
+}
+
+func (s *TestGetStatsStore) TotalStakeTx() (uint64, error) {
+	return s.totalStakeTx, s.err
+}
+
+func (s *TestGetStatsStore) TotalWithdrawTx() (uint64, error) {
+	return s.totalWithdrawTx, s.err
 }
 
 func (s *UsecaseSuite) TestGetStats(c *C) {
@@ -583,7 +621,7 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 		totalVolume:        50000,
 		totalStaked:        30000,
 		totalDepth:         35000,
-		totalEarned:        5000,
+		totalEarned:        0,
 		poolCount:          3,
 		totalAssetBuys:     50,
 		totalAssetSells:    60,
