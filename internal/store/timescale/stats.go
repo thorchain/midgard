@@ -2,7 +2,9 @@ package timescale
 
 import (
 	"database/sql"
+	"time"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
@@ -77,48 +79,26 @@ func (s *Client) TotalUsers() (uint64, error) {
 	return uint64(totalUsers.Int64), nil
 }
 
-func (s *Client) DailyTx() (uint64, error) {
-	stmnt := `
-		SELECT COALESCE(COUNT(tx_hash), 0) daily_tx
-			FROM txs
-		WHERE time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()`
+// GetTxsCount returns total number of transactions between "from" to "to".
+func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("COUNT(tx_hash)").From("txs")
+	if from != nil {
+		sb.Where(sb.GE("time", *from))
+	}
+	if to != nil {
+		sb.Where(sb.LE("time", *to))
+	}
+	query, args := sb.Build()
 
-	var dailyTx sql.NullInt64
-	row := s.db.QueryRow(stmnt)
+	var count sql.NullInt64
+	row := s.db.QueryRow(query, args...)
 
-	if err := row.Scan(&dailyTx); err != nil {
-		return 0, errors.Wrap(err, "dailyTx failed")
+	if err := row.Scan(&count); err != nil {
+		return 0, err
 	}
 
-	return uint64(dailyTx.Int64), nil
-}
-
-func (s *Client) MonthlyTx() (uint64, error) {
-	stmnt := `
-		SELECT COALESCE(COUNT(txs.tx_hash), 0) monthly_tx
-			FROM txs
-		WHERE txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()`
-
-	var monthlyTx sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&monthlyTx); err != nil {
-		return 0, errors.Wrap(err, "monthlyTx failed")
-	}
-
-	return uint64(monthlyTx.Int64), nil
-}
-
-func (s *Client) TotalTx() (uint64, error) {
-	stmnt := `SELECT COALESCE(COUNT(tx_hash), 0) FROM txs`
-	var totalTx sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalTx); err != nil {
-		return 0, errors.Wrap(err, "totalTx failed")
-	}
-
-	return uint64(totalTx.Int64), nil
+	return uint64(count.Int64), nil
 }
 
 func (s *Client) TotalVolume24hr() (uint64, error) {

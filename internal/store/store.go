@@ -2,6 +2,8 @@ package store
 
 //go:generate mockgen -destination mock_store.go -package store . Store
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
@@ -30,9 +32,7 @@ type Store interface {
 	DailyActiveUsers() (uint64, error)
 	MonthlyActiveUsers() (uint64, error)
 	TotalUsers() (uint64, error)
-	DailyTx() (uint64, error)
-	MonthlyTx() (uint64, error)
-	TotalTx() (uint64, error)
+	GetTxsCount(from, to *time.Time) (uint64, error)
 	TotalVolume24hr() (uint64, error)
 	TotalVolume() (uint64, error)
 	TotalStaked() (uint64, error)

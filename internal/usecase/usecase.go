@@ -11,6 +11,11 @@ import (
 	"gitlab.com/thorchain/midgard/internal/store"
 )
 
+const (
+	day   = time.Hour * 24
+	month = day * 30
+)
+
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
 	ScanInterval           time.Duration
@@ -105,6 +110,10 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 
 // GetStats returns some historical statistic data of network.
 func (uc *Usecase) GetStats() (*models.StatsData, error) {
+	now := time.Now()
+	pastDay := now.Add(-day)
+	pastMonth := now.Add(-month)
+
 	dailyActiveUsers, err := uc.store.DailyActiveUsers()
 	if err != nil {
 		return nil, err
@@ -117,15 +126,15 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	if err != nil {
 		return nil, err
 	}
-	dailyTx, err := uc.store.DailyTx()
+	dailyTx, err := uc.store.GetTxsCount(&pastDay, &now)
 	if err != nil {
 		return nil, err
 	}
-	monthlyTx, err := uc.store.MonthlyTx()
+	monthlyTx, err := uc.store.GetTxsCount(&pastMonth, &now)
 	if err != nil {
 		return nil, err
 	}
-	totalTx, err := uc.store.TotalTx()
+	totalTx, err := uc.store.GetTxsCount(nil, nil)
 	if err != nil {
 		return nil, err
 	}

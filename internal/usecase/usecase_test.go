@@ -560,16 +560,21 @@ func (s *TestGetStatsStore) TotalUsers() (uint64, error) {
 	return s.totalUsers, s.err
 }
 
-func (s *TestGetStatsStore) DailyTx() (uint64, error) {
-	return s.dailyTx, s.err
-}
+func (s *TestGetStatsStore) GetTxsCount(from, to *time.Time) (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	if from == nil && to == nil {
+		return s.totalTx, nil
+	}
 
-func (s *TestGetStatsStore) MonthlyTx() (uint64, error) {
-	return s.monthlyTx, s.err
-}
-
-func (s *TestGetStatsStore) TotalTx() (uint64, error) {
-	return s.totalTx, s.err
+	switch to.Sub(*from) {
+	case day:
+		return s.dailyTx, nil
+	case month:
+		return s.monthlyTx, nil
+	}
+	return 0, errors.New("could not query txs count")
 }
 
 func (s *TestGetStatsStore) TotalVolume24hr() (uint64, error) {
