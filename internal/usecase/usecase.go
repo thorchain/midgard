@@ -114,15 +114,15 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	pastDay := now.Add(-day)
 	pastMonth := now.Add(-month)
 
-	dailyActiveUsers, err := uc.store.DailyActiveUsers()
+	dailyActiveUsers, err := uc.store.GetUsersCount(&pastDay, &now)
 	if err != nil {
 		return nil, err
 	}
-	monthlyActiveUsers, err := uc.store.MonthlyActiveUsers()
+	monthlyActiveUsers, err := uc.store.GetUsersCount(&pastMonth, &now)
 	if err != nil {
 		return nil, err
 	}
-	totalUsers, err := uc.store.TotalUsers()
+	totalUsers, err := uc.store.GetUsersCount(nil, nil)
 	if err != nil {
 		return nil, err
 	}

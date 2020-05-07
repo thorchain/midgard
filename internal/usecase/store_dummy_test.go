@@ -92,15 +92,7 @@ func (s *StoreDummy) GetTotalDepth() (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) DailyActiveUsers() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) MonthlyActiveUsers() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalUsers() (uint64, error) {
+func (s *StoreDummy) GetUsersCount(_, _ *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 

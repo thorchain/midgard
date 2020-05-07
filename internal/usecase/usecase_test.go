@@ -548,16 +548,21 @@ type TestGetStatsStore struct {
 	err                error
 }
 
-func (s *TestGetStatsStore) DailyActiveUsers() (uint64, error) {
-	return s.dailyActiveUsers, s.err
-}
+func (s *TestGetStatsStore) GetUsersCount(from, to *time.Time) (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	if from == nil && to == nil {
+		return s.totalUsers, nil
+	}
 
-func (s *TestGetStatsStore) MonthlyActiveUsers() (uint64, error) {
-	return s.monthlyActiveUsers, s.err
-}
-
-func (s *TestGetStatsStore) TotalUsers() (uint64, error) {
-	return s.totalUsers, s.err
+	switch to.Sub(*from) {
+	case day:
+		return s.dailyActiveUsers, nil
+	case month:
+		return s.monthlyActiveUsers, nil
+	}
+	return 0, errors.New("could not query users count")
 }
 
 func (s *TestGetStatsStore) GetTxsCount(from, to *time.Time) (uint64, error) {

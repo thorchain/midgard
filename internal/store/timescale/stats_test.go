@@ -8,102 +8,49 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
-func (s *TimeScaleSuite) TestDailyActiveUsers(c *C) {
-	dailyActiveUsers, err := s.Store.DailyActiveUsers()
+func (s *TimeScaleSuite) TestGetUsersCount(c *C) {
+	count, err := s.Store.GetUsersCount(nil, nil)
 	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(0))
+	c.Assert(count, Equals, uint64(0))
 
-	// Single stake
+	from := time.Now().Add(-time.Hour)
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
-
-	dailyActiveUsers, err = s.Store.DailyActiveUsers()
+	to := time.Now()
+	count, err = s.Store.GetUsersCount(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
+	c.Assert(count, Equals, uint64(1))
 
-	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)
-
-	dailyActiveUsers, err = s.Store.DailyActiveUsers()
+	to = time.Now()
+	count, err = s.Store.GetUsersCount(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
+	c.Assert(count, Equals, uint64(1))
 
-	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
-
-	dailyActiveUsers, err = s.Store.DailyActiveUsers()
+	to = time.Now()
+	count, err = s.Store.GetUsersCount(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(1), Commentf("%v", dailyActiveUsers))
-}
+	c.Assert(count, Equals, uint64(1))
 
-func (s *TimeScaleSuite) TestMonthlyActiveUsers(c *C) {
-	dailyActiveUsers, err := s.Store.MonthlyActiveUsers()
-	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(0))
-
-	// Single stake
-	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	dailyActiveUsers, err = s.Store.MonthlyActiveUsers()
-	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(1))
-
-	// Additional stake
-	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	dailyActiveUsers, err = s.Store.MonthlyActiveUsers()
-	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(1))
-
-	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
-	c.Assert(err, IsNil)
-
-	dailyActiveUsers, err = s.Store.MonthlyActiveUsers()
-	c.Assert(err, IsNil)
-	c.Assert(dailyActiveUsers, Equals, uint64(1))
-}
-
-func (s *TimeScaleSuite) TestTotalUsers(c *C) {
-	totalUsers, err := s.Store.TotalUsers()
-	c.Assert(err, IsNil)
-	c.Assert(totalUsers, Equals, uint64(0))
-
-	// Single stake
-	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	totalUsers, err = s.Store.TotalUsers()
-	c.Assert(err, IsNil)
-	c.Assert(totalUsers, Equals, uint64(1))
-
-	// Additional stake
-	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	totalUsers, err = s.Store.TotalUsers()
-	c.Assert(err, IsNil)
-	c.Assert(totalUsers, Equals, uint64(1))
-
-	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
-	c.Assert(err, IsNil)
-
-	totalUsers, err = s.Store.TotalUsers()
-	c.Assert(err, IsNil)
-	c.Assert(totalUsers, Equals, uint64(1))
-
-	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
-
-	totalUsers, err = s.Store.TotalUsers()
+	to = time.Now()
+	count, err = s.Store.GetUsersCount(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(totalUsers, Equals, uint64(2), Commentf("totalUsers: %v", totalUsers))
+	c.Assert(count, Equals, uint64(2))
+
+	from = time.Now().Add(-time.Hour * 2)
+	to = from.Add(time.Hour)
+	count, err = s.Store.GetUsersCount(&from, &to)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, uint64(0))
+
+	count, err = s.Store.GetUsersCount(nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestGetTxsCount(c *C) {

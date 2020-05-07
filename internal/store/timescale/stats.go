@@ -9,74 +9,36 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
-func (s *Client) DailyActiveUsers() (uint64, error) {
-	stmnt := `
-		SELECT SUM(users)
-			FROM (
-			    SELECT COUNT(DISTINCT(txs.from_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'in'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()	
-			    UNION
-			    SELECT COUNT(DISTINCT(txs.to_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'out'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-			) x;`
-	var dailyActiveUsers sql.NullInt64
-	row := s.db.QueryRow(stmnt)
+// GetUsersCount returns total number of unique addresses that done tx between "from" to "to".
+func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("COUNT(DISTINCT(subject_address))")
+	if from != nil {
+		sb.Where(sb.GE("time", *from))
+	}
+	if to != nil {
+		sb.Where(sb.LE("time", *to))
+	}
+	sb.From(`(
+		SELECT time, txs.from_address subject_address 
+		FROM txs
+		WHERE txs.direction = 'in'
+		UNION
+		SELECT time, txs.to_address subject_address 
+		FROM txs
+		WHERE txs.direction = 'out'
+		) txs_addresses`)
 
-	if err := row.Scan(&dailyActiveUsers); err != nil {
-		return 0, errors.Wrap(err, "dailyActiveUsers failed")
+	query, args := sb.Build()
+
+	var count sql.NullInt64
+	row := s.db.QueryRow(query, args...)
+
+	if err := row.Scan(&count); err != nil {
+		return 0, err
 	}
 
-	return uint64(dailyActiveUsers.Int64), nil
-}
-
-func (s *Client) MonthlyActiveUsers() (uint64, error) {
-	stmnt := `
-		SELECT SUM(users)
-			FROM (
-			    SELECT COUNT(DISTINCT(txs.from_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'in'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()	
-			    UNION
-			    SELECT COUNT(DISTINCT(txs.to_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'out'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()
-			) x;`
-	var dailyActiveUsers sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&dailyActiveUsers); err != nil {
-		return 0, errors.Wrap(err, "monthlyActiveUsers failed")
-	}
-
-	return uint64(dailyActiveUsers.Int64), nil
-}
-
-func (s *Client) TotalUsers() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(DISTINCT(users))
-			FROM (
-			    SELECT DISTINCT(txs.from_address) users 
-			    	FROM txs
-			    WHERE txs.direction = 'in'
-			    UNION
-			    SELECT DISTINCT(txs.to_address) users 
-			    	FROM txs
-			    WHERE txs.direction = 'out'
-			) x;`
-	var totalUsers sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalUsers); err != nil {
-		return 0, errors.Wrap(err, "totalUsers failed")
-	}
-
-	return uint64(totalUsers.Int64), nil
+	return uint64(count.Int64), nil
 }
 
 // GetTxsCount returns total number of transactions between "from" to "to".
