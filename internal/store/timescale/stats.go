@@ -13,12 +13,6 @@ import (
 func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(DISTINCT(subject_address))")
-	if from != nil {
-		sb.Where(sb.GE("time", *from))
-	}
-	if to != nil {
-		sb.Where(sb.LE("time", *to))
-	}
 	sb.From(`(
 		SELECT time, txs.from_address subject_address 
 		FROM txs
@@ -29,38 +23,17 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 		WHERE txs.direction = 'out'
 		) txs_addresses`)
 
-	query, args := sb.Build()
-
-	var count sql.NullInt64
-	row := s.db.QueryRow(query, args...)
-
-	if err := row.Scan(&count); err != nil {
-		return 0, err
-	}
-
-	return uint64(count.Int64), nil
+	count, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(count), err
 }
 
 // GetTxsCount returns total number of transactions between "from" to "to".
 func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(tx_hash)").From("txs")
-	if from != nil {
-		sb.Where(sb.GE("time", *from))
-	}
-	if to != nil {
-		sb.Where(sb.LE("time", *to))
-	}
-	query, args := sb.Build()
 
-	var count sql.NullInt64
-	row := s.db.QueryRow(query, args...)
-
-	if err := row.Scan(&count); err != nil {
-		return 0, err
-	}
-
-	return uint64(count.Int64), nil
+	count, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(count), err
 }
 
 // GetTotalVolume returns total volume between "from" to "to".
@@ -68,22 +41,9 @@ func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(runeAmt)").From("swaps")
 	sb.Where(sb.G("runeAmt", 0))
-	if from != nil {
-		sb.Where(sb.GE("time", *from))
-	}
-	if to != nil {
-		sb.Where(sb.LE("time", *to))
-	}
-	query, args := sb.Build()
 
-	var count sql.NullInt64
-	row := s.db.QueryRow(query, args...)
-
-	if err := row.Scan(&count); err != nil {
-		return 0, err
-	}
-
-	return uint64(count.Int64), nil
+	vol, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(vol), err
 }
 
 func (s *Client) TotalStaked() (uint64, error) {
