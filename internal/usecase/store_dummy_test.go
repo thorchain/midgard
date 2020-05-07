@@ -100,11 +100,7 @@ func (s *StoreDummy) GetTxsCount(_, _ *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) TotalVolume24hr() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalVolume() (uint64, error) {
+func (s *StoreDummy) GetTotalVolume(_, _ *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 

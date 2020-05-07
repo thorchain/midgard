@@ -63,38 +63,27 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	return uint64(count.Int64), nil
 }
 
-func (s *Client) TotalVolume24hr() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(runeAmt) 
-		FROM swaps
-		WHERE runeAmt > 0
-		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-	`
-	var totalVolume sql.NullInt64
-	row := s.db.QueryRow(stmnt)
+// GetTotalVolume returns total volume between "from" to "to".
+func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("COUNT(runeAmt)").From("swaps")
+	sb.Where(sb.G("runeAmt", 0))
+	if from != nil {
+		sb.Where(sb.GE("time", *from))
+	}
+	if to != nil {
+		sb.Where(sb.LE("time", *to))
+	}
+	query, args := sb.Build()
 
-	if err := row.Scan(&totalVolume); err != nil {
-		return 0, errors.Wrap(err, "totalVolume24hr failed")
+	var count sql.NullInt64
+	row := s.db.QueryRow(query, args...)
+
+	if err := row.Scan(&count); err != nil {
+		return 0, err
 	}
 
-	return uint64(totalVolume.Int64), nil
-}
-
-func (s *Client) TotalVolume() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(runeAmt) 
-		FROM swaps
-		WHERE runeAmt > 0
-	`
-
-	var totalVolume sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalVolume); err != nil {
-		return 0, errors.Wrap(err, "totalVolume failed")
-	}
-
-	return uint64(totalVolume.Int64), nil
+	return uint64(count.Int64), nil
 }
 
 func (s *Client) TotalStaked() (uint64, error) {

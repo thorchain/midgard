@@ -582,12 +582,18 @@ func (s *TestGetStatsStore) GetTxsCount(from, to *time.Time) (uint64, error) {
 	return 0, errors.New("could not query txs count")
 }
 
-func (s *TestGetStatsStore) TotalVolume24hr() (uint64, error) {
-	return s.totalVolume24hr, s.err
-}
+func (s *TestGetStatsStore) GetTotalVolume(from, to *time.Time) (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	if from == nil && to == nil {
+		return s.totalVolume, nil
+	}
 
-func (s *TestGetStatsStore) TotalVolume() (uint64, error) {
-	return s.totalVolume, s.err
+	if to.Sub(*from) == day {
+		return s.totalVolume24hr, nil
+	}
+	return 0, errors.New("could not query total volume count")
 }
 
 func (s *TestGetStatsStore) TotalStaked() (uint64, error) {

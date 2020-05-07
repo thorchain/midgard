@@ -98,64 +98,49 @@ func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
 	c.Assert(count, Equals, uint64(6))
 }
 
-func (s *TimeScaleSuite) TestTotalVolume24hr(c *C) {
-	totalVolume24hr, err := s.Store.TotalVolume24hr()
+func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
+	vol, err := s.Store.GetTotalVolume(nil, nil)
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(0))
 
-	// Single stake
+	from := time.Now().Add(-time.Hour)
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
-
-	totalVolume24hr, err = s.Store.TotalVolume24hr()
+	to := time.Now()
+	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(0))
 
-	// Additional stake
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)
-
-	totalVolume24hr, err = s.Store.TotalVolume24hr()
+	to = time.Now()
+	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(0))
 
-	// Unstake
 	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
 	c.Assert(err, IsNil)
-
-	totalVolume24hr, err = s.Store.TotalVolume24hr()
+	to = time.Now()
+	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume24hr, Equals, uint64(0))
-}
+	c.Assert(vol, Equals, uint64(0))
 
-func (s *TimeScaleSuite) TestTotalVolume(c *C) {
-	totalVolume, err := s.Store.TotalVolume()
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume, Equals, uint64(0))
+	to = time.Now()
+	vol, err = s.Store.GetTotalVolume(&from, &to)
+	c.Assert(err, IsNil)
+	c.Assert(vol, Equals, uint64(0))
 
-	// Single stake
-	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	from = time.Now().Add(-time.Hour * 2)
+	to = from.Add(time.Hour)
+	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
+	c.Assert(vol, Equals, uint64(0))
 
-	totalVolume, err = s.Store.TotalVolume()
+	vol, err = s.Store.GetTotalVolume(nil, nil)
 	c.Assert(err, IsNil)
-	c.Assert(totalVolume, Equals, uint64(0))
-
-	// Additional stake
-	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	totalVolume, err = s.Store.TotalVolume()
-	c.Assert(err, IsNil)
-	c.Assert(totalVolume, Equals, uint64(0))
-
-	// Unstake
-	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
-	c.Assert(err, IsNil)
-
-	totalVolume, err = s.Store.TotalVolume()
-	c.Assert(err, IsNil)
-	c.Assert(totalVolume, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestbTotalStaked(c *C) {

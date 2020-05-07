@@ -138,11 +138,11 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	if err != nil {
 		return nil, err
 	}
-	totalVolume24hr, err := uc.store.TotalVolume24hr()
+	totalVolume24hr, err := uc.store.GetTotalVolume(&pastDay, &now)
 	if err != nil {
 		return nil, err
 	}
-	totalVolume, err := uc.store.TotalVolume()
+	totalVolume, err := uc.store.GetTotalVolume(nil, nil)
 	if err != nil {
 		return nil, err
 	}
