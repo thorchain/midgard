@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"time"
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -91,35 +92,15 @@ func (s *StoreDummy) GetTotalDepth() (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) DailyActiveUsers() (uint64, error) {
+func (s *StoreDummy) GetUsersCount(_, _ *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) MonthlyActiveUsers() (uint64, error) {
+func (s *StoreDummy) GetTxsCount(_, _ *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) TotalUsers() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) DailyTx() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) MonthlyTx() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalTx() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalVolume24hr() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalVolume() (uint64, error) {
+func (s *StoreDummy) GetTotalVolume(_, _ *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 

@@ -1,9 +1,11 @@
 package timescale
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -123,4 +125,20 @@ func MigrationsDown(db *sqlx.DB, logger zerolog.Logger, cfg config.TimeScaleConf
 
 func (s *Client) MigrationsDown() error {
 	return MigrationsDown(s.db, s.logger, s.cfg)
+}
+
+func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *time.Time) (int64, error) {
+	if from != nil {
+		sb.Where(sb.GE("time", *from))
+	}
+	if to != nil {
+		sb.Where(sb.LE("time", *to))
+	}
+	query, args := sb.Build()
+
+	var value sql.NullInt64
+	row := s.db.QueryRow(query, args...)
+
+	err := row.Scan(&value)
+	return value.Int64, err
 }

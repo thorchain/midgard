@@ -2,157 +2,48 @@ package timescale
 
 import (
 	"database/sql"
+	"time"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
-func (s *Client) DailyActiveUsers() (uint64, error) {
-	stmnt := `
-		SELECT SUM(users)
-			FROM (
-			    SELECT COUNT(DISTINCT(txs.from_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'in'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()	
-			    UNION
-			    SELECT COUNT(DISTINCT(txs.to_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'out'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-			) x;`
-	var dailyActiveUsers sql.NullInt64
-	row := s.db.QueryRow(stmnt)
+// GetUsersCount returns total number of unique addresses that done tx between "from" to "to".
+func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("COUNT(DISTINCT(subject_address))")
+	sb.From(`(
+		SELECT time, txs.from_address subject_address 
+		FROM txs
+		WHERE txs.direction = 'in'
+		UNION
+		SELECT time, txs.to_address subject_address 
+		FROM txs
+		WHERE txs.direction = 'out'
+		) txs_addresses`)
 
-	if err := row.Scan(&dailyActiveUsers); err != nil {
-		return 0, errors.Wrap(err, "dailyActiveUsers failed")
-	}
-
-	return uint64(dailyActiveUsers.Int64), nil
+	count, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(count), err
 }
 
-func (s *Client) MonthlyActiveUsers() (uint64, error) {
-	stmnt := `
-		SELECT SUM(users)
-			FROM (
-			    SELECT COUNT(DISTINCT(txs.from_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'in'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()	
-			    UNION
-			    SELECT COUNT(DISTINCT(txs.to_address)) users 
-			    	FROM txs
-			    WHERE txs.direction = 'out'
-			    	AND txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()
-			) x;`
-	var dailyActiveUsers sql.NullInt64
-	row := s.db.QueryRow(stmnt)
+// GetTxsCount returns total number of transactions between "from" to "to".
+func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("COUNT(tx_hash)").From("txs")
 
-	if err := row.Scan(&dailyActiveUsers); err != nil {
-		return 0, errors.Wrap(err, "monthlyActiveUsers failed")
-	}
-
-	return uint64(dailyActiveUsers.Int64), nil
+	count, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(count), err
 }
 
-func (s *Client) TotalUsers() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(DISTINCT(users))
-			FROM (
-			    SELECT DISTINCT(txs.from_address) users 
-			    	FROM txs
-			    WHERE txs.direction = 'in'
-			    UNION
-			    SELECT DISTINCT(txs.to_address) users 
-			    	FROM txs
-			    WHERE txs.direction = 'out'
-			) x;`
-	var totalUsers sql.NullInt64
-	row := s.db.QueryRow(stmnt)
+// GetTotalVolume returns total volume between "from" to "to".
+func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("COUNT(runeAmt)").From("swaps")
+	sb.Where(sb.G("runeAmt", 0))
 
-	if err := row.Scan(&totalUsers); err != nil {
-		return 0, errors.Wrap(err, "totalUsers failed")
-	}
-
-	return uint64(totalUsers.Int64), nil
-}
-
-func (s *Client) DailyTx() (uint64, error) {
-	stmnt := `
-		SELECT COALESCE(COUNT(tx_hash), 0) daily_tx
-			FROM txs
-		WHERE time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()`
-
-	var dailyTx sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&dailyTx); err != nil {
-		return 0, errors.Wrap(err, "dailyTx failed")
-	}
-
-	return uint64(dailyTx.Int64), nil
-}
-
-func (s *Client) MonthlyTx() (uint64, error) {
-	stmnt := `
-		SELECT COALESCE(COUNT(txs.tx_hash), 0) monthly_tx
-			FROM txs
-		WHERE txs.time BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()`
-
-	var monthlyTx sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&monthlyTx); err != nil {
-		return 0, errors.Wrap(err, "monthlyTx failed")
-	}
-
-	return uint64(monthlyTx.Int64), nil
-}
-
-func (s *Client) TotalTx() (uint64, error) {
-	stmnt := `SELECT COALESCE(COUNT(tx_hash), 0) FROM txs`
-	var totalTx sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalTx); err != nil {
-		return 0, errors.Wrap(err, "totalTx failed")
-	}
-
-	return uint64(totalTx.Int64), nil
-}
-
-func (s *Client) TotalVolume24hr() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(runeAmt) 
-		FROM swaps
-		WHERE runeAmt > 0
-		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
-	`
-	var totalVolume sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalVolume); err != nil {
-		return 0, errors.Wrap(err, "totalVolume24hr failed")
-	}
-
-	return uint64(totalVolume.Int64), nil
-}
-
-func (s *Client) TotalVolume() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(runeAmt) 
-		FROM swaps
-		WHERE runeAmt > 0
-	`
-
-	var totalVolume sql.NullInt64
-	row := s.db.QueryRow(stmnt)
-
-	if err := row.Scan(&totalVolume); err != nil {
-		return 0, errors.Wrap(err, "totalVolume failed")
-	}
-
-	return uint64(totalVolume.Int64), nil
+	vol, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(vol), err
 }
 
 func (s *Client) TotalStaked() (uint64, error) {

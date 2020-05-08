@@ -548,36 +548,52 @@ type TestGetStatsStore struct {
 	err                error
 }
 
-func (s *TestGetStatsStore) DailyActiveUsers() (uint64, error) {
-	return s.dailyActiveUsers, s.err
+func (s *TestGetStatsStore) GetUsersCount(from, to *time.Time) (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	if from == nil && to == nil {
+		return s.totalUsers, nil
+	}
+
+	switch to.Sub(*from) {
+	case day:
+		return s.dailyActiveUsers, nil
+	case month:
+		return s.monthlyActiveUsers, nil
+	}
+	return 0, errors.New("could not query users count")
 }
 
-func (s *TestGetStatsStore) MonthlyActiveUsers() (uint64, error) {
-	return s.monthlyActiveUsers, s.err
+func (s *TestGetStatsStore) GetTxsCount(from, to *time.Time) (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	if from == nil && to == nil {
+		return s.totalTx, nil
+	}
+
+	switch to.Sub(*from) {
+	case day:
+		return s.dailyTx, nil
+	case month:
+		return s.monthlyTx, nil
+	}
+	return 0, errors.New("could not query txs count")
 }
 
-func (s *TestGetStatsStore) TotalUsers() (uint64, error) {
-	return s.totalUsers, s.err
-}
+func (s *TestGetStatsStore) GetTotalVolume(from, to *time.Time) (uint64, error) {
+	if s.err != nil {
+		return 0, s.err
+	}
+	if from == nil && to == nil {
+		return s.totalVolume, nil
+	}
 
-func (s *TestGetStatsStore) DailyTx() (uint64, error) {
-	return s.dailyTx, s.err
-}
-
-func (s *TestGetStatsStore) MonthlyTx() (uint64, error) {
-	return s.monthlyTx, s.err
-}
-
-func (s *TestGetStatsStore) TotalTx() (uint64, error) {
-	return s.totalTx, s.err
-}
-
-func (s *TestGetStatsStore) TotalVolume24hr() (uint64, error) {
-	return s.totalVolume24hr, s.err
-}
-
-func (s *TestGetStatsStore) TotalVolume() (uint64, error) {
-	return s.totalVolume, s.err
+	if to.Sub(*from) == day {
+		return s.totalVolume24hr, nil
+	}
+	return 0, errors.New("could not query total volume count")
 }
 
 func (s *TestGetStatsStore) TotalStaked() (uint64, error) {
