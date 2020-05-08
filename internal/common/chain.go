@@ -19,7 +19,7 @@ func NewChain(chain string) (Chain, error) {
 		return noChain, fmt.Errorf("Chain Error: Not enough characters")
 	}
 
-	if len(chain) > 3 {
+	if len(chain) > 10 {
 		return noChain, fmt.Errorf("Chain Error: Too many characters")
 	}
 	return Chain(strings.ToUpper(chain)), nil
