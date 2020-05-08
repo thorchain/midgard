@@ -21,3 +21,13 @@ func (s ChainSuite) TestChain(c *C) {
 	_, err = NewChain("BOGUS") // too long
 	c.Assert(err, NotNil)
 }
+
+func (s ChainSuite) TestChainLength(c *C) {
+	chain, err := NewChain("CH")
+	c.Assert(err.Error(), Equals, "Chain Error: Not enough characters")
+	chain, err = NewChain("THOR")
+	c.Assert(err, IsNil)
+	c.Assert(chain, DeepEquals, THORChain)
+	chain, err = NewChain("LONGCHAIN01")
+	c.Assert(err.Error(), Equals, "Chain Error: Too many characters")
+}

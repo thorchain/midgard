@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	BNBChain = Chain("BNB")
-	ETHChain = Chain("ETH")
-	BTCChain = Chain("BTC")
+	BNBChain  = Chain("BNB")
+	ETHChain  = Chain("ETH")
+	BTCChain  = Chain("BTC")
+	THORChain = Chain("THOR")
 )
 
 type Chain string
