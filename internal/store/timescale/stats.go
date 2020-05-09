@@ -40,8 +40,6 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("SUM(ABS(runeAmt))").From("swaps")
-	sb.Where(sb.G("runeAmt", 0))
-
 	vol, err := s.queryTimestampInt64(sb, from, to)
 	return uint64(vol), err
 }
