@@ -624,6 +624,10 @@ func (s *TestGetStatsStore) TotalWithdrawTx() (uint64, error) {
 	return s.totalWithdrawTx, s.err
 }
 
+func (s *TestGetStatsStore) TotalEarned() (uint64, error) {
+	return s.totalEarned, s.err
+}
+
 func (s *UsecaseSuite) TestGetStats(c *C) {
 	client := &ThorchainDummy{}
 	store := &TestGetStatsStore{
