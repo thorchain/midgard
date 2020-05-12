@@ -29,6 +29,7 @@ type NewEvent struct {
 	Type       string           `json:"type"`
 	Attributes []EventAttribute `json:"attributes"`
 }
+
 type EventAttribute struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`

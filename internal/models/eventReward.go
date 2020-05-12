@@ -1,9 +1,10 @@
 package models
 
 import (
+	"strconv"
+
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
-	"strconv"
 )
 
 type EventReward struct {
@@ -32,15 +33,15 @@ func NewRewardEvent(reward types.EventRewards, event types.Event) EventReward {
 
 func NewRewardEvent1(event types.NewEvent) EventReward {
 	var reward EventReward
-	for _,k:=range event.Attributes{
-		if _,err:=common.NewAsset(k.Key);err==nil{
-			pool,_:=common.NewAsset(k.Key)
-			amount,_:=strconv.ParseInt(k.Value,10,64)
-			poolAmt:=PoolAmount{
-				Pool:pool,
+	for _, k := range event.Attributes {
+		if _, err := common.NewAsset(k.Key); err == nil {
+			pool, _ := common.NewAsset(k.Key)
+			amount, _ := strconv.ParseInt(k.Value, 10, 64)
+			poolAmt := PoolAmount{
+				Pool:   pool,
 				Amount: amount,
 			}
-			reward.PoolRewards=append(reward.PoolRewards,poolAmt)
+			reward.PoolRewards = append(reward.PoolRewards, poolAmt)
 		}
 	}
 	return reward
