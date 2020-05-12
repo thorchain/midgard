@@ -2,10 +2,11 @@ package models
 
 import (
 	"encoding/json"
+	"testing"
+
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
-	"testing"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -57,5 +58,4 @@ func (s *TypesSuite) TestNewRewardEvent1(c *C) {
 		},
 	}
 	c.Assert(gotReward, DeepEquals, expectedReward)
-
 }
