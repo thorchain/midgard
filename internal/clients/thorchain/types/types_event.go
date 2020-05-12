@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -23,6 +24,33 @@ const (
 	SlashEventType   = `slash`
 	ErrataEventType  = `errata`
 )
+
+type NewEvent struct {
+	Type       string           `json:"type"`
+	Attributes []EventAttribute `json:"attributes"`
+}
+type EventAttribute struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+func (attr *EventAttribute) UnmarshalJSON(b []byte) error {
+	var keyVal map[string]string
+	if err := json.Unmarshal(b, &keyVal); err != nil {
+		return err
+	}
+	key, err := base64.StdEncoding.DecodeString(keyVal["key"])
+	if err != nil {
+		return err
+	}
+	val, err := base64.StdEncoding.DecodeString(keyVal["value"])
+	if err != nil {
+		return err
+	}
+	attr.Key = string(key)
+	attr.Value = string(val)
+	return nil
+}
 
 type Event struct {
 	ID     int64           `json:"id,string"`
