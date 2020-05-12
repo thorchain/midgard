@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
 	"testing"
 )
@@ -34,6 +35,27 @@ func (s *TypesSuite) TestNewRewardEvent1(c *C) {
 	var event types.NewEvent
 	err := json.Unmarshal(byt, &event)
 	c.Assert(err, IsNil)
-	reward := NewRewardEvent1(event)
-	_ = reward
+	gotReward := NewRewardEvent1(event)
+	expectedReward := EventReward{
+		PoolRewards: []PoolAmount{
+			{
+				Amount: -276854,
+				Pool: common.Asset{
+					Chain:  "BNB",
+					Symbol: "BNB",
+					Ticker: "BNB",
+				},
+			},
+			{
+				Amount: -548000,
+				Pool: common.Asset{
+					Chain:  "BTC",
+					Symbol: "BTC",
+					Ticker: "BTC",
+				},
+			},
+		},
+	}
+	c.Assert(gotReward, DeepEquals, expectedReward)
+
 }
