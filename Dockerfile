@@ -50,7 +50,7 @@ FROM golang:alpine
 ENV PATH="${PATH}:/go/bin"
 
 RUN apk update
-RUN apk add make openssl bind-tools
+RUN apk add make openssl bind-tools curl
 
 COPY --from=build /tmp/midgard/ .
 
