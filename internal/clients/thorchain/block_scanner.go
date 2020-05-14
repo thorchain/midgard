@@ -1,8 +1,6 @@
 package thorchain
 
 import (
-	"context"
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -11,9 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
-	coretypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/types"
+	rpchttp "github.com/tendermint/tendermint/rpc/client"
 )
 
 // Callback represents methods required by Scanner to notify events.
@@ -32,25 +28,21 @@ type BlockScanner struct {
 	stopChan chan struct{}
 	wg       sync.WaitGroup
 	height   int64
-	synced   int64
 	logger   zerolog.Logger
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
-func NewBlockScanner(addr string, interval time.Duration, callback Callback) (*BlockScanner, error) {
-	client, err := rpchttp.New(addr, "/websocket")
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create a tendermint client")
-	}
-
+func NewBlockScanner(addr string, interval time.Duration, callback Callback) *BlockScanner {
+	client := rpchttp.NewHTTP(addr, "/websocket")
 	sc := &BlockScanner{
 		addr:     addr,
 		client:   client,
 		callback: callback,
 		interval: interval,
+		stopChan: make(chan struct{}),
 		logger:   log.With().Str("module", "block_scanner").Logger(),
 	}
-	return sc, nil
+	return sc
 }
 
 // SetHeight sets the height that scanner will start scanning from.
@@ -64,107 +56,64 @@ func (sc *BlockScanner) SetHeight(height int64) error {
 }
 
 // Start will start the scanner.
-func (sc *BlockScanner) Start(height int64) error {
+func (sc *BlockScanner) Start() error {
 	err := sc.client.Start()
 	if err != nil {
 		return errors.Wrap(err, "failed to start websocket routine")
 	}
 
-	sc.stopChan = make(chan struct{})
-	err = sc.spawnBlockReader()
-	if err != nil {
-		return errors.Wrap(err, "could not spawn block reader routine")
-	}
-	err = sc.spawnTxReader()
-	if err != nil {
-		return errors.Wrap(err, "could not spawn tx reader routine")
-	}
-
+	go sc.scan()
 	return nil
 }
 
-func (sc *BlockScanner) spawnBlockReader() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	query := fmt.Sprintf("tm.event = '%s'", types.EventNewBlockHeader)
-	blocks, err := sc.client.Subscribe(ctx, "midgard", query)
-	if err != nil {
-		return errors.Wrapf(err, "failed to subscribe to event '%'", types.EventNewBlock)
-	}
-
-	go sc.blockReader(blocks)
-	return nil
-}
-
-func (sc *BlockScanner) blockReader(events <-chan coretypes.ResultEvent) {
+func (sc *BlockScanner) scan() {
 	sc.wg.Add(1)
 	defer sc.wg.Done()
 
 	for {
-		if !sc.getSynced() {
-			err := sc.fastSync()
-			if err != nil {
-				sc.logger.Error().Err(err).Msg("failed to fast sync")
-			}
-		}
-
 		select {
-		case e := <-events:
-			block := e.Data.(types.EventDataNewBlockHeader)
-			height := block.Header.Height
-			switch {
-			case height == sc.height+1:
-				sc.callback.NewBlock(height, block.Header.Time, block.ResultBeginBlock.Events, block.ResultEndBlock.Events)
-				sc.incrementHeight()
-			case height > sc.height+1:
-				sc.setSynced(false)
-			}
 		case <-sc.stopChan:
 			return
+		default:
+			synced, err := sc.processNextBlock()
+			if err != nil {
+				sc.logger.Error().Err(err).Msg("failed to process the next block")
+			}
+			if synced {
+				select {
+				case <-time.After(sc.interval):
+				case <-sc.stopChan:
+					return
+				}
+			}
 		}
 	}
 }
 
-func (sc *BlockScanner) getSynced() bool {
-	return atomic.LoadInt64(&sc.synced) == 1
-}
-
-func (sc *BlockScanner) setSynced(synced bool) {
-	var value int64 = 0
-	if synced {
-		value = 1
-	}
-	atomic.StoreInt64(&sc.synced, value)
-}
-
-func (sc *BlockScanner) fastSync() error {
-	err := sc.client.Stop()
+func (sc *BlockScanner) processNextBlock() (bool, error) {
+	print(1)
+	height := sc.getHeight() + 1
+	info, err := sc.client.BlockchainInfo(height, height)
 	if err != nil {
-		return errors.Wrap(err, "failed to stop websocket routine")
+		return false, errors.Wrap(err, "could not get blockchain info")
+	}
+	if info.LastHeight == height {
+		return true, nil
 	}
 
-	for {
-		height := sc.getHeight() + 1
-		info, err := sc.client.BlockchainInfo(height, height)
-		if err != nil {
-			return errors.Wrap(err, "could not get blockchain info")
-		}
-		if info.LastHeight == height {
-			return nil
-		}
-
-		block, err := sc.client.BlockResults(&height)
-		if err != nil {
-			return errors.Wrapf(err, "could not get results of block %d", height)
-		}
-		for _, tx := range block.TxsResults {
-			sc.callback.NewTx(height, tx.Events)
-		}
-		t := info.BlockMetas[0].Header.Time
-		sc.callback.NewBlock(height, t, block.BeginBlockEvents, block.EndBlockEvents)
-
-		sc.incrementHeight()
+	print(2)
+	block, err := sc.client.BlockResults(&height)
+	if err != nil {
+		return false, errors.Wrapf(err, "could not get results of block %d", height)
 	}
+	for _, tx := range block.Results.DeliverTx {
+		sc.callback.NewTx(height, tx.Events)
+	}
+	sc.callback.NewBlock(height, info.BlockMetas[0].Header.Time,
+		block.Results.BeginBlock.Events, block.Results.EndBlock.Events)
+
+	sc.incrementHeight()
+	return false, nil
 }
 
 func (sc *BlockScanner) getHeight() int64 {
@@ -174,34 +123,6 @@ func (sc *BlockScanner) getHeight() int64 {
 func (sc *BlockScanner) incrementHeight() {
 	newHeight := atomic.AddInt64(&sc.height, 1)
 	sc.logger.Info().Int64("height", newHeight).Msg("new block scanned")
-}
-
-func (sc *BlockScanner) spawnTxReader() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	query := fmt.Sprintf("tm.event = '%s'", types.EventTx)
-	txs, err := sc.client.Subscribe(ctx, "midgard", query)
-	if err != nil {
-		return errors.Wrapf(err, "failed to subscribe to event '%'", types.EventTx)
-	}
-
-	go sc.txReader(txs)
-	return nil
-}
-
-func (sc *BlockScanner) txReader(events <-chan coretypes.ResultEvent) {
-	sc.wg.Add(1)
-	defer sc.wg.Done()
-
-	for {
-		select {
-		case e := <-events:
-			tx := e.Data.(types.EventDataTx)
-			sc.callback.NewTx(tx.Height, tx.Result.Events)
-		case <-sc.stopChan:
-			return
-		}
-	}
 }
 
 // Stop will attempt to stop the scanner (blocking until the scanner stops completely).
