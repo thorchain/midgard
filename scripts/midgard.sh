@@ -19,7 +19,6 @@ mkdir -p /etc/midgard
 
 echo "{
   \"listen_port\": $PORT,
-  \"is_testnet\" : $ISTESTNET,
   \"log_level\": \"info\",
   \"thorchain\": {
     \"scheme\": \"$CHAIN_SCHEME\",

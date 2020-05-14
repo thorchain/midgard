@@ -18,7 +18,6 @@ type Configuration struct {
 	WriteTimeout    time.Duration          `json:"write_timeout" mapstructure:"write_timeout"`
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
-	IsTestNet       bool                   `json:"is_testnet" mapstructure:"is_testnet"`
 	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
 }
 
