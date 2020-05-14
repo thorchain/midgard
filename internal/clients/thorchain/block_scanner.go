@@ -1,6 +1,7 @@
 package thorchain
 
 import (
+	"encoding/base64"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -11,12 +12,6 @@ import (
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	rpchttp "github.com/tendermint/tendermint/rpc/client"
 )
-
-// Callback represents methods required by Scanner to notify events.
-type Callback interface {
-	NewBlock(height int64, t time.Time, begin, end []abcitypes.Event)
-	NewTx(height int64, events []abcitypes.Event)
-}
 
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
 // with websocket or directly by requesting http endpoint.
@@ -82,7 +77,7 @@ func (sc *BlockScanner) scan() {
 		default:
 			synced, err := sc.processNextBlock()
 			if err != nil {
-				sc.logger.Error().Err(err).Msg("failed to process the next block")
+				sc.logger.Error().Int64("height", sc.GetHeight()).Err(err).Msg("failed to process the next block")
 			}
 			if synced {
 				select {
@@ -107,13 +102,27 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 
 	block, err := sc.client.BlockResults(&height)
 	if err != nil {
-		return false, errors.Wrapf(err, "could not get results of block %d", height)
+		return false, errors.Wrap(err, "could not get results of block")
 	}
+
 	for _, tx := range block.Results.DeliverTx {
-		sc.callback.NewTx(height, tx.Events)
+		events, err := convertEvents(tx.Events)
+		if err != nil {
+			return false, errors.Wrap(err, "failed to process deliver tx section")
+		}
+		sc.callback.NewTx(height, events)
 	}
-	sc.callback.NewBlock(height, info.BlockMetas[0].Header.Time,
-		block.Results.BeginBlock.Events, block.Results.EndBlock.Events)
+
+	blockTime := info.BlockMetas[0].Header.Time
+	beginEvents, err := convertEvents(block.Results.BeginBlock.Events)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to process block begin section")
+	}
+	endEvents, err := convertEvents(block.Results.EndBlock.Events)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to process block begin section")
+	}
+	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 
 	sc.incrementHeight()
 	return false, nil
@@ -135,4 +144,53 @@ func (sc *BlockScanner) Stop() error {
 	sc.wg.Wait()
 
 	return nil
+}
+
+func convertEvents(tEvents []abcitypes.Event) ([]Event, error) {
+	events := make([]Event, len(tEvents))
+	for i, te := range tEvents {
+		e, err := fromTendermintEvent(te)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert event %d", i)
+		}
+		events[i] = e
+	}
+
+	return events, nil
+}
+
+// Callback represents methods required by Scanner to notify events.
+type Callback interface {
+	NewBlock(height int64, blockTime time.Time, begin, end []Event)
+	NewTx(height int64, events []Event)
+}
+
+// Event is just a cleaner version of Tendermint Event.
+type Event struct {
+	Type       string
+	Attributes map[string]string
+}
+
+func fromTendermintEvent(e abcitypes.Event) (Event, error) {
+	atts := make(map[string]string, len(e.Attributes))
+	for _, kv := range e.Attributes {
+		var k []byte
+		_, err := base64.StdEncoding.Decode(k, kv.Key)
+		if err != nil {
+			return Event{}, errors.Wrapf(err, "could not decode attribute key %s", kv.Key)
+		}
+		var v []byte
+		_, err = base64.StdEncoding.Decode(v, kv.Value)
+		if err != nil {
+			return Event{}, errors.Wrapf(err, "could not decode attribute value %s", kv.Value)
+		}
+
+		atts[string(k)] = string(v)
+	}
+
+	event := Event{
+		Type:       e.Type,
+		Attributes: atts,
+	}
+	return event, nil
 }
