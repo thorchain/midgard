@@ -55,6 +55,11 @@ func (sc *BlockScanner) SetHeight(height int64) error {
 	return nil
 }
 
+// GetHeight returns the latest processed block height.
+func (sc *BlockScanner) GetHeight() int64 {
+	return atomic.LoadInt64(&sc.height)
+}
+
 // Start will start the scanner.
 func (sc *BlockScanner) Start() error {
 	err := sc.client.Start()
@@ -91,8 +96,7 @@ func (sc *BlockScanner) scan() {
 }
 
 func (sc *BlockScanner) processNextBlock() (bool, error) {
-	print(1)
-	height := sc.getHeight() + 1
+	height := sc.GetHeight() + 1
 	info, err := sc.client.BlockchainInfo(height, height)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
@@ -101,7 +105,6 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 		return true, nil
 	}
 
-	print(2)
 	block, err := sc.client.BlockResults(&height)
 	if err != nil {
 		return false, errors.Wrapf(err, "could not get results of block %d", height)
@@ -114,10 +117,6 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 
 	sc.incrementHeight()
 	return false, nil
-}
-
-func (sc *BlockScanner) getHeight() int64 {
-	return atomic.LoadInt64(&sc.height)
 }
 
 func (sc *BlockScanner) incrementHeight() {
