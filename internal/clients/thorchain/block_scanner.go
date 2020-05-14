@@ -1,7 +1,6 @@
 package thorchain
 
 import (
-	"encoding/base64"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -146,14 +145,13 @@ func (sc *BlockScanner) Stop() error {
 	return nil
 }
 
-func convertEvents(tEvents []abcitypes.Event) ([]Event, error) {
-	events := make([]Event, len(tEvents))
-	for i, te := range tEvents {
-		e, err := fromTendermintEvent(te)
+func convertEvents(tes []abcitypes.Event) ([]Event, error) {
+	events := make([]Event, len(tes))
+	for i, te := range tes {
+		err := events[i].FromTendermintEvent(te)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert event %d", i)
 		}
-		events[i] = e
 	}
 
 	return events, nil
@@ -163,34 +161,4 @@ func convertEvents(tEvents []abcitypes.Event) ([]Event, error) {
 type Callback interface {
 	NewBlock(height int64, blockTime time.Time, begin, end []Event)
 	NewTx(height int64, events []Event)
-}
-
-// Event is just a cleaner version of Tendermint Event.
-type Event struct {
-	Type       string
-	Attributes map[string]string
-}
-
-func fromTendermintEvent(e abcitypes.Event) (Event, error) {
-	atts := make(map[string]string, len(e.Attributes))
-	for _, kv := range e.Attributes {
-		var k []byte
-		_, err := base64.StdEncoding.Decode(k, kv.Key)
-		if err != nil {
-			return Event{}, errors.Wrapf(err, "could not decode attribute key %s", kv.Key)
-		}
-		var v []byte
-		_, err = base64.StdEncoding.Decode(v, kv.Value)
-		if err != nil {
-			return Event{}, errors.Wrapf(err, "could not decode attribute value %s", kv.Value)
-		}
-
-		atts[string(k)] = string(v)
-	}
-
-	event := Event{
-		Type:       e.Type,
-		Attributes: atts,
-	}
-	return event, nil
 }
