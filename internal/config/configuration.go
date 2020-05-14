@@ -54,9 +54,6 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.cache_ttl", "5s")
 	viper.SetDefault("thorchain.cache_cleanup", "10s")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
-	viper.SetDefault("binance.request_timeout", "30s")
-	viper.SetDefault("binance.markets_cache_duration", "24h")
-	viper.SetDefault("binance.tokens_cache_duration", "24h")
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {

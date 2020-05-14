@@ -100,7 +100,7 @@ func New(cfgFile *string) (*Server, error) {
 	// Initialise handlers
 	h := handlers.New(uc, thorchainClient, logger)
 
-	// Register handlers with BinanceClient handlers
+	// Register handlers
 	api.RegisterHandlers(echoEngine, h)
 
 	srv := &http.Server{
