@@ -100,22 +100,13 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	}
 
 	for _, tx := range block.Results.DeliverTx {
-		events, err := convertEvents(tx.Events)
-		if err != nil {
-			return false, errors.Wrap(err, "failed to process deliver tx section")
-		}
+		events := convertEvents(tx.Events)
 		sc.callback.NewTx(height, events)
 	}
 
 	blockTime := info.BlockMetas[0].Header.Time
-	beginEvents, err := convertEvents(block.Results.BeginBlock.Events)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to process block begin section")
-	}
-	endEvents, err := convertEvents(block.Results.EndBlock.Events)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to process block begin section")
-	}
+	beginEvents := convertEvents(block.Results.BeginBlock.Events)
+	endEvents := convertEvents(block.Results.EndBlock.Events)
 	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 
 	sc.incrementHeight()
@@ -134,20 +125,20 @@ func (sc *BlockScanner) Stop() error {
 		return errors.New("scanner isn't running")
 	}
 
-	close(sc.stopChan)
+	sc.stopChan <- struct{}{}
 	sc.wg.Wait()
 
 	sc.running = false
 	return nil
 }
 
-func convertEvents(tes []abcitypes.Event) ([]Event, error) {
+func convertEvents(tes []abcitypes.Event) []Event {
 	events := make([]Event, len(tes))
 	for i, te := range tes {
 		events[i].FromTendermintEvent(te)
 	}
 
-	return events, nil
+	return events
 }
 
 // Tendermint represents every method BlockScanner needs to scan blocks.
