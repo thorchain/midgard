@@ -9,14 +9,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-	rpchttp "github.com/tendermint/tendermint/rpc/client"
-	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
 // with websocket or directly by requesting http endpoint.
 type BlockScanner struct {
-	addr     string
 	client   Tendermint
 	callback Callback
 	interval time.Duration
@@ -28,10 +25,8 @@ type BlockScanner struct {
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
-func NewBlockScanner(addr string, interval time.Duration, callback Callback) *BlockScanner {
-	client := rpchttp.NewHTTP(addr, "/websocket")
+func NewBlockScanner(client Tendermint, callback Callback, interval time.Duration) *BlockScanner {
 	sc := &BlockScanner{
-		addr:     addr,
 		client:   client,
 		callback: callback,
 		interval: interval,
@@ -150,19 +145,10 @@ func (sc *BlockScanner) Stop() error {
 func convertEvents(tes []abcitypes.Event) ([]Event, error) {
 	events := make([]Event, len(tes))
 	for i, te := range tes {
-		err := events[i].FromTendermintEvent(te)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to convert event %d", i)
-		}
+		events[i].FromTendermintEvent(te)
 	}
 
 	return events, nil
-}
-
-// Tendermint represents everything BlockScanner needs for scanning blocks.
-type Tendermint interface {
-	BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error)
-	BlockResults(height *int64) (*coretypes.ResultBlockResults, error)
 }
 
 // Callback represents methods required by Scanner to notify events.
