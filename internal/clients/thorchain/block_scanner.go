@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
@@ -92,9 +93,6 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	if info.LastHeight == height {
-		return true, nil
-	}
 
 	block, err := sc.client.BlockResults(&height)
 	if err != nil {
@@ -121,7 +119,8 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 
 	sc.incrementHeight()
-	return false, nil
+	synced := info.LastHeight == height
+	return synced, nil
 }
 
 func (sc *BlockScanner) incrementHeight() {
@@ -149,6 +148,12 @@ func convertEvents(tes []abcitypes.Event) ([]Event, error) {
 	}
 
 	return events, nil
+}
+
+// Tendermint represents every method BlockScanner needs to scan blocks.
+type Tendermint interface {
+	BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error)
+	BlockResults(height *int64) (*coretypes.ResultBlockResults, error)
 }
 
 // Callback represents methods required by Scanner to notify events.
