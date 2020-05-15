@@ -16,7 +16,15 @@ func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
 		FROM   %s 
 		WHERE  chain = $1`, models.ModelEventsTable)
 	var maxId sql.NullInt64
-	err := s.db.Get(&maxId, query, chain)
+	var err error
+	if chain != "" {
+		err = s.db.Get(&maxId, query, chain)
+	} else {
+		query := fmt.Sprintf(`
+		SELECT Max(id) 
+		FROM   %s `, models.ModelEventsTable)
+		err = s.db.Get(&maxId, query)
+	}
 	if err != nil {
 		return 0, errors.Wrap(err, "maxID query return null or failed")
 	}

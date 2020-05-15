@@ -7,36 +7,76 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 type EventHandler struct {
+	store  Store
+	logger zerolog.Logger
+	maxId  int64
+}
+
+func NewEventHandler(store Store) (*EventHandler, error) {
+	maxId, err := store.GetMaxID("")
+	if err != nil {
+		return nil, err
+	}
+	sc := &EventHandler{
+		store:  store,
+		logger: log.With().Str("module", "event_handler").Logger(),
+		maxId:  maxId + 1,
+	}
+	return sc, nil
 }
 
 func (handler EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
 	events := append(begin, end...)
 	for _, evt := range events {
-		fmt.Println(evt.Type)
+		handler.processEvent(evt, height, blockTime)
 	}
 }
 
 func (handler EventHandler) NewTx(height int64, events []Event) {
 	for _, evt := range events {
-		if evt.Type == "stake" {
-			handler.processStakeEvent(evt)
-		}
+		handler.processEvent(evt, height, time.Now())
 	}
 }
 
-func (sc *EventHandler) processStakeEvent(evt Event) error {
-	inTx, err := sc.getInTx(evt)
-	if err != nil {
-		return errors.Wrap(err, "failed to get inTx")
+func (handler EventHandler) processEvent(event Event, height int64, blockTime time.Time) {
+	if event.Type == "stake" {
+		handler.processStakeEvent(event, height, blockTime)
+	} else if event.Type == "rewards" {
+		handler.processRewardEvent(event, height, blockTime)
+	} else {
+		fmt.Println(event.Type)
 	}
-	delete(evt.Attributes, "id")
-	attrs, err := json.Marshal(evt.Attributes)
+	handler.maxId = handler.maxId + 1
+}
+
+func (handler EventHandler) getEvent(event Event, height int64, blockTime time.Time) (models.Event, error) {
+	// ToDo: if has in txID
+	inTx, _ := handler.getInTx(event)
+	var evt models.Event
+	evt.InTx = inTx
+	evt.Time = blockTime
+	evt.Type = event.Type
+	evt.ID = handler.maxId
+	evt.Height = height
+	return evt, nil
+}
+
+func (handler *EventHandler) processStakeEvent(event Event, height int64, blockTime time.Time) error {
+	evt, err := handler.getEvent(event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "failed to get event")
+	}
+	delete(event.Attributes, "id")
+	attrs, err := json.Marshal(event.Attributes)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal attributes")
 	}
@@ -45,11 +85,48 @@ func (sc *EventHandler) processStakeEvent(evt Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal stake event")
 	}
-	stake.InTx = inTx
+	stake.Event = evt
+	err = handler.store.CreateStakeRecord(stake)
+	if err != nil {
+		return errors.Wrap(err, "failed to save stake record")
+	}
 	return nil
 }
 
-func (sc *EventHandler) getInTx(evt Event) (common.Tx, error) {
+func (handler *EventHandler) processRewardEvent(event Event, height int64, blockTime time.Time) error {
+	evt, err := handler.getEvent(event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get event")
+	}
+	var reward models.EventReward
+	delete(event.Attributes, "bond_reward")
+	if len(event.Attributes) == 0 {
+		return nil
+	}
+	for k, v := range event.Attributes {
+		pool, err := common.NewAsset(k)
+		if err != nil {
+			return errors.Wrap(err, "Invalid pool")
+		}
+		amount, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return errors.Wrap(err, "Invalid amount")
+		}
+		poolReward := models.PoolAmount{
+			Pool:   pool,
+			Amount: amount,
+		}
+		reward.PoolRewards = append(reward.PoolRewards, poolReward)
+	}
+	reward.Event = evt
+	err = handler.store.CreateRewardRecord(reward)
+	if err != nil {
+		return errors.New("Failed to save reward record")
+	}
+	return nil
+}
+
+func (handler *EventHandler) getInTx(evt Event) (common.Tx, error) {
 	if _, ok := evt.Attributes["id"]; !ok {
 		return common.Tx{}, errors.New("Invalid tx id")
 	}
