@@ -19,12 +19,12 @@ func (e *Event) FromTendermintEvent(te abcitypes.Event) error {
 	e.Attributes = make(map[string]string, len(te.Attributes))
 	for _, kv := range te.Attributes {
 		var k []byte
-		_, err := base64.StdEncoding.Decode(k, kv.Key)
+		_, err := base64.StdEncoding.Decode(kv.Key, k)
 		if err != nil {
 			return errors.Wrapf(err, "could not decode attribute key %s", kv.Key)
 		}
 		var v []byte
-		_, err = base64.StdEncoding.Decode(v, kv.Value)
+		_, err = base64.StdEncoding.Decode(kv.Value, v)
 		if err != nil {
 			return errors.Wrapf(err, "could not decode attribute value %s", kv.Value)
 		}
