@@ -1,7 +1,6 @@
 package thorchain
 
 import (
-	"encoding/json"
 	"reflect"
 	"strconv"
 	"strings"
@@ -16,15 +15,18 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
+var coinsType = reflect.TypeOf(common.Coins{})
+
 // EventHandler will parse block events and insert the results in store.
 type EventHandler struct {
-	store     Store
-	handlers  map[string]handler
-	height    int64
-	blockTime time.Time
-	events    []Event
-	lastID    int64
-	logger    zerolog.Logger
+	store        Store
+	handlers     map[string]handler
+	decodeConfig mapstructure.DecoderConfig
+	height       int64
+	blockTime    time.Time
+	events       []Event
+	nextEventID  int64
+	logger       zerolog.Logger
 }
 
 type handler func(Event, int64, time.Time) error
@@ -35,11 +37,16 @@ func NewEventHandler(store Store) (*EventHandler, error) {
 	if err != nil {
 		return nil, err
 	}
+	decodeHook := mapstructure.ComposeDecodeHookFunc(decodeCoinsHook)
 	eh := &EventHandler{
 		store:    store,
-		logger:   log.With().Str("module", "event_handler").Logger(),
-		lastID:   maxID,
 		handlers: map[string]handler{},
+		decodeConfig: mapstructure.DecoderConfig{
+			DecodeHook:       decodeHook,
+			WeaklyTypedInput: true,
+		},
+		nextEventID: maxID + 1,
+		logger:      log.With().Str("module", "event_handler").Logger(),
 	}
 	eh.handlers[types.StakeEventType] = eh.processStakeEvent
 	eh.handlers[types.SwapEventType] = eh.processSwapEvent
@@ -85,26 +92,49 @@ func (eh *EventHandler) processEvent(event Event, height int64, blockTime time.T
 		if err != nil {
 			eh.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
 		}
-		eh.lastID++
+		eh.nextEventID++
 	} else {
 		eh.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
 }
 
 func (eh *EventHandler) processStakeEvent(event Event, height int64, blockTime time.Time) error {
-	var stake models.EventStake
-	evt, parent, err := eh.getEvent(reflect.TypeOf(stake), event, height, blockTime)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get stake event")
+	stake := models.EventStake{
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     eh.nextEventID,
+			Height: height,
+			Type:   event.Type,
+		},
 	}
-	err = mapstructure.Decode(evt, &stake)
+	err := eh.decode(event.Attributes, &stake.Event.InTx)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode stake event")
+		return errors.Wrap(err, "failed to decode stake.Event.InTx")
 	}
-	stake.Event = parent
+	err = eh.decode(event.Attributes, &stake)
+	if err != nil {
+		return errors.Wrap(err, "failed to decode stake")
+	}
+
 	err = eh.store.CreateStakeRecord(stake)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save stake event")
+		return errors.Wrap(err, "failed to save stake event")
+	}
+	return nil
+}
+
+func (eh *EventHandler) decode(attrs map[string]string, v interface{}) error {
+	// Copy config
+	conf := eh.decodeConfig
+	conf.Result = v
+	decoder, err := mapstructure.NewDecoder(&conf)
+	if err != nil {
+		return errors.Wrapf(err, "could not create decoder for %T", v)
+	}
+
+	err = decoder.Decode(attrs)
+	if err != nil {
+		return errors.Wrapf(err, "could not decode %v to %T", attrs, v)
 	}
 	return nil
 }
@@ -113,16 +143,16 @@ func (eh *EventHandler) processUnstakeEvent(event Event, height int64, blockTime
 	var unstake models.EventUnstake
 	evt, parent, err := eh.getEvent(reflect.TypeOf(unstake), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get unstake event")
+		return errors.Wrap(err, "failed to get unstake event")
 	}
 	err = mapstructure.Decode(evt, &unstake)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode unstake event")
+		return errors.Wrap(err, "failed to decode unstake event")
 	}
 	unstake.Event = parent
 	err = eh.store.CreateUnStakesRecord(unstake)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save unstake event")
+		return errors.Wrap(err, "failed to save unstake event")
 	}
 	return nil
 }
@@ -131,16 +161,16 @@ func (eh *EventHandler) processRefundEvent(event Event, height int64, blockTime 
 	var refund models.EventRefund
 	evt, parent, err := eh.getEvent(reflect.TypeOf(refund), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get refund event")
+		return errors.Wrap(err, "failed to get refund event")
 	}
 	err = mapstructure.Decode(evt, &refund)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode refund event")
+		return errors.Wrap(err, "failed to decode refund event")
 	}
 	refund.Event = parent
 	err = eh.store.CreateRefundRecord(refund)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save refund event")
+		return errors.Wrap(err, "failed to save refund event")
 	}
 	return nil
 }
@@ -149,16 +179,16 @@ func (eh *EventHandler) processSwapEvent(event Event, height int64, blockTime ti
 	var swap models.EventSwap
 	evt, parent, err := eh.getEvent(reflect.TypeOf(swap), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get swap event")
+		return errors.Wrap(err, "failed to get swap event")
 	}
 	err = mapstructure.Decode(evt, &swap)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode swap event")
+		return errors.Wrap(err, "failed to decode swap event")
 	}
 	swap.Event = parent
 	err = eh.store.CreateSwapRecord(swap)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save swap event")
+		return errors.Wrap(err, "failed to save swap event")
 	}
 	return nil
 }
@@ -167,16 +197,16 @@ func (eh *EventHandler) processPoolEvent(event Event, height int64, blockTime ti
 	var pool models.EventPool
 	evt, parent, err := eh.getEvent(reflect.TypeOf(pool), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get pool event")
+		return errors.Wrap(err, "failed to get pool event")
 	}
 	err = mapstructure.Decode(evt, &pool)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode pool event")
+		return errors.Wrap(err, "failed to decode pool event")
 	}
 	pool.Event = parent
 	err = eh.store.CreatePoolRecord(pool)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save pool event")
+		return errors.Wrap(err, "failed to save pool event")
 	}
 	return nil
 }
@@ -185,16 +215,16 @@ func (eh *EventHandler) processAddEvent(event Event, height int64, blockTime tim
 	var add models.EventAdd
 	evt, parent, err := eh.getEvent(reflect.TypeOf(add), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get add event")
+		return errors.Wrap(err, "failed to get add event")
 	}
 	err = mapstructure.Decode(evt, &add)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode add event")
+		return errors.Wrap(err, "failed to decode add event")
 	}
 	add.Event = parent
 	err = eh.store.CreateAddRecord(add)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save add event")
+		return errors.Wrap(err, "failed to save add event")
 	}
 	return nil
 }
@@ -203,11 +233,11 @@ func (eh *EventHandler) processGasEvent(event Event, height int64, blockTime tim
 	var gasPool models.GasPool
 	evt, parent, err := eh.getEvent(reflect.TypeOf(gasPool), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get gas event")
+		return errors.Wrap(err, "failed to get gas event")
 	}
 	err = mapstructure.Decode(evt, &gasPool)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode gas event")
+		return errors.Wrap(err, "failed to decode gas event")
 	}
 	gas := models.EventGas{
 		Pools: []models.GasPool{gasPool},
@@ -215,7 +245,7 @@ func (eh *EventHandler) processGasEvent(event Event, height int64, blockTime tim
 	gas.Event = parent
 	err = eh.store.CreateGasRecord(gas)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save gas event")
+		return errors.Wrap(err, "failed to save gas event")
 	}
 	return nil
 }
@@ -224,17 +254,17 @@ func (eh *EventHandler) processSlashEvent(event Event, height int64, blockTime t
 	var slash models.EventSlash
 	evt, parent, err := eh.getEvent(reflect.TypeOf(slash), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get slash event")
+		return errors.Wrap(err, "failed to get slash event")
 	}
 	err = mapstructure.Decode(evt, &slash)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode slash event")
+		return errors.Wrap(err, "failed to decode slash event")
 	}
 	slash.SlashAmount = eh.getPoolAmount(event.Attributes)
 	slash.Event = parent
 	err = eh.store.CreateSlashRecord(slash)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save slash event")
+		return errors.Wrap(err, "failed to save slash event")
 	}
 	return nil
 }
@@ -243,11 +273,11 @@ func (eh *EventHandler) processErrataEvent(event Event, height int64, blockTime 
 	var poolMod types.PoolMod
 	evt, parent, err := eh.getEvent(reflect.TypeOf(poolMod), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get errata event")
+		return errors.Wrap(err, "failed to get errata event")
 	}
 	err = mapstructure.Decode(evt, &poolMod)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode errata event")
+		return errors.Wrap(err, "failed to decode errata event")
 	}
 	errata := models.EventErrata{
 		Pools: []types.PoolMod{poolMod},
@@ -255,7 +285,7 @@ func (eh *EventHandler) processErrataEvent(event Event, height int64, blockTime 
 	errata.Event = parent
 	err = eh.store.CreateErrataRecord(errata)
 	if err != nil {
-		return errors.Wrap(err, "Failed to save swap event")
+		return errors.Wrap(err, "failed to save swap event")
 	}
 	return nil
 }
@@ -264,17 +294,17 @@ func (eh *EventHandler) processFeeEvent(event Event, height int64, blockTime tim
 	var fee common.Fee
 	evt, parent, err := eh.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get fee event")
+		return errors.Wrap(err, "failed to get fee event")
 	}
 	err = mapstructure.Decode(evt, &fee)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode fee event")
+		return errors.Wrap(err, "failed to decode fee event")
 	}
 	parent.Fee = fee
 	// TODO get pool from event if fee asset is empty
 	err = eh.store.CreateFeeRecord(parent, parent.Fee.Asset())
 	if err != nil {
-		return errors.Wrap(err, "Failed to save fee event")
+		return errors.Wrap(err, "failed to save fee event")
 	}
 	return nil
 }
@@ -286,17 +316,17 @@ func (eh *EventHandler) processRewardEvent(event Event, height int64, blockTime 
 	var reward models.EventReward
 	evt, parent, err := eh.getEvent(reflect.TypeOf(reward), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to get reward event")
+		return errors.Wrap(err, "failed to get reward event")
 	}
 	err = mapstructure.Decode(evt, &reward)
 	if err != nil {
-		return errors.Wrap(err, "Failed to decode reward event")
+		return errors.Wrap(err, "failed to decode reward event")
 	}
 	reward.PoolRewards = eh.getPoolAmount(event.Attributes)
 	reward.Event = parent
 	err = eh.store.CreateRewardRecord(reward)
 	if err != nil {
-		return errors.New("Failed to save reward record")
+		return errors.New("failed to save reward record")
 	}
 	return nil
 }
@@ -306,7 +336,8 @@ func (eh *EventHandler) processOutbound(event Event, height int64, blockTime tim
 	if err != nil {
 		return err
 	}
-	outTx, err := eh.getTx(event.Attributes)
+	var outTx common.Tx
+	err = eh.decode(event.Attributes, &outTx)
 	if err != nil {
 		return err
 	}
@@ -338,69 +369,6 @@ func (eh *EventHandler) processOutbound(event Event, height int64, blockTime tim
 	return err
 }
 
-func (eh *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event, height int64, blockTime time.Time) (interface{}, models.Event, error) {
-	attr := eh.convertAttr(sourceEvent.Attributes)
-	// TODO: Check if event can have input tx
-	var inputTx common.Tx
-	tx, err := eh.eventFromAttr(reflect.TypeOf(common.Tx{}), attr)
-	if err == nil {
-		err = mapstructure.Decode(tx, &inputTx)
-		if err != nil {
-			return nil, models.Event{}, errors.Wrap(err, "Failed to decode inputTx")
-		}
-	}
-	if _, ok := attr["id"]; ok {
-		delete(attr, "id")
-	}
-	parent := eh.getParent(sourceEvent.Type, height, blockTime, inputTx)
-	evt, err := eh.eventFromAttr(targetType, attr)
-	if err != nil {
-		return nil, models.Event{}, errors.Wrap(err, "Failed to convert event")
-	}
-	return evt, parent, nil
-}
-
-func (eh *EventHandler) getParent(evtType string, height int64, blockTime time.Time, inTx common.Tx) models.Event {
-	return models.Event{
-		Height: height,
-		ID:     eh.lastID + 1,
-		Time:   blockTime,
-		Type:   evtType,
-		InTx:   inTx,
-	}
-}
-
-func (eh *EventHandler) eventFromAttr(targetType reflect.Type, attr map[string]interface{}) (interface{}, error) {
-	targetEvent := reflect.New(targetType).Interface()
-	attrs, err := json.Marshal(attr)
-	if err != nil {
-		return targetEvent, errors.Wrap(err, "Failed to marshal attributes")
-	}
-	err = json.Unmarshal(attrs, &targetEvent)
-	if err != nil {
-		return targetEvent, errors.Wrap(err, "Failed to convert event")
-	}
-	return targetEvent, nil
-}
-
-func (eh *EventHandler) convertAttr(attr map[string]string) map[string]interface{} {
-	res := make(map[string]interface{})
-	for k, v := range attr {
-		if k == "from" {
-			res["from_address"] = v
-		} else if k == "to" {
-			res["to_address"] = v
-		} else if k == "coin" {
-			res["coins"], _ = eh.getCoins(attr["coin"])
-		} else if k == "coins" {
-			res["coins"], _ = eh.getCoins(attr["coins"])
-		} else {
-			res[k] = v
-		}
-	}
-	return res
-}
-
 func (eh *EventHandler) getPoolAmount(attr map[string]string) []models.PoolAmount {
 	var poolAmounts []models.PoolAmount
 	for k, v := range attr {
@@ -419,56 +387,27 @@ func (eh *EventHandler) getPoolAmount(attr map[string]string) []models.PoolAmoun
 	return poolAmounts
 }
 
-func (eh *EventHandler) getTx(attr map[string]string) (common.Tx, error) {
-	if _, ok := attr["id"]; !ok {
-		return common.Tx{}, errors.New("Invalid tx id")
+func decodeCoinsHook(f, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.String {
+		return data, nil
 	}
-	txID, err := common.NewTxID(attr["id"])
-	if err != nil {
-		return common.Tx{}, errors.New("Invalid tx id")
+	if t != coinsType {
+		return data, nil
 	}
-	if _, ok := attr["from"]; !ok {
-		return common.Tx{}, errors.New("Invalid from address")
-	}
-	from, err := common.NewAddress(attr["from"])
-	if err != nil {
-		return common.Tx{}, errors.New("Invalid from address")
-	}
-	if _, ok := attr["to"]; !ok {
-		return common.Tx{}, errors.New("Invalid to address")
-	}
-	to, err := common.NewAddress(attr["from"])
-	if err != nil {
-		return common.Tx{}, errors.New("Invalid to address")
-	}
-	if _, ok := attr["coin"]; !ok {
-		return common.Tx{}, errors.New("Invalid coin")
-	}
-	coins, err := eh.getCoins(attr["coin"])
-	if err != nil {
-		return common.Tx{}, errors.New("Invalid coin")
-	}
-	if _, ok := attr["memo"]; !ok {
-		return common.Tx{}, errors.New("Invalid memo")
-	}
-	tx := common.NewTx(txID, from, to, coins, common.Memo(attr["memo"]))
-	return tx, nil
-}
 
-func (eh *EventHandler) getCoins(coinStr string) (common.Coins, error) {
 	var coins common.Coins
-	for _, c := range strings.Split(coinStr, ",") {
+	for _, c := range strings.Split(data.(string), ",") {
 		c = strings.TrimSpace(c)
 		if len(strings.Split(c, " ")) != 2 {
-			return common.Coins{}, errors.New("Invalid coin")
+			return common.Coins{}, errors.New("invalid coin")
 		}
 		asset, err := common.NewAsset(strings.Split(c, " ")[1])
 		if err != nil {
-			return common.Coins{}, errors.New("Invalid coin asset")
+			return common.Coins{}, errors.New("invalid coin asset")
 		}
 		amount, err := strconv.ParseInt(strings.Split(c, " ")[0], 10, 64)
 		if err != nil {
-			return common.Coins{}, errors.New("Invalid coin amount")
+			return common.Coins{}, errors.New("invalid coin amount")
 		}
 		coin := common.NewCoin(asset, amount)
 		coins = append(coins, coin)

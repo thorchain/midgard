@@ -56,12 +56,12 @@ func (tx TxID) String() string {
 }
 
 type Tx struct {
-	ID          TxID    `json:"id"`
-	Chain       Chain   `json:"chain"`
-	FromAddress Address `json:"from_address"`
-	ToAddress   Address `json:"to_address"`
-	Coins       Coins   `json:"coins"`
-	Memo        Memo    `json:"memo"`
+	ID          TxID    `json:"id" mapstructure:"id"`
+	Chain       Chain   `json:"chain" mapstructure:"chain"`
+	FromAddress Address `json:"from_address" mapstructure:"from"`
+	ToAddress   Address `json:"to_address" mapstructure:"to"`
+	Coins       Coins   `json:"coins" mapstructure:"coin"`
+	Memo        Memo    `json:"memo" mapstructure:"memo"`
 }
 
 type Txs []Tx
