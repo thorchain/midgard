@@ -39,7 +39,7 @@ func (s *Client) CreateEventRecord(record models.Event) error {
 	}
 
 	// Ingest InTx
-	err = s.processTxRecord("in", record, record.InTx)
+	err = s.ProcessTxRecord("in", record, record.InTx)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
@@ -75,7 +75,7 @@ func (s *Client) processTxsRecord(direction string, parent models.Event, records
 	return nil
 }
 
-func (s *Client) processTxRecord(direction string, parent models.Event, record common.Tx) error {
+func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
 		_, err := s.createTxRecord(parent, record, direction)
@@ -177,4 +177,20 @@ func (s *Client) createEventRecord(record models.Event) error {
 		return errors.Wrap(err, "Failed to prepareNamed query for event")
 	}
 	return stmt.QueryRowx(record).Scan(&record.ID)
+}
+
+func (s *Client) GetEventByTxId(txId common.TxID) (models.Event, error) {
+	query := fmt.Sprintf(`
+		SELECT events.* 
+		FROM   %s 
+			   INNER JOIN %s 
+					   ON events.id = txs.event_id 
+		WHERE  tx_hash =$1`, models.ModelEventsTable, models.ModelTxsTable)
+	var event models.Event
+	var err error
+	err = s.db.Get(&event, query, txId.String())
+	if err != nil {
+		return models.Event{}, errors.Wrap(err, "query return null or failed")
+	}
+	return event, nil
 }

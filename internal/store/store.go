@@ -42,4 +42,6 @@ type Store interface {
 	GetStakerAddresses() ([]common.Address, error)
 	GetStakerAddressDetails(address common.Address) (models.StakerAddressDetails, error)
 	GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (models.StakerAddressAndAssetDetails, error)
+	GetEventByTxId(txId common.TxID) (models.Event, error)
+	ProcessTxRecord(direction string, parent models.Event, record common.Tx) error
 }
