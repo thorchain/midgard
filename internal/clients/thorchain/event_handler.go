@@ -7,84 +7,93 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-
 	"github.com/mitchellh/mapstructure"
-
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-type (
-	handler      func(Event, int64, time.Time) error
-	EventHandler struct {
-		store    Store
-		logger   zerolog.Logger
-		maxId    int64
-		handlers map[string]handler
-	}
-)
+// EventHandler will parse block events and insert the results in store.
+type EventHandler struct {
+	store     Store
+	handlers  map[string]handler
+	height    int64
+	blockTime time.Time
+	events    []Event
+	lastID    int64
+	logger    zerolog.Logger
+}
 
+type handler func(Event, int64, time.Time) error
+
+// NewEventHandler will create a new instance of EventHandler.
 func NewEventHandler(store Store) (*EventHandler, error) {
-	maxId, err := store.GetMaxID("")
+	maxID, err := store.GetMaxID("")
 	if err != nil {
 		return nil, err
 	}
-	evtHandler := &EventHandler{
+	eh := &EventHandler{
 		store:    store,
 		logger:   log.With().Str("module", "event_handler").Logger(),
-		maxId:    maxId + 1,
+		lastID:   maxID,
 		handlers: map[string]handler{},
 	}
-	evtHandler.handlers[types.StakeEventType] = evtHandler.processStakeEvent
-	evtHandler.handlers[types.SwapEventType] = evtHandler.processSwapEvent
-	evtHandler.handlers[types.UnstakeEventType] = evtHandler.processUnstakeEvent
-	evtHandler.handlers[types.RewardEventType] = evtHandler.processRewardEvent
-	evtHandler.handlers[types.RefundEventType] = evtHandler.processRefundEvent
-	evtHandler.handlers[types.AddEventType] = evtHandler.processAddEvent
-	evtHandler.handlers[types.PoolEventType] = evtHandler.processPoolEvent
-	evtHandler.handlers[types.GasEventType] = evtHandler.processGasEvent
-	evtHandler.handlers[types.SlashEventType] = evtHandler.processSlashEvent
-	evtHandler.handlers[types.ErrataEventType] = evtHandler.processErrataEvent
-	evtHandler.handlers[types.FeeEventType] = evtHandler.processFeeEvent
-	evtHandler.handlers[types.OutboundEventType] = evtHandler.processOutbound
-	return evtHandler, nil
+	eh.handlers[types.StakeEventType] = eh.processStakeEvent
+	eh.handlers[types.SwapEventType] = eh.processSwapEvent
+	eh.handlers[types.UnstakeEventType] = eh.processUnstakeEvent
+	eh.handlers[types.RewardEventType] = eh.processRewardEvent
+	eh.handlers[types.RefundEventType] = eh.processRefundEvent
+	eh.handlers[types.AddEventType] = eh.processAddEvent
+	eh.handlers[types.PoolEventType] = eh.processPoolEvent
+	eh.handlers[types.GasEventType] = eh.processGasEvent
+	eh.handlers[types.SlashEventType] = eh.processSlashEvent
+	eh.handlers[types.ErrataEventType] = eh.processErrataEvent
+	eh.handlers[types.FeeEventType] = eh.processFeeEvent
+	eh.handlers[types.OutboundEventType] = eh.processOutbound
+	return eh, nil
 }
 
-func (handler *EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
-	events := append(begin, end...)
-	for _, evt := range events {
-		handler.processEvent(evt, height, blockTime)
+// NewBlock implements Callback.NewBlock
+func (eh *EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
+	eh.height = height
+	eh.blockTime = blockTime
+	eh.events = append(eh.events, begin...)
+	eh.events = append(eh.events, end...)
+	eh.processBlock()
+}
+
+// NewTx implements Callback.NewTx
+func (eh *EventHandler) NewTx(height int64, events []Event) {
+	eh.events = append(eh.events, events...)
+}
+
+func (eh *EventHandler) processBlock() {
+	for _, e := range eh.events {
+		eh.processEvent(e, eh.height, eh.blockTime)
 	}
+	eh.events = eh.events[:0]
 }
 
-func (handler *EventHandler) NewTx(height int64, events []Event) {
-	for _, evt := range events {
-		handler.processEvent(evt, height, time.Now())
-	}
-}
-
-func (handler *EventHandler) processEvent(event Event, height int64, blockTime time.Time) {
-	h, ok := handler.handlers[event.Type]
+func (eh *EventHandler) processEvent(event Event, height int64, blockTime time.Time) {
+	h, ok := eh.handlers[event.Type]
 	if ok {
-		handler.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
+		eh.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
 		err := h(event, height, blockTime)
 		if err != nil {
-			handler.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
+			eh.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
 		}
-		handler.maxId = handler.maxId + 1
+		eh.lastID++
 	} else {
-		handler.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
+		eh.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
 }
 
-func (handler *EventHandler) processStakeEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processStakeEvent(event Event, height int64, blockTime time.Time) error {
 	var stake models.EventStake
-	evt, parent, err := handler.getEvent(reflect.TypeOf(stake), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(stake), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get stake event")
 	}
@@ -93,16 +102,16 @@ func (handler *EventHandler) processStakeEvent(event Event, height int64, blockT
 		return errors.Wrap(err, "Failed to decode stake event")
 	}
 	stake.Event = parent
-	err = handler.store.CreateStakeRecord(stake)
+	err = eh.store.CreateStakeRecord(stake)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save stake event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processUnstakeEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processUnstakeEvent(event Event, height int64, blockTime time.Time) error {
 	var unstake models.EventUnstake
-	evt, parent, err := handler.getEvent(reflect.TypeOf(unstake), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(unstake), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get unstake event")
 	}
@@ -111,16 +120,16 @@ func (handler *EventHandler) processUnstakeEvent(event Event, height int64, bloc
 		return errors.Wrap(err, "Failed to decode unstake event")
 	}
 	unstake.Event = parent
-	err = handler.store.CreateUnStakesRecord(unstake)
+	err = eh.store.CreateUnStakesRecord(unstake)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save unstake event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processRefundEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processRefundEvent(event Event, height int64, blockTime time.Time) error {
 	var refund models.EventRefund
-	evt, parent, err := handler.getEvent(reflect.TypeOf(refund), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(refund), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get refund event")
 	}
@@ -129,16 +138,16 @@ func (handler *EventHandler) processRefundEvent(event Event, height int64, block
 		return errors.Wrap(err, "Failed to decode refund event")
 	}
 	refund.Event = parent
-	err = handler.store.CreateRefundRecord(refund)
+	err = eh.store.CreateRefundRecord(refund)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save refund event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processSwapEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processSwapEvent(event Event, height int64, blockTime time.Time) error {
 	var swap models.EventSwap
-	evt, parent, err := handler.getEvent(reflect.TypeOf(swap), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(swap), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get swap event")
 	}
@@ -147,16 +156,16 @@ func (handler *EventHandler) processSwapEvent(event Event, height int64, blockTi
 		return errors.Wrap(err, "Failed to decode swap event")
 	}
 	swap.Event = parent
-	err = handler.store.CreateSwapRecord(swap)
+	err = eh.store.CreateSwapRecord(swap)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save swap event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processPoolEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processPoolEvent(event Event, height int64, blockTime time.Time) error {
 	var pool models.EventPool
-	evt, parent, err := handler.getEvent(reflect.TypeOf(pool), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(pool), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get pool event")
 	}
@@ -165,16 +174,16 @@ func (handler *EventHandler) processPoolEvent(event Event, height int64, blockTi
 		return errors.Wrap(err, "Failed to decode pool event")
 	}
 	pool.Event = parent
-	err = handler.store.CreatePoolRecord(pool)
+	err = eh.store.CreatePoolRecord(pool)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save pool event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processAddEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processAddEvent(event Event, height int64, blockTime time.Time) error {
 	var add models.EventAdd
-	evt, parent, err := handler.getEvent(reflect.TypeOf(add), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(add), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get add event")
 	}
@@ -183,16 +192,16 @@ func (handler *EventHandler) processAddEvent(event Event, height int64, blockTim
 		return errors.Wrap(err, "Failed to decode add event")
 	}
 	add.Event = parent
-	err = handler.store.CreateAddRecord(add)
+	err = eh.store.CreateAddRecord(add)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save add event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processGasEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processGasEvent(event Event, height int64, blockTime time.Time) error {
 	var gasPool models.GasPool
-	evt, parent, err := handler.getEvent(reflect.TypeOf(gasPool), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(gasPool), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get gas event")
 	}
@@ -204,16 +213,16 @@ func (handler *EventHandler) processGasEvent(event Event, height int64, blockTim
 		Pools: []models.GasPool{gasPool},
 	}
 	gas.Event = parent
-	err = handler.store.CreateGasRecord(gas)
+	err = eh.store.CreateGasRecord(gas)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save gas event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processSlashEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processSlashEvent(event Event, height int64, blockTime time.Time) error {
 	var slash models.EventSlash
-	evt, parent, err := handler.getEvent(reflect.TypeOf(slash), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(slash), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get slash event")
 	}
@@ -221,18 +230,18 @@ func (handler *EventHandler) processSlashEvent(event Event, height int64, blockT
 	if err != nil {
 		return errors.Wrap(err, "Failed to decode slash event")
 	}
-	slash.SlashAmount = handler.getPoolAmount(event.Attributes)
+	slash.SlashAmount = eh.getPoolAmount(event.Attributes)
 	slash.Event = parent
-	err = handler.store.CreateSlashRecord(slash)
+	err = eh.store.CreateSlashRecord(slash)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save slash event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processErrataEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processErrataEvent(event Event, height int64, blockTime time.Time) error {
 	var poolMod types.PoolMod
-	evt, parent, err := handler.getEvent(reflect.TypeOf(poolMod), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(poolMod), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get errata event")
 	}
@@ -244,16 +253,16 @@ func (handler *EventHandler) processErrataEvent(event Event, height int64, block
 		Pools: []types.PoolMod{poolMod},
 	}
 	errata.Event = parent
-	err = handler.store.CreateErrataRecord(errata)
+	err = eh.store.CreateErrataRecord(errata)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save swap event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processFeeEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processFeeEvent(event Event, height int64, blockTime time.Time) error {
 	var fee common.Fee
-	evt, parent, err := handler.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get fee event")
 	}
@@ -263,19 +272,19 @@ func (handler *EventHandler) processFeeEvent(event Event, height int64, blockTim
 	}
 	parent.Fee = fee
 	// TODO get pool from event if fee asset is empty
-	err = handler.store.CreateFeeRecord(parent, parent.Fee.Asset())
+	err = eh.store.CreateFeeRecord(parent, parent.Fee.Asset())
 	if err != nil {
 		return errors.Wrap(err, "Failed to save fee event")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processRewardEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processRewardEvent(event Event, height int64, blockTime time.Time) error {
 	if len(event.Attributes) <= 1 {
 		return nil
 	}
 	var reward models.EventReward
-	evt, parent, err := handler.getEvent(reflect.TypeOf(reward), event, height, blockTime)
+	evt, parent, err := eh.getEvent(reflect.TypeOf(reward), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get reward event")
 	}
@@ -283,29 +292,29 @@ func (handler *EventHandler) processRewardEvent(event Event, height int64, block
 	if err != nil {
 		return errors.Wrap(err, "Failed to decode reward event")
 	}
-	reward.PoolRewards = handler.getPoolAmount(event.Attributes)
+	reward.PoolRewards = eh.getPoolAmount(event.Attributes)
 	reward.Event = parent
-	err = handler.store.CreateRewardRecord(reward)
+	err = eh.store.CreateRewardRecord(reward)
 	if err != nil {
 		return errors.New("Failed to save reward record")
 	}
 	return nil
 }
 
-func (handler *EventHandler) processOutbound(event Event, height int64, blockTime time.Time) error {
-	txId, err := common.NewTxID(event.Attributes["in_tx_id"])
+func (eh *EventHandler) processOutbound(event Event, height int64, blockTime time.Time) error {
+	txID, err := common.NewTxID(event.Attributes["in_tx_id"])
 	if err != nil {
 		return err
 	}
-	outTx, err := handler.getTx(event.Attributes)
+	outTx, err := eh.getTx(event.Attributes)
 	if err != nil {
 		return err
 	}
-	evt, err := handler.store.GetEventByTxId(txId)
+	evt, err := eh.store.GetEventByTxId(txID)
 	if err != nil {
 		return err
 	}
-	err = handler.store.ProcessTxRecord("out", evt, outTx)
+	err = eh.store.ProcessTxRecord("out", evt, outTx)
 	if err != nil {
 		return err
 	}
@@ -314,14 +323,14 @@ func (handler *EventHandler) processOutbound(event Event, height int64, blockTim
 		var unstake models.EventUnstake
 		evt.OutTxs = common.Txs{outTx}
 		unstake.Event = evt
-		err = handler.store.UpdateUnStakesRecord(unstake)
+		err = eh.store.UpdateUnStakesRecord(unstake)
 		if err != nil {
 			return err
 		}
 	} else if evt.Type == types.SwapEventType {
 		var swap models.EventSwap
 		swap.Event = evt
-		err = handler.store.UpdateSwapRecord(swap)
+		err = eh.store.UpdateSwapRecord(swap)
 		if err != nil {
 			return err
 		}
@@ -329,11 +338,11 @@ func (handler *EventHandler) processOutbound(event Event, height int64, blockTim
 	return err
 }
 
-func (handler *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event, height int64, blockTime time.Time) (interface{}, models.Event, error) {
-	attr := handler.convertAttr(sourceEvent.Attributes)
+func (eh *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event, height int64, blockTime time.Time) (interface{}, models.Event, error) {
+	attr := eh.convertAttr(sourceEvent.Attributes)
 	// TODO: Check if event can have input tx
 	var inputTx common.Tx
-	tx, err := handler.eventFromAttr(reflect.TypeOf(common.Tx{}), attr)
+	tx, err := eh.eventFromAttr(reflect.TypeOf(common.Tx{}), attr)
 	if err == nil {
 		err = mapstructure.Decode(tx, &inputTx)
 		if err != nil {
@@ -343,25 +352,25 @@ func (handler *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event
 	if _, ok := attr["id"]; ok {
 		delete(attr, "id")
 	}
-	parent := handler.getParent(sourceEvent.Type, height, blockTime, inputTx)
-	evt, err := handler.eventFromAttr(targetType, attr)
+	parent := eh.getParent(sourceEvent.Type, height, blockTime, inputTx)
+	evt, err := eh.eventFromAttr(targetType, attr)
 	if err != nil {
 		return nil, models.Event{}, errors.Wrap(err, "Failed to convert event")
 	}
 	return evt, parent, nil
 }
 
-func (handler *EventHandler) getParent(evtType string, height int64, blockTime time.Time, inTx common.Tx) models.Event {
+func (eh *EventHandler) getParent(evtType string, height int64, blockTime time.Time, inTx common.Tx) models.Event {
 	return models.Event{
 		Height: height,
-		ID:     handler.maxId,
+		ID:     eh.lastID + 1,
 		Time:   blockTime,
 		Type:   evtType,
 		InTx:   inTx,
 	}
 }
 
-func (handler *EventHandler) eventFromAttr(targetType reflect.Type, attr map[string]interface{}) (interface{}, error) {
+func (eh *EventHandler) eventFromAttr(targetType reflect.Type, attr map[string]interface{}) (interface{}, error) {
 	targetEvent := reflect.New(targetType).Interface()
 	attrs, err := json.Marshal(attr)
 	if err != nil {
@@ -374,7 +383,7 @@ func (handler *EventHandler) eventFromAttr(targetType reflect.Type, attr map[str
 	return targetEvent, nil
 }
 
-func (handler *EventHandler) convertAttr(attr map[string]string) map[string]interface{} {
+func (eh *EventHandler) convertAttr(attr map[string]string) map[string]interface{} {
 	res := make(map[string]interface{})
 	for k, v := range attr {
 		if k == "from" {
@@ -382,9 +391,9 @@ func (handler *EventHandler) convertAttr(attr map[string]string) map[string]inte
 		} else if k == "to" {
 			res["to_address"] = v
 		} else if k == "coin" {
-			res["coins"], _ = handler.getCoins(attr["coin"])
+			res["coins"], _ = eh.getCoins(attr["coin"])
 		} else if k == "coins" {
-			res["coins"], _ = handler.getCoins(attr["coins"])
+			res["coins"], _ = eh.getCoins(attr["coins"])
 		} else {
 			res[k] = v
 		}
@@ -392,7 +401,7 @@ func (handler *EventHandler) convertAttr(attr map[string]string) map[string]inte
 	return res
 }
 
-func (handler *EventHandler) getPoolAmount(attr map[string]string) []models.PoolAmount {
+func (eh *EventHandler) getPoolAmount(attr map[string]string) []models.PoolAmount {
 	var poolAmounts []models.PoolAmount
 	for k, v := range attr {
 		pool, err := common.NewAsset(k)
@@ -410,11 +419,11 @@ func (handler *EventHandler) getPoolAmount(attr map[string]string) []models.Pool
 	return poolAmounts
 }
 
-func (handler *EventHandler) getTx(attr map[string]string) (common.Tx, error) {
+func (eh *EventHandler) getTx(attr map[string]string) (common.Tx, error) {
 	if _, ok := attr["id"]; !ok {
 		return common.Tx{}, errors.New("Invalid tx id")
 	}
-	txId, err := common.NewTxID(attr["id"])
+	txID, err := common.NewTxID(attr["id"])
 	if err != nil {
 		return common.Tx{}, errors.New("Invalid tx id")
 	}
@@ -435,18 +444,18 @@ func (handler *EventHandler) getTx(attr map[string]string) (common.Tx, error) {
 	if _, ok := attr["coin"]; !ok {
 		return common.Tx{}, errors.New("Invalid coin")
 	}
-	coins, err := handler.getCoins(attr["coin"])
+	coins, err := eh.getCoins(attr["coin"])
 	if err != nil {
 		return common.Tx{}, errors.New("Invalid coin")
 	}
 	if _, ok := attr["memo"]; !ok {
 		return common.Tx{}, errors.New("Invalid memo")
 	}
-	tx := common.NewTx(txId, from, to, coins, common.Memo(attr["memo"]))
+	tx := common.NewTx(txID, from, to, coins, common.Memo(attr["memo"]))
 	return tx, nil
 }
 
-func (handler *EventHandler) getCoins(coinStr string) (common.Coins, error) {
+func (eh *EventHandler) getCoins(coinStr string) (common.Coins, error) {
 	var coins common.Coins
 	for _, c := range strings.Split(coinStr, ",") {
 		c = strings.TrimSpace(c)
