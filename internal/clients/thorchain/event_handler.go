@@ -63,17 +63,37 @@ func (handler *EventHandler) processEvent(event Event, height int64, blockTime t
 		handler.processFeeEvent(event, height, blockTime)
 	} else if event.Type == "gas" {
 		handler.processGasEvent(event, height, blockTime)
+	} else if event.Type == "add" {
+		handler.processAddEvent(event, height, blockTime)
 	} else if event.Type != "message" {
 		fmt.Println(event.Type)
 	}
 	handler.maxId = handler.maxId + 1
 }
 
+func (handler *EventHandler) processAddEvent(event Event, height int64, blockTime time.Time) error {
+	var add models.EventAdd
+	evt, parent, err := handler.getEvent(reflect.TypeOf(add), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get add event")
+	}
+	err = mapstructure.Decode(evt, &add)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode add event")
+	}
+	add.Event = parent
+	err = handler.store.CreateAddRecord(add)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save add event")
+	}
+	return nil
+}
+
 func (handler *EventHandler) processFeeEvent(event Event, height int64, blockTime time.Time) error {
 	var fee common.Fee
 	evt, _, err := handler.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to unmarshal gas event")
+		return errors.Wrap(err, "Failed to get fee event")
 	}
 	err = mapstructure.Decode(evt, &fee)
 	if err != nil {
@@ -97,7 +117,7 @@ func (handler *EventHandler) processGasEvent(event Event, height int64, blockTim
 	var gasPool models.GasPool
 	evt, parent, err := handler.getEvent(reflect.TypeOf(gasPool), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to unmarshal gas event")
+		return errors.Wrap(err, "Failed to get gas event")
 	}
 	err = mapstructure.Decode(evt, &gasPool)
 	if err != nil {
@@ -118,7 +138,7 @@ func (handler *EventHandler) processStakeEvent(event Event, height int64, blockT
 	var stake models.EventStake
 	evt, parent, err := handler.getEvent(reflect.TypeOf(stake), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to unmarshal stake event")
+		return errors.Wrap(err, "Failed to get stake event")
 	}
 	err = mapstructure.Decode(evt, &stake)
 	if err != nil {
@@ -136,7 +156,7 @@ func (handler *EventHandler) processRefundEvent(event Event, height int64, block
 	var refund models.EventRefund
 	evt, parent, err := handler.getEvent(reflect.TypeOf(refund), event, height, blockTime)
 	if err != nil {
-		return errors.Wrap(err, "Failed to unmarshal refund event")
+		return errors.Wrap(err, "Failed to get refund event")
 	}
 	err = mapstructure.Decode(evt, &refund)
 	if err != nil {
@@ -154,7 +174,7 @@ func (handler *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event
 	attr := handler.convertAttr(sourceEvent.Attributes)
 	// TODO: Check if event can have input tx
 	var inputTx common.Tx
-	tx, err := handler.unmarshalEvent(reflect.TypeOf(common.Tx{}), attr, height, blockTime)
+	tx, err := handler.convert(reflect.TypeOf(common.Tx{}), attr)
 	if err == nil {
 		err = mapstructure.Decode(tx, &inputTx)
 		if err != nil {
@@ -164,24 +184,25 @@ func (handler *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event
 	if _, ok := attr["id"]; ok {
 		delete(attr, "id")
 	}
-	var parent models.Event
-	parentEvt, err := handler.unmarshalEvent(reflect.TypeOf(models.Event{}), attr, height, blockTime)
+	parent := handler.getParent(sourceEvent.Type, height, blockTime, inputTx)
+	evt, err := handler.convert(targetType, attr)
 	if err != nil {
-		return nil, models.Event{}, errors.Wrap(err, "Failed to get event")
-	}
-	err = mapstructure.Decode(parentEvt, &parent)
-	if err != nil {
-		return nil, models.Event{}, errors.Wrap(err, "Failed to decode parent event")
-	}
-	parent.InTx = inputTx
-	evt, err := handler.unmarshalEvent(targetType, attr, height, blockTime)
-	if err != nil {
-		return nil, models.Event{}, errors.Wrap(err, "Failed to get event")
+		return nil, models.Event{}, errors.Wrap(err, "Failed to convert event")
 	}
 	return evt, parent, nil
 }
 
-func (handler *EventHandler) unmarshalEvent(targetType reflect.Type, attr map[string]interface{}, height int64, blockTime time.Time) (interface{}, error) {
+func (handler *EventHandler) getParent(evtType string, height int64, blockTime time.Time, inTx common.Tx) models.Event {
+	return models.Event{
+		Height: height,
+		ID:     handler.maxId,
+		Time:   blockTime,
+		Type:   evtType,
+		InTx:   inTx,
+	}
+}
+
+func (handler *EventHandler) convert(targetType reflect.Type, attr map[string]interface{}) (interface{}, error) {
 	targetEvent := reflect.New(targetType).Interface()
 	attrs, err := json.Marshal(attr)
 	if err != nil {
@@ -189,7 +210,7 @@ func (handler *EventHandler) unmarshalEvent(targetType reflect.Type, attr map[st
 	}
 	err = json.Unmarshal(attrs, &targetEvent)
 	if err != nil {
-		return targetEvent, errors.Wrap(err, "Failed to unmarshal event")
+		return targetEvent, errors.Wrap(err, "Failed to convert event")
 	}
 	return targetEvent, nil
 }
@@ -233,13 +254,7 @@ func (handler *EventHandler) processRewardEvent(event Event, height int64, block
 		}
 		reward.PoolRewards = append(reward.PoolRewards, poolReward)
 	}
-	parent := models.Event{
-		Time:   blockTime,
-		Type:   event.Type,
-		ID:     handler.maxId,
-		Height: height,
-	}
-	reward.Event = parent
+	reward.Event = handler.getParent(event.Type, height, blockTime, common.Tx{})
 	err := handler.store.CreateRewardRecord(reward)
 	if err != nil {
 		return errors.New("Failed to save reward record")
