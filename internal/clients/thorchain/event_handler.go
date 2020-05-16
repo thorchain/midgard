@@ -253,18 +253,13 @@ func (handler *EventHandler) processErrataEvent(event Event, height int64, block
 
 func (handler *EventHandler) processFeeEvent(event Event, height int64, blockTime time.Time) error {
 	var fee common.Fee
-	evt, _, err := handler.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
+	evt, parent, err := handler.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get fee event")
 	}
 	err = mapstructure.Decode(evt, &fee)
 	if err != nil {
 		return errors.Wrap(err, "Failed to decode fee event")
-	}
-	txId, _ := common.NewTxID(event.Attributes["tx_id"])
-	parent, err := handler.store.GetEventByTxId(txId)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get parent event")
 	}
 	parent.Fee = fee
 	// TODO get pool from event if fee asset is empty
@@ -314,9 +309,15 @@ func (handler *EventHandler) processOutbound(event Event, height int64, blockTim
 	if err != nil {
 		return err
 	}
-	if evt.Type == "unstake" {
-		// TODO update unstake event
-	} else if evt.Type == "swap" {
+	if evt.Type == types.UnstakeEventType {
+		var unstake models.EventUnstake
+		evt.OutTxs = common.Txs{outTx}
+		unstake.Event = evt
+		err = handler.store.UpdateUnStakesRecord(unstake)
+		if err != nil {
+			return err
+		}
+	} else if evt.Type == types.SwapEventType {
 		// TODO update swap event
 	}
 	return err
