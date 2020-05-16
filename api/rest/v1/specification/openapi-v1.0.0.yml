@@ -772,6 +772,10 @@ components:
           type: string
         nextChurnHeight:
           type: string
+        poolActivationCountdown:
+          type: integer
+          format: int64
+          description: The remaining time of pool activation (in seconds)
 
     NodeKey:
       type: object
