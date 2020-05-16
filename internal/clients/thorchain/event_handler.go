@@ -46,7 +46,7 @@ func NewEventHandler(store Store) (*EventHandler, error) {
 	evtHandler.handlers[types.RewardEventType] = evtHandler.processRewardEvent
 	evtHandler.handlers[types.RefundEventType] = evtHandler.processRefundEvent
 	evtHandler.handlers[types.AddEventType] = evtHandler.processAddEvent
-	// evtHandler.handlers[types.PoolEventType] = evtHandler.processPoolEvent
+	evtHandler.handlers[types.PoolEventType] = evtHandler.processPoolEvent
 	evtHandler.handlers[types.GasEventType] = evtHandler.processGasEvent
 	evtHandler.handlers[types.SlashEventType] = evtHandler.processSlashEvent
 	evtHandler.handlers[types.ErrataEventType] = evtHandler.processErrataEvent
@@ -69,15 +69,33 @@ func (handler EventHandler) NewTx(height int64, events []Event) {
 func (handler *EventHandler) processEvent(event Event, height int64, blockTime time.Time) {
 	h, ok := handler.handlers[event.Type]
 	if ok {
-		handler.logger.Debug().Msg("process " + event.Type)
+		handler.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
 		err := h(event, height, blockTime)
 		if err != nil {
-			handler.logger.Err(err).Msg("process event failed")
+			handler.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
 		}
 		handler.maxId = handler.maxId + 1
 	} else {
 		handler.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
+}
+
+func (handler *EventHandler) processPoolEvent(event Event, height int64, blockTime time.Time) error {
+	var pool models.EventPool
+	evt, parent, err := handler.getEvent(reflect.TypeOf(pool), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get pool event")
+	}
+	err = mapstructure.Decode(evt, &pool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode pool event")
+	}
+	pool.Event = parent
+	err = handler.store.CreatePoolRecord(pool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save pool event")
+	}
+	return nil
 }
 
 func (handler *EventHandler) processErrataEvent(event Event, height int64, blockTime time.Time) error {

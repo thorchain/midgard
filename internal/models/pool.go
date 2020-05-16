@@ -16,7 +16,7 @@ const (
 type EventPool struct {
 	Event
 	Pool   common.Asset `json:"pool"`
-	Status PoolStatus   `json:"status"`
+	Status PoolStatus   `json:"pool_status"`
 }
 
 func NewPoolEvent(pool types.EventPool, event types.Event) EventPool {
