@@ -1,8 +1,10 @@
 package models
 
 import (
+	"encoding/json"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
+	"strings"
 )
 
 type PoolStatus int
@@ -12,6 +14,28 @@ const (
 	Bootstrap
 	Suspended
 )
+
+var poolStatusStr = map[string]PoolStatus{
+	"Enabled":   Enabled,
+	"Bootstrap": Bootstrap,
+	"Suspended": Suspended,
+}
+
+// UnmarshalJSON convert string form back to PoolStatus
+func (ps *PoolStatus) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	*ps=Suspended
+	for key, item := range poolStatusStr {
+		if strings.EqualFold(key, s) {
+			*ps= item
+			break
+		}
+	}
+	return nil
+}
 
 type EventPool struct {
 	Event

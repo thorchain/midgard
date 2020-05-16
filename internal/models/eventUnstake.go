@@ -7,8 +7,8 @@ import (
 
 type EventUnstake struct {
 	Event
-	Pool       common.Asset
-	StakeUnits int64
+	Pool       common.Asset `json:"pool"`
+	StakeUnits int64        `json:"stake_units,string"`
 }
 
 func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake {

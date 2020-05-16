@@ -42,7 +42,7 @@ func NewEventHandler(store Store) (*EventHandler, error) {
 	}
 	evtHandler.handlers[types.StakeEventType] = evtHandler.processStakeEvent
 	evtHandler.handlers[types.SwapEventType] = evtHandler.processSwapEvent
-	// evtHandler.handlers[types.UnstakeEventType] = evtHandler.processUnstakeEvent
+	evtHandler.handlers[types.UnstakeEventType] = evtHandler.processUnstakeEvent
 	evtHandler.handlers[types.RewardEventType] = evtHandler.processRewardEvent
 	evtHandler.handlers[types.RefundEventType] = evtHandler.processRefundEvent
 	evtHandler.handlers[types.AddEventType] = evtHandler.processAddEvent
@@ -53,14 +53,14 @@ func NewEventHandler(store Store) (*EventHandler, error) {
 	return evtHandler, nil
 }
 
-func (handler EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
+func (handler *EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
 	events := append(begin, end...)
 	for _, evt := range events {
 		handler.processEvent(evt, height, blockTime)
 	}
 }
 
-func (handler EventHandler) NewTx(height int64, events []Event) {
+func (handler *EventHandler) NewTx(height int64, events []Event) {
 	for _, evt := range events {
 		handler.processEvent(evt, height, time.Now())
 	}
@@ -214,6 +214,24 @@ func (handler *EventHandler) processStakeEvent(event Event, height int64, blockT
 	err = handler.store.CreateStakeRecord(stake)
 	if err != nil {
 		return errors.Wrap(err, "Failed to save stake event")
+	}
+	return nil
+}
+
+func (handler *EventHandler) processUnstakeEvent(event Event, height int64, blockTime time.Time) error {
+	var unstake models.EventUnstake
+	evt, parent, err := handler.getEvent(reflect.TypeOf(unstake), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get unstake event")
+	}
+	err = mapstructure.Decode(evt, &unstake)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode unstake event")
+	}
+	unstake.Event = parent
+	err = handler.store.CreateUnStakesRecord(unstake)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save unstake event")
 	}
 	return nil
 }
