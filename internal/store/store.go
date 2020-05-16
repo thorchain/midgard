@@ -46,4 +46,5 @@ type Store interface {
 	ProcessTxRecord(direction string, parent models.Event, record common.Tx) error
 	CreateFeeRecord(event models.Event, pool common.Asset) error
 	UpdateUnStakesRecord(record models.EventUnstake) error
+	UpdateSwapRecord(record models.EventSwap) error
 }

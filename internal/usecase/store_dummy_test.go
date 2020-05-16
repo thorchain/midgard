@@ -16,20 +16,24 @@ var _ store.Store = (*StoreDummy)(nil)
 // StoreDummy is test purpose implementation of Store.
 type StoreDummy struct{}
 
+func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
+	return ErrNotImplemented
+}
+
 func (s *StoreDummy) UpdateUnStakesRecord(record models.EventUnstake) error {
-	panic("implement me")
+	return ErrNotImplemented
 }
 
 func (s *StoreDummy) GetEventByTxId(txId common.TxID) (models.Event, error) {
-	panic("implement me")
+	return models.Event{}, ErrNotImplemented
 }
 
 func (s *StoreDummy) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
-	panic("implement me")
+	return ErrNotImplemented
 }
 
 func (s *StoreDummy) CreateFeeRecord(event models.Event, pool common.Asset) error {
-	panic("implement me")
+	return ErrNotImplemented
 }
 
 func (s *StoreDummy) CreateGenesis(_ models.Genesis) (int64, error) {

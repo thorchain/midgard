@@ -309,6 +309,7 @@ func (handler *EventHandler) processOutbound(event Event, height int64, blockTim
 	if err != nil {
 		return err
 	}
+	evt.OutTxs = common.Txs{outTx}
 	if evt.Type == types.UnstakeEventType {
 		var unstake models.EventUnstake
 		evt.OutTxs = common.Txs{outTx}
@@ -318,7 +319,12 @@ func (handler *EventHandler) processOutbound(event Event, height int64, blockTim
 			return err
 		}
 	} else if evt.Type == types.SwapEventType {
-		// TODO update swap event
+		var swap models.EventSwap
+		swap.Event = evt
+		err = handler.store.UpdateSwapRecord(swap)
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }
