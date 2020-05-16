@@ -2,11 +2,12 @@ package thorchain
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -18,23 +19,38 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-type EventHandler struct {
-	store  Store
-	logger zerolog.Logger
-	maxId  int64
-}
+type (
+	handler      func(Event, int64, time.Time) error
+	EventHandler struct {
+		store    Store
+		logger   zerolog.Logger
+		maxId    int64
+		handlers map[string]handler
+	}
+)
 
 func NewEventHandler(store Store) (*EventHandler, error) {
 	maxId, err := store.GetMaxID("")
 	if err != nil {
 		return nil, err
 	}
-	sc := &EventHandler{
-		store:  store,
-		logger: log.With().Str("module", "event_handler").Logger(),
-		maxId:  maxId + 1,
+	evtHandler := &EventHandler{
+		store:    store,
+		logger:   log.With().Str("module", "event_handler").Logger(),
+		maxId:    maxId + 1,
+		handlers: map[string]handler{},
 	}
-	return sc, nil
+	evtHandler.handlers[types.StakeEventType] = evtHandler.processStakeEvent
+	evtHandler.handlers[types.SwapEventType] = evtHandler.processSwapEvent
+	// evtHandler.handlers[types.UnstakeEventType] = evtHandler.processUnstakeEvent
+	evtHandler.handlers[types.RewardEventType] = evtHandler.processRewardEvent
+	evtHandler.handlers[types.RefundEventType] = evtHandler.processRefundEvent
+	evtHandler.handlers[types.AddEventType] = evtHandler.processAddEvent
+	// evtHandler.handlers[types.PoolEventType] = evtHandler.processPoolEvent
+	evtHandler.handlers[types.GasEventType] = evtHandler.processGasEvent
+	evtHandler.handlers[types.SlashEventType] = evtHandler.processSlashEvent
+	evtHandler.handlers[types.ErrataEventType] = evtHandler.processErrataEvent
+	return evtHandler, nil
 }
 
 func (handler EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
@@ -51,26 +67,38 @@ func (handler EventHandler) NewTx(height int64, events []Event) {
 }
 
 func (handler *EventHandler) processEvent(event Event, height int64, blockTime time.Time) {
-	if event.Type == "stake" {
-		handler.processStakeEvent(event, height, blockTime)
-	} else if event.Type == "rewards" {
-		handler.processRewardEvent(event, height, blockTime)
-	} else if event.Type == "outbound" {
-		handler.processOutbound(event, height, blockTime)
-	} else if event.Type == "refund" {
-		handler.processRefundEvent(event, height, blockTime)
-	} else if event.Type == "fee" {
-		handler.processFeeEvent(event, height, blockTime)
-	} else if event.Type == "gas" {
-		handler.processGasEvent(event, height, blockTime)
-	} else if event.Type == "add" {
-		handler.processAddEvent(event, height, blockTime)
-	} else if event.Type == "swap" {
-		handler.processSwapEvent(event, height, blockTime)
-	} else if event.Type != "message" {
-		fmt.Println(event.Type)
+	h, ok := handler.handlers[event.Type]
+	if ok {
+		handler.logger.Debug().Msg("process " + event.Type)
+		err := h(event, height, blockTime)
+		if err != nil {
+			handler.logger.Err(err).Msg("process event failed")
+		}
+		handler.maxId = handler.maxId + 1
+	} else {
+		handler.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
-	handler.maxId = handler.maxId + 1
+}
+
+func (handler *EventHandler) processErrataEvent(event Event, height int64, blockTime time.Time) error {
+	var poolMod types.PoolMod
+	evt, parent, err := handler.getEvent(reflect.TypeOf(poolMod), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get errata event")
+	}
+	err = mapstructure.Decode(evt, &poolMod)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode errata event")
+	}
+	errata := models.EventErrata{
+		Pools: []types.PoolMod{poolMod},
+	}
+	errata.Event = parent
+	err = handler.store.CreateErrataRecord(errata)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save swap event")
+	}
+	return nil
 }
 
 func (handler *EventHandler) processSwapEvent(event Event, height int64, blockTime time.Time) error {
@@ -254,32 +282,62 @@ func (handler *EventHandler) convertAttr(attr map[string]string) map[string]inte
 }
 
 func (handler *EventHandler) processRewardEvent(event Event, height int64, blockTime time.Time) error {
-	var reward models.EventReward
-	delete(event.Attributes, "bond_reward")
-	if len(event.Attributes) == 0 {
+	if len(event.Attributes) <= 1 {
 		return nil
 	}
-	for k, v := range event.Attributes {
-		pool, err := common.NewAsset(k)
-		if err != nil {
-			return errors.Wrap(err, "Invalid pool")
-		}
-		amount, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			return errors.Wrap(err, "Invalid amount")
-		}
-		poolReward := models.PoolAmount{
-			Pool:   pool,
-			Amount: amount,
-		}
-		reward.PoolRewards = append(reward.PoolRewards, poolReward)
+	var reward models.EventReward
+	evt, parent, err := handler.getEvent(reflect.TypeOf(reward), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get reward event")
 	}
-	reward.Event = handler.getParent(event.Type, height, blockTime, common.Tx{})
-	err := handler.store.CreateRewardRecord(reward)
+	err = mapstructure.Decode(evt, &reward)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode reward event")
+	}
+	reward.PoolRewards = handler.getPoolAmount(event.Attributes)
+	reward.Event = parent
+	err = handler.store.CreateRewardRecord(reward)
 	if err != nil {
 		return errors.New("Failed to save reward record")
 	}
 	return nil
+}
+
+func (handler *EventHandler) processSlashEvent(event Event, height int64, blockTime time.Time) error {
+	var slash models.EventSlash
+	evt, parent, err := handler.getEvent(reflect.TypeOf(slash), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get slash event")
+	}
+	err = mapstructure.Decode(evt, &slash)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode slash event")
+	}
+	slash.SlashAmount = handler.getPoolAmount(event.Attributes)
+	slash.Event = parent
+	err = handler.store.CreateSlashRecord(slash)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save slash event")
+	}
+	return nil
+}
+
+func (handler *EventHandler) getPoolAmount(attr map[string]string) []models.PoolAmount {
+	var poolAmounts []models.PoolAmount
+	for k, v := range attr {
+		pool, err := common.NewAsset(k)
+		if err == nil {
+			amount, err := strconv.ParseInt(v, 10, 64)
+			if err == nil {
+				poolAmount := models.PoolAmount{
+					Pool:   pool,
+					Amount: amount,
+				}
+				poolAmounts = append(poolAmounts, poolAmount)
+			}
+		}
+	}
+	return poolAmounts
 }
 
 func (handler *EventHandler) processOutbound(event Event, height int64, blockTime time.Time) error {
