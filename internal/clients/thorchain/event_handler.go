@@ -59,27 +59,64 @@ func (handler *EventHandler) processEvent(event Event, height int64, blockTime t
 		handler.processOutbound(event, height, blockTime)
 	} else if event.Type == "refund" {
 		handler.processRefundEvent(event, height, blockTime)
-	} else {
+	} else if event.Type == "fee" {
+		handler.processFeeEvent(event, height, blockTime)
+	} else if event.Type == "gas" {
+		handler.processGasEvent(event, height, blockTime)
+	} else if event.Type != "message" {
 		fmt.Println(event.Type)
 	}
 	handler.maxId = handler.maxId + 1
 }
 
-func (handler *EventHandler) getEvent(event Event, height int64, blockTime time.Time) (models.Event, error) {
-	// ToDo: if has in txID
-	inTx, _ := handler.getTx(event.Attributes)
-	var evt models.Event
-	evt.InTx = inTx
-	evt.Time = blockTime
-	evt.Type = event.Type
-	evt.ID = handler.maxId
-	evt.Height = height
-	return evt, nil
+func (handler *EventHandler) processFeeEvent(event Event, height int64, blockTime time.Time) error {
+	var fee common.Fee
+	evt, _, err := handler.getEvent(reflect.TypeOf(common.Fee{}), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to unmarshal gas event")
+	}
+	err = mapstructure.Decode(evt, &fee)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode fee event")
+	}
+	txId, _ := common.NewTxID(event.Attributes["tx_id"])
+	parent, err := handler.store.GetEventByTxId(txId)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get parent event")
+	}
+	parent.Fee = fee
+	// TODO get pool from event if fee asset is empty
+	err = handler.store.CreateFeeRecord(parent, parent.Fee.Asset())
+	if err != nil {
+		return errors.Wrap(err, "Failed to save fee event")
+	}
+	return nil
+}
+
+func (handler *EventHandler) processGasEvent(event Event, height int64, blockTime time.Time) error {
+	var gasPool models.GasPool
+	evt, parent, err := handler.getEvent(reflect.TypeOf(gasPool), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to unmarshal gas event")
+	}
+	err = mapstructure.Decode(evt, &gasPool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode gas event")
+	}
+	gas := models.EventGas{
+		Pools: []models.GasPool{gasPool},
+	}
+	gas.Event = parent
+	err = handler.store.CreateGasRecord(gas)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save gas event")
+	}
+	return nil
 }
 
 func (handler *EventHandler) processStakeEvent(event Event, height int64, blockTime time.Time) error {
 	var stake models.EventStake
-	evt, parent, err := handler.unmarshalEvent(reflect.TypeOf(stake), event, height, blockTime)
+	evt, parent, err := handler.getEvent(reflect.TypeOf(stake), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to unmarshal stake event")
 	}
@@ -97,7 +134,7 @@ func (handler *EventHandler) processStakeEvent(event Event, height int64, blockT
 
 func (handler *EventHandler) processRefundEvent(event Event, height int64, blockTime time.Time) error {
 	var refund models.EventRefund
-	evt, parent, err := handler.unmarshalEvent(reflect.TypeOf(refund), event, height, blockTime)
+	evt, parent, err := handler.getEvent(reflect.TypeOf(refund), event, height, blockTime)
 	if err != nil {
 		return errors.Wrap(err, "Failed to unmarshal refund event")
 	}
@@ -113,29 +150,69 @@ func (handler *EventHandler) processRefundEvent(event Event, height int64, block
 	return nil
 }
 
-func (handler *EventHandler) unmarshalEvent(targetType reflect.Type, sourceEvent Event, height int64, blockTime time.Time) (interface{}, models.Event, error) {
-	targetEvent := reflect.New(targetType).Interface()
-	evt, err := handler.getEvent(sourceEvent, height, blockTime)
-	if err != nil {
-		return targetEvent, models.Event{}, errors.Wrap(err, "Failed to get event")
+func (handler *EventHandler) getEvent(targetType reflect.Type, sourceEvent Event, height int64, blockTime time.Time) (interface{}, models.Event, error) {
+	attr := handler.convertAttr(sourceEvent.Attributes)
+	// TODO: Check if event can have input tx
+	var inputTx common.Tx
+	tx, err := handler.unmarshalEvent(reflect.TypeOf(common.Tx{}), attr, height, blockTime)
+	if err == nil {
+		err = mapstructure.Decode(tx, &inputTx)
+		if err != nil {
+			return nil, models.Event{}, errors.Wrap(err, "Failed to decode inputTx")
+		}
 	}
-	delete(sourceEvent.Attributes, "id")
-	attrs, err := json.Marshal(sourceEvent.Attributes)
+	if _, ok := attr["id"]; ok {
+		delete(attr, "id")
+	}
+	var parent models.Event
+	parentEvt, err := handler.unmarshalEvent(reflect.TypeOf(models.Event{}), attr, height, blockTime)
 	if err != nil {
-		return targetEvent, models.Event{}, errors.Wrap(err, "Failed to marshal attributes")
+		return nil, models.Event{}, errors.Wrap(err, "Failed to get event")
+	}
+	err = mapstructure.Decode(parentEvt, &parent)
+	if err != nil {
+		return nil, models.Event{}, errors.Wrap(err, "Failed to decode parent event")
+	}
+	parent.InTx = inputTx
+	evt, err := handler.unmarshalEvent(targetType, attr, height, blockTime)
+	if err != nil {
+		return nil, models.Event{}, errors.Wrap(err, "Failed to get event")
+	}
+	return evt, parent, nil
+}
+
+func (handler *EventHandler) unmarshalEvent(targetType reflect.Type, attr map[string]interface{}, height int64, blockTime time.Time) (interface{}, error) {
+	targetEvent := reflect.New(targetType).Interface()
+	attrs, err := json.Marshal(attr)
+	if err != nil {
+		return targetEvent, errors.Wrap(err, "Failed to marshal attributes")
 	}
 	err = json.Unmarshal(attrs, &targetEvent)
 	if err != nil {
-		return targetEvent, models.Event{}, errors.Wrap(err, "Failed to unmarshal event")
+		return targetEvent, errors.Wrap(err, "Failed to unmarshal event")
 	}
-	return targetEvent, evt, nil
+	return targetEvent, nil
+}
+
+func (handler *EventHandler) convertAttr(attr map[string]string) map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range attr {
+		if k == "from" {
+			res["from_address"] = v
+		} else if k == "to" {
+			res["to_address"] = v
+		} else if k == "coin" {
+			res["coins"], _ = handler.getCoins(attr["coin"])
+		} else if k == "coins" {
+			res["coins"], _ = handler.getCoins(attr["coins"])
+		} else {
+			res[k] = v
+		}
+	}
+	return res
 }
 
 func (handler *EventHandler) processRewardEvent(event Event, height int64, blockTime time.Time) error {
-	evt, err := handler.getEvent(event, height, blockTime)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get event")
-	}
 	var reward models.EventReward
 	delete(event.Attributes, "bond_reward")
 	if len(event.Attributes) == 0 {
@@ -156,8 +233,14 @@ func (handler *EventHandler) processRewardEvent(event Event, height int64, block
 		}
 		reward.PoolRewards = append(reward.PoolRewards, poolReward)
 	}
-	reward.Event = evt
-	err = handler.store.CreateRewardRecord(reward)
+	parent := models.Event{
+		Time:   blockTime,
+		Type:   event.Type,
+		ID:     handler.maxId,
+		Height: height,
+	}
+	reward.Event = parent
+	err := handler.store.CreateRewardRecord(reward)
 	if err != nil {
 		return errors.New("Failed to save reward record")
 	}
@@ -212,26 +295,34 @@ func (handler *EventHandler) getTx(att map[string]string) (common.Tx, error) {
 	if _, ok := att["coin"]; !ok {
 		return common.Tx{}, errors.New("Invalid coin")
 	}
-	var coins common.Coins
-	for _, c := range strings.Split(att["coin"], ",") {
-		c = strings.TrimSpace(c)
-		if len(strings.Split(c, " ")) != 2 {
-			return common.Tx{}, errors.New("Invalid coin")
-		}
-		asset, err := common.NewAsset(strings.Split(c, " ")[1])
-		if err != nil {
-			return common.Tx{}, errors.New("Invalid coin asset")
-		}
-		amount, err := strconv.ParseInt(strings.Split(c, " ")[0], 10, 64)
-		if err != nil {
-			return common.Tx{}, errors.New("Invalid coin amount")
-		}
-		coin := common.NewCoin(asset, amount)
-		coins = append(coins, coin)
+	coins, err := handler.getCoins(att["coin"])
+	if err != nil {
+		return common.Tx{}, errors.New("Invalid coin")
 	}
 	if _, ok := att["memo"]; !ok {
 		return common.Tx{}, errors.New("Invalid memo")
 	}
 	tx := common.NewTx(txId, from, to, coins, common.Memo(att["memo"]))
 	return tx, nil
+}
+
+func (handler *EventHandler) getCoins(coinStr string) (common.Coins, error) {
+	var coins common.Coins
+	for _, c := range strings.Split(coinStr, ",") {
+		c = strings.TrimSpace(c)
+		if len(strings.Split(c, " ")) != 2 {
+			return common.Coins{}, errors.New("Invalid coin")
+		}
+		asset, err := common.NewAsset(strings.Split(c, " ")[1])
+		if err != nil {
+			return common.Coins{}, errors.New("Invalid coin asset")
+		}
+		amount, err := strconv.ParseInt(strings.Split(c, " ")[0], 10, 64)
+		if err != nil {
+			return common.Coins{}, errors.New("Invalid coin amount")
+		}
+		coin := common.NewCoin(asset, amount)
+		coins = append(coins, coin)
+	}
+	return coins, nil
 }

@@ -44,4 +44,5 @@ type Store interface {
 	GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (models.StakerAddressAndAssetDetails, error)
 	GetEventByTxId(txId common.TxID) (models.Event, error)
 	ProcessTxRecord(direction string, parent models.Event, record common.Tx) error
+	CreateFeeRecord(event models.Event, pool common.Asset) error
 }

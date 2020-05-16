@@ -46,6 +46,7 @@ type Store interface {
 	GetMaxID(chain common.Chain) (int64, error)
 	GetEventByTxId(txId common.TxID) (models.Event, error)
 	ProcessTxRecord(direction string, parent models.Event, record common.Tx) error
+	CreateFeeRecord(event models.Event, pool common.Asset) error
 }
 
 type handlerFunc func(types.Event) error

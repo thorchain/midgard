@@ -6,9 +6,9 @@ import (
 )
 
 type GasPool struct {
-	Asset    common.Asset
-	AssetAmt uint64
-	RuneAmt  uint64
+	Asset    common.Asset `json:"asset"`
+	AssetAmt uint64       `json:"asset_amt,string"`
+	RuneAmt  uint64       `json:"rune_amt,string"`
 }
 
 type EventGas struct {
