@@ -2,9 +2,10 @@ package models
 
 import (
 	"encoding/json"
+	"strings"
+
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
-	"strings"
 )
 
 type PoolStatus int
@@ -27,10 +28,10 @@ func (ps *PoolStatus) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &s); err != nil {
 		return err
 	}
-	*ps=Suspended
+	*ps = Suspended
 	for key, item := range poolStatusStr {
 		if strings.EqualFold(key, s) {
-			*ps= item
+			*ps = item
 			break
 		}
 	}

@@ -13,16 +13,18 @@ import (
 )
 
 const (
-	SwapEventType    = `swap`
-	StakeEventType   = `stake`
-	UnstakeEventType = `unstake`
-	AddEventType     = `add`
-	PoolEventType    = `pool`
-	RewardEventType  = `rewards`
-	RefundEventType  = `refund`
-	GasEventType     = `gas`
-	SlashEventType   = `slash`
-	ErrataEventType  = `errata`
+	SwapEventType     = `swap`
+	StakeEventType    = `stake`
+	UnstakeEventType  = `unstake`
+	AddEventType      = `add`
+	PoolEventType     = `pool`
+	RewardEventType   = `rewards`
+	RefundEventType   = `refund`
+	GasEventType      = `gas`
+	SlashEventType    = `slash`
+	ErrataEventType   = `errata`
+	FeeEventType      = `fee`
+	OutboundEventType = `outbound`
 )
 
 type NewEvent struct {
