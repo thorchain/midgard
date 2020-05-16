@@ -34,14 +34,15 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 			assetAmt += coin.Amount
 		}
 	}
-	for _, coin := range record.Event.OutTxs[0].Coins {
-		if common.IsRuneAsset(coin.Asset) {
-			runeAmt -= coin.Amount
-		} else {
-			assetAmt -= coin.Amount
+	if len(record.Event.OutTxs) > 0 {
+		for _, coin := range record.Event.OutTxs[0].Coins {
+			if common.IsRuneAsset(coin.Asset) {
+				runeAmt -= coin.Amount
+			} else {
+				assetAmt -= coin.Amount
+			}
 		}
 	}
-
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,

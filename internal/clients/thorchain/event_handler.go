@@ -65,10 +65,30 @@ func (handler *EventHandler) processEvent(event Event, height int64, blockTime t
 		handler.processGasEvent(event, height, blockTime)
 	} else if event.Type == "add" {
 		handler.processAddEvent(event, height, blockTime)
+	} else if event.Type == "swap" {
+		handler.processSwapEvent(event, height, blockTime)
 	} else if event.Type != "message" {
 		fmt.Println(event.Type)
 	}
 	handler.maxId = handler.maxId + 1
+}
+
+func (handler *EventHandler) processSwapEvent(event Event, height int64, blockTime time.Time) error {
+	var swap models.EventSwap
+	evt, parent, err := handler.getEvent(reflect.TypeOf(swap), event, height, blockTime)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get swap event")
+	}
+	err = mapstructure.Decode(evt, &swap)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode swap event")
+	}
+	swap.Event = parent
+	err = handler.store.CreateSwapRecord(swap)
+	if err != nil {
+		return errors.Wrap(err, "Failed to save swap event")
+	}
+	return nil
 }
 
 func (handler *EventHandler) processAddEvent(event Event, height int64, blockTime time.Time) error {
