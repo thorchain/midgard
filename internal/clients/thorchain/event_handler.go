@@ -49,6 +49,9 @@ func NewEventHandler(store Store) (*EventHandler, error) {
 			DecodeHook:       decodeHook,
 			WeaklyTypedInput: true,
 		},
+		height:      1,
+		blockTime:   time.Time{},
+		events:      nil,
 		nextEventID: maxID + 1,
 		logger:      log.With().Str("module", "event_handler").Logger(),
 	}
