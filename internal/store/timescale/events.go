@@ -179,18 +179,27 @@ func (s *Client) createEventRecord(record models.Event) error {
 	return stmt.QueryRowx(record).Scan(&record.ID)
 }
 
-func (s *Client) GetEventByTxId(txId common.TxID) (models.Event, error) {
+func (s *Client) GetEventsByTxId(txId common.TxID) ([]models.Event, error) {
 	query := fmt.Sprintf(`
 		SELECT events.* 
 		FROM   %s 
 			   INNER JOIN %s 
 					   ON events.id = txs.event_id 
 		WHERE  tx_hash =$1`, models.ModelEventsTable, models.ModelTxsTable)
-	var event models.Event
+	var events []models.Event
 	var err error
-	err = s.db.Get(&event, query, txId.String())
+	rows, err := s.db.Queryx(query, txId.String())
 	if err != nil {
-		return models.Event{}, errors.Wrap(err, "query return null or failed")
+		return nil, err
 	}
-	return event, nil
+	for rows.Next() {
+		var event models.Event
+		err := rows.StructScan(&event)
+		if err != nil {
+			s.logger.Err(err).Msg("Scan error")
+			continue
+		}
+		events = append(events, event)
+	}
+	return events, nil
 }

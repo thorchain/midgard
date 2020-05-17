@@ -337,27 +337,47 @@ func (eh *EventHandler) processOutbound(event Event) error {
 	if err != nil {
 		return err
 	}
-	evt, err := eh.store.GetEventByTxId(txID)
+	evts, err := eh.store.GetEventsByTxId(txID)
 	if err != nil {
 		return err
 	}
-	err = eh.store.ProcessTxRecord("out", evt, outTx)
-	if err != nil {
-		return err
+	if len(evts) == 0 {
+		return nil
 	}
-	evt.OutTxs = common.Txs{outTx}
-	if evt.Type == types.UnstakeEventType {
-		var unstake models.EventUnstake
+	var evt models.Event
+	if evts[0].Type == types.UnstakeEventType {
+		evt = evts[0]
+		err = eh.store.ProcessTxRecord("out", evt, outTx)
+		if err != nil {
+			return err
+		}
 		evt.OutTxs = common.Txs{outTx}
+		var unstake models.EventUnstake
 		unstake.Event = evt
 		err = eh.store.UpdateUnStakesRecord(unstake)
 		if err != nil {
 			return err
 		}
-	} else if evt.Type == types.SwapEventType {
+	} else if evts[0].Type == types.SwapEventType {
+		evt = evts[0]
+		if !outTx.ID.IsEmpty() && len(evts) == 2 { // double swap
+			evt = evts[1]
+		}
+		evt.OutTxs = common.Txs{outTx}
+		err = eh.store.ProcessTxRecord("out", evt, outTx)
+		if err != nil {
+			return err
+		}
 		var swap models.EventSwap
 		swap.Event = evt
 		err = eh.store.UpdateSwapRecord(swap)
+		if err != nil {
+			return err
+		}
+	} else {
+		evt = evts[0]
+		evt.OutTxs = common.Txs{outTx}
+		err = eh.store.ProcessTxRecord("out", evt, outTx)
 		if err != nil {
 			return err
 		}

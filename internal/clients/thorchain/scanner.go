@@ -44,7 +44,7 @@ type Store interface {
 	CreateSlashRecord(record models.EventSlash) error
 	CreateErrataRecord(record models.EventErrata) error
 	GetMaxID(chain common.Chain) (int64, error)
-	GetEventByTxId(txId common.TxID) (models.Event, error)
+	GetEventsByTxId(txId common.TxID) ([]models.Event, error)
 	ProcessTxRecord(direction string, parent models.Event, record common.Tx) error
 	CreateFeeRecord(event models.Event, pool common.Asset) error
 	UpdateUnStakesRecord(record models.EventUnstake) error
