@@ -32,7 +32,7 @@ type EventHandler struct {
 	logger       zerolog.Logger
 }
 
-type handler func(Event, int64, time.Time) error
+type handler func(Event) error
 
 // NewEventHandler will create a new instance of EventHandler.
 func NewEventHandler(store Store) (*EventHandler, error) {
@@ -83,16 +83,16 @@ func (eh *EventHandler) NewTx(height int64, events []Event) {
 
 func (eh *EventHandler) processBlock() {
 	for _, e := range eh.events {
-		eh.processEvent(e, eh.height, eh.blockTime)
+		eh.processEvent(e)
 	}
 	eh.events = eh.events[:0]
 }
 
-func (eh *EventHandler) processEvent(event Event, height int64, blockTime time.Time) {
+func (eh *EventHandler) processEvent(event Event) {
 	h, ok := eh.handlers[event.Type]
 	if ok {
 		eh.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
-		err := h(event, height, blockTime)
+		err := h(event)
 		if err != nil {
 			eh.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
 		}
@@ -118,9 +118,9 @@ func (eh *EventHandler) decode(attrs map[string]string, v interface{}) error {
 	return nil
 }
 
-func (eh *EventHandler) processStakeEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processStakeEvent(event Event) error {
 	stake := models.EventStake{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &stake.Event.InTx)
 	if err != nil {
@@ -138,9 +138,9 @@ func (eh *EventHandler) processStakeEvent(event Event, height int64, blockTime t
 	return nil
 }
 
-func (eh *EventHandler) processUnstakeEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processUnstakeEvent(event Event) error {
 	unstake := models.EventUnstake{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &unstake.Event.InTx)
 	if err != nil {
@@ -158,9 +158,9 @@ func (eh *EventHandler) processUnstakeEvent(event Event, height int64, blockTime
 	return nil
 }
 
-func (eh *EventHandler) processRefundEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processRefundEvent(event Event) error {
 	refund := models.EventRefund{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &refund.Event.InTx)
 	if err != nil {
@@ -178,9 +178,9 @@ func (eh *EventHandler) processRefundEvent(event Event, height int64, blockTime 
 	return nil
 }
 
-func (eh *EventHandler) processSwapEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processSwapEvent(event Event) error {
 	swap := models.EventSwap{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &swap.Event.InTx)
 	if err != nil {
@@ -198,9 +198,9 @@ func (eh *EventHandler) processSwapEvent(event Event, height int64, blockTime ti
 	return nil
 }
 
-func (eh *EventHandler) processPoolEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processPoolEvent(event Event) error {
 	pool := models.EventPool{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &pool.Event.InTx)
 	if err != nil {
@@ -218,9 +218,9 @@ func (eh *EventHandler) processPoolEvent(event Event, height int64, blockTime ti
 	return nil
 }
 
-func (eh *EventHandler) processAddEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processAddEvent(event Event) error {
 	add := models.EventAdd{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &add.Event.InTx)
 	if err != nil {
@@ -238,9 +238,9 @@ func (eh *EventHandler) processAddEvent(event Event, height int64, blockTime tim
 	return nil
 }
 
-func (eh *EventHandler) processGasEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processGasEvent(event Event) error {
 	gas := models.EventGas{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	var pool models.GasPool
 	err := eh.decode(event.Attributes, &pool)
@@ -255,9 +255,9 @@ func (eh *EventHandler) processGasEvent(event Event, height int64, blockTime tim
 	return nil
 }
 
-func (eh *EventHandler) processSlashEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processSlashEvent(event Event) error {
 	slash := models.EventSlash{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &slash.Event.InTx)
 	if err != nil {
@@ -276,9 +276,9 @@ func (eh *EventHandler) processSlashEvent(event Event, height int64, blockTime t
 	return nil
 }
 
-func (eh *EventHandler) processErrataEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processErrataEvent(event Event) error {
 	errata := models.EventErrata{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &errata.Event.InTx)
 	if err != nil {
@@ -297,8 +297,8 @@ func (eh *EventHandler) processErrataEvent(event Event, height int64, blockTime 
 	return nil
 }
 
-func (eh *EventHandler) processFeeEvent(event Event, height int64, blockTime time.Time) error {
-	evt := newEvent(event, eh.nextEventID, height, blockTime)
+func (eh *EventHandler) processFeeEvent(event Event) error {
+	evt := newEvent(event, eh.nextEventID, eh.height, eh.blockTime)
 	err := eh.decode(event.Attributes, &evt.Fee)
 	if err != nil {
 		return errors.Wrap(err, "failed to decode fee")
@@ -311,12 +311,12 @@ func (eh *EventHandler) processFeeEvent(event Event, height int64, blockTime tim
 	return nil
 }
 
-func (eh *EventHandler) processRewardEvent(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processRewardEvent(event Event) error {
 	if len(event.Attributes) <= 1 {
 		return nil
 	}
 	reward := models.EventReward{
-		Event: newEvent(event, eh.nextEventID, height, blockTime),
+		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	reward.PoolRewards = getPoolAmount(event.Attributes)
 
@@ -327,7 +327,7 @@ func (eh *EventHandler) processRewardEvent(event Event, height int64, blockTime 
 	return nil
 }
 
-func (eh *EventHandler) processOutbound(event Event, height int64, blockTime time.Time) error {
+func (eh *EventHandler) processOutbound(event Event) error {
 	txID, err := common.NewTxID(event.Attributes["in_tx_id"])
 	if err != nil {
 		return err
