@@ -9,27 +9,25 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-	rpchttp "github.com/tendermint/tendermint/rpc/client"
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
 // with websocket or directly by requesting http endpoint.
 type BlockScanner struct {
-	addr     string
-	client   *rpchttp.HTTP
+	client   Tendermint
 	callback Callback
 	interval time.Duration
 	stopChan chan struct{}
 	wg       sync.WaitGroup
+	running  bool
 	height   int64
 	logger   zerolog.Logger
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
-func NewBlockScanner(addr string, interval time.Duration, callback Callback) *BlockScanner {
-	client := rpchttp.NewHTTP(addr, "/websocket")
+func NewBlockScanner(client Tendermint, callback Callback, interval time.Duration) *BlockScanner {
 	sc := &BlockScanner{
-		addr:     addr,
 		client:   client,
 		callback: callback,
 		interval: interval,
@@ -41,8 +39,8 @@ func NewBlockScanner(addr string, interval time.Duration, callback Callback) *Bl
 
 // SetHeight sets the height that scanner will start scanning from.
 func (sc *BlockScanner) SetHeight(height int64) error {
-	if sc.client.IsRunning() {
-		return errors.New("scanner in running")
+	if sc.running {
+		return errors.New("scanner is running")
 	}
 
 	sc.height = height
@@ -56,11 +54,11 @@ func (sc *BlockScanner) GetHeight() int64 {
 
 // Start will start the scanner.
 func (sc *BlockScanner) Start() error {
-	err := sc.client.Start()
-	if err != nil {
-		return errors.Wrap(err, "failed to start websocket routine")
+	if sc.running {
+		return errors.New("scanner is already running")
 	}
 
+	sc.running = true
 	go sc.scan()
 	return nil
 }
@@ -95,9 +93,6 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	if info.LastHeight == height {
-		return true, nil
-	}
 
 	block, err := sc.client.BlockResults(&height)
 	if err != nil {
@@ -105,26 +100,18 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	}
 
 	for _, tx := range block.Results.DeliverTx {
-		events, err := convertEvents(tx.Events)
-		if err != nil {
-			return false, errors.Wrap(err, "failed to process deliver tx section")
-		}
+		events := convertEvents(tx.Events)
 		sc.callback.NewTx(height, events)
 	}
 
 	blockTime := info.BlockMetas[0].Header.Time
-	beginEvents, err := convertEvents(block.Results.BeginBlock.Events)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to process block begin section")
-	}
-	endEvents, err := convertEvents(block.Results.EndBlock.Events)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to process block begin section")
-	}
+	beginEvents := convertEvents(block.Results.BeginBlock.Events)
+	endEvents := convertEvents(block.Results.EndBlock.Events)
 	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 
 	sc.incrementHeight()
-	return false, nil
+	synced := info.LastHeight == height
+	return synced, nil
 }
 
 func (sc *BlockScanner) incrementHeight() {
@@ -134,27 +121,30 @@ func (sc *BlockScanner) incrementHeight() {
 
 // Stop will attempt to stop the scanner (blocking until the scanner stops completely).
 func (sc *BlockScanner) Stop() error {
-	err := sc.client.Stop()
-	if err != nil {
-		return errors.Wrap(err, "failed to stop websocket routine")
+	if !sc.running {
+		return errors.New("scanner isn't running")
 	}
 
-	close(sc.stopChan)
+	sc.stopChan <- struct{}{}
 	sc.wg.Wait()
 
+	sc.running = false
 	return nil
 }
 
-func convertEvents(tes []abcitypes.Event) ([]Event, error) {
+func convertEvents(tes []abcitypes.Event) []Event {
 	events := make([]Event, len(tes))
 	for i, te := range tes {
-		err := events[i].FromTendermintEvent(te)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to convert event %d", i)
-		}
+		events[i].FromTendermintEvent(te)
 	}
 
-	return events, nil
+	return events
+}
+
+// Tendermint represents every method BlockScanner needs to scan blocks.
+type Tendermint interface {
+	BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error)
+	BlockResults(height *int64) (*coretypes.ResultBlockResults, error)
 }
 
 // Callback represents methods required by Scanner to notify events.

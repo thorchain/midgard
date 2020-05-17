@@ -36,7 +36,7 @@ func (h *Handlers) GetNodes(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// NewBinanceClient creates a new service interface with the Datastore of your choise
+// New creates a new service interface with the Datastore of your choise
 func New(uc *usecase.Usecase, client thorchain.Thorchain, logger zerolog.Logger) *Handlers {
 	return &Handlers{
 		uc:              uc,

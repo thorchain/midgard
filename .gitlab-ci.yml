@@ -63,6 +63,7 @@ smoke-test:
     - apk update
     - apk add make git jq curl
     - make docker-gitlab-build
+    - docker tag registry.gitlab.com/thorchain/midgard:latest registry.gitlab.com/thorchain/midgard:mocknet
     - git clone --single-branch -b $CI_COMMIT_BRANCH https://gitlab.com/thorchain/thornode.git || git clone --single-branch -b master https://gitlab.com/thorchain/thornode.git
     - cd thornode
     - test master = $(git rev-parse --abbrev-ref HEAD) && docker pull registry.gitlab.com/thorchain/thornode:mocknet

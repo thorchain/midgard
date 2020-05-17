@@ -11,11 +11,10 @@ type Event struct {
 }
 
 // FromTendermintEvent converts Tendermint native Event structure to Event.
-func (e *Event) FromTendermintEvent(te abcitypes.Event) error {
+func (e *Event) FromTendermintEvent(te abcitypes.Event) {
 	e.Type = te.Type
 	e.Attributes = make(map[string]string, len(te.Attributes))
 	for _, kv := range te.Attributes {
 		e.Attributes[string(kv.Key)] = string(kv.Value)
 	}
-	return nil
 }
