@@ -1,12 +1,13 @@
 package usecase
 
 import (
-	"encoding/json"
 	"errors"
 	"sync"
 	"testing"
 	"time"
 
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
+	"github.com/tendermint/tendermint/types"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -23,62 +24,44 @@ const (
 var _ = Suite(&UsecaseSuite{})
 
 type UsecaseSuite struct {
-	dummyStore     *StoreDummy
-	dummyThorchain *ThorchainDummy
+	dummyThorchain  *ThorchainDummy
+	dummyTendermint *TendermintDummy
+	dummyStore      *StoreDummy
 }
 
 func (s *UsecaseSuite) SetUpSuite(c *C) {
-	s.dummyStore = &StoreDummy{}
 	s.dummyThorchain = &ThorchainDummy{}
+	s.dummyTendermint = &TendermintDummy{}
+	s.dummyStore = &StoreDummy{}
 }
 
 func Test(t *testing.T) {
 	TestingT(t)
 }
 
-type TestGetHealthThorchain struct {
-	ThorchainDummy
-	chains []common.Chain
-	events map[common.Chain][]types.Event
-	err    error
+type TestGetHealthTendermint struct {
+	metas []*types.BlockMeta
 }
 
-func (t *TestGetHealthThorchain) GetGenesis() (types.Genesis, error) {
-	return types.Genesis{}, nil
-}
-
-func (t *TestGetHealthThorchain) GetChains() ([]common.Chain, error) {
-	return t.chains, nil
-}
-
-func (t *TestGetHealthThorchain) GetEvents(id int64, chain common.Chain) ([]types.Event, error) {
-	events := t.events[chain]
-	if int(id) > len(events) {
-		return []types.Event{}, t.err
+func (t *TestGetHealthTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error) {
+	if minHeight-1 > int64(len(t.metas)) || maxHeight-1 > int64(len(t.metas)) {
+		return nil, errors.Errorf("last block height is %d", len(t.metas))
 	}
-	return events, t.err
+
+	result := &coretypes.ResultBlockchainInfo{
+		LastHeight: int64(len(t.metas)),
+		BlockMetas: t.metas[minHeight-1 : maxHeight],
+	}
+	return result, nil
+}
+
+func (t *TestGetHealthTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResults, error) {
+	return &coretypes.ResultBlockResults{}
 }
 
 type TestGetHealthStore struct {
 	StoreDummy
-	isHealthy   bool
-	totalEvents map[common.Chain]int64
-	lastEvent   map[common.Chain]int64
-	err         error
-	mu          sync.Mutex
-}
-
-func (s *TestGetHealthStore) CreateGenesis(_ models.Genesis) (int64, error) {
-	return 0, nil
-}
-
-func (s *TestGetHealthStore) CreateStakeRecord(stake models.EventStake) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.totalEvents[stake.Event.Chain]++
-	s.lastEvent[stake.Event.Chain] = stake.ID
-	return s.err
+	isHealthy bool
 }
 
 func (s *TestGetHealthStore) Ping() error {
@@ -89,116 +72,50 @@ func (s *TestGetHealthStore) Ping() error {
 }
 
 func (s *UsecaseSuite) TestGetHealth(c *C) {
-	client := &TestGetHealthThorchain{
-		chains: []common.Chain{
-			common.BNBChain,
-			common.BTCChain,
-		},
-		events: map[common.Chain][]types.Event{
-			common.BNBChain: {
-				{
-					ID:    1,
-					Type:  "stake",
-					Event: json.RawMessage("{}"),
-				},
-				{
-					ID:    3,
-					Type:  "stake",
-					Event: json.RawMessage("{}"),
-				},
-				{
-					ID:    4,
-					Type:  "stake",
-					Event: json.RawMessage("{}"),
+	now := time.Now()
+	tendermint := &TestGetHealthTendermint{
+		metas: []*types.BlockMeta{
+			{
+				Header: types.Header{
+					Height: 1,
+					Time:   now,
 				},
 			},
-			common.BTCChain: {
-				{
-					ID:    2,
-					Type:  "stake",
-					Event: json.RawMessage("{}"),
+			{
+				Header: types.Header{
+					Height: 2,
+					Time:   now.Add(time.Second * 3),
 				},
-				{
-					ID:    5,
-					Type:  "stake",
-					Event: json.RawMessage("{}"),
+			},
+			{
+				Header: types.Header{
+					Height: 3,
+					Time:   now.Add(time.Second * 3),
 				},
 			},
 		},
 	}
 	store := &TestGetHealthStore{
-		isHealthy:   true,
-		totalEvents: map[common.Chain]int64{},
-		lastEvent:   map[common.Chain]int64{},
+		isHealthy: true,
 	}
 	conf := &Config{
-		ScanInterval:           time.Second,
-		ScannersUpdateInterval: time.Second,
+		ScanInterval: time.Second,
 	}
-	uc, err := NewUsecase(client, store, conf)
+	uc, err := NewUsecase(client, tendermint, store, conf)
 	c.Assert(err, IsNil)
 	err = uc.StartScanner()
 	c.Assert(err, IsNil)
-	time.Sleep(conf.ScanInterval + conf.ScannersUpdateInterval + time.Second)
+	time.Sleep(conf.ScanInterval + time.Second)
 
 	health := uc.GetHealth()
 	c.Assert(health.Database, Equals, store.isHealthy)
-	scanners := map[common.Chain]*types.ScannerStatus{
-		common.BNBChain: {
-			Chain:       common.BNBChain,
-			IsHealthy:   true,
-			TotalEvents: 3,
-			LastEvent:   4,
-		},
-		common.BTCChain: {
-			Chain:       common.BTCChain,
-			IsHealthy:   true,
-			TotalEvents: 2,
-			LastEvent:   5,
-		},
-	}
-	for _, s := range health.Scanners {
-		c.Assert(s, DeepEquals, scanners[s.Chain])
-	}
-	err = uc.StopScanner()
-	c.Assert(err, IsNil)
+	c.Assert(health.ScannerHeight, Equals, 3)
 
 	// Unhealthy situation
-	client = &TestGetHealthThorchain{
-		chains: []common.Chain{
-			common.BNBChain,
-			common.BTCChain,
-		},
-		events: map[common.Chain][]types.Event{
-			common.BNBChain: {},
-			common.BTCChain: {},
-		},
-		err: errors.New("could not fetch events"),
-	}
-	store = &TestGetHealthStore{
-		isHealthy: false,
-	}
-	uc, err = NewUsecase(client, store, conf)
-	c.Assert(err, IsNil)
-	err = uc.StartScanner()
-	c.Assert(err, IsNil)
-	time.Sleep(conf.ScanInterval + conf.ScannersUpdateInterval + time.Second)
-
+	store.isHealthy = false
 	health = uc.GetHealth()
 	c.Assert(health.Database, Equals, store.isHealthy)
-	scanners = map[common.Chain]*types.ScannerStatus{
-		common.BNBChain: {
-			Chain:     common.BNBChain,
-			IsHealthy: false,
-		},
-		common.BTCChain: {
-			Chain:     common.BTCChain,
-			IsHealthy: false,
-		},
-	}
-	for _, s := range health.Scanners {
-		c.Assert(s, DeepEquals, scanners[s.Chain])
-	}
+
 	err = uc.StopScanner()
 	c.Assert(err, IsNil)
 }

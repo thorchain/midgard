@@ -18,21 +18,21 @@ const (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScanInterval           time.Duration
-	ScannersUpdateInterval time.Duration
+	ScanInterval time.Duration
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store        store.Store
-	thorchain    thorchain.Thorchain
-	consts       types.ConstantValues
-	multiScanner *multiScanner
+	store     store.Store
+	thorchain thorchain.Thorchain
+	consts    types.ConstantValues
+	scanner   *thorchain.BlockScanner
+	eh        *eventHandler
 }
 
 // NewUsecase initiate a new Usecase.
-func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*Usecase, error) {
+func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, store store.Store, conf *Config) (*Usecase, error) {
 	if conf == nil {
 		return nil, errors.New("conf can't be nil")
 	}
@@ -41,31 +41,36 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 	if err != nil {
 		return nil, errors.New("could not fetch network constants")
 	}
-	ms := newMultiScanner(client, store, conf.ScanInterval, conf.ScannersUpdateInterval)
+	eh, err := newEventHandler(store)
+	if err != nil {
+		return nil, errors.New("could not create event handler")
+	}
+	scanner := thorchain.NewBlockScanner(tendermint, eh, conf.ScanInterval)
 	uc := Usecase{
-		store:        store,
-		thorchain:    client,
-		consts:       consts,
-		multiScanner: ms,
+		store:     store,
+		thorchain: client,
+		consts:    consts,
+		scanner:   scanner,
+		eh:        eh,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	return uc.multiScanner.start()
+	return uc.scanner.Start()
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	return uc.multiScanner.stop()
+	return uc.scanner.Stop()
 }
 
 // GetHealth returns health status of Midgard's crucial units.
 func (uc *Usecase) GetHealth() *models.HealthStatus {
 	return &models.HealthStatus{
-		Database: uc.store.Ping() == nil,
-		Scanners: uc.multiScanner.getStatus(),
+		Database:      uc.store.Ping() == nil,
+		ScannerHeight: uc.scanner.GetHeight(),
 	}
 }
 

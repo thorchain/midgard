@@ -1,4 +1,4 @@
-package thorchain
+package usecase
 
 import (
 	"reflect"
@@ -10,9 +10,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/store"
 )
 
 var (
@@ -20,29 +22,27 @@ var (
 	assetType = reflect.TypeOf(common.Asset{})
 )
 
-// EventHandler will parse block events and insert the results in store.
-type EventHandler struct {
-	store        Store
+type eventHandler struct {
+	store        store.Store
 	handlers     map[string]handler
 	decodeConfig mapstructure.DecoderConfig
 	height       int64
 	blockTime    time.Time
-	events       []Event
+	events       []thorchain.Event
 	nextEventID  int64
 	logger       zerolog.Logger
 }
 
-type handler func(Event) error
+type handler func(thorchain.Event) error
 
-// NewEventHandler will create a new instance of EventHandler.
-func NewEventHandler(store Store) (*EventHandler, error) {
+func newEventHandler(store store.Store) (*eventHandler, error) {
 	maxID, err := store.GetMaxID("")
 	if err != nil {
 		return nil, err
 	}
 	decodeHook := mapstructure.ComposeDecodeHookFunc(decodeCoinsHook, decodeAssetHook, decodePoolStatusHook)
 
-	eh := &EventHandler{
+	eh := &eventHandler{
 		store:    store,
 		handlers: map[string]handler{},
 		decodeConfig: mapstructure.DecoderConfig{
@@ -68,7 +68,7 @@ func NewEventHandler(store Store) (*EventHandler, error) {
 }
 
 // NewBlock implements Callback.NewBlock
-func (eh *EventHandler) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
+func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end []thorchain.Event) {
 	eh.height = height
 	eh.blockTime = blockTime
 	eh.events = append(eh.events, begin...)
@@ -77,18 +77,18 @@ func (eh *EventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 }
 
 // NewTx implements Callback.NewTx
-func (eh *EventHandler) NewTx(height int64, events []Event) {
+func (eh *eventHandler) NewTx(height int64, events []thorchain.Event) {
 	eh.events = append(eh.events, events...)
 }
 
-func (eh *EventHandler) processBlock() {
+func (eh *eventHandler) processBlock() {
 	for _, e := range eh.events {
 		eh.processEvent(e)
 	}
 	eh.events = eh.events[:0]
 }
 
-func (eh *EventHandler) processEvent(event Event) {
+func (eh *eventHandler) processEvent(event thorchain.Event) {
 	h, ok := eh.handlers[event.Type]
 	if ok {
 		eh.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
@@ -102,23 +102,7 @@ func (eh *EventHandler) processEvent(event Event) {
 	}
 }
 
-func (eh *EventHandler) decode(attrs map[string]string, v interface{}) error {
-	// Copy config
-	conf := eh.decodeConfig
-	conf.Result = v
-	decoder, err := mapstructure.NewDecoder(&conf)
-	if err != nil {
-		return errors.Wrapf(err, "could not create decoder for %T", v)
-	}
-
-	err = decoder.Decode(attrs)
-	if err != nil {
-		return errors.Wrapf(err, "could not decode %v to %T", attrs, v)
-	}
-	return nil
-}
-
-func (eh *EventHandler) processStakeEvent(event Event) error {
+func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 	stake := models.EventStake{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -138,7 +122,7 @@ func (eh *EventHandler) processStakeEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processUnstakeEvent(event Event) error {
+func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 	unstake := models.EventUnstake{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -158,7 +142,7 @@ func (eh *EventHandler) processUnstakeEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processRefundEvent(event Event) error {
+func (eh *eventHandler) processRefundEvent(event thorchain.Event) error {
 	refund := models.EventRefund{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -178,7 +162,7 @@ func (eh *EventHandler) processRefundEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processSwapEvent(event Event) error {
+func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 	swap := models.EventSwap{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -198,7 +182,7 @@ func (eh *EventHandler) processSwapEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processPoolEvent(event Event) error {
+func (eh *eventHandler) processPoolEvent(event thorchain.Event) error {
 	pool := models.EventPool{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -218,7 +202,7 @@ func (eh *EventHandler) processPoolEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processAddEvent(event Event) error {
+func (eh *eventHandler) processAddEvent(event thorchain.Event) error {
 	add := models.EventAdd{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -238,7 +222,7 @@ func (eh *EventHandler) processAddEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processGasEvent(event Event) error {
+func (eh *eventHandler) processGasEvent(event thorchain.Event) error {
 	gas := models.EventGas{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -255,7 +239,7 @@ func (eh *EventHandler) processGasEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processSlashEvent(event Event) error {
+func (eh *eventHandler) processSlashEvent(event thorchain.Event) error {
 	slash := models.EventSlash{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -276,7 +260,7 @@ func (eh *EventHandler) processSlashEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processErrataEvent(event Event) error {
+func (eh *eventHandler) processErrataEvent(event thorchain.Event) error {
 	errata := models.EventErrata{
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
@@ -297,7 +281,7 @@ func (eh *EventHandler) processErrataEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processFeeEvent(event Event) error {
+func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	evt := newEvent(event, eh.nextEventID, eh.height, eh.blockTime)
 	err := eh.decode(event.Attributes, &evt.Fee)
 	if err != nil {
@@ -311,7 +295,7 @@ func (eh *EventHandler) processFeeEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processRewardEvent(event Event) error {
+func (eh *eventHandler) processRewardEvent(event thorchain.Event) error {
 	if len(event.Attributes) <= 1 {
 		return nil
 	}
@@ -327,7 +311,7 @@ func (eh *EventHandler) processRewardEvent(event Event) error {
 	return nil
 }
 
-func (eh *EventHandler) processOutbound(event Event) error {
+func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	txID, err := common.NewTxID(event.Attributes["in_tx_id"])
 	if err != nil {
 		return err
@@ -337,7 +321,7 @@ func (eh *EventHandler) processOutbound(event Event) error {
 	if err != nil {
 		return err
 	}
-	evts, err := eh.store.GetEventsByTxId(txID)
+	evts, err := eh.store.GetEventsByTxID(txID)
 	if err != nil {
 		return err
 	}
@@ -383,6 +367,22 @@ func (eh *EventHandler) processOutbound(event Event) error {
 		}
 	}
 	return err
+}
+
+func (eh *eventHandler) decode(attrs map[string]string, v interface{}) error {
+	// Copy config
+	conf := eh.decodeConfig
+	conf.Result = v
+	decoder, err := mapstructure.NewDecoder(&conf)
+	if err != nil {
+		return errors.Wrapf(err, "could not create decoder for %T", v)
+	}
+
+	err = decoder.Decode(attrs)
+	if err != nil {
+		return errors.Wrapf(err, "could not decode %v to %T", attrs, v)
+	}
+	return nil
 }
 
 func decodeCoinsHook(f, t reflect.Type, data interface{}) (interface{}, error) {
@@ -462,7 +462,7 @@ func getPoolAmount(attr map[string]string) []models.PoolAmount {
 	return poolAmounts
 }
 
-func newEvent(event Event, id int64, height int64, blockTime time.Time) models.Event {
+func newEvent(event thorchain.Event, id int64, height int64, blockTime time.Time) models.Event {
 	return models.Event{
 		Time:   blockTime,
 		ID:     id,

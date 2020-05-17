@@ -242,10 +242,9 @@ components:
             properties:
               database:
                 type: boolean
-              scanners:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ScannerStatus'  
+              scannerHeight:
+                type: integer
+                format: int64
 
     TxsResponse:
       description: Returns an array of transactions
@@ -336,19 +335,6 @@ components:
               $ref: '#/components/schemas/NodeKey'
 
   schemas:
-    ScannerStatus:
-      properties:
-        chain:
-          type: string
-        isHealthy:
-          type: boolean
-        lastEvent:
-          type: integer
-          format: int64
-        totalEvents:
-          type: integer
-          format: int64
-
     TxDetails:
       properties:
         pool:

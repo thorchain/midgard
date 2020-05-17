@@ -179,7 +179,7 @@ func (s *Client) createEventRecord(record models.Event) error {
 	return stmt.QueryRowx(record).Scan(&record.ID)
 }
 
-func (s *Client) GetEventsByTxId(txId common.TxID) ([]models.Event, error) {
+func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
 	query := fmt.Sprintf(`
 		SELECT events.* 
 		FROM   %s 
