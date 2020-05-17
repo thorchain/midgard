@@ -13,9 +13,9 @@ const (
 type EventSwap struct {
 	Event
 	Pool         common.Asset `json:"pool"`
-	PriceTarget  int64        `json:"price_target,string"`
-	TradeSlip    int64        `json:"trade_slip,string"`
-	LiquidityFee int64        `json:"liquidity_fee,string"` // Same asset as output side of the swap transaction
+	PriceTarget  int64        `json:"price_target,string" mapstructure:"price_target"`
+	TradeSlip    int64        `json:"trade_slip,string" mapstructure:"trade_slip"`
+	LiquidityFee int64        `json:"liquidity_fee,string" mapstructure:"liquidity_fee"` // Same asset as output side of the swap transaction
 }
 
 func NewSwapEvent(swap types.EventSwap, event types.Event) EventSwap {

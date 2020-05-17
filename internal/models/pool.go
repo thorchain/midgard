@@ -16,7 +16,7 @@ const (
 	Suspended
 )
 
-var poolStatusStr = map[string]PoolStatus{
+var PoolStatusStr = map[string]PoolStatus{
 	"Enabled":   Enabled,
 	"Bootstrap": Bootstrap,
 	"Suspended": Suspended,
@@ -29,7 +29,7 @@ func (ps *PoolStatus) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	*ps = Suspended
-	for key, item := range poolStatusStr {
+	for key, item := range PoolStatusStr {
 		if strings.EqualFold(key, s) {
 			*ps = item
 			break
@@ -41,7 +41,7 @@ func (ps *PoolStatus) UnmarshalJSON(b []byte) error {
 type EventPool struct {
 	Event
 	Pool   common.Asset `json:"pool"`
-	Status PoolStatus   `json:"pool_status"`
+	Status PoolStatus   `json:"pool_status" mapstructure:"pool_status"`
 }
 
 func NewPoolEvent(pool types.EventPool, event types.Event) EventPool {
