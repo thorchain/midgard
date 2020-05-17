@@ -18,6 +18,7 @@ const (
 	blocksPerYear        = 6307200
 	rotatePerBlockHeight = 51840
 	rotateRetryBlocks    = 720
+	newPoolCycle         = 50000
 )
 
 var _ = Suite(&UsecaseSuite{})
@@ -1087,6 +1088,7 @@ func (t *TestGetNetworkInfoThorchain) GetConstants() (types.ConstantValues, erro
 			"BlocksPerYear":        blocksPerYear,
 			"RotatePerBlockHeight": rotatePerBlockHeight,
 			"RotateRetryBlocks":    rotateRetryBlocks,
+			"NewPoolCycle":         newPoolCycle,
 		},
 	}, nil
 }
@@ -1181,9 +1183,10 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			BondReward:  bondReward,
 			StakeReward: stakeReward,
 		},
-		BondingROI:      (bondReward * float64(blocksPerYear)) / 4485,
-		StakingROI:      (stakeReward * float64(blocksPerYear)) / 1500,
-		NextChurnHeight: 51851,
+		BondingROI:              (bondReward * float64(blocksPerYear)) / 4485,
+		StakingROI:              (stakeReward * float64(blocksPerYear)) / 1500,
+		NextChurnHeight:         51851,
+		PoolActivationCountdown: 49975 * blockTimeSeconds,
 	})
 
 	// Store error situation
@@ -1213,12 +1216,12 @@ func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
 	uc, err := NewUsecase(client, s.dummyStore, &Config{})
 	c.Assert(err, IsNil)
 
-	hight, err := uc.computeNextChurnHight()
+	hight, err := uc.computeNextChurnHight(51836)
 	c.Assert(err, IsNil)
 	c.Assert(hight, Equals, int64(51844))
 
 	client.lastHeight.Statechain = 103693
-	hight, err = uc.computeNextChurnHight()
+	hight, err = uc.computeNextChurnHight(103693)
 	c.Assert(err, IsNil)
 	c.Assert(hight, Equals, int64(103702))
 

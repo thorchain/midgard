@@ -347,9 +347,10 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 			BondReward:  helpers.Float64ToString(netInfo.BlockReward.BondReward),
 			StakeReward: helpers.Float64ToString(netInfo.BlockReward.StakeReward),
 		},
-		BondingROI:      helpers.Float64ToString(netInfo.BondingROI),
-		StakingROI:      helpers.Float64ToString(netInfo.StakingROI),
-		NextChurnHeight: helpers.Int64ToString(netInfo.NextChurnHeight),
+		BondingROI:              helpers.Float64ToString(netInfo.BondingROI),
+		StakingROI:              helpers.Float64ToString(netInfo.StakingROI),
+		NextChurnHeight:         helpers.Int64ToString(netInfo.NextChurnHeight),
+		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
