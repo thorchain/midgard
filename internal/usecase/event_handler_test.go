@@ -582,3 +582,195 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
 }
+
+type OutboundTestStore struct {
+	*StoreDummy
+	events    []models.Event
+	direction string
+	tx        common.Tx
+	unstake   models.EventUnstake
+	swap      models.EventSwap
+}
+
+func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
+	return s.events, nil
+}
+
+func (s *OutboundTestStore) ProcessTxRecord(direction string, _ models.Event, record common.Tx) error {
+	s.direction = direction
+	s.tx = record
+	return nil
+}
+
+func (s *OutboundTestStore) UpdateUnStakesRecord(record models.EventUnstake) error {
+	s.unstake = record
+	return nil
+}
+
+func (s *OutboundTestStore) UpdateSwapRecord(record models.EventSwap) error {
+	s.swap = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
+	store := &OutboundTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	blockTime := time.Now()
+	store.events = []models.Event{
+		{
+			ID:   1,
+			Type: "unstake",
+			Time: blockTime.Add(-10 * time.Second),
+		},
+	}
+	evt := thorchain.Event{
+		Type: "outbound",
+		Attributes: map[string]string{
+			"chain":    "BTC",
+			"coin":     "23282731 BTC.BTC",
+			"from":     "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+			"id":       "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
+			"in_tx_id": "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			"memo":     "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			"to":       "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
+		},
+	}
+
+	eh.NewTx(0, []thorchain.Event{evt})
+
+	// Single swap
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventUnstake{
+		Event: models.Event{
+			ID:   1,
+			Type: "unstake",
+			Time: blockTime.Add(-10 * time.Second),
+			OutTxs: common.Txs{
+				common.Tx{
+					ID:          "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
+					FromAddress: "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+					ToAddress:   "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
+					Coins: common.Coins{
+						{
+							Asset:  common.BTCAsset,
+							Amount: 23282731,
+						},
+					},
+					Chain: common.BTCChain,
+					Memo:  "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+				},
+			},
+		},
+	}
+	c.Assert(store.swap, DeepEquals, models.EventSwap{})
+	c.Assert(store.direction, Equals, "out")
+	c.Assert(store.unstake, DeepEquals, expectedEvent)
+	c.Assert(store.tx, DeepEquals, expectedEvent.OutTxs[0])
+}
+
+func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
+	store := &OutboundTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	blockTime := time.Now()
+	store.events = []models.Event{
+		{
+			ID:   1,
+			Type: "swap",
+			Time: blockTime.Add(-10 * time.Second),
+		},
+	}
+	evt := thorchain.Event{
+		Type: "outbound",
+		Attributes: map[string]string{
+			"chain":    "BTC",
+			"coin":     "334590 BTC.BTC",
+			"from":     "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+			"id":       "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",
+			"in_tx_id": "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+			"memo":     "OUTBOUND:0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+			"to":       "bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
+		},
+	}
+
+	eh.NewTx(0, []thorchain.Event{evt})
+
+	// Single swap
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventSwap{
+		Event: models.Event{
+			ID:   1,
+			Type: "swap",
+			Time: blockTime.Add(-10 * time.Second),
+			OutTxs: common.Txs{
+				common.Tx{
+					ID:          "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",
+					FromAddress: "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+					ToAddress:   "bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
+					Coins: common.Coins{
+						{
+							Asset:  common.BTCAsset,
+							Amount: 334590,
+						},
+					},
+					Chain: common.BTCChain,
+					Memo:  "OUTBOUND:0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+				},
+			},
+		},
+	}
+	c.Assert(store.swap, DeepEquals, expectedEvent)
+	c.Assert(store.direction, Equals, "out")
+	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
+	c.Assert(store.tx, DeepEquals, expectedEvent.OutTxs[0])
+
+	// First outbound for double swap
+	store.events = []models.Event{
+		{
+			ID:   2,
+			Type: "swap",
+			Time: blockTime.Add(-10 * time.Second),
+		},
+		{
+			ID:   3,
+			Type: "swap",
+			Time: blockTime.Add(-10 * time.Second),
+		},
+	}
+	evt.Attributes["id"] = common.BlankTxID.String()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent.ID = 2
+	expectedEvent.OutTxs[0].ID = common.BlankTxID
+	c.Assert(store.swap, DeepEquals, expectedEvent)
+	c.Assert(store.direction, Equals, "out")
+	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
+	c.Assert(store.tx, DeepEquals, expectedEvent.OutTxs[0])
+}
+
+func (s *EventHandlerSuite) TestOutboundEvent(c *C) {
+	store := &OutboundTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	blockTime := time.Now()
+	evt := thorchain.Event{
+		Type: "outbound",
+		Attributes: map[string]string{
+			"chain":    "BTC",
+			"coin":     "334590 BTC.BTC",
+			"from":     "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+			"id":       "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",
+			"in_tx_id": "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+			"memo":     "REFUND:0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+			"to":       "bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
+		},
+	}
+
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	c.Assert(store.swap, DeepEquals, models.EventSwap{})
+	c.Assert(store.direction, Equals, "")
+	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
+	c.Assert(store.tx, DeepEquals, common.Tx{})
+}
