@@ -37,7 +37,7 @@ require (
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/gorp.v1 v1.7.2 // indirect
-	mvdan.cc/gofumpt v0.0.0-20200428204718-3c354cfe1172 // indirect
+	mvdan.cc/gofumpt v0.0.0-20200513141252-abc0db2c416a // indirect
 )
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
