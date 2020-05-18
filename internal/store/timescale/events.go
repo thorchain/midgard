@@ -181,10 +181,10 @@ func (s *Client) createEventRecord(record models.Event) error {
 
 func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
 	query := fmt.Sprintf(`
-		SELECT     events.* 
-		FROM       %s 
-		INNER JOIN %s 
-		ON         events.id = txs.event_id 
+		SELECT     %[1]s.* 
+		FROM       %[1]s 
+		INNER JOIN %[2]s 
+		ON         %[1]s.id = %[2]s.event_id 
 		WHERE      tx_hash =$1`, models.ModelEventsTable, models.ModelTxsTable)
 	var events []models.Event
 	var err error
