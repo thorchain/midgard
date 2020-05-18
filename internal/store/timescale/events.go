@@ -170,3 +170,28 @@ func (s *Client) createEventRecord(record models.Event) error {
 	}
 	return stmt.QueryRowx(record).Scan(&record.ID)
 }
+
+func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
+	query := `
+		SELECT     events.* 
+		FROM       events 
+		INNER JOIN txs 
+		ON         events.id = txs.event_id 
+		WHERE      txs.tx_hash = $1`
+	var events []models.Event
+	var err error
+	rows, err := s.db.Queryx(query, txID.String())
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var event models.Event
+		err := rows.StructScan(&event)
+		if err != nil {
+			s.logger.Err(err).Msg("Scan error")
+			continue
+		}
+		events = append(events, event)
+	}
+	return events, nil
+}
