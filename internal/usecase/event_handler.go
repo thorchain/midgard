@@ -35,7 +35,7 @@ type eventHandler struct {
 
 type handler func(thorchain.Event) error
 
-func newEventHandler(store store.Store) (*eventHandler, error) {
+func NewEventHandler(store store.Store) (*eventHandler, error) {
 	maxID, err := store.GetMaxID("")
 	if err != nil {
 		return nil, err
