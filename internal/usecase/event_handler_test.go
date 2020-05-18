@@ -252,3 +252,143 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
 }
+
+type PoolTestStore struct {
+	*StoreDummy
+	record models.EventPool
+}
+
+func (s *PoolTestStore) CreatePoolRecord(record models.EventPool) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestPoolEvent(c *C) {
+	store := &PoolTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "pool",
+		Attributes: map[string]string{
+			"pool":        "BNB.BNB",
+			"pool_status": "Bootstrap",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventPool{
+		Pool:   common.BNBAsset,
+		Status: models.Bootstrap,
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			Type:   "pool",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
+
+type AddTestStore struct {
+	*StoreDummy
+	record models.EventAdd
+}
+
+func (s *AddTestStore) CreateAddRecord(record models.EventAdd) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestAddEvent(c *C) {
+	store := &AddTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "add",
+		Attributes: map[string]string{
+			"chain": "BNB",
+			"coin":  "30000000 BNB.BNB, 5000000000 BNB.RUNE-A1F",
+			"from":  "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
+			"id":    "E12194A353128677110C82224856965FA40B104D1AB69BC7034E4960AB139A0D",
+			"memo":  "ADD:BNB.BNB",
+			"pool":  "BNB.BNB",
+			"to":    "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventAdd{
+		Pool: common.BNBAsset,
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			InTx: common.Tx{
+				ID:          "E12194A353128677110C82224856965FA40B104D1AB69BC7034E4960AB139A0D",
+				FromAddress: "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
+				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+				Coins: common.Coins{
+					{
+						Asset:  common.BNBAsset,
+						Amount: 30000000,
+					},
+					{
+						Asset:  common.RuneA1FAsset,
+						Amount: 5000000000,
+					},
+				},
+				Chain: common.BNBChain,
+				Memo:  "ADD:BNB.BNB",
+			},
+			Type: "add",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
+
+type GasTestStore struct {
+	*StoreDummy
+	record models.EventGas
+}
+
+func (s *GasTestStore) CreateGasRecord(record models.EventGas) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestGasEvent(c *C) {
+	store := &GasTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "gas",
+		Attributes: map[string]string{
+			"asset":             "BNB.BNB",
+			"asset_amt":         "75000",
+			"rune_amt":          "24900200",
+			"transaction_count": "2",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventGas{
+		Pools: []models.GasPool{
+			{
+				Asset:    common.BNBAsset,
+				RuneAmt:  24900200,
+				AssetAmt: 75000,
+			},
+		},
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			InTx:   common.Tx{},
+			Type:   "gas",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
