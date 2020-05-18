@@ -188,7 +188,7 @@ func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
 		WHERE  tx_hash =$1`, models.ModelEventsTable, models.ModelTxsTable)
 	var events []models.Event
 	var err error
-	rows, err := s.db.Queryx(query, txId.String())
+	rows, err := s.db.Queryx(query, txID.String())
 	if err != nil {
 		return nil, err
 	}

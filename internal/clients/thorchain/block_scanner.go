@@ -79,6 +79,7 @@ func (sc *BlockScanner) scan() {
 			if synced {
 				select {
 				case <-time.After(sc.interval):
+					break
 				case <-sc.stopChan:
 					return
 				}
@@ -92,6 +93,9 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	info, err := sc.client.BlockchainInfo(height, height)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
+	}
+	if info.LastHeight < height {
+		return true, nil
 	}
 
 	block, err := sc.client.BlockResults(&height)

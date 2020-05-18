@@ -81,7 +81,7 @@ func (s *StoreDummy) CreateErrataRecord(_ models.EventErrata) error {
 }
 
 func (s *StoreDummy) GetMaxID(_ common.Chain) (int64, error) {
-	return 0, ErrNotImplemented
+	return 0, nil
 }
 
 func (s *StoreDummy) Ping() error {

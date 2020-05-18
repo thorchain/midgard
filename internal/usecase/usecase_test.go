@@ -1,13 +1,16 @@
 package usecase
 
 import (
-	"errors"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
+	abcitypes "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/state"
+
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/types"
+	tmtype "github.com/tendermint/tendermint/types"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -27,12 +30,17 @@ type UsecaseSuite struct {
 	dummyThorchain  *ThorchainDummy
 	dummyTendermint *TendermintDummy
 	dummyStore      *StoreDummy
+	config          *Config
 }
 
 func (s *UsecaseSuite) SetUpSuite(c *C) {
-	s.dummyThorchain = &ThorchainDummy{}
+	s.dummyThorchain = s.dummyThorchain
 	s.dummyTendermint = &TendermintDummy{}
-	s.dummyStore = &StoreDummy{}
+	s.dummyStore = s.dummyStore
+	s.config = &Config{
+		// We don't want to test thorchain.Scanner
+		ScanInterval: time.Hour,
+	}
 }
 
 func Test(t *testing.T) {
@@ -40,11 +48,11 @@ func Test(t *testing.T) {
 }
 
 type TestGetHealthTendermint struct {
-	metas []*types.BlockMeta
+	metas []*tmtype.BlockMeta
 }
 
 func (t *TestGetHealthTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error) {
-	if minHeight-1 > int64(len(t.metas)) || maxHeight-1 > int64(len(t.metas)) {
+	if minHeight-1 > int64(len(t.metas)) || maxHeight > int64(len(t.metas)) {
 		return nil, errors.Errorf("last block height is %d", len(t.metas))
 	}
 
@@ -56,7 +64,22 @@ func (t *TestGetHealthTendermint) BlockchainInfo(minHeight, maxHeight int64) (*c
 }
 
 func (t *TestGetHealthTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResults, error) {
-	return &coretypes.ResultBlockResults{}
+	return &coretypes.ResultBlockResults{
+		Results: &state.ABCIResponses{
+			BeginBlock: &abcitypes.ResponseBeginBlock{
+				Events: []abcitypes.Event{},
+			},
+			DeliverTx: []*abcitypes.ResponseDeliverTx{
+				{
+					Events: []abcitypes.Event{},
+				},
+			},
+			EndBlock: &abcitypes.ResponseEndBlock{
+				Events: []abcitypes.Event{},
+			},
+		},
+		Height: *height,
+	}, nil
 }
 
 type TestGetHealthStore struct {
@@ -74,23 +97,23 @@ func (s *TestGetHealthStore) Ping() error {
 func (s *UsecaseSuite) TestGetHealth(c *C) {
 	now := time.Now()
 	tendermint := &TestGetHealthTendermint{
-		metas: []*types.BlockMeta{
+		metas: []*tmtype.BlockMeta{
 			{
-				Header: types.Header{
+				Header: tmtype.Header{
 					Height: 1,
 					Time:   now,
 				},
 			},
 			{
-				Header: types.Header{
+				Header: tmtype.Header{
 					Height: 2,
-					Time:   now.Add(time.Second * 3),
+					Time:   now.Add(time.Second * 5),
 				},
 			},
 			{
-				Header: types.Header{
+				Header: tmtype.Header{
 					Height: 3,
-					Time:   now.Add(time.Second * 3),
+					Time:   now.Add(time.Second * 10),
 				},
 			},
 		},
@@ -98,18 +121,15 @@ func (s *UsecaseSuite) TestGetHealth(c *C) {
 	store := &TestGetHealthStore{
 		isHealthy: true,
 	}
-	conf := &Config{
-		ScanInterval: time.Second,
-	}
-	uc, err := NewUsecase(client, tendermint, store, conf)
+	uc, err := NewUsecase(&TestScanningThorchain{}, tendermint, store, s.config)
 	c.Assert(err, IsNil)
 	err = uc.StartScanner()
 	c.Assert(err, IsNil)
-	time.Sleep(conf.ScanInterval + time.Second)
+	time.Sleep(2 * time.Second)
 
 	health := uc.GetHealth()
 	c.Assert(health.Database, Equals, store.isHealthy)
-	c.Assert(health.ScannerHeight, Equals, 3)
+	c.Assert(health.ScannerHeight, Equals, int64(3))
 
 	// Unhealthy situation
 	store.isHealthy = false
@@ -148,49 +168,17 @@ func (s *UsecaseSuite) TestScanningUpdateScanners(c *C) {
 	}
 	conf := &Config{
 		// We don't want to test thorchain.Scanner
-		ScanInterval:           time.Hour,
-		ScannersUpdateInterval: time.Second,
+		ScanInterval: time.Hour,
 	}
-	uc, err := NewUsecase(client, s.dummyStore, conf)
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyStore, conf)
 	c.Assert(err, IsNil)
 
 	err = uc.StartScanner()
 	c.Assert(err, IsNil)
-
-	time.Sleep(conf.ScannersUpdateInterval + time.Second)
-	uc.multiScanner.mu.Lock()
-	for _, chain := range client.chains {
-		_, ok := uc.multiScanner.scanners[chain]
-		c.Assert(ok, Equals, true)
-	}
-	uc.multiScanner.mu.Unlock()
-
-	newChains := []common.Chain{
-		common.BNBChain,
-		common.BTCChain,
-		common.ETHChain,
-	}
-	client.setChains(newChains)
-
-	time.Sleep(conf.ScannersUpdateInterval + time.Second)
-	uc.multiScanner.mu.Lock()
-	for _, chain := range client.chains {
-		_, ok := uc.multiScanner.scanners[chain]
-		c.Assert(ok, Equals, true)
-	}
-	uc.multiScanner.mu.Unlock()
 }
 
 func (s *UsecaseSuite) TestScanningRestart(c *C) {
-	client := &TestScanningThorchain{
-		chains: []common.Chain{},
-	}
-	conf := &Config{
-		// We don't want to test thorchain.Scanner
-		ScanInterval:           time.Hour,
-		ScannersUpdateInterval: time.Second,
-	}
-	uc, err := NewUsecase(client, s.dummyStore, conf)
+	uc, err := NewUsecase(&TestScanningThorchain{}, s.dummyTendermint, s.dummyStore, s.config)
 	c.Assert(err, IsNil)
 
 	// Scanner should be able to restart.
@@ -213,18 +201,14 @@ func (s *UsecaseSuite) TestScanningFaultTolerant(c *C) {
 	}
 	conf := &Config{
 		// We don't want to test thorchain.Scanner
-		ScanInterval:           time.Hour,
-		ScannersUpdateInterval: time.Second,
+		ScanInterval: time.Hour,
 	}
-	uc, err := NewUsecase(client, s.dummyStore, conf)
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyStore, conf)
 	c.Assert(err, IsNil)
 
 	// Scanner should be able to restart.
 	err = uc.StartScanner()
 	c.Assert(err, IsNil)
-
-	// Scanner should not be terminated in case of any error.
-	time.Sleep(conf.ScannersUpdateInterval + time.Second)
 }
 
 type TestGetTxDetailsStore struct {
@@ -251,7 +235,6 @@ func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common
 }
 
 func (s *UsecaseSuite) TestGetTxDetails(c *C) {
-	client := &ThorchainDummy{}
 	store := &TestGetTxDetailsStore{
 		txDetails: []models.TxDetails{
 			{
@@ -325,7 +308,7 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 		},
 		count: 10,
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
@@ -347,7 +330,7 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	store = &TestGetTxDetailsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, _, err = uc.GetTxDetails(address, txID, asset, eventType, page)
@@ -365,7 +348,6 @@ func (s *TestGetPoolsStore) GetPools() ([]common.Asset, error) {
 }
 
 func (s *UsecaseSuite) TestGetPools(c *C) {
-	client := &ThorchainDummy{}
 	store := &TestGetPoolsStore{
 		pools: []common.Asset{
 			common.BNBAsset,
@@ -376,7 +358,7 @@ func (s *UsecaseSuite) TestGetPools(c *C) {
 			},
 		},
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
 	pools, err := uc.GetPools()
@@ -386,7 +368,7 @@ func (s *UsecaseSuite) TestGetPools(c *C) {
 	store = &TestGetPoolsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetPools()
@@ -414,7 +396,7 @@ func (s *TestGetAssetDetailsStore) GetDateCreated(asset common.Asset) (uint64, e
 }
 
 func (s *UsecaseSuite) TestGetAssetDetails(c *C) {
-	client := &ThorchainDummy{}
+	client := s.dummyThorchain
 	store := &TestGetAssetDetailsStore{
 		pool: common.Asset{
 			Chain:  "BNB",
@@ -424,7 +406,7 @@ func (s *UsecaseSuite) TestGetAssetDetails(c *C) {
 		priceInRune: 1.5,
 		dateCreated: uint64(time.Now().Unix()),
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	details, err := uc.GetAssetDetails(store.pool)
@@ -437,7 +419,7 @@ func (s *UsecaseSuite) TestGetAssetDetails(c *C) {
 	store = &TestGetAssetDetailsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetAssetDetails(store.pool)
@@ -542,7 +524,7 @@ func (s *TestGetStatsStore) TotalWithdrawTx() (uint64, error) {
 }
 
 func (s *UsecaseSuite) TestGetStats(c *C) {
-	client := &ThorchainDummy{}
+	client := s.dummyThorchain
 	store := &TestGetStatsStore{
 		dailyActiveUsers:   2,
 		monthlyActiveUsers: 10,
@@ -561,7 +543,7 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 		totalStakeTx:       15,
 		totalWithdrawTx:    5,
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	stats, err := uc.GetStats()
@@ -588,7 +570,7 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 	store = &TestGetStatsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetStats()
@@ -683,7 +665,7 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDa
 }
 
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
-	client := &ThorchainDummy{}
+	client := s.dummyThorchain
 	store := &TestGetPoolDetailsStore{
 		status: models.Enabled.String(),
 		asset: common.Asset{
@@ -728,7 +710,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		swappingTxCount:  3,
 		withdrawTxCount:  1,
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
@@ -778,7 +760,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	store = &TestGetPoolDetailsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetPoolDetails(asset)
@@ -796,7 +778,7 @@ func (s *TestGetStakersStore) GetStakerAddresses() ([]common.Address, error) {
 }
 
 func (s *UsecaseSuite) TestGetStakers(c *C) {
-	client := &ThorchainDummy{}
+	client := s.dummyThorchain
 	store := &TestGetStakersStore{
 		stakers: []common.Address{
 			common.Address("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38"),
@@ -804,7 +786,7 @@ func (s *UsecaseSuite) TestGetStakers(c *C) {
 			common.Address("bnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq"),
 		},
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	stakers, err := uc.GetStakers()
@@ -814,7 +796,7 @@ func (s *UsecaseSuite) TestGetStakers(c *C) {
 	store = &TestGetStakersStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetStakers()
@@ -841,7 +823,7 @@ func (s *TestGetStakerDetailsStore) GetStakerAddressDetails(_ common.Address) (m
 }
 
 func (s *UsecaseSuite) TestGetStakerDetails(c *C) {
-	client := &ThorchainDummy{}
+	client := s.dummyThorchain
 	store := &TestGetStakerDetailsStore{
 		pools: []common.Asset{
 			{
@@ -859,7 +841,7 @@ func (s *UsecaseSuite) TestGetStakerDetails(c *C) {
 		totalROI:    1.002,
 		totalStaked: 10000,
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
@@ -875,7 +857,7 @@ func (s *UsecaseSuite) TestGetStakerDetails(c *C) {
 	store = &TestGetStakerDetailsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetStakerDetails(address)
@@ -918,7 +900,7 @@ func (s *TestGetStakerAssetDetailsStore) GetStakersAddressAndAssetDetails(_ comm
 }
 
 func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
-	client := &ThorchainDummy{}
+	client := s.dummyThorchain
 	store := &TestGetStakerAssetDetailsStore{
 		asset: common.Asset{
 			Chain:  "BNB",
@@ -937,7 +919,7 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 		poolROI:         0.0166666666666667,
 		dateFirstStaked: uint64(time.Now().Unix()),
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
@@ -962,7 +944,7 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 	store = &TestGetStakerAssetDetailsStore{
 		err: errors.New("could not fetch requested data"),
 	}
-	uc, err = NewUsecase(client, store, &Config{})
+	uc, err = NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	_, err = uc.GetStakerAssetDetails(address, asset)
@@ -1064,7 +1046,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	store := &TestGetNetworkInfoStore{
 		totalDepth: 1500,
 	}
-	uc, err := NewUsecase(client, store, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, store, &Config{})
 	c.Assert(err, IsNil)
 
 	stats, err := uc.GetNetworkInfo()
@@ -1127,7 +1109,7 @@ func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
 			Statechain: 51836,
 		},
 	}
-	uc, err := NewUsecase(client, s.dummyStore, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyStore, &Config{})
 	c.Assert(err, IsNil)
 
 	hight, err := uc.computeNextChurnHight()
@@ -1170,7 +1152,7 @@ func (s *UsecaseSuite) TestComputeLastChurn(c *C) {
 			},
 		},
 	}
-	uc, err := NewUsecase(client, s.dummyStore, &Config{})
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyStore, &Config{})
 	c.Assert(err, IsNil)
 
 	last, err := uc.computeLastChurn()

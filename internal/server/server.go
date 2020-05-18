@@ -77,8 +77,7 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	usecaseConf := &usecase.Config{
-		ScanInterval:           cfg.ThorChain.NoEventsBackoff,
-		ScannersUpdateInterval: cfg.ThorChain.ScannersUpdateInterval,
+		ScanInterval: cfg.ThorChain.NoEventsBackoff,
 	}
 	uc, err := usecase.NewUsecase(thorchainClient, timescale, usecaseConf)
 	if err != nil {
