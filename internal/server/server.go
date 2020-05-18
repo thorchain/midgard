@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v2"
 
+	rpchttp "github.com/tendermint/tendermint/rpc/client"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
@@ -79,7 +80,8 @@ func New(cfgFile *string) (*Server, error) {
 	usecaseConf := &usecase.Config{
 		ScanInterval: cfg.ThorChain.NoEventsBackoff,
 	}
-	uc, err := usecase.NewUsecase(thorchainClient, timescale, usecaseConf)
+	tendermintClient := rpchttp.NewHTTP(fmt.Sprintf("%s://%s", cfg.ThorChain.Scheme, cfg.ThorChain.RPCHost), "/websocket")
+	uc, err := usecase.NewUsecase(thorchainClient, tendermintClient, timescale, usecaseConf)
 	if err != nil {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create usecase instance")
