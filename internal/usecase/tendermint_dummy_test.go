@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 )
 
