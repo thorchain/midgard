@@ -462,7 +462,7 @@ func getPoolAmount(attr map[string]string) []models.PoolAmount {
 	return poolAmounts
 }
 
-func newEvent(event thorchain.Event, id int64, height int64, blockTime time.Time) models.Event {
+func newEvent(event thorchain.Event, id, height int64, blockTime time.Time) models.Event {
 	return models.Event{
 		Time:   blockTime,
 		ID:     id,
