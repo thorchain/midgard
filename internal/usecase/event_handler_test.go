@@ -392,3 +392,96 @@ func (s *EventHandlerSuite) TestGasEvent(c *C) {
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
 }
+
+type FeeTestStore struct {
+	*StoreDummy
+	record models.Event
+	pool   common.Asset
+}
+
+func (s *FeeTestStore) CreateFeeRecord(event models.Event, pool common.Asset) error {
+	s.record = event
+	s.pool = pool
+	return nil
+}
+
+func (s *EventHandlerSuite) TestFeeEvent(c *C) {
+	store := &FeeTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "fee",
+		Attributes: map[string]string{
+			"coins":       "300000 BNB.BNB",
+			"pool_deduct": "100000000",
+			"tx_id":       "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.Event{
+		Time:   blockTime,
+		ID:     1,
+		Height: 0,
+		InTx:   common.Tx{},
+		Type:   "fee",
+		Fee: common.Fee{
+			Coins: common.Coins{
+				{
+					Asset:  common.BNBAsset,
+					Amount: 300000,
+				},
+			},
+			PoolDeduct: 100000000,
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(store.pool, DeepEquals, common.BNBAsset)
+}
+
+type RewardTestStore struct {
+	*StoreDummy
+	record models.EventReward
+}
+
+func (s *RewardTestStore) CreateRewardRecord(record models.EventReward) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestRewardEvent(c *C) {
+	store := &RewardTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "rewards",
+		Attributes: map[string]string{
+			"BNB.BNB":     "-259372",
+			"BTC.BTC":     "-483761",
+			"bond_reward": "106372190",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventReward{
+		PoolRewards: []models.PoolAmount{
+			{
+				Pool:   common.BNBAsset,
+				Amount: -259372,
+			},
+			{
+				Pool:   common.BTCAsset,
+				Amount: -483761,
+			},
+		},
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			Type:   "rewards",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
