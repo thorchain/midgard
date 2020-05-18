@@ -93,7 +93,7 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	
+
 	block, err := sc.client.BlockResults(&height)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get results of block")
