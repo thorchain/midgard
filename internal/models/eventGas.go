@@ -7,8 +7,8 @@ import (
 
 type GasPool struct {
 	Asset    common.Asset
-	AssetAmt uint64
-	RuneAmt  uint64
+	AssetAmt uint64 `mapstructure:"asset_amt"`
+	RuneAmt  uint64 `mapstructure:"rune_amt"`
 }
 
 type EventGas struct {

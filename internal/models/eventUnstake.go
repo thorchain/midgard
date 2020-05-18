@@ -8,7 +8,7 @@ import (
 type EventUnstake struct {
 	Event
 	Pool       common.Asset
-	StakeUnits int64
+	StakeUnits int64 `mapstructure:"stake_units"`
 }
 
 func NewUnstakeEvent(unstake types.EventUnstake, event types.Event) EventUnstake {

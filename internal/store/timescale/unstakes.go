@@ -64,3 +64,38 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 
 	return nil
 }
+
+func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
+	var runeAmt int64
+	var assetAmt int64
+	runeAmt += record.Fee.RuneFee()
+	assetAmt += record.Fee.AssetFee()
+	for _, tx := range record.Event.OutTxs {
+		for _, coin := range tx.Coins {
+			if common.IsRuneAsset(coin.Asset) {
+				runeAmt += coin.Amount
+			} else {
+				assetAmt += coin.Amount
+			}
+		}
+	}
+
+	query := fmt.Sprintf(`
+		UPDATE %v 
+		SET    runeamt = runeamt     - $1, 
+			   assetamt = assetamt   - $2 , 
+			   units = units         - $3 
+		WHERE  event_id = $4 RETURNING event_id`, models.ModelStakesTable)
+
+	_, err := s.db.Exec(query,
+		runeAmt,
+		assetAmt,
+		record.StakeUnits,
+		record.Event.ID,
+	)
+	if err != nil {
+		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")
+	}
+
+	return nil
+}

@@ -16,7 +16,15 @@ func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
 		FROM   %s 
 		WHERE  chain = $1`, models.ModelEventsTable)
 	var maxId sql.NullInt64
-	err := s.db.Get(&maxId, query, chain)
+	var err error
+	if chain != "" {
+		err = s.db.Get(&maxId, query, chain)
+	} else {
+		query := fmt.Sprintf(`
+		SELECT Max(id) 
+		FROM   %s `, models.ModelEventsTable)
+		err = s.db.Get(&maxId, query)
+	}
 	if err != nil {
 		return 0, errors.Wrap(err, "maxID query return null or failed")
 	}
@@ -31,7 +39,7 @@ func (s *Client) CreateEventRecord(record models.Event) error {
 	}
 
 	// Ingest InTx
-	err = s.processTxRecord("in", record, record.InTx)
+	err = s.ProcessTxRecord("in", record, record.InTx)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
@@ -67,7 +75,7 @@ func (s *Client) processTxsRecord(direction string, parent models.Event, records
 	return nil
 }
 
-func (s *Client) processTxRecord(direction string, parent models.Event, record common.Tx) error {
+func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
 		_, err := s.createTxRecord(parent, record, direction)
@@ -169,4 +177,29 @@ func (s *Client) createEventRecord(record models.Event) error {
 		return errors.Wrap(err, "Failed to prepareNamed query for event")
 	}
 	return stmt.QueryRowx(record).Scan(&record.ID)
+}
+
+func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
+	query := fmt.Sprintf(`
+		SELECT events.* 
+		FROM   %s 
+			   INNER JOIN %s 
+					   ON events.id = txs.event_id 
+		WHERE  tx_hash =$1`, models.ModelEventsTable, models.ModelTxsTable)
+	var events []models.Event
+	var err error
+	rows, err := s.db.Queryx(query, txID.String())
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var event models.Event
+		err := rows.StructScan(&event)
+		if err != nil {
+			s.logger.Err(err).Msg("Scan error")
+			continue
+		}
+		events = append(events, event)
+	}
+	return events, nil
 }
