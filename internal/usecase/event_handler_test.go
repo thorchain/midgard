@@ -132,3 +132,62 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
 }
+
+type RefundTestStore struct {
+	*StoreDummy
+	record models.EventRefund
+}
+
+func (s *RefundTestStore) CreateRefundRecord(record models.EventRefund) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestRefundEvent(c *C) {
+	store := &RefundTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "refund",
+		Attributes: map[string]string{
+			"chain":  "BNB",
+			"code":   "105",
+			"coin":   "150000000 BNB.BNB, 50000000000 BNB.RUNE-A1F",
+			"from":   "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
+			"id":     "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
+			"memo":   "",
+			"reason": "memo can't be empty",
+			"to":     "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventRefund{
+		Code:   105,
+		Reason: "memo can't be empty",
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			InTx: common.Tx{
+				ID:          "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
+				FromAddress: "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
+				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+				Coins: common.Coins{
+					{
+						Asset:  common.BNBAsset,
+						Amount: 150000000,
+					},
+					{
+						Asset:  common.RuneA1FAsset,
+						Amount: 50000000000,
+					},
+				},
+				Chain: common.BNBChain,
+			},
+			Type: "refund",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
