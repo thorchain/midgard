@@ -21,7 +21,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "BNB")
@@ -59,7 +59,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 
-	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "TOML-4BC")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "TOML")
@@ -106,7 +106,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "BNB")
@@ -146,7 +146,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "TOML-4BC")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "TOML")
@@ -193,7 +193,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "BNB")
@@ -232,7 +232,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "TOML-4BC")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "TOML")
@@ -278,7 +278,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date := uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "BNB")
@@ -317,7 +317,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
-	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * 3)
+	date = uint64(genesis.GenesisTime.Unix()) + (events[0].Height * blockSpeed)
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
 	c.Assert(events[0].Pool.Symbol.String(), Equals, "TOML-4BC")
 	c.Assert(events[0].Pool.Ticker.String(), Equals, "TOML")
@@ -375,7 +375,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 		Events: models.Events{
 			StakeUnits: uint64(stakeBnbEvent0.StakeUnits),
 		},
-		Date: uint64(genesis.GenesisTime.Unix() + (stakeBnbEvent0.Height * 3)),
+		Date: uint64(genesis.GenesisTime.Unix() + (stakeBnbEvent0.Height * blockSpeed)),
 		Out:  make([]models.TxData, 0),
 	}
 	for _, tx := range stakeBnbEvent0.OutTxs {
@@ -414,7 +414,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 		Events: models.Events{
 			StakeUnits: uint64(stakeTomlEvent1.StakeUnits),
 		},
-		Date: uint64(genesis.GenesisTime.Unix() + (stakeTomlEvent1.Height * 3)),
+		Date: uint64(genesis.GenesisTime.Unix() + (stakeTomlEvent1.Height * blockSpeed)),
 		Out:  make([]models.TxData, 0),
 	}
 	for _, tx := range stakeTomlEvent1.OutTxs {
@@ -732,7 +732,7 @@ func (s *TimeScaleSuite) TestTxDate(c *C) {
 	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
-	date := uint64(genesis.GenesisTime.Unix()) + 3
+	date := uint64(genesis.GenesisTime.Unix()) + blockSpeed
 
 	txDate, err := s.Store.txDate(eventId)
 	c.Assert(err, IsNil)
@@ -743,7 +743,7 @@ func (s *TimeScaleSuite) TestTxDate(c *C) {
 	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
-	date = uint64(genesis.GenesisTime.Unix()) + 6
+	date = uint64(genesis.GenesisTime.Unix()) + 2*blockSpeed
 
 	txDate, err = s.Store.txDate(eventId)
 	c.Assert(err, IsNil)
