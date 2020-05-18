@@ -17,11 +17,11 @@ type EventHandlerSuite struct {
 
 type StakeTestStore struct {
 	*StoreDummy
-	stake models.EventStake
+	record models.EventStake
 }
 
 func (s *StakeTestStore) CreateStakeRecord(record models.EventStake) error {
-	s.stake = record
+	s.record = record
 	return nil
 }
 
@@ -72,5 +72,63 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 			Type: "stake",
 		},
 	}
-	c.Assert(store.stake, DeepEquals, expectedEvent)
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
+
+type UnStakeTestStore struct {
+	*StoreDummy
+	record models.EventUnstake
+}
+
+func (s *UnStakeTestStore) CreateUnStakesRecord(record models.EventUnstake) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
+	store := &UnStakeTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "unstake",
+		Attributes: map[string]string{
+			"asymmetry":    "0.000000000000000000",
+			"basis_points": "1000",
+			"chain":        "BNB",
+			"coin":         "1 BNB.RUNE-A1F",
+			"from":         "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+			"id":           "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			"memo":         "WITHDRAW:BTC.BTC:1000",
+			"pool":         "BTC.BTC",
+			"stake_units":  "2507500000",
+			"to":           "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventUnstake{
+		Pool:       common.BTCAsset,
+		StakeUnits: 2507500000,
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			InTx: common.Tx{
+				ID:          "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+				Coins: common.Coins{
+					{
+						Asset:  common.RuneA1FAsset,
+						Amount: 1,
+					},
+				},
+				Memo:  "WITHDRAW:BTC.BTC:1000",
+				Chain: common.BNBChain,
+			},
+			Type: "unstake",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
 }
