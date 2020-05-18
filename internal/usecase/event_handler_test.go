@@ -191,3 +191,64 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
 }
+
+type SwapTestStore struct {
+	*StoreDummy
+	record models.EventSwap
+}
+
+func (s *SwapTestStore) CreateSwapRecord(record models.EventSwap) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestSwapEvent(c *C) {
+	store := &SwapTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "swap",
+		Attributes: map[string]string{
+			"chain":                 "BNB",
+			"coin":                  "500000 BNB.BNB",
+			"from":                  "tbnb157dxmw9jz5emuf0apj4d6p3ee42ck0uwksxfff",
+			"id":                    "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+			"liquidity_fee":         "259372",
+			"liquidity_fee_in_rune": "259372",
+			"memo":                  "SWAP:BTC.BTC:bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
+			"pool":                  "BNB.BNB",
+			"price_target":          "1",
+			"to":                    "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+			"trade_slip":            "33",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventSwap{
+		Pool:         common.BNBAsset,
+		LiquidityFee: 259372,
+		PriceTarget:  1,
+		TradeSlip:    33,
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			InTx: common.Tx{
+				ID:          "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+				FromAddress: "tbnb157dxmw9jz5emuf0apj4d6p3ee42ck0uwksxfff",
+				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+				Coins: common.Coins{
+					{
+						Asset:  common.BNBAsset,
+						Amount: 500000,
+					},
+				},
+				Chain: common.BNBChain,
+				Memo:  "SWAP:BTC.BTC:bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
+			},
+			Type: "swap",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
