@@ -3,6 +3,8 @@ package usecase
 import (
 	"time"
 
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
+
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -481,6 +483,101 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 			ID:     1,
 			Height: 0,
 			Type:   "rewards",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
+
+type SlashTestStore struct {
+	*StoreDummy
+	record models.EventSlash
+}
+
+func (s *SlashTestStore) CreateSlashRecord(record models.EventSlash) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestSlashEvent(c *C) {
+	store := &SlashTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "slash",
+		Attributes: map[string]string{
+			"pool":         "BNB.BNB",
+			"BNB.RUNE-A1F": "15",
+			"BNB.BNB":      "20",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventSlash{
+		Pool: common.BNBAsset,
+		SlashAmount: []models.PoolAmount{
+			{
+				Pool:   common.RuneA1FAsset,
+				Amount: 15,
+			},
+			{
+				Pool:   common.BNBAsset,
+				Amount: 20,
+			},
+		},
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			Type:   "slash",
+		},
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+}
+
+type ErrataTestStore struct {
+	*StoreDummy
+	record models.EventErrata
+}
+
+func (s *ErrataTestStore) CreateErrataRecord(record models.EventErrata) error {
+	s.record = record
+	return nil
+}
+
+func (s *EventHandlerSuite) TestErrataEvent(c *C) {
+	store := &ErrataTestStore{}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "errata",
+		Attributes: map[string]string{
+			"in_tx_id":  "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
+			"asset":     "BNB.BNB",
+			"rune_amt":  "25",
+			"rune_add":  "true",
+			"asset_amt": "30",
+			"asset_add": "false",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewBlock(0, blockTime, nil, nil)
+	expectedEvent := models.EventErrata{
+		Pools: []types.PoolMod{
+			{
+				Asset:    common.BNBAsset,
+				AssetAmt: 30,
+				RuneAmt:  25,
+				RuneAdd:  true,
+				AssetAdd: false,
+			},
+		},
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 0,
+			Type:   "errata",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
