@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -89,6 +91,12 @@ func (eh *eventHandler) processBlock() {
 }
 
 func (eh *eventHandler) processEvent(event thorchain.Event) {
+	dt, _ := json.Marshal(event)
+	_ = dt
+	if event.Type == types.OutboundEventType && strings.Contains(string(dt), "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E") {
+		fmt.Println(string(dt))
+	}
+	// return
 	h, ok := eh.handlers[event.Type]
 	if ok {
 		eh.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
@@ -344,7 +352,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		}
 	} else if evts[0].Type == types.SwapEventType {
 		evt = evts[0]
-		if !outTx.ID.IsEmpty() && len(evts) == 2 { // double swap
+		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
 		}
 		evt.OutTxs = common.Txs{outTx}
