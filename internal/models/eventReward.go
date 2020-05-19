@@ -7,12 +7,12 @@ import (
 
 type EventReward struct {
 	Event
-	PoolRewards []PoolAmount `json:"pool_rewards"`
+	PoolRewards []PoolAmount `json:"pool_rewards" mapstructure:"pool_rewards"`
 }
 
 type PoolAmount struct {
-	Pool   common.Asset `json:"assets"`
-	Amount int64        `json:"amount"`
+	Pool   common.Asset `json:"assets" mapstructure:"assets"`
+	Amount int64        `json:"amount" mapstructure:"amount"`
 }
 
 func NewRewardEvent(reward types.EventRewards, event types.Event) EventReward {
