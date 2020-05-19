@@ -69,3 +69,25 @@ func (s *TimeScaleSuite) TestGetEventsByTxID(c *C) {
 	c.Assert(len(evts), Equals, 1)
 	c.Assert(evts[0].ID, Equals, stakeBnbEvent0.ID)
 }
+
+func (s *TimeScaleSuite) TestGetEventsByTxID(c *C) {
+	err := s.Store.CreateEventRecord(stakeBnbEvent0.Event)
+	c.Assert(err, IsNil)
+	event, err := s.Store.GetEventsByTxID(stakeBnbEvent0.InTx.ID)
+	c.Assert(err, IsNil)
+	c.Assert(len(event), Equals, 1)
+	c.Assert(event[0].ID, Equals, stakeBnbEvent0.Event.ID)
+	c.Assert(event[0].Status, Equals, stakeBnbEvent0.Event.Status)
+	c.Assert(event[0].Height, Equals, stakeBnbEvent0.Event.Height)
+	c.Assert(event[0].Type, Equals, stakeBnbEvent0.Event.Type)
+
+	err = s.Store.CreateSwapRecord(swapBuyRune2BoltEvent1)
+	c.Assert(err, IsNil)
+	event, err = s.Store.GetEventsByTxID(swapBuyRune2BoltEvent1.InTx.ID)
+	c.Assert(err, IsNil)
+	c.Assert(len(event), Equals, 1)
+	c.Assert(event[0].ID, Equals, swapBuyRune2BoltEvent1.Event.ID)
+	c.Assert(event[0].Status, Equals, swapBuyRune2BoltEvent1.Event.Status)
+	c.Assert(event[0].Height, Equals, swapBuyRune2BoltEvent1.Event.Height)
+	c.Assert(event[0].Type, Equals, swapBuyRune2BoltEvent1.Event.Type)
+}

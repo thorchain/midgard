@@ -10,7 +10,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-const blockSpeed = 3
+const blockSpeed = 5
 
 // timeOfBlock = ((currentTime - genesisTime) / (currentBlockheight))*blockHeight + genesisTime (edited)
 func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
