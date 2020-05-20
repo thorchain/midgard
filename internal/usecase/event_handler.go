@@ -290,13 +290,17 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode fee")
 	}
-	if inTxID, ok := event.Attributes["tx_id"]; ok {
-		eh.evetCache.Set(inTxID, evt.Fee, cache.DefaultExpiration)
-	}
 	// TODO get pool from event if fee asset is empty
 	err = eh.store.CreateFeeRecord(evt, evt.Fee.Asset())
 	if err != nil {
 		return errors.Wrap(err, "failed to save fee event")
+	}
+	if inTxID, ok := event.Attributes["tx_id"]; ok {
+		if f, exists := eh.evetCache.Get(inTxID); exists {
+			evt.Fee.Coins = append(evt.Fee.Coins, f.(common.Fee).Coins...)
+			evt.Fee.PoolDeduct += f.(common.Fee).PoolDeduct
+		}
+		eh.evetCache.Set(inTxID, evt.Fee, cache.DefaultExpiration)
 	}
 	return nil
 }

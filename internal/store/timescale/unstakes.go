@@ -68,14 +68,12 @@ func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
 func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 	var runeAmt int64
 	var assetAmt int64
-	runeAmt += record.Fee.RuneFee()
-	assetAmt += record.Fee.AssetFee()
 	for _, tx := range record.Event.OutTxs {
 		for _, coin := range tx.Coins {
 			if common.IsRuneAsset(coin.Asset) {
-				runeAmt += coin.Amount
+				runeAmt += coin.Amount + record.Fee.RuneFee()
 			} else {
-				assetAmt += coin.Amount
+				assetAmt += coin.Amount + record.Fee.AssetFee()
 			}
 		}
 	}
