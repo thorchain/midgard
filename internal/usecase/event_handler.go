@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/patrickmn/go-cache"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -31,6 +33,7 @@ type eventHandler struct {
 	events       []thorchain.Event
 	nextEventID  int64
 	logger       zerolog.Logger
+	evetCache    *cache.Cache
 }
 
 type handler func(thorchain.Event) error
@@ -41,7 +44,6 @@ func NewEventHandler(store store.Store) (*eventHandler, error) {
 		return nil, err
 	}
 	decodeHook := mapstructure.ComposeDecodeHookFunc(decodeCoinsHook, decodeAssetHook, decodePoolStatusHook)
-
 	eh := &eventHandler{
 		store:    store,
 		handlers: map[string]handler{},
@@ -51,6 +53,7 @@ func NewEventHandler(store store.Store) (*eventHandler, error) {
 		},
 		nextEventID: maxID + 1,
 		logger:      log.With().Str("module", "event_handler").Logger(),
+		evetCache:   cache.New(5*time.Minute, 10*time.Minute),
 	}
 	eh.handlers[types.StakeEventType] = eh.processStakeEvent
 	eh.handlers[types.SwapEventType] = eh.processSwapEvent
@@ -287,6 +290,9 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode fee")
 	}
+	if inTxID, ok := event.Attributes["tx_id"]; ok {
+		eh.evetCache.Set(inTxID, evt.Fee, cache.DefaultExpiration)
+	}
 	// TODO get pool from event if fee asset is empty
 	err = eh.store.CreateFeeRecord(evt, evt.Fee.Asset())
 	if err != nil {
@@ -332,6 +338,9 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	if evts[0].Type == types.UnstakeEventType {
 		evt = evts[0]
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
+		if fee, ok := eh.evetCache.Get(txID.String()); ok {
+			evt.Fee = fee.(common.Fee)
+		}
 		if err != nil {
 			return err
 		}
@@ -346,6 +355,9 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
+		}
+		if fee, ok := eh.evetCache.Get(txID.String()); ok {
+			evt.Fee = fee.(common.Fee)
 		}
 		evt.OutTxs = common.Txs{outTx}
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
