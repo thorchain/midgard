@@ -33,7 +33,7 @@ type eventHandler struct {
 	events       []thorchain.Event
 	nextEventID  int64
 	logger       zerolog.Logger
-	evetCache    *cache.Cache
+	feeCache     *cache.Cache
 }
 
 type handler func(thorchain.Event) error
@@ -53,7 +53,7 @@ func NewEventHandler(store store.Store) (*eventHandler, error) {
 		},
 		nextEventID: maxID + 1,
 		logger:      log.With().Str("module", "event_handler").Logger(),
-		evetCache:   cache.New(5*time.Minute, 10*time.Minute),
+		feeCache:    cache.New(5*time.Minute, 10*time.Minute),
 	}
 	eh.handlers[types.StakeEventType] = eh.processStakeEvent
 	eh.handlers[types.SwapEventType] = eh.processSwapEvent
@@ -296,11 +296,11 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to save fee event")
 	}
 	if inTxID, ok := event.Attributes["tx_id"]; ok {
-		if f, exists := eh.evetCache.Get(inTxID); exists {
+		if f, exists := eh.feeCache.Get(inTxID); exists {
 			evt.Fee.Coins = append(evt.Fee.Coins, f.(common.Fee).Coins...)
 			evt.Fee.PoolDeduct += f.(common.Fee).PoolDeduct
 		}
-		eh.evetCache.Set(inTxID, evt.Fee, cache.DefaultExpiration)
+		eh.feeCache.Set(inTxID, evt.Fee, cache.DefaultExpiration)
 	}
 	return nil
 }
@@ -342,7 +342,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	if evts[0].Type == types.UnstakeEventType {
 		evt = evts[0]
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
-		if fee, ok := eh.evetCache.Get(txID.String()); ok {
+		if fee, ok := eh.feeCache.Get(txID.String()); ok {
 			evt.Fee = fee.(common.Fee)
 		}
 		if err != nil {
@@ -360,7 +360,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
 		}
-		if fee, ok := eh.evetCache.Get(txID.String()); ok {
+		if fee, ok := eh.feeCache.Get(txID.String()); ok {
 			evt.Fee = fee.(common.Fee)
 		}
 		evt.OutTxs = common.Txs{outTx}
