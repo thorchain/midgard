@@ -874,12 +874,12 @@ func (s *EventHandlerSuite) TestUnstakeFee(c *C) {
 				PoolDeduct: 100000000,
 				Coins: common.Coins{
 					{
-						Asset:  common.RuneA1FAsset,
-						Amount: 30,
-					},
-					{
 						Asset:  common.BNBAsset,
 						Amount: 300000,
+					},
+					{
+						Asset:  common.RuneA1FAsset,
+						Amount: 30,
 					},
 				},
 			},
@@ -987,12 +987,12 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 				PoolDeduct: 100000000,
 				Coins: common.Coins{
 					{
-						Asset:  common.RuneA1FAsset,
-						Amount: 30,
-					},
-					{
 						Asset:  common.BNBAsset,
 						Amount: 300000,
+					},
+					{
+						Asset:  common.RuneA1FAsset,
+						Amount: 30,
 					},
 				},
 			},
