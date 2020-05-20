@@ -299,14 +299,17 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	if len(evts) > 0 {
 		evts[0].Fee = evt.Fee
 		if evts[0].Type == types.UnstakeEventType {
-			eh.store.UpdateUnStakesRecord(models.EventUnstake{
+			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
 				Event: evts[0],
 			})
 		} else if evts[0].Type == types.SwapEventType {
-			eh.store.UpdateSwapRecord(models.EventSwap{
+			err = eh.store.UpdateSwapRecord(models.EventSwap{
 				Event: evts[0],
 			})
 		}
+	}
+	if err != nil {
+		return errors.Wrap(err, "failed to update event")
 	}
 	return nil
 }
