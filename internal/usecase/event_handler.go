@@ -31,7 +31,6 @@ type eventHandler struct {
 	events       []thorchain.Event
 	nextEventID  int64
 	logger       zerolog.Logger
-	feeCache     map[string]common.Fee
 }
 
 type handler func(thorchain.Event) error
@@ -51,7 +50,6 @@ func NewEventHandler(store store.Store) (*eventHandler, error) {
 		},
 		nextEventID: maxID + 1,
 		logger:      log.With().Str("module", "event_handler").Logger(),
-		feeCache:    make(map[string]common.Fee),
 	}
 	eh.handlers[types.StakeEventType] = eh.processStakeEvent
 	eh.handlers[types.SwapEventType] = eh.processSwapEvent
@@ -299,14 +297,15 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to get fee event")
 	}
 	if len(evts) > 0 {
-		if evts[0].Type == types.UnstakeEventType || evts[0].Type == types.SwapEventType {
-			var fee common.Fee
-			if _, exits := eh.feeCache[inTxID.String()]; exits {
-				fee = eh.feeCache[inTxID.String()]
-			}
-			fee.Coins = append(fee.Coins, evt.Fee.Coins...)
-			fee.PoolDeduct += evt.Fee.PoolDeduct
-			eh.feeCache[inTxID.String()] = fee
+		evts[0].Fee = evt.Fee
+		if evts[0].Type == types.UnstakeEventType {
+			eh.store.UpdateUnStakesRecord(models.EventUnstake{
+				Event: evts[0],
+			})
+		} else if evts[0].Type == types.SwapEventType {
+			eh.store.UpdateSwapRecord(models.EventSwap{
+				Event: evts[0],
+			})
 		}
 	}
 	return nil
@@ -349,9 +348,6 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	if evts[0].Type == types.UnstakeEventType {
 		evt = evts[0]
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
-		if fee, ok := eh.feeCache[txID.String()]; ok {
-			evt.Fee = fee
-		}
 		if err != nil {
 			return err
 		}
@@ -366,9 +362,6 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
-		}
-		if fee, ok := eh.feeCache[txID.String()]; ok {
-			evt.Fee = fee
 		}
 		evt.OutTxs = common.Txs{outTx}
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
