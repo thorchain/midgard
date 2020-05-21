@@ -77,8 +77,8 @@ func (uc *Usecase) StopScanner() error {
 // GetHealth returns health status of Midgard's crucial units.
 func (uc *Usecase) GetHealth() *models.HealthStatus {
 	return &models.HealthStatus{
-		Database: uc.store.Ping() == nil,
-		Scanners: uc.multiScanner.getStatus(),
+		Database:      uc.store.Ping() == nil,
+		ScannerHeight: uc.scanner.GetHeight(),
 	}
 }
 

@@ -1,9 +1,7 @@
 package models
 
-import "gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-
-// MidgardStatus contains health status and metrics of crucial units of Midgard.
+// HealthStatus contains health status and metrics of crucial units of Midgard.
 type HealthStatus struct {
-	Database bool                   `json:"database"`
-	Scanners []*types.ScannerStatus `json:"scanners"`
+	Database      bool  `json:"database"`
+	ScannerHeight int64 `json:"scannerHeight"`
 }
