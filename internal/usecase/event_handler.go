@@ -297,14 +297,16 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to get fee event")
 	}
 	if len(evts) > 0 {
-		evts[0].Fee = evt.Fee
 		if evts[0].Type == types.UnstakeEventType {
+			evts[0].Fee = evt.Fee
 			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
 				Event: evts[0],
 			})
 		} else if evts[0].Type == types.SwapEventType {
+			// Only second tx of double swap has fee
+			evts[len(evts)-1].Fee = evt.Fee
 			err = eh.store.UpdateSwapRecord(models.EventSwap{
-				Event: evts[0],
+				Event: evts[len(evts)-1],
 			})
 		}
 	}
