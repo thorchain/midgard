@@ -19,21 +19,23 @@ const (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScanInterval           time.Duration
-	ScannersUpdateInterval time.Duration
+	ScanInterval time.Duration
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store        store.Store
-	thorchain    thorchain.Thorchain
-	consts       types.ConstantValues
-	multiScanner *multiScanner
+	store      store.Store
+	thorchain  thorchain.Thorchain
+	tendermint thorchain.Tendermint
+	conf       *Config
+	consts     types.ConstantValues
+	eh         *eventHandler
+	scanner    *thorchain.BlockScanner
 }
 
 // NewUsecase initiate a new Usecase.
-func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*Usecase, error) {
+func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, store store.Store, conf *Config) (*Usecase, error) {
 	if conf == nil {
 		return nil, errors.New("conf can't be nil")
 	}
@@ -42,24 +44,34 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 	if err != nil {
 		return nil, errors.New("could not fetch network constants")
 	}
-	ms := newMultiScanner(client, store, conf.ScanInterval, conf.ScannersUpdateInterval)
 	uc := Usecase{
-		store:        store,
-		thorchain:    client,
-		consts:       consts,
-		multiScanner: ms,
+		store:      store,
+		thorchain:  client,
+		tendermint: tendermint,
+		conf:       conf,
+		consts:     consts,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	return uc.multiScanner.start()
+	if uc.eh == nil {
+		eh, err := newEventHandler(uc.store)
+		if err != nil {
+			return errors.New("could not create event handler")
+		}
+		uc.eh = eh
+	}
+	if uc.scanner == nil {
+		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.eh, uc.conf.ScanInterval)
+	}
+	return uc.scanner.Start()
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	return uc.multiScanner.stop()
+	return uc.scanner.Stop()
 }
 
 // GetHealth returns health status of Midgard's crucial units.
