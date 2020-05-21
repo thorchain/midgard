@@ -41,7 +41,6 @@ func NewEventHandler(store store.Store) (*eventHandler, error) {
 		return nil, err
 	}
 	decodeHook := mapstructure.ComposeDecodeHookFunc(decodeCoinsHook, decodeAssetHook, decodePoolStatusHook)
-
 	eh := &eventHandler{
 		store:    store,
 		handlers: map[string]handler{},
@@ -291,6 +290,28 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	err = eh.store.CreateFeeRecord(evt, evt.Fee.Asset())
 	if err != nil {
 		return errors.Wrap(err, "failed to save fee event")
+	}
+	inTxID, _ := common.NewTxID(event.Attributes["tx_id"])
+	evts, err := eh.store.GetEventsByTxID(inTxID)
+	if err != nil {
+		return errors.Wrap(err, "failed to get fee event")
+	}
+	if len(evts) > 0 {
+		if evts[0].Type == types.UnstakeEventType {
+			evts[0].Fee = evt.Fee
+			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
+				Event: evts[0],
+			})
+		} else if evts[0].Type == types.SwapEventType {
+			// Only second tx of double swap has fee
+			evts[len(evts)-1].Fee = evt.Fee
+			err = eh.store.UpdateSwapRecord(models.EventSwap{
+				Event: evts[len(evts)-1],
+			})
+		}
+	}
+	if err != nil {
+		return errors.Wrap(err, "failed to update event")
 	}
 	return nil
 }

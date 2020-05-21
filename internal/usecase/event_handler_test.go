@@ -590,6 +590,8 @@ type OutboundTestStore struct {
 	tx        common.Tx
 	unstake   models.EventUnstake
 	swap      models.EventSwap
+	fee       common.Fee
+	outTxs    common.Txs
 }
 
 func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
@@ -609,6 +611,11 @@ func (s *OutboundTestStore) UpdateUnStakesRecord(record models.EventUnstake) err
 
 func (s *OutboundTestStore) UpdateSwapRecord(record models.EventSwap) error {
 	s.swap = record
+	return nil
+}
+
+func (s *OutboundTestStore) CreateFeeRecord(event models.Event, _ common.Asset) error {
+	s.fee = event.Fee
 	return nil
 }
 
@@ -639,7 +646,6 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 
 	eh.NewTx(0, []thorchain.Event{evt})
 
-	// Single swap
 	eh.NewBlock(0, blockTime, nil, nil)
 	expectedEvent := models.EventUnstake{
 		Event: models.Event{
@@ -773,4 +779,94 @@ func (s *EventHandlerSuite) TestOutboundEvent(c *C) {
 	c.Assert(store.direction, Equals, "")
 	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
 	c.Assert(store.tx, DeepEquals, common.Tx{})
+}
+
+func (s *EventHandlerSuite) TestUnstakeFee(c *C) {
+	blockTime := time.Now()
+	store := &OutboundTestStore{
+		events: []models.Event{
+			{
+				ID:   1,
+				Type: "unstake",
+				Time: blockTime.Add(-10 * time.Second),
+			},
+		},
+	}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	eh.NewTx(0, []thorchain.Event{
+		{
+			Type: "fee",
+			Attributes: map[string]string{
+				"coins":       "300000 BNB.BNB",
+				"pool_deduct": "100000000",
+				"tx_id":       "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			},
+		},
+	})
+	eh.NewBlock(0, blockTime, nil, nil)
+	c.Assert(store.fee, DeepEquals, common.Fee{
+		Coins: common.Coins{
+			{
+				Asset:  common.BNBAsset,
+				Amount: 300000,
+			},
+		},
+		PoolDeduct: 100000000,
+	})
+	c.Assert(store.unstake.Fee, DeepEquals, common.Fee{
+		Coins: common.Coins{
+			{
+				Asset:  common.BNBAsset,
+				Amount: 300000,
+			},
+		},
+		PoolDeduct: 100000000,
+	})
+	c.Assert(store.swap, DeepEquals, models.EventSwap{})
+}
+
+func (s *EventHandlerSuite) TestSwapFee(c *C) {
+	blockTime := time.Now()
+	store := &OutboundTestStore{
+		events: []models.Event{
+			{
+				ID:   1,
+				Type: "swap",
+				Time: blockTime.Add(-10 * time.Second),
+			},
+		},
+	}
+	eh, err := NewEventHandler(store)
+	c.Assert(err, IsNil)
+	eh.NewTx(0, []thorchain.Event{
+		{
+			Type: "fee",
+			Attributes: map[string]string{
+				"coins":       "300000 BNB.BNB",
+				"pool_deduct": "100000000",
+				"tx_id":       "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
+			},
+		},
+	})
+	eh.NewBlock(0, blockTime, nil, nil)
+	c.Assert(store.fee, DeepEquals, common.Fee{
+		Coins: common.Coins{
+			{
+				Asset:  common.BNBAsset,
+				Amount: 300000,
+			},
+		},
+		PoolDeduct: 100000000,
+	})
+	c.Assert(store.swap.Fee, DeepEquals, common.Fee{
+		Coins: common.Coins{
+			{
+				Asset:  common.BNBAsset,
+				Amount: 300000,
+			},
+		},
+		PoolDeduct: 100000000,
+	})
+	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
 }
