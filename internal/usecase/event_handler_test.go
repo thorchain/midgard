@@ -590,7 +590,8 @@ type OutboundTestStore struct {
 	tx        common.Tx
 	unstake   models.EventUnstake
 	swap      models.EventSwap
-	fee       []common.Fee
+	fee       common.Fee
+	outTxs    common.Txs
 }
 
 func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
@@ -614,7 +615,7 @@ func (s *OutboundTestStore) UpdateSwapRecord(record models.EventSwap) error {
 }
 
 func (s *OutboundTestStore) CreateFeeRecord(event models.Event, _ common.Asset) error {
-	s.fee = append(s.fee, event.Fee)
+	s.fee = event.Fee
 	return nil
 }
 
@@ -804,8 +805,7 @@ func (s *EventHandlerSuite) TestUnstakeFee(c *C) {
 		},
 	})
 	eh.NewBlock(0, blockTime, nil, nil)
-	c.Assert(len(store.fee), Equals, 1)
-	c.Assert(store.fee[0], DeepEquals, common.Fee{
+	c.Assert(store.fee, DeepEquals, common.Fee{
 		Coins: common.Coins{
 			{
 				Asset:  common.BNBAsset,
@@ -814,81 +814,16 @@ func (s *EventHandlerSuite) TestUnstakeFee(c *C) {
 		},
 		PoolDeduct: 100000000,
 	})
-	eh.NewTx(0, []thorchain.Event{
-		{
-			Type: "fee",
-			Attributes: map[string]string{
-				"coins":       "30 BNB.RUNE-A1F",
-				"pool_deduct": "0",
-				"tx_id":       "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
-			},
-		},
-	})
-	eh.NewBlock(0, blockTime, nil, nil)
-	c.Assert(len(store.fee), Equals, 2)
-	c.Assert(store.fee[1], DeepEquals, common.Fee{
+	c.Assert(store.unstake.Fee, DeepEquals, common.Fee{
 		Coins: common.Coins{
 			{
-				Asset:  common.RuneA1FAsset,
-				Amount: 30,
+				Asset:  common.BNBAsset,
+				Amount: 300000,
 			},
 		},
-		PoolDeduct: 0,
+		PoolDeduct: 100000000,
 	})
-
-	eh.NewTx(0, []thorchain.Event{
-		{
-
-			Type: "outbound",
-			Attributes: map[string]string{
-				"chain":    "BTC",
-				"coin":     "23282731 BTC.BTC",
-				"from":     "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
-				"id":       "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
-				"in_tx_id": "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
-				"memo":     "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
-				"to":       "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
-			},
-		},
-	})
-	eh.NewBlock(0, blockTime, nil, nil)
 	c.Assert(store.swap, DeepEquals, models.EventSwap{})
-	c.Assert(store.direction, Equals, "out")
-	c.Assert(store.unstake, DeepEquals, models.EventUnstake{
-		Event: models.Event{
-			ID:   1,
-			Type: "unstake",
-			Time: blockTime.Add(-10 * time.Second),
-			OutTxs: common.Txs{
-				common.Tx{
-					ID:          "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
-					FromAddress: "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
-					ToAddress:   "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
-					Coins: common.Coins{
-						{
-							Asset:  common.BTCAsset,
-							Amount: 23282731,
-						},
-					},
-					Chain: common.BTCChain,
-					Memo:  "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
-				},
-			},
-			Fee: common.Fee{
-				PoolDeduct: 100000000,
-				Coins: common.Coins{
-					{
-						Asset:  common.BNBAsset,
-						Amount: 300000,
-					},
-					{
-						Asset:  common.RuneA1FAsset,
-						Amount: 30,
-					},
-				},
-			},
-		},
-	})
 }
 
 func (s *EventHandlerSuite) TestSwapFee(c *C) {
@@ -911,7 +846,9 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 			"tx_id":       "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
 		},
 	}
-	expectedFee := common.Fee{
+	eh.NewTx(0, []thorchain.Event{fee})
+	eh.NewBlock(0, blockTime, nil, nil)
+	c.Assert(store.fee, DeepEquals, common.Fee{
 		Coins: common.Coins{
 			{
 				Asset:  common.BNBAsset,
@@ -919,110 +856,15 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 			},
 		},
 		PoolDeduct: 100000000,
-	}
-	eh.NewTx(0, []thorchain.Event{fee})
-	eh.NewBlock(0, blockTime, nil, nil)
-	c.Assert(len(store.fee), Equals, 1)
-	c.Assert(store.fee[0], DeepEquals, expectedFee)
-	fee = thorchain.Event{
-		Type: "fee",
-		Attributes: map[string]string{
-			"coins":       "30 BNB.RUNE-A1F",
-			"pool_deduct": "0",
-			"tx_id":       "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
-		},
-	}
-	expectedFee = common.Fee{
+	})
+	c.Assert(store.swap.Fee, DeepEquals, common.Fee{
 		Coins: common.Coins{
 			{
-				Asset:  common.RuneA1FAsset,
-				Amount: 30,
+				Asset:  common.BNBAsset,
+				Amount: 300000,
 			},
 		},
-		PoolDeduct: 0,
-	}
-	eh.NewTx(0, []thorchain.Event{fee})
-	eh.NewBlock(0, blockTime, nil, nil)
-	c.Assert(len(store.fee), Equals, 2)
-	c.Assert(store.fee[1], DeepEquals, expectedFee)
-
-	evt := thorchain.Event{
-		Type: "outbound",
-		Attributes: map[string]string{
-			"chain":    "BTC",
-			"coin":     "334590 BTC.BTC",
-			"from":     "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
-			"id":       "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",
-			"in_tx_id": "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
-			"memo":     "OUTBOUND:0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
-			"to":       "bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
-		},
-	}
-
-	eh.NewTx(0, []thorchain.Event{evt})
-
-	// Single swap
-	eh.NewBlock(0, blockTime, nil, nil)
-	expectedEvent := models.EventSwap{
-		Event: models.Event{
-			ID:   1,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
-			OutTxs: common.Txs{
-				common.Tx{
-					ID:          "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",
-					FromAddress: "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
-					ToAddress:   "bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
-					Coins: common.Coins{
-						{
-							Asset:  common.BTCAsset,
-							Amount: 334590,
-						},
-					},
-					Chain: common.BTCChain,
-					Memo:  "OUTBOUND:0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
-				},
-			},
-			Fee: common.Fee{
-				PoolDeduct: 100000000,
-				Coins: common.Coins{
-					{
-						Asset:  common.BNBAsset,
-						Amount: 300000,
-					},
-					{
-						Asset:  common.RuneA1FAsset,
-						Amount: 30,
-					},
-				},
-			},
-		},
-	}
-	c.Assert(store.swap, DeepEquals, expectedEvent)
-	c.Assert(store.direction, Equals, "out")
+		PoolDeduct: 100000000,
+	})
 	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
-	c.Assert(store.tx, DeepEquals, expectedEvent.OutTxs[0])
-
-	// First outbound for double swap
-	store.events = []models.Event{
-		{
-			ID:   2,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
-		},
-		{
-			ID:   3,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
-		},
-	}
-	evt.Attributes["id"] = common.BlankTxID.String()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
-	expectedEvent.ID = 2
-	expectedEvent.OutTxs[0].ID = common.BlankTxID
-	c.Assert(store.swap, DeepEquals, expectedEvent)
-	c.Assert(store.direction, Equals, "out")
-	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
-	c.Assert(store.tx, DeepEquals, expectedEvent.OutTxs[0])
 }
