@@ -18,7 +18,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v2"
 
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
+	rpchttp "github.com/tendermint/tendermint/rpc/client"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
@@ -76,10 +76,7 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	// Setup Tendermint rpc client
-	tendermintClient, err := rpchttp.New(cfg.ThorChain.TendermintAddr, "/websocket")
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create tendermint rpc client instance")
-	}
+	tendermintClient := rpchttp.NewHTTP(cfg.ThorChain.TendermintAddr, "/websocket")
 
 	usecaseConf := &usecase.Config{
 		ScanInterval: cfg.ThorChain.NoEventsBackoff,
