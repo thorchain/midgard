@@ -7,8 +7,6 @@ import (
 
 	"github.com/pkg/errors"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/state"
-
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtype "github.com/tendermint/tendermint/types"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
@@ -63,20 +61,14 @@ func (t *TestGetHealthTendermint) BlockchainInfo(minHeight, maxHeight int64) (*c
 
 func (t *TestGetHealthTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResults, error) {
 	return &coretypes.ResultBlockResults{
-		Results: &state.ABCIResponses{
-			BeginBlock: &abcitypes.ResponseBeginBlock{
-				Events: []abcitypes.Event{},
-			},
-			DeliverTx: []*abcitypes.ResponseDeliverTx{
-				{
-					Events: []abcitypes.Event{},
-				},
-			},
-			EndBlock: &abcitypes.ResponseEndBlock{
+		BeginBlockEvents: []abcitypes.Event{},
+		TxsResults: []*abcitypes.ResponseDeliverTx{
+			{
 				Events: []abcitypes.Event{},
 			},
 		},
-		Height: *height,
+		EndBlockEvents: []abcitypes.Event{},
+		Height:         *height,
 	}, nil
 }
 
