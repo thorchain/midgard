@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
       args:
         thornode_host: thormock:8081
+        tendermint_addr: thormock:26657
         pg_host: pg
     image: midgard
     ports:
@@ -54,3 +55,4 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 8081:8081
+      - 26657:26657
