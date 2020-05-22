@@ -98,14 +98,14 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 		return false, errors.Wrap(err, "could not get results of block")
 	}
 
-	for _, tx := range block.Results.DeliverTx {
+	for _, tx := range block.TxsResults {
 		events := convertEvents(tx.Events)
 		sc.callback.NewTx(height, events)
 	}
 
 	blockTime := info.BlockMetas[0].Header.Time
-	beginEvents := convertEvents(block.Results.BeginBlock.Events)
-	endEvents := convertEvents(block.Results.EndBlock.Events)
+	beginEvents := convertEvents(block.BeginBlockEvents)
+	endEvents := convertEvents(block.EndBlockEvents)
 	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 
 	sc.incrementHeight()

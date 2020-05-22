@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -106,8 +104,8 @@ type GenesisData struct {
 }
 
 type EventRefund struct {
-	Code   sdk.CodeType `json:"code"`
-	Reason string       `json:"reason"`
+	Code   uint32 `json:"code"`
+	Reason string `json:"reason"`
 }
 
 func (e EventRefund) Type() string {

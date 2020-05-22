@@ -12,7 +12,7 @@ type EventRefund struct {
 
 func NewRefundEvent(refund types.EventRefund, event types.Event) EventRefund {
 	return EventRefund{
-		Code:   uint32(refund.Code),
+		Code:   refund.Code,
 		Reason: refund.Reason,
 		Event:  newEvent(event),
 	}
