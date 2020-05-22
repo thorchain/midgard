@@ -3,12 +3,12 @@ package thorchain
 import (
 	"time"
 
+	"github.com/tendermint/tendermint/libs/kv"
+
 	"github.com/pkg/errors"
 
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/common"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/state"
 	"github.com/tendermint/tendermint/types"
 	. "gopkg.in/check.v1"
 )
@@ -37,54 +37,48 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 		results: []*coretypes.ResultBlockResults{
 			{
 				Height: 1,
-				Results: &state.ABCIResponses{
-					DeliverTx: []*abcitypes.ResponseDeliverTx{
-						{
-							Events: []abcitypes.Event{
-								{
-									Type: "deliver_tx_event_1",
-									Attributes: []common.KVPair{
-										{
-											Key:   []byte("key1"),
-											Value: []byte("value1"),
-										},
+				TxsResults: []*abcitypes.ResponseDeliverTx{
+					{
+						Events: []abcitypes.Event{
+							{
+								Type: "deliver_tx_event_1",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key1"),
+										Value: []byte("value1"),
 									},
 								},
 							},
 						},
 					},
-					BeginBlock: &abcitypes.ResponseBeginBlock{
-						Events: []abcitypes.Event{
+				},
+				BeginBlockEvents: []abcitypes.Event{
+					{
+						Type: "begin_event_1",
+						Attributes: []kv.Pair{
 							{
-								Type: "begin_event_1",
-								Attributes: []common.KVPair{
-									{
-										Key:   []byte("key2"),
-										Value: []byte("value2"),
-									},
-								},
-							},
-							{
-								Type: "begin_event_2",
-								Attributes: []common.KVPair{
-									{
-										Key:   []byte("key3"),
-										Value: []byte("value3"),
-									},
-								},
+								Key:   []byte("key2"),
+								Value: []byte("value2"),
 							},
 						},
 					},
-					EndBlock: &abcitypes.ResponseEndBlock{
-						Events: []abcitypes.Event{
+					{
+						Type: "begin_event_2",
+						Attributes: []kv.Pair{
 							{
-								Type: "end_event_1",
-								Attributes: []common.KVPair{
-									{
-										Key:   []byte("key4"),
-										Value: []byte("value4"),
-									},
-								},
+								Key:   []byte("key3"),
+								Value: []byte("value3"),
+							},
+						},
+					},
+				},
+				EndBlockEvents: []abcitypes.Event{
+					{
+						Type: "end_event_1",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key4"),
+								Value: []byte("value4"),
 							},
 						},
 					},
@@ -92,44 +86,38 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 			},
 			{
 				Height: 1,
-				Results: &state.ABCIResponses{
-					DeliverTx: []*abcitypes.ResponseDeliverTx{
-						{
-							Events: []abcitypes.Event{
-								{
-									Type: "deliver_tx_event_2",
-									Attributes: []common.KVPair{
-										{
-											Key:   []byte("key5"),
-											Value: []byte("value5"),
-										},
+				TxsResults: []*abcitypes.ResponseDeliverTx{
+					{
+						Events: []abcitypes.Event{
+							{
+								Type: "deliver_tx_event_2",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key5"),
+										Value: []byte("value5"),
 									},
 								},
-								{
-									Type: "deliver_tx_event_3",
-									Attributes: []common.KVPair{
-										{
-											Key:   []byte("key6"),
-											Value: []byte("value6"),
-										},
+							},
+							{
+								Type: "deliver_tx_event_3",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key6"),
+										Value: []byte("value6"),
 									},
 								},
 							},
 						},
 					},
-					BeginBlock: &abcitypes.ResponseBeginBlock{
-						Events: []abcitypes.Event{},
-					},
-					EndBlock: &abcitypes.ResponseEndBlock{
-						Events: []abcitypes.Event{
+				},
+				BeginBlockEvents: []abcitypes.Event{},
+				EndBlockEvents: []abcitypes.Event{
+					{
+						Type: "end_event_2",
+						Attributes: []kv.Pair{
 							{
-								Type: "end_event_2",
-								Attributes: []common.KVPair{
-									{
-										Key:   []byte("key7"),
-										Value: []byte("value7"),
-									},
-								},
+								Key:   []byte("key7"),
+								Value: []byte("value7"),
 							},
 						},
 					},
