@@ -35,7 +35,6 @@ type ThorChainConfiguration struct {
 	Scheme                      string        `json:"scheme" mapstructure:"scheme"`
 	Host                        string        `json:"host" mapstructure:"host"`
 	RPCHost                     string        `json:"rpc_host" mapstructure:"rpc_host"`
-	TendermintAddr              string        `json:"tendermint_addr" mapstructure:"tendermint_addr"`
 	ReadTimeout                 time.Duration `json:"read_timeout" mapstructure:"read_timeout"`
 	EnableScan                  bool          `json:"enable_scan" mapstructure:"enable_scan"` // TODO: Remove this field
 	NoEventsBackoff             time.Duration `json:"no_events_backoff" mapstructure:"no_events_backoff"`

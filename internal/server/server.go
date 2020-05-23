@@ -76,7 +76,8 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	// Setup Tendermint rpc client
-	tendermintClient, err := rpchttp.New(cfg.ThorChain.TendermintAddr, "/websocket")
+	tendermintAddr := fmt.Sprintf("%s://%s", cfg.ThorChain.Scheme, cfg.ThorChain.RPCHost)
+	tendermintClient, err := rpchttp.New(tendermintAddr, "/websocket")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create tendermint rpc client instance")
 	}
