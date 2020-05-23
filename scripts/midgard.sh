@@ -6,7 +6,6 @@ PORT="${PORT:=8080}"
 CHAIN_SCHEME="${CHAIN_SCHEME:=http}"
 CHAIN_API="${CHAIN_API:=localhost:1317}"
 CHAIN_RPC="${CHAIN_RPC:=localhost:26657}"
-TENDERMINT_ADDR="${TENDERMINT_ADDR:=http://localhost:26657}"
 
 PG_HOST="${PG_HOST:=localhost}"
 PG_PORT="${PG_PORT:=5432}"
@@ -25,7 +24,6 @@ echo "{
     \"scheme\": \"$CHAIN_SCHEME\",
     \"host\": \"$CHAIN_API\",
     \"rpc_host\": \"$CHAIN_RPC\",
-    \"tendermint_addr\": \"$TENDERMINT_ADDR\",
     \"enable_scan\": true,
     \"no_events_backoff\": \"5s\",
     \"scanners_update_interval\": \"10s\",
