@@ -29,7 +29,7 @@ func (s *StakeTestStore) CreateStakeRecord(record models.EventStake) error {
 
 func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 	store := &StakeTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "stake",
@@ -45,15 +45,15 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventStake{
 		Pool:       common.BNBAsset,
 		StakeUnits: 25075000000,
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			InTx: common.Tx{
 				ID:          "91811747D3FBD9401CD5627F4F453BF3E7F0409D65FF6F4FDEC8772FE1387369",
 				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
@@ -89,7 +89,7 @@ func (s *UnStakeTestStore) CreateUnStakesRecord(record models.EventUnstake) erro
 
 func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 	store := &UnStakeTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "unstake",
@@ -107,15 +107,15 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventUnstake{
 		Pool:       common.BTCAsset,
 		StakeUnits: 2507500000,
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			InTx: common.Tx{
 				ID:          "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
 				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
@@ -147,7 +147,7 @@ func (s *RefundTestStore) CreateRefundRecord(record models.EventRefund) error {
 
 func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 	store := &RefundTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "refund",
@@ -163,15 +163,15 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventRefund{
 		Code:   105,
 		Reason: "memo can't be empty",
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			InTx: common.Tx{
 				ID:          "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
 				FromAddress: "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
@@ -206,7 +206,7 @@ func (s *SwapTestStore) CreateSwapRecord(record models.EventSwap) error {
 
 func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 	store := &SwapTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "swap",
@@ -225,8 +225,8 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventSwap{
 		Pool:         common.BNBAsset,
 		LiquidityFee: 259372,
@@ -235,7 +235,7 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			InTx: common.Tx{
 				ID:          "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
 				FromAddress: "tbnb157dxmw9jz5emuf0apj4d6p3ee42ck0uwksxfff",
@@ -267,7 +267,7 @@ func (s *PoolTestStore) CreatePoolRecord(record models.EventPool) error {
 
 func (s *EventHandlerSuite) TestPoolEvent(c *C) {
 	store := &PoolTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "pool",
@@ -277,15 +277,15 @@ func (s *EventHandlerSuite) TestPoolEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventPool{
 		Pool:   common.BNBAsset,
 		Status: models.Bootstrap,
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			Type:   "pool",
 		},
 	}
@@ -304,7 +304,7 @@ func (s *AddTestStore) CreateAddRecord(record models.EventAdd) error {
 
 func (s *EventHandlerSuite) TestAddEvent(c *C) {
 	store := &AddTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "add",
@@ -319,14 +319,14 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventAdd{
 		Pool: common.BNBAsset,
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			InTx: common.Tx{
 				ID:          "E12194A353128677110C82224856965FA40B104D1AB69BC7034E4960AB139A0D",
 				FromAddress: "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
@@ -362,7 +362,7 @@ func (s *GasTestStore) CreateGasRecord(record models.EventGas) error {
 
 func (s *EventHandlerSuite) TestGasEvent(c *C) {
 	store := &GasTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "gas",
@@ -374,8 +374,8 @@ func (s *EventHandlerSuite) TestGasEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventGas{
 		Pools: []models.GasPool{
 			{
@@ -387,7 +387,7 @@ func (s *EventHandlerSuite) TestGasEvent(c *C) {
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			InTx:   common.Tx{},
 			Type:   "gas",
 		},
@@ -409,7 +409,7 @@ func (s *FeeTestStore) CreateFeeRecord(event models.Event, pool common.Asset) er
 
 func (s *EventHandlerSuite) TestFeeEvent(c *C) {
 	store := &FeeTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "fee",
@@ -420,12 +420,12 @@ func (s *EventHandlerSuite) TestFeeEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.Event{
 		Time:   blockTime,
 		ID:     1,
-		Height: 0,
+		Height: 1,
 		InTx:   common.Tx{},
 		Type:   "fee",
 		Fee: common.Fee{
@@ -454,7 +454,7 @@ func (s *RewardTestStore) CreateRewardRecord(record models.EventReward) error {
 
 func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 	store := &RewardTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "rewards",
@@ -465,8 +465,8 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventReward{
 		PoolRewards: []models.PoolAmount{
 			{
@@ -481,7 +481,7 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			Type:   "rewards",
 		},
 	}
@@ -500,7 +500,7 @@ func (s *SlashTestStore) CreateSlashRecord(record models.EventSlash) error {
 
 func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 	store := &SlashTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "slash",
@@ -511,8 +511,8 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventSlash{
 		Pool: common.BNBAsset,
 		SlashAmount: []models.PoolAmount{
@@ -528,7 +528,7 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			Type:   "slash",
 		},
 	}
@@ -547,7 +547,7 @@ func (s *ErrataTestStore) CreateErrataRecord(record models.EventErrata) error {
 
 func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 	store := &ErrataTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
 		Type: "errata",
@@ -561,8 +561,8 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 		},
 	}
 	blockTime := time.Now()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventErrata{
 		Pools: []types.PoolMod{
 			{
@@ -576,7 +576,7 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 		Event: models.Event{
 			Time:   blockTime,
 			ID:     1,
-			Height: 0,
+			Height: 1,
 			Type:   "errata",
 		},
 	}
@@ -621,7 +621,7 @@ func (s *OutboundTestStore) CreateFeeRecord(event models.Event, _ common.Asset) 
 
 func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 	store := &OutboundTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	blockTime := time.Now()
 	store.events = []models.Event{
@@ -644,9 +644,9 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 		},
 	}
 
-	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewTx(1, []thorchain.Event{evt})
 
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventUnstake{
 		Event: models.Event{
 			ID:   1,
@@ -677,7 +677,7 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 
 func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 	store := &OutboundTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	blockTime := time.Now()
 	store.events = []models.Event{
@@ -700,10 +700,10 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 		},
 	}
 
-	eh.NewTx(0, []thorchain.Event{evt})
+	eh.NewTx(1, []thorchain.Event{evt})
 
 	// Single swap
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventSwap{
 		Event: models.Event{
 			ID:   1,
@@ -745,8 +745,8 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 		},
 	}
 	evt.Attributes["id"] = common.BlankTxID.String()
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent.ID = 2
 	expectedEvent.OutTxs[0].ID = common.BlankTxID
 	c.Assert(store.swap, DeepEquals, expectedEvent)
@@ -757,7 +757,7 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 
 func (s *EventHandlerSuite) TestOutboundEvent(c *C) {
 	store := &OutboundTestStore{}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
 	blockTime := time.Now()
 	evt := thorchain.Event{
@@ -773,8 +773,8 @@ func (s *EventHandlerSuite) TestOutboundEvent(c *C) {
 		},
 	}
 
-	eh.NewTx(0, []thorchain.Event{evt})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(store.swap, DeepEquals, models.EventSwap{})
 	c.Assert(store.direction, Equals, "")
 	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
@@ -792,9 +792,9 @@ func (s *EventHandlerSuite) TestUnstakeFee(c *C) {
 			},
 		},
 	}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
-	eh.NewTx(0, []thorchain.Event{
+	eh.NewTx(1, []thorchain.Event{
 		{
 			Type: "fee",
 			Attributes: map[string]string{
@@ -804,7 +804,7 @@ func (s *EventHandlerSuite) TestUnstakeFee(c *C) {
 			},
 		},
 	})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(store.fee, DeepEquals, common.Fee{
 		Coins: common.Coins{
 			{
@@ -837,9 +837,9 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 			},
 		},
 	}
-	eh, err := NewEventHandler(store)
+	eh, err := newEventHandler(store)
 	c.Assert(err, IsNil)
-	eh.NewTx(0, []thorchain.Event{
+	eh.NewTx(1, []thorchain.Event{
 		{
 			Type: "fee",
 			Attributes: map[string]string{
@@ -849,7 +849,7 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 			},
 		},
 	})
-	eh.NewBlock(0, blockTime, nil, nil)
+	eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(store.fee, DeepEquals, common.Fee{
 		Coins: common.Coins{
 			{
