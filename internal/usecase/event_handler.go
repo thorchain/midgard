@@ -92,6 +92,7 @@ func (eh *eventHandler) processBlock() {
 			i++
 		}
 	}
+	eh.events = eh.events[:i]
 	eh.events = append(eh.events, outboundEvts...)
 	for _, e := range eh.events {
 		eh.processEvent(e)
