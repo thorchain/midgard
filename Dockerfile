@@ -10,12 +10,10 @@ FROM golang:1.13 AS build
 ARG pg_host
 ARG rpc_host
 ARG thornode_host
-ARG tendermint_addr
 
 ENV PG_HOST=$pg_host
 ENV RPC_HOST=$rpc_host
 ENV THORNODE_HOST=$thornode_host
-ENV TENDERMINT_ADDR=$tendermint_addr
 
 RUN env
 
@@ -33,12 +31,10 @@ RUN cat ./cmd/midgard/config.json | jq \
   --arg RPC_HOST "$RPC_HOST" \
   --arg THORNODE_HOST "$THORNODE_HOST" \
   --arg PG_HOST "$PG_HOST" \
-  --arg TENDERMINT_ADDR "http://$TENDERMINT_ADDR" \
   '.timescale["host"] = $PG_HOST | \
   .timescale["migrationsDir"] = "/var/midgard/db/migrations/" | \
   .thorchain["rpc_host"] = $RPC_HOST | \
-  .thorchain["host"] = $THORNODE_HOST | \
-  .thorchain["tendermint_addr"] = $TENDERMINT_ADDR ' > /etc/midgard/config.json
+  .thorchain["host"] = $THORNODE_HOST' > /etc/midgard/config.json
 RUN cat /etc/midgard/config.json
 
 # Compile.
