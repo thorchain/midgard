@@ -47,7 +47,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
 	viper.SetDefault("thorchain.read_timeout", "10s")
-	viper.SetDefault("thorchain.no_events_backoff", "30s")
+	viper.SetDefault("thorchain.no_events_backoff", "5s")
 	viper.SetDefault("thorchain.cache_ttl", "5s")
 	viper.SetDefault("thorchain.cache_cleanup", "10s")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
