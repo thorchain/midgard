@@ -969,7 +969,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			},
 		},
 		lastHeight: types.LastHeights{
-			Statechain: 25,
+			Thorchain: 25,
 		},
 	}
 	store := &TestGetNetworkInfoStore{
@@ -1036,7 +1036,7 @@ func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
 			},
 		},
 		lastHeight: types.LastHeights{
-			Statechain: 51836,
+			Thorchain: 51836,
 		},
 	}
 	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyStore, s.config)
@@ -1046,7 +1046,7 @@ func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(hight, Equals, int64(51844))
 
-	client.lastHeight.Statechain = 103693
+	client.lastHeight.Thorchain = 103693
 	hight, err = uc.computeNextChurnHight(103693)
 	c.Assert(err, IsNil)
 	c.Assert(hight, Equals, int64(103702))

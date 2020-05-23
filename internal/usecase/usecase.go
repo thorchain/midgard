@@ -269,7 +269,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get LastChainHeight")
 	}
-	nextChurnHeight, err := uc.computeNextChurnHight(lastHeight.Statechain)
+	nextChurnHeight, err := uc.computeNextChurnHight(lastHeight.Thorchain)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
@@ -288,7 +288,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		BondingROI:              (rewards.BondReward * blocksPerYear) / float64(totalBond),
 		StakingROI:              (rewards.StakeReward * blocksPerYear) / float64(totalStaked),
 		NextChurnHeight:         nextChurnHeight,
-		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Statechain),
+		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
 	return &netInfo, nil
 }
