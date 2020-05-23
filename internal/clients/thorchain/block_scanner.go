@@ -76,12 +76,14 @@ func (sc *BlockScanner) scan() {
 			if err != nil {
 				sc.logger.Error().Int64("height", sc.GetHeight()).Err(err).Msg("failed to process the next block")
 			}
-			if synced {
-				select {
-				case <-time.After(sc.interval):
-				case <-sc.stopChan:
-					return
-				}
+			if !synced {
+				continue
+			}
+
+			select {
+			case <-time.After(sc.interval):
+			case <-sc.stopChan:
+				return
 			}
 		}
 	}
