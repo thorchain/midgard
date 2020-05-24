@@ -468,17 +468,18 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
-	cnt := 0
-	for _, pool := range store.record.PoolRewards {
-		for k, v := range evt.Attributes {
-			if pool.Pool.String() == k && strconv.FormatInt(pool.Amount, 10) == v {
-				cnt++
-				continue
-			}
-		}
-	}
 	c.Assert(len(store.record.PoolRewards), Equals, len(evt.Attributes)-1)
-	c.Assert(cnt, Equals, len(evt.Attributes)-1)
+	for _, pool := range store.record.PoolRewards {
+		obtainedAmt := evt.Attributes[pool.Pool.String()]
+		expectedAmt := strconv.FormatInt(pool.Amount, 10)
+		c.Assert(obtainedAmt, Equals, expectedAmt)
+	}
+	c.Assert(store.record.Event, DeepEquals, models.Event{
+		Time:   blockTime,
+		ID:     1,
+		Height: 1,
+		Type:   "rewards",
+	})
 }
 
 type SlashTestStore struct {
@@ -506,18 +507,18 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
-	cnt := 0
-	for _, pool := range store.record.SlashAmount {
-		for k, v := range evt.Attributes {
-			if pool.Pool.String() == k && strconv.FormatInt(pool.Amount, 10) == v {
-				cnt++
-				continue
-			}
-		}
-	}
 	c.Assert(len(store.record.SlashAmount), Equals, len(evt.Attributes)-1)
-	c.Assert(cnt, Equals, len(evt.Attributes)-1)
-	c.Assert(store.record.Pool.String(), Equals, "BNB.BNB")
+	for _, pool := range store.record.SlashAmount {
+		obtainedAmt := evt.Attributes[pool.Pool.String()]
+		expectedAmt := strconv.FormatInt(pool.Amount, 10)
+		c.Assert(obtainedAmt, Equals, expectedAmt)
+	}
+	c.Assert(store.record.Event, DeepEquals, models.Event{
+		Time:   blockTime,
+		ID:     1,
+		Height: 1,
+		Type:   "slash",
+	})
 }
 
 type ErrataTestStore struct {
