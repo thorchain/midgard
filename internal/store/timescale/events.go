@@ -185,8 +185,7 @@ func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
 		FROM       events 
 		INNER JOIN txs 
 		ON         events.id = txs.event_id 
-		WHERE      txs.tx_hash = $1
-		ORDER  BY events.id `
+		WHERE      txs.tx_hash = $1`
 	var events []models.Event
 	var err error
 	rows, err := s.db.Queryx(query, txID.String())
