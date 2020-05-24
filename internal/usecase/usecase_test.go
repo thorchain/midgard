@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -54,6 +55,7 @@ func (t *TestGetHealthTendermint) BlockchainInfo(minHeight, maxHeight int64) (*c
 		LastHeight: int64(len(t.metas)),
 		BlockMetas: t.metas[minHeight-1 : maxHeight],
 	}
+	fmt.Println(minHeight-1, maxHeight-1, result.BlockMetas, t.metas)
 	return result, nil
 }
 
@@ -117,7 +119,7 @@ func (s *UsecaseSuite) TestGetHealth(c *C) {
 
 	health := uc.GetHealth()
 	c.Assert(health.Database, Equals, store.isHealthy)
-	c.Assert(health.ScannerHeight, Equals, int64(2))
+	c.Assert(health.ScannerHeight, Equals, int64(3))
 
 	// Unhealthy situation
 	store.isHealthy = false

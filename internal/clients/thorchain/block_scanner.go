@@ -96,14 +96,11 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	if height == info.LastHeight {
-		return true, nil
-	}
-
 	block, err := sc.client.BlockResults(&height)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get results of block")
 	}
+
 	for _, tx := range block.TxsResults {
 		events := convertEvents(tx.Events)
 		sc.callback.NewTx(height, events)
@@ -115,7 +112,8 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 
 	sc.incrementHeight()
-	return false, nil
+	synced := info.LastHeight == height
+	return synced, nil
 }
 
 func (sc *BlockScanner) incrementHeight() {
