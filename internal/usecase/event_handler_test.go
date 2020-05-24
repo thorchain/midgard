@@ -506,26 +506,18 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
-	expectedEvent := models.EventSlash{
-		Pool: common.BNBAsset,
-		SlashAmount: []models.PoolAmount{
-			{
-				Pool:   common.RuneA1FAsset,
-				Amount: 15,
-			},
-			{
-				Pool:   common.BNBAsset,
-				Amount: 20,
-			},
-		},
-		Event: models.Event{
-			Time:   blockTime,
-			ID:     1,
-			Height: 1,
-			Type:   "slash",
-		},
+	cnt := 0
+	for _, pool := range store.record.SlashAmount {
+		for k, v := range evt.Attributes {
+			if pool.Pool.String() == k && strconv.FormatInt(pool.Amount, 10) == v {
+				cnt++
+				continue
+			}
+		}
 	}
-	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(len(store.record.SlashAmount), Equals, len(evt.Attributes)-1)
+	c.Assert(cnt, Equals, len(evt.Attributes)-1)
+	c.Assert(store.record.Pool.String(), Equals, "BNB.BNB")
 }
 
 type ErrataTestStore struct {
