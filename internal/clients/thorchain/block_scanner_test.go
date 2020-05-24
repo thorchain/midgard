@@ -33,6 +33,12 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 					Time:   now.Add(time.Second * 3),
 				},
 			},
+			{
+				Header: types.Header{
+					Height: 3,
+					Time:   now.Add(time.Second * 3),
+				},
+			},
 		},
 		results: []*coretypes.ResultBlockResults{
 			{
