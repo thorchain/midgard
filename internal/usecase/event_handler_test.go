@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"strconv"
 	"time"
 
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
@@ -467,25 +468,17 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
-	expectedEvent := models.EventReward{
-		PoolRewards: []models.PoolAmount{
-			{
-				Pool:   common.BNBAsset,
-				Amount: -259372,
-			},
-			{
-				Pool:   common.BTCAsset,
-				Amount: -483761,
-			},
-		},
-		Event: models.Event{
-			Time:   blockTime,
-			ID:     1,
-			Height: 1,
-			Type:   "rewards",
-		},
+	cnt := 0
+	for _, pool := range store.record.PoolRewards {
+		for k, v := range evt.Attributes {
+			if pool.Pool.String() == k && strconv.FormatInt(pool.Amount, 10) == v {
+				cnt++
+				continue
+			}
+		}
 	}
-	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(len(store.record.PoolRewards), Equals, len(evt.Attributes)-1)
+	c.Assert(cnt, Equals, len(evt.Attributes)-1)
 }
 
 type SlashTestStore struct {
