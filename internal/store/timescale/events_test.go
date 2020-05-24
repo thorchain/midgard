@@ -78,4 +78,20 @@ func (s *TimeScaleSuite) TestGetEventsByTxID(c *C) {
 	c.Assert(event[0].Status, Equals, swapBuyRune2BoltEvent1.Event.Status)
 	c.Assert(event[0].Height, Equals, swapBuyRune2BoltEvent1.Event.Height)
 	c.Assert(event[0].Type, Equals, swapBuyRune2BoltEvent1.Event.Type)
+
+	evt := swapSellBnb2RuneEvent4
+	evt.InTx = swapBuyRune2BnbEvent3.InTx
+	err = s.Store.CreateSwapRecord(evt)
+	c.Assert(err, IsNil)
+	event, err = s.Store.GetEventsByTxID(evt.InTx.ID)
+	c.Assert(err, IsNil)
+	c.Assert(len(event), Equals, 2)
+	c.Assert(event[0].ID, Equals, swapBuyRune2BoltEvent1.Event.ID)
+	c.Assert(event[0].Status, Equals, swapBuyRune2BoltEvent1.Event.Status)
+	c.Assert(event[0].Height, Equals, swapBuyRune2BoltEvent1.Event.Height)
+	c.Assert(event[0].Type, Equals, swapBuyRune2BoltEvent1.Event.Type)
+	c.Assert(event[1].ID, Equals, swapSellBnb2RuneEvent4.Event.ID)
+	c.Assert(event[1].Status, Equals, swapSellBnb2RuneEvent4.Event.Status)
+	c.Assert(event[1].Height, Equals, swapSellBnb2RuneEvent4.Event.Height)
+	c.Assert(event[1].Type, Equals, swapSellBnb2RuneEvent4.Event.Type)
 }
