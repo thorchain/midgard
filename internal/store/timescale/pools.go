@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -317,6 +318,26 @@ func (s *Client) GetPriceInRune(asset common.Asset) (float64, error) {
 	}
 
 	return 0, nil
+}
+
+func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
+	stmnt := `
+		SELECT MIN(events.time)
+			FROM events
+		WHERE events.id = (
+		    SELECT MIN(event_id)
+		    	FROM coins
+		    WHERE coins.ticker = $1)`
+
+	var blockTime time.Time
+	row := s.db.QueryRow(stmnt, asset.Ticker.String())
+
+	if err := row.Scan(&blockTime); err != nil {
+		return 0, errors.Wrap(err, "GetDateCreated failed")
+	}
+
+	return uint64(blockTime.Unix()), nil
+
 }
 
 func (s *Client) exists(asset common.Asset) (bool, error) {

@@ -24,10 +24,6 @@ func (s *StoreDummy) CreateFeeRecord(event models.Event, pool common.Asset) erro
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateGenesis(_ models.Genesis) (int64, error) {
-	return 0, ErrNotImplemented
-}
-
 func (s *StoreDummy) CreateSwapRecord(_ models.EventSwap) error {
 	return ErrNotImplemented
 }

@@ -1,8 +1,6 @@
 package timescale
 
 import (
-	"time"
-
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	. "gopkg.in/check.v1"
@@ -330,38 +328,6 @@ func (s *TimeScaleSuite) TestStakersRuneROI(c *C) {
 	runeROI, err = s.Store.stakersRuneROI(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeROI, Equals, float64(0))
-}
-
-func (s *TimeScaleSuite) TestDateFirstStaked(c *C) {
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	asset, _ := common.NewAsset("BNB")
-
-	// No stakes
-	dateFirstStaked, err := s.Store.dateFirstStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(dateFirstStaked, Equals, uint64(0))
-
-	// Single stake0
-	expectedDate := genesis.GenesisTime.Add(time.Second * blockSpeed)
-	stake0 := stakeBnbEvent0
-	stake0.Time = expectedDate
-	err = s.Store.CreateStakeRecord(stake0)
-	c.Assert(err, IsNil)
-
-	dateFirstStaked, err = s.Store.dateFirstStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(dateFirstStaked, Equals, uint64(expectedDate.Unix()), Commentf("%v", expectedDate))
-
-	// Additional stake0
-	stake1 := stakeTomlEvent1
-	stake1.Time = expectedDate
-	asset, _ = common.NewAsset("TOML-4BC")
-	err = s.Store.CreateStakeRecord(stake1)
-	c.Assert(err, IsNil)
-
-	dateFirstStaked, err = s.Store.dateFirstStaked(address, asset)
-	c.Assert(err, IsNil)
-	c.Assert(dateFirstStaked, Equals, uint64(expectedDate.Unix()))
 }
 
 func (s *TimeScaleSuite) TestStakersAssetROI(c *C) {
