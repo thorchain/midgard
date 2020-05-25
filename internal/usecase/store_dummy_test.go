@@ -154,6 +154,8 @@ func (s *StoreDummy) GetStakersAddressAndAssetDetails(address common.Address, as
 
 func (s *StoreDummy) TotalEarned() (uint64, error) {
 	return 0, ErrNotImplemented
+}
+
 func (s *StoreDummy) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
 	return nil, ErrNotImplemented
 }
