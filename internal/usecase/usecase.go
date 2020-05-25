@@ -274,7 +274,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
 
-	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
+	blocksPerYear := float64(uc.consts.Int64Values["BlockPerYear"])
 	netInfo := models.NetworkInfo{
 		BondMetrics:             metrics,
 		ActiveBonds:             activeBonds,
@@ -380,7 +380,7 @@ func calculatePoolShareFactor(totalBond, totalStaked uint64) float64 {
 
 func (uc *Usecase) calculateRewards(totalReserve uint64, poolShareFactor float64) models.BlockRewards {
 	emission := uc.consts.Int64Values["EmissionCurve"]
-	blocksPerYear := uc.consts.Int64Values["BlocksPerYear"]
+	blocksPerYear := uc.consts.Int64Values["BlockPerYear"]
 
 	blockReward := float64(totalReserve) / float64(emission*blocksPerYear)
 	bondReward := (1 - poolShareFactor) * blockReward
