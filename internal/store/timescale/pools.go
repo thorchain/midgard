@@ -337,7 +337,6 @@ func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
 	}
 
 	return uint64(blockTime.Unix()), nil
-
 }
 
 func (s *Client) exists(asset common.Asset) (bool, error) {
