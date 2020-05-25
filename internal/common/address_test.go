@@ -27,8 +27,22 @@ func (s *AddressSuite) TestAddress(c *C) {
 	_, err = NewAddress("bogus")
 	c.Check(err, NotNil)
 	c.Check(Address("").IsEmpty(), Equals, true)
-
-	c.Check(NoAddress.Equals(Address("")), Equals, true)
+	// eth address
+	_, err = NewAddress("0xfabb9cc6ec839b1214bb11c53377a56a6ed81762")
+	c.Check(err, IsNil)
+	_, err = NewAddress("0xfabb9cc6ec839b1214bb11c53377a56a6e")
+	c.Check(err, NotNil)
+	// btc testnet address
+	_, err = NewAddress("mtXWDB6k5yC5v7TcwKZHB89SUp85yCKshy")
+	c.Check(err, IsNil)
+	_, err = NewAddress("mtXWDB6k5yC5v7TcwKZHB89SUp85yC")
+	c.Check(err, NotNil)
+	// btc mainnet address
+	_, err = NewAddress("bc1qhpheyvzteayu3xhuq7njhqc2q8w5kek65ljtwh")
+	c.Check(err, IsNil)
+	_, err = NewAddress("bc1qhpheyvzteayu3xhuq7njhqc2q8w5kek65")
+	c.Check(err, NotNil)
+	c.Check(NoAddress.Equals(""), Equals, true)
 	_, err = NewAddress("")
 	c.Assert(err, NotNil)
 }
