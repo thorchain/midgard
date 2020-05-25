@@ -911,7 +911,7 @@ func (t *TestGetNetworkInfoThorchain) GetConstants() (types.ConstantValues, erro
 	return types.ConstantValues{
 		Int64Values: map[string]int64{
 			"EmissionCurve":        emissionCurve,
-			"BlocksPerYear":        blocksPerYear,
+			"BlockPerYear":        blocksPerYear,
 			"RotatePerBlockHeight": rotatePerBlockHeight,
 			"RotateRetryBlocks":    rotateRetryBlocks,
 			"NewPoolCycle":         newPoolCycle,
