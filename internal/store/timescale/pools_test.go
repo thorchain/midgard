@@ -1858,3 +1858,23 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 1.89970001)
 }
+
+func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
+	// Single stake
+	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
+
+	asset, _ := common.NewAsset("BNB.BNB")
+	dateCreated, err := s.Store.GetDateCreated(asset)
+	c.Assert(err, IsNil)
+	c.Assert(dateCreated, Equals, uint64(stakeBnbEvent0.Time.Unix()))
+
+	// Single stake
+	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	c.Assert(err, IsNil)
+
+	asset, _ = common.NewAsset("TOML-4BC")
+	dateCreated, err = s.Store.GetDateCreated(asset)
+	c.Assert(err, IsNil)
+	c.Assert(dateCreated, Equals, uint64(stakeTomlEvent1.Time.Unix()))
+}

@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -107,7 +108,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 			Gas:     s.gas(eventId),
 			Options: s.options(eventId, eventType),
 			Events:  s.events(eventId, eventType),
-			Date:    eventDate,
+			Date:    uint64(eventDate.Unix()),
 			Height:  height,
 		})
 	}
@@ -341,26 +342,12 @@ func (s *Client) stakeEvents(eventId uint64) models.Events {
 	return events
 }
 
-func (s *Client) txDate(eventId uint64) (uint64, error) {
-	txHeight := s.txHeight(eventId)
-	timeOfBlock, err := s.getTimeOfBlock(txHeight)
-	if err != nil {
-		return 0, errors.Wrap(err, "txDate failed")
-	}
-
-	return timeOfBlock, nil
-}
-
-func (s *Client) txHeight(eventId uint64) uint64 {
-	stmnt := `SELECT height FROM events WHERE id = $1`
-	var txHeight uint64
+func (s *Client) txDate(eventId uint64) (time.Time, error) {
+	stmnt := `SELECT time FROM events WHERE id = $1`
+	var t time.Time
 	row := s.db.QueryRow(stmnt, eventId)
-
-	if err := row.Scan(&txHeight); err != nil {
-		return 0
-	}
-
-	return txHeight
+	err := row.Scan(&t)
+	return t, err
 }
 
 func (s *Client) priceTarget(eventId uint64) uint64 {
@@ -375,26 +362,21 @@ func (s *Client) priceTarget(eventId uint64) uint64 {
 	return priceTarget
 }
 
-func (s *Client) eventBasic(eventId uint64) (uint64, uint64, string, string, error) {
+func (s *Client) eventBasic(eventId uint64) (time.Time, uint64, string, string, error) {
 	stmnt := `
-		SELECT height, type, status 
+		SELECT time, height, type, status 
 			FROM events
 		WHERE id = $1`
 
 	var (
+		eventTime         time.Time
 		height            uint64
 		eventType, status string
 	)
 
 	row := s.db.QueryRow(stmnt, eventId)
-	if err := row.Scan(&height, &eventType, &status); err != nil {
-		return 0, 0, "eventBasic failed", "eventBasic failed", errors.Wrap(err, "eventBasic failed")
+	if err := row.Scan(&eventTime, &height, &eventType, &status); err != nil {
+		return eventTime, 0, "eventBasic failed", "eventBasic failed", errors.Wrap(err, "eventBasic failed")
 	}
-
-	eventTime, err := s.getTimeOfBlock(height)
-	if err != nil {
-		return 0, 0, "", "", errors.Wrap(err, "")
-	}
-
-	return eventTime, height, eventType, status, errors.Wrap(err, "")
+	return eventTime, height, eventType, status, nil
 }
