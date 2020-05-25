@@ -13,10 +13,16 @@ const (
 	Suspended
 )
 
+var PoolStatusStr = map[string]PoolStatus{
+	"Enabled":   Enabled,
+	"Bootstrap": Bootstrap,
+	"Suspended": Suspended,
+}
+
 type EventPool struct {
 	Event
 	Pool   common.Asset `json:"pool"`
-	Status PoolStatus   `json:"status"`
+	Status PoolStatus   `json:"status" mapstructure:"pool_status"`
 }
 
 func NewPoolEvent(pool types.EventPool, event types.Event) EventPool {

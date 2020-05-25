@@ -16,6 +16,14 @@ var _ store.Store = (*StoreDummy)(nil)
 // StoreDummy is test purpose implementation of Store.
 type StoreDummy struct{}
 
+func (s *StoreDummy) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
+	return ErrNotImplemented
+}
+
+func (s *StoreDummy) CreateFeeRecord(event models.Event, pool common.Asset) error {
+	return ErrNotImplemented
+}
+
 func (s *StoreDummy) CreateGenesis(_ models.Genesis) (int64, error) {
 	return 0, ErrNotImplemented
 }
@@ -61,7 +69,7 @@ func (s *StoreDummy) CreateErrataRecord(_ models.EventErrata) error {
 }
 
 func (s *StoreDummy) GetMaxID(_ common.Chain) (int64, error) {
-	return 0, ErrNotImplemented
+	return 0, nil
 }
 
 func (s *StoreDummy) Ping() error {
@@ -146,4 +154,14 @@ func (s *StoreDummy) GetStakersAddressAndAssetDetails(address common.Address, as
 
 func (s *StoreDummy) TotalEarned() (uint64, error) {
 	return 0, ErrNotImplemented
+func (s *StoreDummy) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
+	return nil, ErrNotImplemented
+}
+
+func (s *StoreDummy) UpdateUnStakesRecord(record models.EventUnstake) error {
+	return ErrNotImplemented
+}
+
+func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
+	return ErrNotImplemented
 }

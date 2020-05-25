@@ -34,14 +34,15 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 			assetAmt += coin.Amount
 		}
 	}
-	for _, coin := range record.Event.OutTxs[0].Coins {
-		if common.IsRuneAsset(coin.Asset) {
-			runeAmt -= coin.Amount
-		} else {
-			assetAmt -= coin.Amount
+	if len(record.Event.OutTxs) > 0 {
+		for _, coin := range record.Event.OutTxs[0].Coins {
+			if common.IsRuneAsset(coin.Asset) {
+				runeAmt -= coin.Amount
+			} else {
+				assetAmt -= coin.Amount
+			}
 		}
 	}
-
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -69,6 +70,38 @@ func (s *Client) CreateSwapRecord(record models.EventSwap) error {
 		assetAmt,
 	)
 
+	if err != nil {
+		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
+	}
+
+	return nil
+}
+
+func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
+	var runeAmt int64
+	var assetAmt int64
+	runeAmt += record.Fee.RuneFee()
+	assetAmt += record.Fee.AssetFee()
+	if len(record.Event.OutTxs) > 0 {
+		for _, coin := range record.Event.OutTxs[0].Coins {
+			if common.IsRuneAsset(coin.Asset) {
+				runeAmt += coin.Amount
+			} else {
+				assetAmt += coin.Amount
+			}
+		}
+	}
+	query := fmt.Sprintf(`
+		UPDATE %v 
+		SET    runeamt = runeamt   - $1, 
+			   assetamt = assetamt - $2
+		WHERE  event_id = $3 returning event_id`, models.ModelSwapsTable)
+
+	_, err := s.db.Exec(query,
+		runeAmt,
+		assetAmt,
+		record.Event.ID,
+	)
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
 	}

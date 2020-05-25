@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v2"
 
+	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
@@ -68,19 +69,23 @@ func New(cfgFile *string) (*Server, error) {
 		return nil, errors.Wrap(err, "failed to create timescale client instance")
 	}
 
-	// Setup thorchain client and scanner
+	// Setup Thorchain client
 	thorchainClient, err := thorchain.NewClient(cfg.ThorChain)
 	if err != nil {
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create thorchain client instance")
-		}
+		return nil, errors.Wrap(err, "failed to create thorchain client instance")
+	}
+
+	// Setup Tendermint rpc client
+	tendermintAddr := fmt.Sprintf("%s://%s", cfg.ThorChain.Scheme, cfg.ThorChain.RPCHost)
+	tendermintClient, err := rpchttp.New(tendermintAddr, "/websocket")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create tendermint rpc client instance")
 	}
 
 	usecaseConf := &usecase.Config{
-		ScanInterval:           cfg.ThorChain.NoEventsBackoff,
-		ScannersUpdateInterval: cfg.ThorChain.ScannersUpdateInterval,
+		ScanInterval: cfg.ThorChain.NoEventsBackoff,
 	}
-	uc, err := usecase.NewUsecase(thorchainClient, timescale, usecaseConf)
+	uc, err := usecase.NewUsecase(thorchainClient, tendermintClient, timescale, usecaseConf)
 	if err != nil {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create usecase instance")
@@ -100,7 +105,7 @@ func New(cfgFile *string) (*Server, error) {
 	// Initialise handlers
 	h := handlers.New(uc, thorchainClient, logger)
 
-	// Register handlers with BinanceClient handlers
+	// Register handlers
 	api.RegisterHandlers(echoEngine, h)
 
 	srv := &http.Server{

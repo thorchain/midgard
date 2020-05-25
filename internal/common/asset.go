@@ -9,8 +9,10 @@ import (
 
 var (
 	BNBAsset     = Asset{"BNB", "BNB", "BNB"}
+	BTCAsset     = Asset{"BTC", "BTC", "BTC"}
 	RuneA1FAsset = Asset{"BNB", "RUNE-A1F", "RUNE"} // testnet
 	RuneB1AAsset = Asset{"BNB", "RUNE-B1A", "RUNE"} // mainnet
+	RuneNative   = Asset{"THOR", "RUNE", "RUNE"}
 	EmptyAsset   = Asset{}
 )
 
@@ -64,6 +66,9 @@ func (a Asset) String() string {
 }
 
 func RuneAsset() Asset {
+	if strings.EqualFold(os.Getenv("NATIVE"), "true") {
+		return RuneNative
+	}
 	if strings.EqualFold(os.Getenv("NET"), "testnet") || strings.EqualFold(os.Getenv("NET"), "mocknet") {
 		return RuneA1FAsset
 	}
@@ -75,7 +80,7 @@ func IsBNBAsset(a Asset) bool {
 }
 
 func IsRuneAsset(a Asset) bool {
-	return a.Equals(RuneA1FAsset) || a.Equals(RuneB1AAsset)
+	return a.Equals(RuneA1FAsset) || a.Equals(RuneB1AAsset) || a.Equals(RuneNative)
 }
 
 func (a Asset) MarshalJSON() ([]byte, error) {

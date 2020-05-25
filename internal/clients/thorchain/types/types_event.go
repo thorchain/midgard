@@ -6,22 +6,22 @@ import (
 	"strings"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 const (
-	SwapEventType    = `swap`
-	StakeEventType   = `stake`
-	UnstakeEventType = `unstake`
-	AddEventType     = `add`
-	PoolEventType    = `pool`
-	RewardEventType  = `rewards`
-	RefundEventType  = `refund`
-	GasEventType     = `gas`
-	SlashEventType   = `slash`
-	ErrataEventType  = `errata`
+	SwapEventType     = `swap`
+	StakeEventType    = `stake`
+	UnstakeEventType  = `unstake`
+	AddEventType      = `add`
+	PoolEventType     = `pool`
+	RewardEventType   = `rewards`
+	RefundEventType   = `refund`
+	GasEventType      = `gas`
+	SlashEventType    = `slash`
+	ErrataEventType   = `errata`
+	FeeEventType      = `fee`
+	OutboundEventType = `outbound`
 )
 
 type Event struct {
@@ -104,8 +104,8 @@ type GenesisData struct {
 }
 
 type EventRefund struct {
-	Code   sdk.CodeType `json:"code"`
-	Reason string       `json:"reason"`
+	Code   uint32 `json:"code"`
+	Reason string `json:"reason"`
 }
 
 func (e EventRefund) Type() string {
@@ -230,11 +230,11 @@ func (e EventSlash) Type() string {
 }
 
 type PoolMod struct {
-	Asset    common.Asset `json:"asset"`
-	RuneAmt  int64        `json:"rune_amt,string"`
-	RuneAdd  bool         `json:"rune_add"`
-	AssetAmt int64        `json:"asset_amt,string"`
-	AssetAdd bool         `json:"asset_add"`
+	Asset    common.Asset `json:"asset" mapstructure:"asset"`
+	RuneAmt  int64        `json:"rune_amt,string" mapstructure:"rune_amt"`
+	RuneAdd  bool         `json:"rune_add" mapstructure:"rune_add"`
+	AssetAmt int64        `json:"asset_amt,string" mapstructure:"asset_amt"`
+	AssetAdd bool         `json:"asset_add" mapstructure:"asset_add"`
 }
 
 // Represent a change in pool balance which caused by an errata transaction

@@ -104,33 +104,33 @@ func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
 	c.Assert(vol, Equals, uint64(0))
 
 	from := time.Now().Add(-time.Hour)
-	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	err = s.Store.CreateSwapRecord(swapSellTusdb2RuneEvent0)
 	c.Assert(err, IsNil)
 	to := time.Now()
 	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(vol, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(10))
 
-	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
 	to = time.Now()
 	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(vol, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(200000010))
 
-	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent0)
+	err = s.Store.CreateSwapRecord(swapBuyRune2BoltEvent1)
 	c.Assert(err, IsNil)
 	to = time.Now()
 	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(vol, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(200000011))
 
-	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 	to = time.Now()
 	vol, err = s.Store.GetTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(vol, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(200000012))
 
 	from = time.Now().Add(-time.Hour * 2)
 	to = from.Add(time.Hour)
@@ -140,7 +140,7 @@ func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
 
 	vol, err = s.Store.GetTotalVolume(nil, nil)
 	c.Assert(err, IsNil)
-	c.Assert(vol, Equals, uint64(0))
+	c.Assert(vol, Equals, uint64(200000012))
 }
 
 func (s *TimeScaleSuite) TestbTotalStaked(c *C) {

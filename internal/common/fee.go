@@ -2,7 +2,7 @@ package common
 
 type Fee struct {
 	Coins      Coins `json:"coins"`
-	PoolDeduct int64 `json:"pool_deduct,string"`
+	PoolDeduct int64 `json:"pool_deduct,string" mapstructure:"pool_deduct"`
 }
 
 func (fee *Fee) AssetFee() int64 {

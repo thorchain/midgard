@@ -57,7 +57,7 @@ func NewScanner(client Thorchain, store Store, interval time.Duration, chain com
 		chain:    chain,
 		handlers: map[string]handlerFunc{},
 		stopChan: make(chan struct{}),
-		logger:   log.With().Str("module", "thorchain_scanner").Logger(),
+		logger:   log.With().Str("module", "event_scanner").Logger(),
 	}
 	sc.handlers[types.StakeEventType] = sc.processStakeEvent
 	sc.handlers[types.SwapEventType] = sc.processSwapEvent

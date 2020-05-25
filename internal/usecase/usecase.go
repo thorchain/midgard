@@ -12,27 +12,30 @@ import (
 )
 
 const (
-	day   = time.Hour * 24
-	month = day * 30
+	day              = time.Hour * 24
+	month            = day * 30
+	blockTimeSeconds = 5
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScanInterval           time.Duration
-	ScannersUpdateInterval time.Duration
+	ScanInterval time.Duration
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store        store.Store
-	thorchain    thorchain.Thorchain
-	consts       types.ConstantValues
-	multiScanner *multiScanner
+	store      store.Store
+	thorchain  thorchain.Thorchain
+	tendermint thorchain.Tendermint
+	conf       *Config
+	consts     types.ConstantValues
+	eh         *eventHandler
+	scanner    *thorchain.BlockScanner
 }
 
 // NewUsecase initiate a new Usecase.
-func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*Usecase, error) {
+func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, store store.Store, conf *Config) (*Usecase, error) {
 	if conf == nil {
 		return nil, errors.New("conf can't be nil")
 	}
@@ -41,31 +44,41 @@ func NewUsecase(client thorchain.Thorchain, store store.Store, conf *Config) (*U
 	if err != nil {
 		return nil, errors.New("could not fetch network constants")
 	}
-	ms := newMultiScanner(client, store, conf.ScanInterval, conf.ScannersUpdateInterval)
 	uc := Usecase{
-		store:        store,
-		thorchain:    client,
-		consts:       consts,
-		multiScanner: ms,
+		store:      store,
+		thorchain:  client,
+		tendermint: tendermint,
+		conf:       conf,
+		consts:     consts,
 	}
 	return &uc, nil
 }
 
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
-	return uc.multiScanner.start()
+	if uc.eh == nil {
+		eh, err := newEventHandler(uc.store)
+		if err != nil {
+			return errors.New("could not create event handler")
+		}
+		uc.eh = eh
+	}
+	if uc.scanner == nil {
+		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.eh, uc.conf.ScanInterval)
+	}
+	return uc.scanner.Start()
 }
 
 // StopScanner stops the scanner.
 func (uc *Usecase) StopScanner() error {
-	return uc.multiScanner.stop()
+	return uc.scanner.Stop()
 }
 
 // GetHealth returns health status of Midgard's crucial units.
 func (uc *Usecase) GetHealth() *models.HealthStatus {
 	return &models.HealthStatus{
-		Database: uc.store.Ping() == nil,
-		Scanners: uc.multiScanner.getStatus(),
+		Database:      uc.store.Ping() == nil,
+		ScannerHeight: uc.scanner.GetHeight(),
 	}
 }
 
@@ -256,25 +269,30 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	poolShareFactor := calculatePoolShareFactor(totalBond, totalStaked)
 	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
-	nextChurnHeight, err := uc.computeNextChurnHight()
+	lastHeight, err := uc.thorchain.GetLastChainHeight()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get LastChainHeight")
+	}
+	nextChurnHeight, err := uc.computeNextChurnHight(lastHeight.Thorchain)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
 
 	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
 	netInfo := models.NetworkInfo{
-		BondMetrics:      metrics,
-		ActiveBonds:      activeBonds,
-		StandbyBonds:     standbyBonds,
-		TotalStaked:      totalStaked,
-		ActiveNodeCount:  len(activeBonds),
-		StandbyNodeCount: len(standbyBonds),
-		TotalReserve:     vaultData.TotalReserve,
-		PoolShareFactor:  poolShareFactor,
-		BlockReward:      rewards,
-		BondingROI:       (rewards.BondReward * blocksPerYear) / float64(totalBond),
-		StakingROI:       (rewards.StakeReward * blocksPerYear) / float64(totalStaked),
-		NextChurnHeight:  nextChurnHeight,
+		BondMetrics:             metrics,
+		ActiveBonds:             activeBonds,
+		StandbyBonds:            standbyBonds,
+		TotalStaked:             totalStaked,
+		ActiveNodeCount:         len(activeBonds),
+		StandbyNodeCount:        len(standbyBonds),
+		TotalReserve:            vaultData.TotalReserve,
+		PoolShareFactor:         poolShareFactor,
+		BlockReward:             rewards,
+		BondingROI:              (rewards.BondReward * blocksPerYear) / float64(totalBond),
+		StakingROI:              (rewards.StakeReward * blocksPerYear) / float64(totalStaked),
+		NextChurnHeight:         nextChurnHeight,
+		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
 	return &netInfo, nil
 }
@@ -378,12 +396,7 @@ func (uc *Usecase) calculateRewards(totalReserve uint64, poolShareFactor float64
 	}
 }
 
-func (uc *Usecase) computeNextChurnHight() (int64, error) {
-	lastHeight, err := uc.thorchain.GetLastChainHeight()
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get LastChainHeight")
-	}
-
+func (uc *Usecase) computeNextChurnHight(lastHeight int64) (int64, error) {
 	lastChurn, err := uc.computeLastChurn()
 	if err != nil {
 		return 0, err
@@ -393,10 +406,10 @@ func (uc *Usecase) computeNextChurnHight() (int64, error) {
 	churnRetry := uc.consts.Int64Values["RotateRetryBlocks"]
 
 	var next int64
-	if lastHeight.Statechain-lastChurn <= churnInterval {
+	if lastHeight-lastChurn <= churnInterval {
 		next = lastChurn + churnInterval
 	} else {
-		next = lastHeight.Statechain + ((lastHeight.Statechain - lastChurn + churnInterval) % churnRetry)
+		next = lastHeight + ((lastHeight - lastChurn + churnInterval) % churnRetry)
 	}
 	return next, nil
 }
@@ -414,4 +427,9 @@ func (uc *Usecase) computeLastChurn() (int64, error) {
 		}
 	}
 	return lastChurn, nil
+}
+
+func (uc *Usecase) calculatePoolActivationCountdown(lastHeight int64) int64 {
+	newPoolCycle := uc.consts.Int64Values["NewPoolCycle"]
+	return (newPoolCycle - lastHeight%newPoolCycle) * blockTimeSeconds
 }
