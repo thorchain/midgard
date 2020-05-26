@@ -6,28 +6,26 @@ import (
 
 	"github.com/openlyinc/pointy"
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/internal/models"
-
-	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 const paginationMaxLimit = 50
 
-func ConvertAssetForAPI(asset common.Asset) *api.Asset {
-	assetString := api.Asset(asset.String())
+func ConvertAssetForAPI(asset common.Asset) *Asset {
+	assetString := Asset(asset.String())
 	return &assetString
 }
 
-func ConvertEventDataForAPI(events models.Events) *api.Event {
-	return &api.Event{
+func ConvertEventDataForAPI(events models.Events) *Event {
+	return &Event{
 		Fee:        Uint64ToString(events.Fee),
 		Slip:       Float64ToString(events.Slip),
 		StakeUnits: Uint64ToString(events.StakeUnits),
 	}
 }
 
-func ConvertGasForAPI(gas models.TxGas) *api.Gas {
+func ConvertGasForAPI(gas models.TxGas) *Gas {
 	if gas.Amount == 0 {
 		return nil
 	}
@@ -35,24 +33,24 @@ func ConvertGasForAPI(gas models.TxGas) *api.Gas {
 	a, _ := common.NewAsset(gas.Asset.Symbol.String())
 	asset := ConvertAssetForAPI(a)
 
-	return &api.Gas{
+	return &Gas{
 		Amount: Uint64ToString(gas.Amount),
 		Asset:  asset,
 	}
 }
 
-func ConvertCoinForAPI(coin common.Coin) *api.Coin {
+func ConvertCoinForAPI(coin common.Coin) *Coin {
 	a, _ := common.NewAsset(coin.Asset.Symbol.String())
 	asset := ConvertAssetForAPI(a)
 
-	return &api.Coin{
+	return &Coin{
 		Amount: Int64ToString(coin.Amount),
 		Asset:  asset,
 	}
 }
 
-func ConvertCoinsForAPI(coins common.Coins) api.Coins {
-	var c []api.Coin
+func ConvertCoinsForAPI(coins common.Coins) Coins {
+	var c []Coin
 	for _, coin := range coins {
 		converted := ConvertCoinForAPI(coin)
 		c = append(c, *converted)
@@ -61,13 +59,13 @@ func ConvertCoinsForAPI(coins common.Coins) api.Coins {
 	return c
 }
 
-func ConvertTxForAPI(tx models.TxData) *api.Tx {
+func ConvertTxForAPI(tx models.TxData) *Tx {
 	if tx.Address == "" {
 		return nil
 	}
 
 	coins := ConvertCoinsForAPI(tx.Coin)
-	return &api.Tx{
+	return &Tx{
 		Address: pointy.String(tx.Address),
 		Coins:   &coins,
 		Memo:    pointy.String(tx.Memo),
@@ -75,8 +73,8 @@ func ConvertTxForAPI(tx models.TxData) *api.Tx {
 	}
 }
 
-func ConvertTxsForAPI(txs []models.TxData) *[]api.Tx {
-	apiTxs := make([]api.Tx, 0, len(txs))
+func ConvertTxsForAPI(txs []models.TxData) *[]Tx {
+	apiTxs := make([]Tx, 0, len(txs))
 	for _, tx := range txs {
 		apiTxs = append(apiTxs, *ConvertTxForAPI(tx))
 	}
@@ -84,18 +82,18 @@ func ConvertTxsForAPI(txs []models.TxData) *[]api.Tx {
 	return &apiTxs
 }
 
-func ConvertOptionsForAPI(options models.Options) *api.Option {
-	return &api.Option{
+func ConvertOptionsForAPI(options models.Options) *Option {
+	return &Option{
 		Asymmetry:           Float64ToString(options.Asymmetry),
 		PriceTarget:         Uint64ToString(options.PriceTarget),
 		WithdrawBasisPoints: Float64ToString(options.WithdrawBasisPoints),
 	}
 }
 
-func PrepareTxDetailsResponseForAPI(txData []models.TxDetails, count int64) api.TxsResponse {
-	txs := make([]api.TxDetails, len(txData))
+func PrepareTxDetailsResponseForAPI(txData []models.TxDetails, count int64) TxsResponse {
+	txs := make([]TxDetails, len(txData))
 	for i, d := range txData {
-		tx := api.TxDetails{
+		tx := TxDetails{
 			Date:    pointy.Int64(int64(d.Date)),
 			Events:  ConvertEventDataForAPI(d.Events),
 			Gas:     ConvertGasForAPI(d.Gas),
@@ -110,7 +108,7 @@ func PrepareTxDetailsResponseForAPI(txData []models.TxDetails, count int64) api.
 		txs[i] = tx
 	}
 
-	return api.TxsResponse{
+	return TxsResponse{
 		Count: &count,
 		Txs:   &txs,
 	}

@@ -3,18 +3,14 @@ package http
 import (
 	"net/http"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/internal/usecase"
-
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
-
-	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
-	"gitlab.com/thorchain/midgard/api/rest/v1/helpers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
+	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/usecase"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
@@ -27,7 +23,7 @@ type Handlers struct {
 func (h *Handlers) GetNodes(ctx echo.Context) error {
 	nodes, err := h.thorChainClient.GetNodeAccounts()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 	response := make([]types.PubKeySet, 0)
 	for _, node := range nodes {
@@ -52,7 +48,7 @@ func (h *Handlers) GetDocs(ctx echo.Context) error {
 
 // JSON swagger/openapi 3.0 specification endpoint// (GET /v1/swagger.json)
 func (h *Handlers) GetSwagger(ctx echo.Context) error {
-	swagger, _ := api.GetSwagger()
+	swagger, _ := GetSwagger()
 	return ctx.JSONPretty(http.StatusOK, swagger, "   ")
 }
 
@@ -63,7 +59,7 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 }
 
 // (GET /v1/txs?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
-func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams) error {
+func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error {
 	var address common.Address
 	if params.Address != nil {
 		address, _ = common.NewAddress(*params.Address)
@@ -84,10 +80,10 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params api.GetTxDetailsParams)
 	txs, count, err := h.uc.GetTxDetails(address, txID, asset, eventType, page)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxDetails")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := helpers.PrepareTxDetailsResponseForAPI(txs, count)
+	response := PrepareTxDetailsResponseForAPI(txs, count)
 	return ctx.JSON(http.StatusOK, response)
 }
 
@@ -97,37 +93,37 @@ func (h *Handlers) GetPools(ctx echo.Context) error {
 	pools, err := h.uc.GetPools()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to GetPools")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
-	assets := api.PoolsResponse{}
+	assets := PoolsResponse{}
 	for _, pool := range pools {
-		a := *helpers.ConvertAssetForAPI(pool)
+		a := *ConvertAssetForAPI(pool)
 		assets = append(assets, a)
 	}
 	return ctx.JSON(http.StatusOK, assets)
 }
 
 // (GET v1/assets?asset={a1,a2,a3})
-func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam api.GetAssetInfoParams) error {
+func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam GetAssetInfoParams) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssetInfo")
-	asts, err := helpers.ParseAssets(assetParam.Asset)
+	asts, err := ParseAssets(assetParam.Asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", assetParam.Asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := make(api.AssetsDetailedResponse, len(asts))
+	response := make(AssetsDetailedResponse, len(asts))
 	for i, ast := range asts {
 		details, err := h.uc.GetAssetDetails(ast)
 		if err != nil {
 			h.logger.Error().Err(err).Str("asset", ast.String()).Msg("failed to get pool")
-			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+			return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 		}
 
-		response[i] = api.AssetDetail{
-			Asset:       helpers.ConvertAssetForAPI(ast),
+		response[i] = AssetDetail{
+			Asset:       ConvertAssetForAPI(ast),
 			DateCreated: pointy.Int64(details.DateCreated),
-			PriceRune:   helpers.Float64ToString(details.PriceInRune),
+			PriceRune:   Float64ToString(details.PriceInRune),
 		}
 	}
 
@@ -139,85 +135,85 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 	stats, err := h.uc.GetStats()
 	if err != nil {
 		h.logger.Err(err).Msg("failure with GetStats")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := api.StatsResponse{
-		DailyActiveUsers:   helpers.Uint64ToString(stats.DailyActiveUsers),
-		DailyTx:            helpers.Uint64ToString(stats.DailyTx),
-		MonthlyActiveUsers: helpers.Uint64ToString(stats.MonthlyActiveUsers),
-		MonthlyTx:          helpers.Uint64ToString(stats.MonthlyTx),
-		PoolCount:          helpers.Uint64ToString(stats.PoolCount),
-		TotalAssetBuys:     helpers.Uint64ToString(stats.TotalAssetBuys),
-		TotalAssetSells:    helpers.Uint64ToString(stats.TotalAssetSells),
-		TotalDepth:         helpers.Uint64ToString(stats.TotalDepth),
-		TotalEarned:        helpers.Uint64ToString(stats.TotalEarned),
-		TotalStakeTx:       helpers.Uint64ToString(stats.TotalStakeTx),
-		TotalStaked:        helpers.Uint64ToString(stats.TotalStaked),
-		TotalTx:            helpers.Uint64ToString(stats.TotalTx),
-		TotalUsers:         helpers.Uint64ToString(stats.TotalUsers),
-		TotalVolume:        helpers.Uint64ToString(stats.TotalVolume),
-		TotalVolume24hr:    helpers.Uint64ToString(stats.TotalVolume24hr),
-		TotalWithdrawTx:    helpers.Uint64ToString(stats.TotalWithdrawTx),
+	response := StatsResponse{
+		DailyActiveUsers:   Uint64ToString(stats.DailyActiveUsers),
+		DailyTx:            Uint64ToString(stats.DailyTx),
+		MonthlyActiveUsers: Uint64ToString(stats.MonthlyActiveUsers),
+		MonthlyTx:          Uint64ToString(stats.MonthlyTx),
+		PoolCount:          Uint64ToString(stats.PoolCount),
+		TotalAssetBuys:     Uint64ToString(stats.TotalAssetBuys),
+		TotalAssetSells:    Uint64ToString(stats.TotalAssetSells),
+		TotalDepth:         Uint64ToString(stats.TotalDepth),
+		TotalEarned:        Uint64ToString(stats.TotalEarned),
+		TotalStakeTx:       Uint64ToString(stats.TotalStakeTx),
+		TotalStaked:        Uint64ToString(stats.TotalStaked),
+		TotalTx:            Uint64ToString(stats.TotalTx),
+		TotalUsers:         Uint64ToString(stats.TotalUsers),
+		TotalVolume:        Uint64ToString(stats.TotalVolume),
+		TotalVolume24hr:    Uint64ToString(stats.TotalVolume24hr),
+		TotalWithdrawTx:    Uint64ToString(stats.TotalWithdrawTx),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/pools/detail?asset={a1,a2,a3})
-func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam api.GetPoolsDataParams) error {
-	asts, err := helpers.ParseAssets(assetParam.Asset)
+func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam GetPoolsDataParams) error {
+	asts, err := ParseAssets(assetParam.Asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", assetParam.Asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := make(api.PoolsDetailedResponse, len(asts))
+	response := make(PoolsDetailedResponse, len(asts))
 	for i, ast := range asts {
 		details, err := h.uc.GetPoolDetails(ast)
 		if err != nil {
 			h.logger.Err(err).Msg("GetPoolDetails failed")
-			return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+			return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 		}
 
-		response[i] = api.PoolDetail{
+		response[i] = PoolDetail{
 			Status:           pointy.String(details.Status),
-			Asset:            helpers.ConvertAssetForAPI(ast),
-			AssetDepth:       helpers.Uint64ToString(details.AssetDepth),
-			AssetROI:         helpers.Float64ToString(details.AssetROI),
-			AssetStakedTotal: helpers.Uint64ToString(details.AssetStakedTotal),
-			BuyAssetCount:    helpers.Uint64ToString(details.BuyAssetCount),
-			BuyFeeAverage:    helpers.Float64ToString(details.BuyFeeAverage),
-			BuyFeesTotal:     helpers.Uint64ToString(details.BuyFeesTotal),
-			BuySlipAverage:   helpers.Float64ToString(details.BuySlipAverage),
-			BuyTxAverage:     helpers.Float64ToString(details.BuyTxAverage),
-			BuyVolume:        helpers.Uint64ToString(details.BuyVolume),
-			PoolDepth:        helpers.Uint64ToString(details.PoolDepth),
-			PoolFeeAverage:   helpers.Float64ToString(details.PoolFeeAverage),
-			PoolFeesTotal:    helpers.Uint64ToString(details.PoolFeesTotal),
-			PoolROI:          helpers.Float64ToString(details.PoolROI),
-			PoolROI12:        helpers.Float64ToString(details.PoolROI12),
-			PoolSlipAverage:  helpers.Float64ToString(details.PoolSlipAverage),
-			PoolStakedTotal:  helpers.Uint64ToString(details.PoolStakedTotal),
-			PoolTxAverage:    helpers.Float64ToString(details.PoolTxAverage),
-			PoolUnits:        helpers.Uint64ToString(details.PoolUnits),
-			PoolVolume:       helpers.Uint64ToString(details.PoolVolume),
-			PoolVolume24hr:   helpers.Uint64ToString(details.PoolVolume24hr),
-			Price:            helpers.Float64ToString(details.Price),
-			RuneDepth:        helpers.Uint64ToString(details.RuneDepth),
-			RuneROI:          helpers.Float64ToString(details.RuneROI),
-			RuneStakedTotal:  helpers.Uint64ToString(details.RuneStakedTotal),
-			SellAssetCount:   helpers.Uint64ToString(details.SellAssetCount),
-			SellFeeAverage:   helpers.Float64ToString(details.SellFeeAverage),
-			SellFeesTotal:    helpers.Uint64ToString(details.SellFeesTotal),
-			SellSlipAverage:  helpers.Float64ToString(details.SellSlipAverage),
-			SellTxAverage:    helpers.Float64ToString(details.SellTxAverage),
-			SellVolume:       helpers.Uint64ToString(details.SellVolume),
-			StakeTxCount:     helpers.Uint64ToString(details.StakeTxCount),
-			StakersCount:     helpers.Uint64ToString(details.StakersCount),
-			StakingTxCount:   helpers.Uint64ToString(details.StakingTxCount),
-			SwappersCount:    helpers.Uint64ToString(details.SwappersCount),
-			SwappingTxCount:  helpers.Uint64ToString(details.SwappingTxCount),
-			WithdrawTxCount:  helpers.Uint64ToString(details.WithdrawTxCount),
+			Asset:            ConvertAssetForAPI(ast),
+			AssetDepth:       Uint64ToString(details.AssetDepth),
+			AssetROI:         Float64ToString(details.AssetROI),
+			AssetStakedTotal: Uint64ToString(details.AssetStakedTotal),
+			BuyAssetCount:    Uint64ToString(details.BuyAssetCount),
+			BuyFeeAverage:    Float64ToString(details.BuyFeeAverage),
+			BuyFeesTotal:     Uint64ToString(details.BuyFeesTotal),
+			BuySlipAverage:   Float64ToString(details.BuySlipAverage),
+			BuyTxAverage:     Float64ToString(details.BuyTxAverage),
+			BuyVolume:        Uint64ToString(details.BuyVolume),
+			PoolDepth:        Uint64ToString(details.PoolDepth),
+			PoolFeeAverage:   Float64ToString(details.PoolFeeAverage),
+			PoolFeesTotal:    Uint64ToString(details.PoolFeesTotal),
+			PoolROI:          Float64ToString(details.PoolROI),
+			PoolROI12:        Float64ToString(details.PoolROI12),
+			PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
+			PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
+			PoolTxAverage:    Float64ToString(details.PoolTxAverage),
+			PoolUnits:        Uint64ToString(details.PoolUnits),
+			PoolVolume:       Uint64ToString(details.PoolVolume),
+			PoolVolume24hr:   Uint64ToString(details.PoolVolume24hr),
+			Price:            Float64ToString(details.Price),
+			RuneDepth:        Uint64ToString(details.RuneDepth),
+			RuneROI:          Float64ToString(details.RuneROI),
+			RuneStakedTotal:  Uint64ToString(details.RuneStakedTotal),
+			SellAssetCount:   Uint64ToString(details.SellAssetCount),
+			SellFeeAverage:   Float64ToString(details.SellFeeAverage),
+			SellFeesTotal:    Uint64ToString(details.SellFeesTotal),
+			SellSlipAverage:  Float64ToString(details.SellSlipAverage),
+			SellTxAverage:    Float64ToString(details.SellTxAverage),
+			SellVolume:       Uint64ToString(details.SellVolume),
+			StakeTxCount:     Uint64ToString(details.StakeTxCount),
+			StakersCount:     Uint64ToString(details.StakersCount),
+			StakingTxCount:   Uint64ToString(details.StakingTxCount),
+			SwappersCount:    Uint64ToString(details.SwappersCount),
+			SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
+			WithdrawTxCount:  Uint64ToString(details.WithdrawTxCount),
 		}
 	}
 
@@ -229,11 +225,11 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 	stakers, err := h.uc.GetStakers()
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetStakers")
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
-	response := api.StakersResponse{}
+	response := StakersResponse{}
 	for _, staker := range stakers {
-		response = append(response, api.Stakers(staker.String()))
+		response = append(response, Stakers(staker.String()))
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
@@ -242,68 +238,68 @@ func (h *Handlers) GetStakersData(ctx echo.Context) error {
 func (h *Handlers) GetStakersAddressData(ctx echo.Context, address string) error {
 	addr, err := common.NewAddress(address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
 			Error: err.Error(),
 		})
 	}
 	details, err := h.uc.GetStakerDetails(addr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
 			Error: err.Error(),
 		})
 	}
 
-	var assets []api.Asset
+	var assets []Asset
 	for _, asset := range details.PoolsDetails {
-		assets = append(assets, *helpers.ConvertAssetForAPI(asset))
+		assets = append(assets, *ConvertAssetForAPI(asset))
 	}
 
-	response := api.StakersAddressDataResponse{
+	response := StakersAddressDataResponse{
 		PoolsArray:  &assets,
-		TotalEarned: helpers.Int64ToString(details.TotalEarned),
-		TotalROI:    helpers.Float64ToString(details.TotalROI),
-		TotalStaked: helpers.Int64ToString(details.TotalStaked),
+		TotalEarned: Int64ToString(details.TotalEarned),
+		TotalROI:    Float64ToString(details.TotalROI),
+		TotalStaked: Int64ToString(details.TotalStaked),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }
 
 // (GET /v1/stakers/{address}/pools?asset={a1,a2,a3})
-func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, assetDataParam api.GetStakersAddressAndAssetDataParams) error {
+func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address string, assetDataParam GetStakersAddressAndAssetDataParams) error {
 	addr, err := common.NewAddress(address)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
 			Error: err.Error(),
 		})
 	}
 
-	asts, err := helpers.ParseAssets(assetDataParam.Asset)
+	asts, err := ParseAssets(assetDataParam.Asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", assetDataParam.Asset).Msg("invalid asset or format")
-		return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := make(api.StakersAssetDataResponse, len(asts))
+	response := make(StakersAssetDataResponse, len(asts))
 	for i, ast := range asts {
 		details, err := h.uc.GetStakerAssetDetails(addr, ast)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, api.GeneralErrorResponse{
+			return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
 				Error: err.Error(),
 			})
 		}
 
-		response[i] = api.StakersAssetData{
-			Asset:           helpers.ConvertAssetForAPI(details.Asset),
-			AssetEarned:     helpers.Int64ToString(details.AssetEarned),
-			AssetROI:        helpers.Float64ToString(details.AssetROI),
-			AssetStaked:     helpers.Int64ToString(details.AssetStaked),
+		response[i] = StakersAssetData{
+			Asset:           ConvertAssetForAPI(details.Asset),
+			AssetEarned:     Int64ToString(details.AssetEarned),
+			AssetROI:        Float64ToString(details.AssetROI),
+			AssetStaked:     Int64ToString(details.AssetStaked),
 			DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
-			PoolEarned:      helpers.Int64ToString(details.PoolEarned),
-			PoolROI:         helpers.Float64ToString(details.PoolROI),
-			PoolStaked:      helpers.Int64ToString(details.PoolStaked),
-			RuneEarned:      helpers.Int64ToString(details.RuneEarned),
-			RuneROI:         helpers.Float64ToString(details.RuneROI),
-			RuneStaked:      helpers.Int64ToString(details.RuneStaked),
-			StakeUnits:      helpers.Uint64ToString(details.StakeUnits),
+			PoolEarned:      Int64ToString(details.PoolEarned),
+			PoolROI:         Float64ToString(details.PoolROI),
+			PoolStaked:      Int64ToString(details.PoolStaked),
+			RuneEarned:      Int64ToString(details.RuneEarned),
+			RuneROI:         Float64ToString(details.RuneROI),
+			RuneStaked:      Int64ToString(details.RuneStaked),
+			StakeUnits:      Uint64ToString(details.StakeUnits),
 		}
 	}
 
@@ -320,36 +316,36 @@ func (h *Handlers) GetThorchainProxiedEndpoints(ctx echo.Context) error {
 func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 	netInfo, err := h.uc.GetNetworkInfo()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, api.GeneralErrorResponse{Error: err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
-	response := api.NetworkResponse{
-		BondMetrics: &api.BondMetrics{
-			TotalActiveBond:    helpers.Uint64ToString(netInfo.BondMetrics.TotalActiveBond),
-			AverageActiveBond:  helpers.Float64ToString(netInfo.BondMetrics.AverageActiveBond),
-			MedianActiveBond:   helpers.Uint64ToString(netInfo.BondMetrics.MedianActiveBond),
-			MinimumActiveBond:  helpers.Uint64ToString(netInfo.BondMetrics.MinimumActiveBond),
-			MaximumActiveBond:  helpers.Uint64ToString(netInfo.BondMetrics.MaximumActiveBond),
-			TotalStandbyBond:   helpers.Uint64ToString(netInfo.BondMetrics.TotalStandbyBond),
-			AverageStandbyBond: helpers.Float64ToString(netInfo.BondMetrics.AverageStandbyBond),
-			MedianStandbyBond:  helpers.Uint64ToString(netInfo.BondMetrics.MedianStandbyBond),
-			MinimumStandbyBond: helpers.Uint64ToString(netInfo.BondMetrics.MinimumStandbyBond),
-			MaximumStandbyBond: helpers.Uint64ToString(netInfo.BondMetrics.MaximumStandbyBond),
+	response := NetworkResponse{
+		BondMetrics: &BondMetrics{
+			TotalActiveBond:    Uint64ToString(netInfo.BondMetrics.TotalActiveBond),
+			AverageActiveBond:  Float64ToString(netInfo.BondMetrics.AverageActiveBond),
+			MedianActiveBond:   Uint64ToString(netInfo.BondMetrics.MedianActiveBond),
+			MinimumActiveBond:  Uint64ToString(netInfo.BondMetrics.MinimumActiveBond),
+			MaximumActiveBond:  Uint64ToString(netInfo.BondMetrics.MaximumActiveBond),
+			TotalStandbyBond:   Uint64ToString(netInfo.BondMetrics.TotalStandbyBond),
+			AverageStandbyBond: Float64ToString(netInfo.BondMetrics.AverageStandbyBond),
+			MedianStandbyBond:  Uint64ToString(netInfo.BondMetrics.MedianStandbyBond),
+			MinimumStandbyBond: Uint64ToString(netInfo.BondMetrics.MinimumStandbyBond),
+			MaximumStandbyBond: Uint64ToString(netInfo.BondMetrics.MaximumStandbyBond),
 		},
-		ActiveBonds:      helpers.Uint64ArrayToStringArray(netInfo.ActiveBonds),
-		StandbyBonds:     helpers.Uint64ArrayToStringArray(netInfo.StandbyBonds),
-		TotalStaked:      helpers.Uint64ToString(netInfo.TotalStaked),
+		ActiveBonds:      Uint64ArrayToStringArray(netInfo.ActiveBonds),
+		StandbyBonds:     Uint64ArrayToStringArray(netInfo.StandbyBonds),
+		TotalStaked:      Uint64ToString(netInfo.TotalStaked),
 		ActiveNodeCount:  &netInfo.ActiveNodeCount,
 		StandbyNodeCount: &netInfo.StandbyNodeCount,
-		TotalReserve:     helpers.Uint64ToString(netInfo.TotalReserve),
-		PoolShareFactor:  helpers.Float64ToString(netInfo.PoolShareFactor),
-		BlockRewards: &api.BlockRewards{
-			BlockReward: helpers.Float64ToString(netInfo.BlockReward.BlockReward),
-			BondReward:  helpers.Float64ToString(netInfo.BlockReward.BondReward),
-			StakeReward: helpers.Float64ToString(netInfo.BlockReward.StakeReward),
+		TotalReserve:     Uint64ToString(netInfo.TotalReserve),
+		PoolShareFactor:  Float64ToString(netInfo.PoolShareFactor),
+		BlockRewards: &BlockRewards{
+			BlockReward: Float64ToString(netInfo.BlockReward.BlockReward),
+			BondReward:  Float64ToString(netInfo.BlockReward.BondReward),
+			StakeReward: Float64ToString(netInfo.BlockReward.StakeReward),
 		},
-		BondingROI:              helpers.Float64ToString(netInfo.BondingROI),
-		StakingROI:              helpers.Float64ToString(netInfo.StakingROI),
-		NextChurnHeight:         helpers.Int64ToString(netInfo.NextChurnHeight),
+		BondingROI:              Float64ToString(netInfo.BondingROI),
+		StakingROI:              Float64ToString(netInfo.StakingROI),
+		NextChurnHeight:         Int64ToString(netInfo.NextChurnHeight),
 		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
 	}
 	return ctx.JSON(http.StatusOK, response)
