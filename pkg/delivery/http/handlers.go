@@ -43,7 +43,7 @@ func New(uc *usecase.Usecase, client thorchain.Thorchain, logger zerolog.Logger)
 
 // This swagger/openapi 3.0 generated documentation// (GET /v1/doc)
 func (h *Handlers) GetDocs(ctx echo.Context) error {
-	return ctx.File("public/rest/v1/api.html")
+	return ctx.File("./public/delivery/http/doc.html")
 }
 
 // JSON swagger/openapi 3.0 specification endpoint// (GET /v1/swagger.json)

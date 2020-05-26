@@ -5,7 +5,7 @@ GOBIN?=${GOPATH}/bin
 
 API_REST_SPEC=./pkg/delivery/http/openapi-v1.0.0.yml
 API_REST_CODE_GEN_LOCATION=./pkg/delivery/http/openapi-v1.0.0.go
-API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
+API_REST_DOCO_GEN_LOCATION=./public/delivery/http/doc.html
 
 bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
 
