@@ -3,8 +3,8 @@ all: lint install
 
 GOBIN?=${GOPATH}/bin
 
-API_REST_SPEC=./api/rest/v1/specification/openapi-v1.0.0.yml
-API_REST_CODE_GEN_LOCATION=./api/rest/v1/codegen/openapi-v1.0.0.go
+API_REST_SPEC=./pkg/delivery/http/openapi-v1.0.0.yml
+API_REST_CODE_GEN_LOCATION=./pkg/delivery/http/openapi-v1.0.0.go
 API_REST_DOCO_GEN_LOCATION=./public/rest/v1/api.html
 
 bootstrap: node_modules ${GOPATH}/bin/oapi-codegen
@@ -27,8 +27,8 @@ go.sum: go.mod
 	GO111MODULE=on go mod verify
 
 lint-pre:
-	@gofumpt -l api/rest/v1/handlers api/rest/v1/helpers cmd internal tools # for display
-	@test -z "$(shell gofumpt -l api/rest/v1/handlers api/rest/v1/helpers cmd internal tools)" # cause error
+	@gofumpt -l $(shell find . -type f \( -iname "*.go" ! -iname "openapi-v1.0.0.go" \)) # for display
+	@test -z "$(shell gofumpt -l $(shell find . -type f \( -iname "*.go" ! -iname "openapi-v1.0.0.go" \)))" # cause error
 	@go mod verify
 
 lint: lint-pre
@@ -80,7 +80,7 @@ openapi3validate:
 	./node_modules/.bin/oas-validate -v ${API_REST_SPEC}
 
 oapi-codegen-server: openapi3validate
-	@${GOBIN}/oapi-codegen --package=api --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
+	@${GOBIN}/oapi-codegen --package=http --generate types,server,spec ${API_REST_SPEC} > ${API_REST_CODE_GEN_LOCATION}
 
 doco:
 	./node_modules/.bin/redoc-cli bundle ${API_REST_SPEC} -o ${API_REST_DOCO_GEN_LOCATION}
