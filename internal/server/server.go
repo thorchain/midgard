@@ -19,12 +19,11 @@ import (
 	"github.com/ziflex/lecho/v2"
 
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
-	api "gitlab.com/thorchain/midgard/api/rest/v1/codegen"
-	"gitlab.com/thorchain/midgard/api/rest/v1/handlers"
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
 	"gitlab.com/thorchain/midgard/internal/usecase"
+	httpdelivery "gitlab.com/thorchain/midgard/pkg/delivery/http"
 )
 
 // Server
@@ -103,10 +102,10 @@ func New(cfgFile *string) (*Server, error) {
 	logger := log.With().Str("module", "httpServer").Logger()
 
 	// Initialise handlers
-	h := handlers.New(uc, thorchainClient, logger)
+	h := httpdelivery.New(uc, thorchainClient, logger)
 
 	// Register handlers
-	api.RegisterHandlers(echoEngine, h)
+	httpdelivery.RegisterHandlers(echoEngine, h)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%v", cfg.ListenPort),
