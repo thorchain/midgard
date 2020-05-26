@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"strconv"
 	"time"
 
 	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
@@ -467,25 +468,18 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
-	expectedEvent := models.EventReward{
-		PoolRewards: []models.PoolAmount{
-			{
-				Pool:   common.BNBAsset,
-				Amount: -259372,
-			},
-			{
-				Pool:   common.BTCAsset,
-				Amount: -483761,
-			},
-		},
-		Event: models.Event{
-			Time:   blockTime,
-			ID:     1,
-			Height: 1,
-			Type:   "rewards",
-		},
+	c.Assert(len(store.record.PoolRewards), Equals, len(evt.Attributes)-1)
+	for _, pool := range store.record.PoolRewards {
+		obtainedAmt := evt.Attributes[pool.Pool.String()]
+		expectedAmt := strconv.FormatInt(pool.Amount, 10)
+		c.Assert(obtainedAmt, Equals, expectedAmt)
 	}
-	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(store.record.Event, DeepEquals, models.Event{
+		Time:   blockTime,
+		ID:     1,
+		Height: 1,
+		Type:   "rewards",
+	})
 }
 
 type SlashTestStore struct {
@@ -513,26 +507,18 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
-	expectedEvent := models.EventSlash{
-		Pool: common.BNBAsset,
-		SlashAmount: []models.PoolAmount{
-			{
-				Pool:   common.RuneA1FAsset,
-				Amount: 15,
-			},
-			{
-				Pool:   common.BNBAsset,
-				Amount: 20,
-			},
-		},
-		Event: models.Event{
-			Time:   blockTime,
-			ID:     1,
-			Height: 1,
-			Type:   "slash",
-		},
+	c.Assert(len(store.record.SlashAmount), Equals, len(evt.Attributes)-1)
+	for _, pool := range store.record.SlashAmount {
+		obtainedAmt := evt.Attributes[pool.Pool.String()]
+		expectedAmt := strconv.FormatInt(pool.Amount, 10)
+		c.Assert(obtainedAmt, Equals, expectedAmt)
 	}
-	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(store.record.Event, DeepEquals, models.Event{
+		Time:   blockTime,
+		ID:     1,
+		Height: 1,
+		Type:   "slash",
+	})
 }
 
 type ErrataTestStore struct {
