@@ -22,8 +22,14 @@ WORKDIR /tmp/midgard
 COPY  . .
 
 # Install jq to update the chain service config.
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN apt-get update
-RUN apt-get install -y jq apt-utils make
+RUN apt-get install -y jq apt-utils make yarn
+
+# Generate api document
+RUN make node_modules
+RUN make doco
 
 # Generate config.
 RUN mkdir -p /etc/midgard
