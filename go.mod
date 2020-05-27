@@ -4,9 +4,11 @@ go 1.13
 
 require (
 	github.com/99designs/gqlgen v0.10.1 // indirect
+	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/cosmos/cosmos-sdk v0.38.3
 	github.com/deepmap/oapi-codegen v1.3.6
+	github.com/ethereum/go-ethereum v1.9.14
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gobuffalo/packr/v2 v2.7.1 // indirect
