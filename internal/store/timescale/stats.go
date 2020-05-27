@@ -192,3 +192,37 @@ func (s *Client) TotalWithdrawTx() (uint64, error) {
 
 	return uint64(totalStakeTx.Int64), nil
 }
+
+func (s *Client) TotalEarned() (uint64, error) {
+	pools, err := s.GetPools()
+	if err != nil {
+		return 0, err
+	}
+	var totalEarned int64
+	for _, pool := range pools {
+		runeDepth, err := s.runeDepth(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "TotalEarned failed")
+		}
+		runeStaked, err := s.runeStaked(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "TotalEarned failed")
+		}
+		runeEarned := int64(runeDepth) - runeStaked
+		assetDepth, err := s.assetDepth(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "TotalEarned failed")
+		}
+		assetStaked, err := s.assetStaked(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "TotalEarned failed")
+		}
+		assetEarned := int64(assetDepth) - assetStaked
+		priceInRune, err := s.GetPriceInRune(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "TotalEarned failed")
+		}
+		totalEarned += int64(float64(runeEarned) + float64(assetEarned)*priceInRune)
+	}
+	return uint64(totalEarned), nil
+}
