@@ -20,11 +20,11 @@ type EventHandlerSuite struct {
 
 type StakeTestStore struct {
 	*StoreDummy
-	record models.EventStake
+	record []models.EventStake
 }
 
 func (s *StakeTestStore) CreateStakeRecord(record models.EventStake) error {
-	s.record = record
+	s.record = append(s.record, record)
 	return nil
 }
 
@@ -35,14 +35,12 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 	evt := thorchain.Event{
 		Type: "stake",
 		Attributes: map[string]string{
-			"chain":       "BNB",
-			"coin":        "150000000 BNB.BNB, 50000000000 BNB.RUNE-A1F",
-			"from":        "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
-			"id":          "91811747D3FBD9401CD5627F4F453BF3E7F0409D65FF6F4FDEC8772FE1387369",
-			"memo":        "STAKE:BNB.BNB",
-			"pool":        "BNB.BNB",
-			"stake_units": "25075000000",
-			"to":          "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+			"BNB_txid":     "91811747D3FBD9401CD5627F4F453BF3E7F0409D65FF6F4FDEC8772FE1387369",
+			"asset_amount": "150000000",
+			"rune_amount":  "50000000000",
+			"stake_units":  "25075000000",
+			"rune_address": "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+			"pool":         "BNB.BNB",
 		},
 	}
 	blockTime := time.Now()
@@ -58,24 +56,100 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 			InTx: common.Tx{
 				ID:          "91811747D3FBD9401CD5627F4F453BF3E7F0409D65FF6F4FDEC8772FE1387369",
 				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
-				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+				ToAddress:   "",
 				Coins: common.Coins{
+					{
+						Asset:  common.RuneB1AAsset,
+						Amount: 50000000000,
+					},
 					{
 						Asset:  common.BNBAsset,
 						Amount: 150000000,
 					},
-					{
-						Asset:  common.RuneA1FAsset,
-						Amount: 50000000000,
-					},
 				},
-				Memo:  "STAKE:BNB.BNB",
+				Memo:  "",
 				Chain: common.BNBChain,
 			},
 			Type: "stake",
 		},
 	}
-	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(len(store.record), Equals, 1)
+	c.Assert(store.record[0], DeepEquals, expectedEvent)
+}
+
+func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
+	store := &StakeTestStore{}
+	eh, err := newEventHandler(store)
+	c.Assert(err, IsNil)
+	evt := thorchain.Event{
+		Type: "stake",
+		Attributes: map[string]string{
+			"BNB_txid":     "9E46D2746E1C9394C4B3347A93B1FF4F9A5645FE87C0E184AB7C249664B9BD09",
+			"BTC_txid":     "C4469606DCBA3AF7DFA336394CDAB460F3B07965C1A2D9E5D32EEE7E8E75901F",
+			"asset_amount": "150000000",
+			"rune_amount":  "50000000000",
+			"stake_units":  "25075000000",
+			"rune_address": "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+			"pool":         "BTC.BTC",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(1, []thorchain.Event{evt})
+	eh.NewBlock(1, blockTime, nil, nil)
+	c.Assert(len(store.record), Equals, 2)
+	expectedEvent1 := models.EventStake{
+		Pool:       common.BTCAsset,
+		StakeUnits: 0,
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 1,
+			InTx: common.Tx{
+				ID:          "9E46D2746E1C9394C4B3347A93B1FF4F9A5645FE87C0E184AB7C249664B9BD09",
+				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+				ToAddress:   "",
+				Coins: common.Coins{
+					{
+						Asset:  common.RuneB1AAsset,
+						Amount: 50000000000,
+					},
+				},
+				Memo:  "",
+				Chain: common.BNBChain,
+			},
+			Type: "stake",
+		},
+	}
+	expectedEvent2 := models.EventStake{
+		Pool:       common.BTCAsset,
+		StakeUnits: 25075000000,
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 1,
+			InTx: common.Tx{
+				ID:          "C4469606DCBA3AF7DFA336394CDAB460F3B07965C1A2D9E5D32EEE7E8E75901F",
+				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+				ToAddress:   "",
+				Coins: common.Coins{
+					{
+						Asset:  common.BTCAsset,
+						Amount: 150000000,
+					},
+				},
+				Memo:  "",
+				Chain: common.BTCChain,
+			},
+			Type: "stake",
+		},
+	}
+	if store.record[0].Event.Chain == expectedEvent1.Event.Chain {
+		c.Assert(store.record[0], DeepEquals, expectedEvent1)
+		c.Assert(store.record[1], DeepEquals, expectedEvent2)
+	} else {
+		c.Assert(store.record[0], DeepEquals, expectedEvent2)
+		c.Assert(store.record[1], DeepEquals, expectedEvent1)
+	}
 }
 
 type UnStakeTestStore struct {
