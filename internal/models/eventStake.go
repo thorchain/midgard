@@ -29,7 +29,7 @@ func (evt *EventStake) GetStakes() []EventStake {
 		var coins common.Coins
 		stakeUnit := int64(0)
 		if evt.RuneAmount > 0 {
-			if len(evt.TxIDs) == 1 || chain.Equals(common.BNBChain) {
+			if len(evt.TxIDs) == 1 || chain.Equals(common.RuneAsset().Chain) {
 				coins = append(coins, common.Coin{
 					Asset:  common.RuneAsset(),
 					Amount: evt.RuneAmount,
