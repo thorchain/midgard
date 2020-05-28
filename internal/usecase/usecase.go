@@ -4,11 +4,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 )
 
 const (
@@ -29,7 +28,7 @@ type Usecase struct {
 	thorchain  thorchain.Thorchain
 	tendermint thorchain.Tendermint
 	conf       *Config
-	consts     types.ConstantValues
+	consts     thorchain.ConstantValues
 	eh         *eventHandler
 	scanner    *thorchain.BlockScanner
 }
@@ -258,8 +257,8 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
 	totalBond := calculateTotalBond(nodeAccounts)
-	activeBonds := filterNodeBonds(nodeAccounts, types.Active)
-	standbyBonds := filterNodeBonds(nodeAccounts, types.Standby)
+	activeBonds := filterNodeBonds(nodeAccounts, thorchain.Active)
+	standbyBonds := filterNodeBonds(nodeAccounts, thorchain.Standby)
 	metrics := calculateBondMetrics(activeBonds, standbyBonds)
 
 	vaultData, err := uc.thorchain.GetVaultData()
@@ -314,7 +313,7 @@ func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics
 	}
 }
 
-func calculateTotalBond(nodes []types.NodeAccount) uint64 {
+func calculateTotalBond(nodes []thorchain.NodeAccount) uint64 {
 	var totalBond uint64
 	for _, node := range nodes {
 		totalBond += node.Bond
@@ -322,7 +321,7 @@ func calculateTotalBond(nodes []types.NodeAccount) uint64 {
 	return totalBond
 }
 
-func filterNodeBonds(nodes []types.NodeAccount, status types.NodeStatus) []uint64 {
+func filterNodeBonds(nodes []thorchain.NodeAccount, status thorchain.NodeStatus) []uint64 {
 	filtered := []uint64{}
 	for _, node := range nodes {
 		if node.Status == status {
@@ -422,7 +421,7 @@ func (uc *Usecase) computeLastChurn() (int64, error) {
 
 	var lastChurn int64
 	for _, v := range vaults {
-		if v.Status == types.ActiveVault && v.BlockHeight > lastChurn {
+		if v.Status == thorchain.ActiveVault && v.BlockHeight > lastChurn {
 			lastChurn = v.BlockHeight
 		}
 	}

@@ -1,17 +1,16 @@
 package models
 
-import (
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-)
+import "gitlab.com/thorchain/midgard/internal/common"
 
 type EventErrata struct {
 	Event
-	Pools []types.PoolMod
+	Pools []PoolMod
 }
 
-func NewErrataEvent(errata types.EventErrata, event types.Event) EventErrata {
-	return EventErrata{
-		Pools: errata.Pools,
-		Event: newEvent(event),
-	}
+type PoolMod struct {
+	Asset    common.Asset `json:"asset" mapstructure:"asset"`
+	RuneAmt  int64        `json:"rune_amt,string" mapstructure:"rune_amt"`
+	RuneAdd  bool         `json:"rune_add" mapstructure:"rune_add"`
+	AssetAmt int64        `json:"asset_amt,string" mapstructure:"asset_amt"`
+	AssetAdd bool         `json:"asset_add" mapstructure:"asset_add"`
 }

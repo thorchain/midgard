@@ -19,10 +19,10 @@ import (
 	"github.com/ziflex/lecho/v2"
 
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/store/timescale"
 	"gitlab.com/thorchain/midgard/internal/usecase"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 	httpdelivery "gitlab.com/thorchain/midgard/pkg/delivery/http"
 )
 

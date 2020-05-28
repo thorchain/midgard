@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -15,15 +14,4 @@ type Coin struct {
 	Symbol  common.Symbol `json:"symbol" db:"symbol"`
 	Ticker  common.Ticker `json:"ticker" db:"ticker"`
 	Amount  int64         `json:"amount" db:"amount"`
-}
-
-func NewCoin(tx common.Tx, coin common.Coin, event types.Event) Coin {
-	return Coin{
-		TxHash:  tx.ID,
-		EventID: event.ID,
-		Chain:   coin.Asset.Chain,
-		Symbol:  coin.Asset.Symbol,
-		Ticker:  coin.Asset.Ticker,
-		Amount:  coin.Amount,
-	}
 }

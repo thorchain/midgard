@@ -6,11 +6,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/usecase"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 )
 
 // Handlers data structure is the api/interface into the policy business logic service
@@ -25,7 +24,7 @@ func (h *Handlers) GetNodes(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
-	response := make([]types.PubKeySet, 0)
+	response := make([]thorchain.PubKeySet, 0)
 	for _, node := range nodes {
 		response = append(response, node.PubKeySet)
 	}

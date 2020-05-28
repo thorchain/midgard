@@ -4,11 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 	. "gopkg.in/check.v1"
 )
 
@@ -628,7 +626,7 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventErrata{
-		Pools: []types.PoolMod{
+		Pools: []models.PoolMod{
 			{
 				Asset:    common.BNBAsset,
 				AssetAmt: 30,
