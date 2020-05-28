@@ -41,6 +41,8 @@ func (evt *EventStake) GetStakes() []EventStake {
 				Asset:  evt.Pool,
 				Amount: evt.AssetAmount,
 			})
+		}
+		if chain.Equals(evt.Pool.Chain) {
 			stakeUnit = evt.StakeUnits
 		}
 		if len(coins) > 0 {
