@@ -143,10 +143,14 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 			Type: "stake",
 		},
 	}
-	if store.record[0].Event.Chain == expectedEvent1.Event.Chain {
+	if store.record[0].InTx.Chain == expectedEvent1.InTx.Chain {
+		expectedEvent1.ID = 1
+		expectedEvent2.ID = 2
 		c.Assert(store.record[0], DeepEquals, expectedEvent1)
 		c.Assert(store.record[1], DeepEquals, expectedEvent2)
 	} else {
+		expectedEvent1.ID = 2
+		expectedEvent2.ID = 1
 		c.Assert(store.record[0], DeepEquals, expectedEvent2)
 		c.Assert(store.record[1], DeepEquals, expectedEvent1)
 	}
