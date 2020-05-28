@@ -9,9 +9,9 @@ import (
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtype "github.com/tendermint/tendermint/types"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 	. "gopkg.in/check.v1"
 )
 
@@ -895,24 +895,24 @@ func (s *TestGetNetworkInfoStore) GetTotalDepth() (uint64, error) {
 
 type TestGetNetworkInfoThorchain struct {
 	ThorchainDummy
-	nodes      []types.NodeAccount
-	vaultData  types.VaultData
-	vaults     []types.Vault
-	lastHeight types.LastHeights
-	consts     types.ConstantValues
+	nodes      []thorchain.NodeAccount
+	vaultData  thorchain.VaultData
+	vaults     []thorchain.Vault
+	lastHeight thorchain.LastHeights
+	consts     thorchain.ConstantValues
 	err        error
 }
 
-func (t *TestGetNetworkInfoThorchain) GetNodeAccounts() ([]types.NodeAccount, error) {
+func (t *TestGetNetworkInfoThorchain) GetNodeAccounts() ([]thorchain.NodeAccount, error) {
 	return t.nodes, t.err
 }
 
-func (t *TestGetNetworkInfoThorchain) GetVaultData() (types.VaultData, error) {
+func (t *TestGetNetworkInfoThorchain) GetVaultData() (thorchain.VaultData, error) {
 	return t.vaultData, t.err
 }
 
-func (t *TestGetNetworkInfoThorchain) GetConstants() (types.ConstantValues, error) {
-	return types.ConstantValues{
+func (t *TestGetNetworkInfoThorchain) GetConstants() (thorchain.ConstantValues, error) {
+	return thorchain.ConstantValues{
 		Int64Values: map[string]int64{
 			"EmissionCurve":        emissionCurve,
 			"BlocksPerYear":        blocksPerYear,
@@ -923,56 +923,56 @@ func (t *TestGetNetworkInfoThorchain) GetConstants() (types.ConstantValues, erro
 	}, nil
 }
 
-func (t *TestGetNetworkInfoThorchain) GetAsgardVaults() ([]types.Vault, error) {
+func (t *TestGetNetworkInfoThorchain) GetAsgardVaults() ([]thorchain.Vault, error) {
 	return t.vaults, t.err
 }
 
-func (t *TestGetNetworkInfoThorchain) GetLastChainHeight() (types.LastHeights, error) {
+func (t *TestGetNetworkInfoThorchain) GetLastChainHeight() (thorchain.LastHeights, error) {
 	return t.lastHeight, t.err
 }
 
 func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	client := &TestGetNetworkInfoThorchain{
-		nodes: []types.NodeAccount{
+		nodes: []thorchain.NodeAccount{
 			{
-				Status: types.Active,
+				Status: thorchain.Active,
 				Bond:   1000,
 			},
 			{
-				Status: types.Active,
+				Status: thorchain.Active,
 				Bond:   1200,
 			},
 			{
-				Status: types.Active,
+				Status: thorchain.Active,
 				Bond:   2000,
 			},
 			{
-				Status: types.Standby,
+				Status: thorchain.Standby,
 				Bond:   110,
 			},
 			{
-				Status: types.Standby,
+				Status: thorchain.Standby,
 				Bond:   175,
 			},
 		},
-		vaultData: types.VaultData{
+		vaultData: thorchain.VaultData{
 			TotalReserve: 1120,
 		},
-		vaults: []types.Vault{
+		vaults: []thorchain.Vault{
 			{
-				Status:      types.ActiveVault,
+				Status:      thorchain.ActiveVault,
 				BlockHeight: 1,
 			},
 			{
-				Status:      types.InactiveVault,
+				Status:      thorchain.InactiveVault,
 				BlockHeight: 21,
 			},
 			{
-				Status:      types.ActiveVault,
+				Status:      thorchain.ActiveVault,
 				BlockHeight: 11,
 			},
 		},
-		lastHeight: types.LastHeights{
+		lastHeight: thorchain.LastHeights{
 			Thorchain: 25,
 		},
 	}
@@ -1033,13 +1033,13 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 
 func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
 	client := &TestGetNetworkInfoThorchain{
-		vaults: []types.Vault{
+		vaults: []thorchain.Vault{
 			{
-				Status:      types.ActiveVault,
+				Status:      thorchain.ActiveVault,
 				BlockHeight: 4,
 			},
 		},
-		lastHeight: types.LastHeights{
+		lastHeight: thorchain.LastHeights{
 			Thorchain: 51836,
 		},
 	}
@@ -1063,25 +1063,25 @@ func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
 
 func (s *UsecaseSuite) TestComputeLastChurn(c *C) {
 	client := &TestGetNetworkInfoThorchain{
-		vaults: []types.Vault{
+		vaults: []thorchain.Vault{
 			{
-				Status:      types.ActiveVault,
+				Status:      thorchain.ActiveVault,
 				BlockHeight: 3,
 			},
 			{
-				Status:      types.ActiveVault,
+				Status:      thorchain.ActiveVault,
 				BlockHeight: 4,
 			},
 			{
-				Status:      types.InactiveVault,
+				Status:      thorchain.InactiveVault,
 				BlockHeight: 2,
 			},
 			{
-				Status:      types.InactiveVault,
+				Status:      thorchain.InactiveVault,
 				BlockHeight: 5,
 			},
 			{
-				Status:      types.ActiveVault,
+				Status:      thorchain.ActiveVault,
 				BlockHeight: 1,
 			},
 		},

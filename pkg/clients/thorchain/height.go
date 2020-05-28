@@ -1,4 +1,4 @@
-package types
+package thorchain
 
 import (
 	"gitlab.com/thorchain/midgard/internal/common"

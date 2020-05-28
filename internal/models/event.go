@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -29,18 +28,4 @@ type Event struct {
 	OutTxs common.Txs
 	Fee    common.Fee `json:"fee"`
 	Chain  common.Chain
-}
-
-func newEvent(e types.Event) Event {
-	return Event{
-		Time:   time.Now(),
-		ID:     e.ID,
-		Status: e.Status,
-		Height: e.Height,
-		Type:   e.Type,
-		InTx:   e.InTx,
-		OutTxs: e.OutTxs,
-		Fee:    e.Fee,
-		Chain:  e.Chain,
-	}
 }

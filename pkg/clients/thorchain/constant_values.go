@@ -1,4 +1,4 @@
-package types
+package thorchain
 
 type ConstantValues struct {
 	Int64Values  map[string]int64  `json:"int_64_values"`

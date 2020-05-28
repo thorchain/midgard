@@ -1,7 +1,6 @@
 package models
 
 import (
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -13,14 +12,6 @@ type EventStake struct {
 	RuneAmount  int64          `mapstructure:"rune_amount"`
 	AssetAmount int64          `mapstructure:"asset_amount"`
 	TxIDs       map[common.Chain]common.TxID
-}
-
-func NewStakeEvent(stake types.EventStake, event types.Event) EventStake {
-	return EventStake{
-		Pool:       stake.Pool,
-		StakeUnits: stake.StakeUnits,
-		Event:      newEvent(event),
-	}
 }
 
 func (evt *EventStake) GetStakes() []EventStake {

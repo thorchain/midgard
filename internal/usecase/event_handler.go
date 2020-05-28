@@ -10,11 +10,25 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain"
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
+)
+
+const (
+	swapEventType     = `swap`
+	stakeEventType    = `stake`
+	unstakeEventType  = `unstake`
+	addEventType      = `add`
+	poolEventType     = `pool`
+	rewardEventType   = `rewards`
+	refundEventType   = `refund`
+	gasEventType      = `gas`
+	slashEventType    = `slash`
+	errataEventType   = `errata`
+	feeEventType      = `fee`
+	outboundEventType = `outbound`
 )
 
 var (
@@ -51,18 +65,18 @@ func newEventHandler(store store.Store) (*eventHandler, error) {
 		nextEventID: maxID + 1,
 		logger:      log.With().Str("module", "event_handler").Logger(),
 	}
-	eh.handlers[types.StakeEventType] = eh.processStakeEvent
-	eh.handlers[types.SwapEventType] = eh.processSwapEvent
-	eh.handlers[types.UnstakeEventType] = eh.processUnstakeEvent
-	eh.handlers[types.RewardEventType] = eh.processRewardEvent
-	eh.handlers[types.RefundEventType] = eh.processRefundEvent
-	eh.handlers[types.AddEventType] = eh.processAddEvent
-	eh.handlers[types.PoolEventType] = eh.processPoolEvent
-	eh.handlers[types.GasEventType] = eh.processGasEvent
-	eh.handlers[types.SlashEventType] = eh.processSlashEvent
-	eh.handlers[types.ErrataEventType] = eh.processErrataEvent
-	eh.handlers[types.FeeEventType] = eh.processFeeEvent
-	eh.handlers[types.OutboundEventType] = eh.processOutbound
+	eh.handlers[stakeEventType] = eh.processStakeEvent
+	eh.handlers[swapEventType] = eh.processSwapEvent
+	eh.handlers[unstakeEventType] = eh.processUnstakeEvent
+	eh.handlers[rewardEventType] = eh.processRewardEvent
+	eh.handlers[refundEventType] = eh.processRefundEvent
+	eh.handlers[addEventType] = eh.processAddEvent
+	eh.handlers[poolEventType] = eh.processPoolEvent
+	eh.handlers[gasEventType] = eh.processGasEvent
+	eh.handlers[slashEventType] = eh.processSlashEvent
+	eh.handlers[errataEventType] = eh.processErrataEvent
+	eh.handlers[feeEventType] = eh.processFeeEvent
+	eh.handlers[outboundEventType] = eh.processOutbound
 	return eh, nil
 }
 
@@ -85,7 +99,7 @@ func (eh *eventHandler) processBlock() {
 	var outboundEvts []thorchain.Event
 	i := 0
 	for _, ev := range eh.events {
-		if ev.Type == types.OutboundEventType {
+		if ev.Type == outboundEventType {
 			outboundEvts = append(outboundEvts, ev)
 		} else {
 			eh.events[i] = ev
@@ -297,7 +311,7 @@ func (eh *eventHandler) processErrataEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode errata.Event.InTx")
 	}
-	var pool types.PoolMod
+	var pool models.PoolMod
 	err = eh.decode(event.Attributes, &pool)
 	if err != nil {
 		return errors.Wrap(err, "failed to decode errata.PoolMod")
@@ -327,12 +341,12 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to get fee event")
 	}
 	if len(evts) > 0 {
-		if evts[0].Type == types.UnstakeEventType {
+		if evts[0].Type == unstakeEventType {
 			evts[0].Fee = evt.Fee
 			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
 				Event: evts[0],
 			})
-		} else if evts[0].Type == types.SwapEventType {
+		} else if evts[0].Type == swapEventType {
 			// Only second tx of double swap has fee
 			evts[len(evts)-1].Fee = evt.Fee
 			err = eh.store.UpdateSwapRecord(models.EventSwap{
@@ -380,7 +394,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		return nil
 	}
 	var evt models.Event
-	if evts[0].Type == types.UnstakeEventType {
+	if evts[0].Type == unstakeEventType {
 		evt = evts[0]
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
 		if err != nil {
@@ -393,7 +407,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		if err != nil {
 			return err
 		}
-	} else if evts[0].Type == types.SwapEventType {
+	} else if evts[0].Type == swapEventType {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]

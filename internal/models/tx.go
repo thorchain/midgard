@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -16,17 +15,4 @@ type Tx struct {
 	FromAddress common.Address `json:"from_address" db:"from_address"`
 	ToAddress   common.Address `json:"to_address" db:"to_address"`
 	Memo        common.Memo    `json:"memo" db:"memo"`
-}
-
-func NewTx(tx common.Tx, event types.Event, direction string) Tx {
-	return Tx{
-		// Time:        event.Tim, // TODO
-		TxHash:      tx.ID,
-		EventID:     event.ID,
-		Direction:   direction,
-		Chain:       tx.Chain,
-		FromAddress: tx.FromAddress,
-		ToAddress:   tx.ToAddress,
-		Memo:        tx.Memo,
-	}
 }

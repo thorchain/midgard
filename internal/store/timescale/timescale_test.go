@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/clients/thorchain/types"
-
 	. "gopkg.in/check.v1"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -1928,7 +1926,7 @@ var (
 			Height: 16,
 			Type:   "errata",
 		},
-		Pools: []types.PoolMod{
+		Pools: []models.PoolMod{
 			{
 				Asset: common.Asset{
 					Chain:  "BNB",
