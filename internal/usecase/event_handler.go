@@ -141,6 +141,8 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		}
 	}
 	for _, ev := range stake.GetStakes() {
+		ev.ID = eh.nextEventID
+		eh.nextEventID++
 		err = eh.store.CreateStakeRecord(ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
