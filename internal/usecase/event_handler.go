@@ -143,7 +143,6 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode stake")
 	}
-	inTx := make(map[common.Chain]common.Tx)
 	for k, v := range event.Attributes {
 		if strings.HasSuffix(k, "_txid") {
 			chain, err := common.NewChain(strings.Replace(k, "_txid", "", -1))
@@ -155,17 +154,16 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 				return errors.Wrap(err, "invalid txID")
 			}
 			stake.TxIDs[chain] = txID
-			tx, err := eh.thorchain.GetTx(txID)
-			if err != nil {
-				return errors.Wrap(err, "Failed to get Tx")
-			}
-			inTx[chain] = tx
 		}
 	}
 	for _, ev := range stake.GetStakes() {
 		ev.ID = eh.nextEventID
 		eh.nextEventID++
-		eh.store.ProcessTxRecord("in", stake.Event, inTx[ev.Pool.Chain])
+		tx, err := eh.thorchain.GetTx(ev.InTx.ID)
+		if err != nil {
+			return errors.Wrap(err, "Failed to get InTx")
+		}
+		eh.store.ProcessTxRecord("in", stake.Event, tx)
 		err = eh.store.CreateStakeRecord(ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
