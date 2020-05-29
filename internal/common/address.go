@@ -15,6 +15,7 @@ import (
 type Address string
 
 var NoAddress Address = Address("")
+var UnknownAddress Address = Address("UNKNOWN000000000000000000000000000000000000")
 
 // NewAddress create a new Address
 // Sample: bnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6
