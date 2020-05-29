@@ -27,6 +27,10 @@ func (s *StakeTestStore) CreateStakeRecord(record models.EventStake) error {
 	return nil
 }
 
+func (s *StakeTestStore) ProcessTxRecord(_ string, _ models.Event, _ common.Tx) error {
+	return nil
+}
+
 type StakeThorchain struct {
 	*ThorchainDummy
 }
