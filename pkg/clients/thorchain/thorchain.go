@@ -160,7 +160,7 @@ func (c *Client) ping() (string, error) {
 
 //get tx by TxID
 func (c *Client) GetTx(txId common.TxID) (common.Tx, error) {
-	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint,txId)
+	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint,txId.String())
 	var observedTx ObservedTx
 	err := c.requestEndpoint(url, &observedTx)
 	if err != nil {
