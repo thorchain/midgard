@@ -105,7 +105,7 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 			InTx: common.Tx{
 				ID:          "9E46D2746E1C9394C4B3347A93B1FF4F9A5645FE87C0E184AB7C249664B9BD09",
 				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
-				ToAddress:   "",
+				ToAddress:   common.UnknownAddress,
 				Coins: common.Coins{
 					{
 						Asset:  common.RuneB1AAsset,
@@ -128,7 +128,7 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 			InTx: common.Tx{
 				ID:          "C4469606DCBA3AF7DFA336394CDAB460F3B07965C1A2D9E5D32EEE7E8E75901F",
 				FromAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
-				ToAddress:   "",
+				ToAddress:   common.UnknownAddress,
 				Coins: common.Coins{
 					{
 						Asset:  common.BTCAsset,
