@@ -37,6 +37,7 @@ var (
 )
 
 type eventHandler struct {
+	thorchain    thorchain.Thorchain
 	store        store.Store
 	handlers     map[string]handler
 	decodeConfig mapstructure.DecoderConfig
@@ -49,15 +50,16 @@ type eventHandler struct {
 
 type handler func(thorchain.Event) error
 
-func newEventHandler(store store.Store) (*eventHandler, error) {
+func newEventHandler(store store.Store, thorchain thorchain.Thorchain) (*eventHandler, error) {
 	maxID, err := store.GetMaxID("")
 	if err != nil {
 		return nil, err
 	}
 	decodeHook := mapstructure.ComposeDecodeHookFunc(decodeCoinsHook, decodeAssetHook, decodePoolStatusHook)
 	eh := &eventHandler{
-		store:    store,
-		handlers: map[string]handler{},
+		thorchain: thorchain,
+		store:     store,
+		handlers:  map[string]handler{},
 		decodeConfig: mapstructure.DecoderConfig{
 			DecodeHook:       decodeHook,
 			WeaklyTypedInput: true,
@@ -157,6 +159,14 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 	for _, ev := range stake.GetStakes() {
 		ev.ID = eh.nextEventID
 		eh.nextEventID++
+		tx, err := eh.thorchain.GetTx(ev.InTx.ID)
+		if err != nil {
+			return errors.Wrap(err, "failed to get InTx")
+		}
+		err = eh.store.ProcessTxRecord("in", stake.Event, tx)
+		if err != nil {
+			return errors.Wrap(err, "failed to save InTx")
+		}
 		err = eh.store.CreateStakeRecord(ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
