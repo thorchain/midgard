@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 )
 
@@ -8,6 +9,10 @@ var _ thorchain.Thorchain = (*ThorchainDummy)(nil)
 
 // ThorchainDummy is test purpose implementation of Thorchain.
 type ThorchainDummy struct{}
+
+func (t *ThorchainDummy) GetTx(txId common.TxID) (common.Tx, error) {
+	return common.Tx{}, ErrNotImplemented
+}
 
 func (t *ThorchainDummy) GetNodeAccounts() ([]thorchain.NodeAccount, error) {
 	return nil, ErrNotImplemented

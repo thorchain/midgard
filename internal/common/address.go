@@ -14,10 +14,7 @@ import (
 
 type Address string
 
-var (
-	NoAddress      Address = Address("")
-	UnknownAddress Address = Address("UNKNOWN000000000000000000000000000000000000")
-)
+var NoAddress Address = Address("")
 
 // NewAddress create a new Address
 // Sample: bnb1lejrrtta9cgr49fuh7ktu3sddhe0ff7wenlpn6

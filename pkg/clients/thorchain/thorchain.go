@@ -3,6 +3,7 @@ package thorchain
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"io/ioutil"
 	"net/http"
 
@@ -20,6 +21,7 @@ type Thorchain interface {
 	GetConstants() (ConstantValues, error)
 	GetAsgardVaults() ([]Vault, error)
 	GetLastChainHeight() (LastHeights, error)
+	GetTx(txId common.TxID) (common.Tx, error)
 }
 
 // Client implements Thorchain and uses http to get requested data from thorchain.
@@ -154,4 +156,15 @@ func (c *Client) ping() (string, error) {
 		return t, nil
 	}
 	return "", errors.New("time field is not available")
+}
+
+//get tx by TxID
+func (c *Client) GetTx(txId common.TxID) (common.Tx, error) {
+	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint,txId)
+	var observedTx ObservedTx
+	err := c.requestEndpoint(url, &observedTx)
+	if err != nil {
+		return common.Tx{}, err
+	}
+	return observedTx.Tx, nil
 }

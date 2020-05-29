@@ -56,7 +56,7 @@ func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, sto
 // StartScanner starts the scanner.
 func (uc *Usecase) StartScanner() error {
 	if uc.eh == nil {
-		eh, err := newEventHandler(uc.store)
+		eh, err := newEventHandler(uc.store, uc.thorchain)
 		if err != nil {
 			return errors.New("could not create event handler")
 		}

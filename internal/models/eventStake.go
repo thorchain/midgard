@@ -42,7 +42,7 @@ func (evt *EventStake) GetStakes() []EventStake {
 				Pool:       evt.Pool,
 				StakeUnits: stakeUnit,
 			}
-			stake.Event.InTx = common.NewTx(txID, evt.RuneAddress, common.UnknownAddress, coins, "")
+			stake.Event.InTx = common.NewTx(txID, evt.RuneAddress, "", coins, "")
 			stakes = append(stakes, stake)
 		}
 	}
