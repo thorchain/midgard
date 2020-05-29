@@ -3,9 +3,10 @@ package thorchain
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/thorchain/midgard/internal/common"
 	"io/ioutil"
 	"net/http"
+
+	"gitlab.com/thorchain/midgard/internal/common"
 
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
@@ -158,9 +159,9 @@ func (c *Client) ping() (string, error) {
 	return "", errors.New("time field is not available")
 }
 
-//get tx by TxID
+// get tx by TxID
 func (c *Client) GetTx(txId common.TxID) (common.Tx, error) {
-	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint,txId.String())
+	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint, txId.String())
 	var observedTx ObservedTx
 	err := c.requestEndpoint(url, &observedTx)
 	if err != nil {
