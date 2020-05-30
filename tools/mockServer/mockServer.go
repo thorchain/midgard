@@ -28,7 +28,6 @@ func main() {
 	router := mux.NewRouter()
 
 	// router.HandleFunc("/", welcome).Methods("GET")
-	router.HandleFunc("/genesis", genesisMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/{id}/{chain}", eventsMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/events/tx/{id}", eventsTxMockedEndpoint).Methods("GET")
 	router.HandleFunc("/thorchain/pool_addresses", poolAddressesMockedEndpoint).Methods("GET")
@@ -100,18 +99,6 @@ func eventsMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	writer.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(writer, string(content))
-}
-
-func genesisMockedEndpoint(writer http.ResponseWriter, request *http.Request) {
-	log.Println("genesisMockedEndpoint Hit!")
-
-	content, err := ioutil.ReadFile("./thorchain/genesis/genesis.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	writer.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(writer, string(content))
 }

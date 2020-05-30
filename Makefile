@@ -27,7 +27,7 @@ go.sum: go.mod
 	GO111MODULE=on go mod verify
 
 lint-pre:
-	@gofumpt -l $(shell find . -type f \( -iname "*.go" ! -iname "openapi-v1.0.0.go" \)) # for display
+	@gofumpt -w $(shell find . -type f \( -iname "*.go" ! -iname "openapi-v1.0.0.go" \)) # for display
 	@test -z "$(shell gofumpt -l $(shell find . -type f \( -iname "*.go" ! -iname "openapi-v1.0.0.go" \)))" # cause error
 	@go mod verify
 
