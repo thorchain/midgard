@@ -444,13 +444,13 @@ func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
 	c.Assert(len(events), Equals, 0)
 }
 
-func (s *TimeScaleSuite) TestEventPool(c *C) {
+func (s *TimeScaleSuite) TestGetEventPool(c *C) {
 	// Single stake
 	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
-	eventPool := s.Store.EventPool(eventId)
+	eventPool := s.Store.GetEventPool(eventId)
 
 	c.Assert(eventPool.Chain.String(), Equals, "BNB")
 	c.Assert(eventPool.Symbol.String(), Equals, "BNB")
@@ -461,7 +461,7 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
-	eventPool = s.Store.EventPool(eventId)
+	eventPool = s.Store.GetEventPool(eventId)
 
 	c.Assert(eventPool.Chain.String(), Equals, "BNB")
 	c.Assert(eventPool.Symbol.String(), Equals, "TOML-4BC")

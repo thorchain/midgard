@@ -366,7 +366,7 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	}
 	pool := evt.Fee.Asset()
 	if pool.IsEmpty() {
-		pool = eh.store.EventPool(uint64(evts[0].ID))
+		pool = eh.store.GetEventPool(uint64(evts[0].ID))
 		if err != nil {
 			return errors.Wrap(err, "failed to get fee pool")
 		}

@@ -47,5 +47,5 @@ type Store interface {
 	CreateFeeRecord(event models.Event, pool common.Asset) error
 	UpdateUnStakesRecord(record models.EventUnstake) error
 	UpdateSwapRecord(record models.EventSwap) error
-	EventPool(eventId uint64) common.Asset
+	GetEventPool(eventID uint64) common.Asset
 }

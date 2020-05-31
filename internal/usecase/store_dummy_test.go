@@ -16,7 +16,7 @@ var _ store.Store = (*StoreDummy)(nil)
 // StoreDummy is test purpose implementation of Store.
 type StoreDummy struct{}
 
-func (s *StoreDummy) EventPool(eventId uint64) common.Asset {
+func (s *StoreDummy) GetEventPool(eventId uint64) common.Asset {
 	return common.Asset{}
 }
 
