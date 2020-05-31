@@ -570,8 +570,19 @@ func (s *EventHandlerSuite) TestGasEvent(c *C) {
 
 type FeeTestStore struct {
 	*StoreDummy
-	record models.Event
-	pool   common.Asset
+	events  []models.Event
+	unstake models.EventUnstake
+	record  models.Event
+	pool    common.Asset
+}
+
+func (s *FeeTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
+	return s.events, nil
+}
+
+func (s *FeeTestStore) UpdateUnStakesRecord(record models.EventUnstake) error {
+	s.unstake = record
+	return nil
 }
 
 func (s *FeeTestStore) CreateFeeRecord(event models.Event, pool common.Asset) error {
@@ -581,7 +592,17 @@ func (s *FeeTestStore) CreateFeeRecord(event models.Event, pool common.Asset) er
 }
 
 func (s *EventHandlerSuite) TestFeeEvent(c *C) {
-	store := &FeeTestStore{}
+	blockTime := time.Now()
+	store := &FeeTestStore{
+		events: []models.Event{
+			{
+				Time:   blockTime,
+				ID:     1,
+				Height: 1,
+				Type:   "unstake",
+			},
+		},
+	}
 	eh, err := newEventHandler(store, s.dummyThorchain)
 	c.Assert(err, IsNil)
 	evt := thorchain.Event{
@@ -592,7 +613,6 @@ func (s *EventHandlerSuite) TestFeeEvent(c *C) {
 			"tx_id":       "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
 		},
 	}
-	blockTime := time.Now()
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.Event{
