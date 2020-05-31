@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -230,10 +231,23 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 type RefundTestStore struct {
 	*StoreDummy
 	record models.EventRefund
+	fee    common.Fee
 }
 
 func (s *RefundTestStore) CreateRefundRecord(record models.EventRefund) error {
 	s.record = record
+	return nil
+}
+
+func (s *RefundTestStore) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
+	if s.record.Event.InTx.ID.Equals(txID) {
+		return []models.Event{s.record.Event}, nil
+	}
+	return nil, errors.New("Event not found")
+}
+
+func (s *RefundTestStore) CreateFeeRecord(event models.Event, _ common.Asset) error {
+	s.fee = event.Fee
 	return nil
 }
 
@@ -284,6 +298,73 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
+}
+
+func (s *EventHandlerSuite) TestRefundFee(c *C) {
+	store := &RefundTestStore{}
+	eh, err := newEventHandler(store, s.dummyThorchain)
+	c.Assert(err, IsNil)
+	refundEvt := thorchain.Event{
+		Type: "refund",
+		Attributes: map[string]string{
+			"chain":  "BNB",
+			"code":   "105",
+			"coin":   "150000000 BNB.BNB, 50000000000 BNB.RUNE-A1F",
+			"from":   "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
+			"id":     "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
+			"memo":   "",
+			"reason": "memo can't be empty",
+			"to":     "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+		},
+	}
+	feeEvent := thorchain.Event{
+		Type: "fee",
+		Attributes: map[string]string{
+			"coins":       "300000 BNB.BNB",
+			"pool_deduct": "100000000",
+			"tx_id":       "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+		},
+	}
+	blockTime := time.Now()
+	eh.NewTx(1, []thorchain.Event{feeEvent, refundEvt})
+	eh.NewBlock(1, blockTime, nil, nil)
+	expectedEvent := models.EventRefund{
+		Code:   105,
+		Reason: "memo can't be empty",
+		Event: models.Event{
+			Time:   blockTime,
+			ID:     1,
+			Height: 1,
+			InTx: common.Tx{
+				ID:          "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
+				FromAddress: "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
+				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
+				Coins: common.Coins{
+					{
+						Asset:  common.BNBAsset,
+						Amount: 150000000,
+					},
+					{
+						Asset:  common.RuneA1FAsset,
+						Amount: 50000000000,
+					},
+				},
+				Chain: common.BNBChain,
+			},
+			Type: "refund",
+		},
+	}
+	expectedFee := common.Fee{
+		Coins: common.Coins{
+			common.Coin{
+				Asset:  common.BNBAsset,
+				Amount: 300000,
+			},
+		},
+		PoolDeduct: 100000000,
+	}
+	c.Assert(store.record, DeepEquals, expectedEvent)
+	c.Assert(store.fee, DeepEquals, expectedFee)
 }
 
 type SwapTestStore struct {
