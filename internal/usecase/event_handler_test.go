@@ -322,7 +322,7 @@ func (s *EventHandlerSuite) TestRefundFee(c *C) {
 		Attributes: map[string]string{
 			"coins":       "300000 BNB.BNB",
 			"pool_deduct": "100000000",
-			"tx_id":       "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			"tx_id":       "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
 		},
 	}
 	blockTime := time.Now()
