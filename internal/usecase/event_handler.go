@@ -97,11 +97,11 @@ func (eh *eventHandler) NewTx(height int64, events []thorchain.Event) {
 }
 
 func (eh *eventHandler) processBlock() {
-	// Shift outbound events to the end of list (First outbound of double swap comes before swap event)
+	// Shift outbound and fee events to the end of list (First outbound of double swap comes before swap event)
 	var outboundEvts []thorchain.Event
 	i := 0
 	for _, ev := range eh.events {
-		if ev.Type == outboundEventType {
+		if ev.Type == outboundEventType || ev.Type == feeEventType {
 			outboundEvts = append(outboundEvts, ev)
 		} else {
 			eh.events[i] = ev
