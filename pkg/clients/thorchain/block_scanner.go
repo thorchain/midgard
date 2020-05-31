@@ -1,6 +1,7 @@
 package thorchain
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,6 +24,7 @@ type BlockScanner struct {
 	running  bool
 	height   int64
 	logger   zerolog.Logger
+	pageSize int64
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
@@ -33,6 +35,7 @@ func NewBlockScanner(client Tendermint, callback Callback, interval time.Duratio
 		interval: interval,
 		stopChan: make(chan struct{}),
 		logger:   log.With().Str("module", "block_scanner").Logger(),
+		pageSize: 20,
 	}
 	return sc
 }
@@ -91,28 +94,40 @@ func (sc *BlockScanner) scan() {
 }
 
 func (sc *BlockScanner) processNextBlock() (bool, error) {
-	height := sc.GetHeight() + 1
-	info, err := sc.client.BlockchainInfo(height, height)
+	height := sc.GetHeight()
+	info, err := sc.client.BlockchainInfo(height, height+sc.pageSize)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	block, err := sc.client.BlockResults(&height)
-	if err != nil {
-		return false, errors.Wrap(err, "could not get results of block")
+	for i, j := 0, len(info.BlockMetas)-1; i < j; i, j = i+1, j-1 {
+		info.BlockMetas[i], info.BlockMetas[j] = info.BlockMetas[j], info.BlockMetas[i]
 	}
-
-	for _, tx := range block.TxsResults {
-		events := convertEvents(tx.Events)
-		sc.callback.NewTx(height, events)
+	if int64(len(info.BlockMetas)) != sc.pageSize {
+		fmt.Println("Oops")
 	}
+	for _, blockInfo := range info.BlockMetas {
+		if blockInfo.NumTxs > 0 {
+			block, err := sc.client.BlockResults(&blockInfo.Header.Height)
+			if err != nil {
+				return false, errors.Wrap(err, "could not get results of block")
+			}
 
-	blockTime := info.BlockMetas[0].Header.Time
-	beginEvents := convertEvents(block.BeginBlockEvents)
-	endEvents := convertEvents(block.EndBlockEvents)
-	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
+			for _, tx := range block.TxsResults {
+				events := convertEvents(tx.Events)
+				sc.callback.NewTx(blockInfo.Header.Height, events)
+			}
 
-	sc.incrementHeight()
-	synced := info.LastHeight == height
+			blockTime := info.BlockMetas[0].Header.Time
+			beginEvents := convertEvents(block.BeginBlockEvents)
+			endEvents := convertEvents(block.EndBlockEvents)
+			sc.callback.NewBlock(blockInfo.Header.Height, blockTime, beginEvents, endEvents)
+		}
+		sc.incrementHeight()
+	}
+	synced := len(info.BlockMetas) == 0 || info.BlockMetas[len(info.BlockMetas)-1].Header.Height == info.LastHeight
+	if synced {
+		fmt.Println("Synced!!!")
+	}
 	return synced, nil
 }
 
