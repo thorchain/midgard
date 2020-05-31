@@ -340,11 +340,6 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode fee")
 	}
-	// TODO get pool from event if fee asset is empty
-	err = eh.store.CreateFeeRecord(evt, evt.Fee.Asset())
-	if err != nil {
-		return errors.Wrap(err, "failed to save fee event")
-	}
 	inTxID, _ := common.NewTxID(event.Attributes["tx_id"])
 	evts, err := eh.store.GetEventsByTxID(inTxID)
 	if err != nil {
@@ -363,9 +358,22 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 				Event: evts[len(evts)-1],
 			})
 		}
+	} else {
+		return errors.New("failed to get fee event")
 	}
 	if err != nil {
 		return errors.Wrap(err, "failed to update event")
+	}
+	pool := evt.Fee.Asset()
+	if pool.IsEmpty() {
+		pool = eh.store.EventPool(uint64(evts[0].ID))
+		if err != nil {
+			return errors.Wrap(err, "failed to get fee pool")
+		}
+	}
+	err = eh.store.CreateFeeRecord(evt, pool)
+	if err != nil {
+		return errors.Wrap(err, "failed to save fee event")
 	}
 	return nil
 }

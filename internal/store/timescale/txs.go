@@ -100,7 +100,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 			return nil, errors.Wrap(err, "processEvents failed")
 		}
 		txData = append(txData, models.TxDetails{
-			Pool:    s.eventPool(eventId),
+			Pool:    s.EventPool(eventId),
 			Type:    eventType,
 			Status:  status,
 			In:      s.inTx(eventId),
@@ -116,7 +116,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 	return txData, nil
 }
 
-func (s *Client) eventPool(eventId uint64) common.Asset {
+func (s *Client) EventPool(eventId uint64) common.Asset {
 	stmnt := `
 		SELECT coins.chain, coins.symbol, coins.ticker
 			FROM coins

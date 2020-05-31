@@ -450,7 +450,7 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 	c.Assert(err, IsNil)
 
 	eventId := uint64(1)
-	eventPool := s.Store.eventPool(eventId)
+	eventPool := s.Store.EventPool(eventId)
 
 	c.Assert(eventPool.Chain.String(), Equals, "BNB")
 	c.Assert(eventPool.Symbol.String(), Equals, "BNB")
@@ -461,7 +461,7 @@ func (s *TimeScaleSuite) TestEventPool(c *C) {
 	c.Assert(err, IsNil)
 
 	eventId = uint64(2)
-	eventPool = s.Store.eventPool(eventId)
+	eventPool = s.Store.EventPool(eventId)
 
 	c.Assert(eventPool.Chain.String(), Equals, "BNB")
 	c.Assert(eventPool.Symbol.String(), Equals, "TOML-4BC")
