@@ -470,7 +470,9 @@ components:
         dateFirstStaked:
           type: integer
           format: int64
-
+        heightLastStaked:
+          type: integer
+          format: int64
     Stakers:
       type: string
       description: Staker address
