@@ -415,7 +415,8 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 		INNER JOIN events 
 		ON stakes.event_id = events.id 
 		WHERE  stakes.from_address = $1 
-		AND stakes.pool = $2 
+		AND stakes.pool = $2
+		AND stakes.units > 0 
 		`
 
 	lastStaked := sql.NullInt64{}
