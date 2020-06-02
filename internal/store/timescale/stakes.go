@@ -188,7 +188,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
-	dateLastStaked, err := s.dateLastStaked(address, asset)
+	heightLastStaked, err := s.heightLastStaked(address, asset)
 	if err != nil {
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
@@ -199,19 +199,19 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	}
 
 	details := models.StakerAddressAndAssetDetails{
-		Asset:           asset,
-		StakeUnits:      stakeUnits,
-		RuneStaked:      runeStaked,
-		AssetStaked:     assetStaked,
-		PoolStaked:      poolStaked,
-		RuneEarned:      runeEarned,
-		AssetEarned:     assetEarned,
-		PoolEarned:      poolEarned,
-		RuneROI:         stakersRuneROI,
-		AssetROI:        stakersAssetROI,
-		PoolROI:         stakersPoolROI,
-		DateFirstStaked: dateFirstStaked,
-		DateLastStaked:  dateLastStaked,
+		Asset:            asset,
+		StakeUnits:       stakeUnits,
+		RuneStaked:       runeStaked,
+		AssetStaked:      assetStaked,
+		PoolStaked:       poolStaked,
+		RuneEarned:       runeEarned,
+		AssetEarned:      assetEarned,
+		PoolEarned:       poolEarned,
+		RuneROI:          stakersRuneROI,
+		AssetROI:         stakersAssetROI,
+		PoolROI:          stakersPoolROI,
+		DateFirstStaked:  dateFirstStaked,
+		HeightLastStaked: heightLastStaked,
 	}
 	return details, nil
 }
@@ -408,17 +408,20 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 	return 0, nil
 }
 
-func (s *Client) dateLastStaked(address common.Address, asset common.Asset) (uint64, error) {
+func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT MAX(stakes.time) FROM stakes
-		WHERE from_address = $1
-		AND pool = $2
+		SELECT Max(events.height) 
+		FROM   stakes 
+		INNER JOIN events 
+		ON stakes.event_id = events.id 
+		WHERE  stakes.from_address = $1 
+		AND stakes.pool = $2 
 		`
 
 	lastStaked := sql.NullTime{}
 	err := s.db.Get(&lastStaked, query, address.String(), asset.String())
 	if err != nil {
-		return 0, errors.Wrap(err, "dateLastStaked failed")
+		return 0, errors.Wrap(err, "heightLastStaked failed")
 	}
 
 	if lastStaked.Valid {

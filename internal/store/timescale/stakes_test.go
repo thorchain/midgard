@@ -594,18 +594,18 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 			Symbol: "TOML-4BC",
 			Ticker: "TOML",
 		},
-		AssetEarned:     0,
-		AssetROI:        0,
-		AssetStaked:     10,
-		DateFirstStaked: uint64(stakeTomlEvent1.Time.Unix()),
-		DateLastStaked:  uint64(stakeTomlEvent1.Time.Unix()),
-		PoolEarned:      0,
-		PoolROI:         0,
-		PoolStaked:      200,
-		RuneEarned:      0,
-		RuneROI:         0,
-		RuneStaked:      100,
-		StakeUnits:      100,
+		AssetEarned:      0,
+		AssetROI:         0,
+		AssetStaked:      10,
+		DateFirstStaked:  uint64(stakeTomlEvent1.Time.Unix()),
+		HeightLastStaked: uint64(2),
+		PoolEarned:       0,
+		PoolROI:          0,
+		PoolStaked:       200,
+		RuneEarned:       0,
+		RuneROI:          0,
+		RuneStaked:       100,
+		StakeUnits:       100,
 	}
 	actualDetails, err := s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
@@ -619,18 +619,18 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 			Symbol: "TOML-4BC",
 			Ticker: "TOML",
 		},
-		AssetEarned:     0,
-		AssetROI:        0,
-		AssetStaked:     5,
-		DateFirstStaked: uint64(stakeTomlEvent1.Time.Unix()),
-		DateLastStaked:  uint64(stakeTomlEvent1.Time.Unix()),
-		PoolEarned:      0,
-		PoolROI:         0,
-		PoolStaked:      100,
-		RuneEarned:      0,
-		RuneROI:         0,
-		RuneStaked:      50,
-		StakeUnits:      50,
+		AssetEarned:      0,
+		AssetROI:         0,
+		AssetStaked:      5,
+		DateFirstStaked:  uint64(stakeTomlEvent1.Time.Unix()),
+		HeightLastStaked: uint64(2),
+		PoolEarned:       0,
+		PoolROI:          0,
+		PoolStaked:       100,
+		RuneEarned:       0,
+		RuneROI:          0,
+		RuneStaked:       50,
+		StakeUnits:       50,
 	}
 	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
@@ -644,13 +644,11 @@ func (s *TimeScaleSuite) TestDateStaked(c *C) {
 	c.Assert(err, IsNil)
 	assetDetail, err := s.Store.GetStakersAddressAndAssetDetails(stakeBnbEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	c.Assert(assetDetail.DateFirstStaked, Equals, uint64(stakeBnbEvent1.Time.Unix()))
-	c.Assert(assetDetail.DateLastStaked, Equals, uint64(stakeBnbEvent1.Time.Unix()))
+	c.Assert(assetDetail.HeightLastStaked, Equals, uint64(1))
 
 	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
 	assetDetail, err = s.Store.GetStakersAddressAndAssetDetails(stakeBnbEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	c.Assert(assetDetail.DateFirstStaked, Equals, uint64(stakeBnbEvent1.Time.Unix()))
-	c.Assert(assetDetail.DateLastStaked, Equals, uint64(stakeBnbEvent2.Time.Unix()))
+	c.Assert(assetDetail.HeightLastStaked, Equals, uint64(4))
 }

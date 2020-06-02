@@ -470,7 +470,7 @@ components:
         dateFirstStaked:
           type: integer
           format: int64
-        dateLastStaked:
+        heightLastStaked:
           type: integer
           format: int64
     Stakers:
