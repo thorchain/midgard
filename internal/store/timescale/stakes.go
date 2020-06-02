@@ -410,7 +410,7 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 
 func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT Max(events.height) 
+		SELECT MAX(events.height) 
 		FROM   stakes 
 		INNER JOIN events 
 		ON stakes.event_id = events.id 
@@ -418,14 +418,14 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 		AND stakes.pool = $2 
 		`
 
-	lastStaked := sql.NullTime{}
+	lastStaked := sql.NullInt64{}
 	err := s.db.Get(&lastStaked, query, address.String(), asset.String())
 	if err != nil {
 		return 0, errors.Wrap(err, "heightLastStaked failed")
 	}
 
 	if lastStaked.Valid {
-		return uint64(lastStaked.Time.Unix()), nil
+		return uint64(lastStaked.Int64), nil
 	}
 
 	return 0, nil

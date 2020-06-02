@@ -637,18 +637,18 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	c.Assert(actualDetails, DeepEquals, expectedDetails)
 }
 
-func (s *TimeScaleSuite) TestDateStaked(c *C) {
-	err := s.Store.CreateStakeRecord(stakeBnbEvent1)
+func (s *TimeScaleSuite) TestHeightLastStaked(c *C) {
+	err := s.Store.CreateStakeRecord(stakeTcanEvent3)
 	c.Assert(err, IsNil)
-	assest, err := common.NewAsset("BNB.BNB")
+	assest, err := common.NewAsset("BNB.TCAN-014")
 	c.Assert(err, IsNil)
 	assetDetail, err := s.Store.GetStakersAddressAndAssetDetails(stakeBnbEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	c.Assert(assetDetail.HeightLastStaked, Equals, uint64(1))
+	c.Assert(assetDetail.HeightLastStaked, Equals, uint64(5))
 
-	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	err = s.Store.CreateStakeRecord(stakeTcanEvent4)
 	c.Assert(err, IsNil)
 	assetDetail, err = s.Store.GetStakersAddressAndAssetDetails(stakeBnbEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
-	c.Assert(assetDetail.HeightLastStaked, Equals, uint64(4))
+	c.Assert(assetDetail.HeightLastStaked, Equals, uint64(6))
 }
