@@ -188,6 +188,11 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
+	dateLastStaked, err := s.dateLastStaked(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
 	stakersPoolROI, err := s.stakersPoolROI(address, asset)
 	if err != nil {
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
@@ -206,6 +211,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		AssetROI:        stakersAssetROI,
 		PoolROI:         stakersPoolROI,
 		DateFirstStaked: dateFirstStaked,
+		DateLastStaked:  dateLastStaked,
 	}
 	return details, nil
 }
@@ -397,6 +403,26 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 
 	if firstStaked.Valid {
 		return uint64(firstStaked.Time.Unix()), nil
+	}
+
+	return 0, nil
+}
+
+func (s *Client) dateLastStaked(address common.Address, asset common.Asset) (uint64, error) {
+	query := `
+		SELECT MAX(stakes.time) FROM stakes
+		WHERE from_address = $1
+		AND pool = $2
+		`
+
+	lastStaked := sql.NullTime{}
+	err := s.db.Get(&lastStaked, query, address.String(), asset.String())
+	if err != nil {
+		return 0, errors.Wrap(err, "dateLastStaked failed")
+	}
+
+	if lastStaked.Valid {
+		return uint64(lastStaked.Time.Unix()), nil
 	}
 
 	return 0, nil

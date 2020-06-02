@@ -22,4 +22,5 @@ type StakerAddressAndAssetDetails struct {
 	AssetROI        float64
 	PoolROI         float64
 	DateFirstStaked uint64
+	DateLastStaked  uint64
 }

@@ -598,6 +598,7 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 		AssetROI:        0,
 		AssetStaked:     10,
 		DateFirstStaked: uint64(stakeTomlEvent1.Time.Unix()),
+		DateLastStaked:  uint64(stakeTomlEvent1.Time.Unix()),
 		PoolEarned:      0,
 		PoolROI:         0,
 		PoolStaked:      200,
@@ -622,6 +623,7 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 		AssetROI:        0,
 		AssetStaked:     5,
 		DateFirstStaked: uint64(stakeTomlEvent1.Time.Unix()),
+		DateLastStaked:  uint64(stakeTomlEvent1.Time.Unix()),
 		PoolEarned:      0,
 		PoolROI:         0,
 		PoolStaked:      100,
@@ -633,4 +635,22 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
 	c.Assert(actualDetails, DeepEquals, expectedDetails)
+}
+
+func (s *TimeScaleSuite) TestDateStaked(c *C) {
+	err := s.Store.CreateStakeRecord(stakeBnbEvent1)
+	c.Assert(err, IsNil)
+	assest, err := common.NewAsset("BNB.BNB")
+	c.Assert(err, IsNil)
+	assetDetail, err := s.Store.GetStakersAddressAndAssetDetails(stakeBnbEvent1.InTx.FromAddress, assest)
+	c.Assert(err, IsNil)
+	c.Assert(assetDetail.DateFirstStaked, Equals, uint64(stakeBnbEvent1.Time.Unix()))
+	c.Assert(assetDetail.DateLastStaked, Equals, uint64(stakeBnbEvent1.Time.Unix()))
+
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
+	assetDetail, err = s.Store.GetStakersAddressAndAssetDetails(stakeBnbEvent1.InTx.FromAddress, assest)
+	c.Assert(err, IsNil)
+	c.Assert(assetDetail.DateFirstStaked, Equals, uint64(stakeBnbEvent1.Time.Unix()))
+	c.Assert(assetDetail.DateLastStaked, Equals, uint64(stakeBnbEvent2.Time.Unix()))
 }
