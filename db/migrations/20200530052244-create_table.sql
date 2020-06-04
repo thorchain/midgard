@@ -1,12 +1,6 @@
 
 -- +migrate Up
 
-CREATE TABLE genesis
-(
-    genesis_time TIMESTAMPTZ not null,
-    primary key (genesis_time)
-);
-
 CREATE TABLE events (
     time        TIMESTAMPTZ       not null,
     id bigint not null,
@@ -100,7 +94,6 @@ SELECT create_hypertable('pools', 'time');
 
 -- +migrate Down
 
-DROP TABLE genesis;
 DROP TABLE events;
 DROP TABLE stakes;
 DROP TABLE swaps;
