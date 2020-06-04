@@ -3,11 +3,12 @@ package thorchain
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/thorchain/midgard/internal/common"
-	"gitlab.com/thorchain/midgard/internal/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
