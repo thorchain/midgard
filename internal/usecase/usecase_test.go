@@ -984,9 +984,9 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 
 	stats, err := uc.GetNetworkInfo()
 	c.Assert(err, IsNil)
-	var poolShareFactor float64 = 2985.0 / 5985.0
-	var blockReward float64 = 1120 / float64(emissionCurve*blocksPerYear)
-	var bondReward float64 = (1 - poolShareFactor) * blockReward
+	var poolShareFactor uint64 = 2985 / 5985
+	var blockReward uint64 = 1120 / emissionCurve * blocksPerYear
+	var bondReward uint64 = (1 - poolShareFactor) * blockReward
 	stakeReward := blockReward - bondReward
 	c.Assert(stats, DeepEquals, &models.NetworkInfo{
 		BondMetrics: models.BondMetrics{
@@ -1009,9 +1009,9 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 		TotalReserve:     1120,
 		PoolShareFactor:  poolShareFactor,
 		BlockReward: models.BlockRewards{
-			BlockReward: blockReward,
-			BondReward:  bondReward,
-			StakeReward: stakeReward,
+			BlockReward: uint64(blockReward),
+			BondReward:  uint64(bondReward),
+			StakeReward: uint64(stakeReward),
 		},
 		BondingROI:              (bondReward * float64(blocksPerYear)) / 4485,
 		StakingROI:              (stakeReward * float64(blocksPerYear)) / 1500,
