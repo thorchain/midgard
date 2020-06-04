@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 )
 
@@ -9,6 +10,10 @@ var _ thorchain.Thorchain = (*ThorchainDummy)(nil)
 
 // ThorchainDummy is test purpose implementation of Thorchain.
 type ThorchainDummy struct{}
+
+func (t *ThorchainDummy) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
+	return models.Unknown, ErrNotImplemented
+}
 
 func (t *ThorchainDummy) GetTx(txId common.TxID) (common.Tx, error) {
 	return common.Tx{}, ErrNotImplemented

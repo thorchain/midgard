@@ -1893,7 +1893,7 @@ func (s *Client) poolStatus(asset common.Asset) (string, error) {
 	row := s.db.QueryRow(stmnt, asset.String())
 	if err := row.Scan(&poolStatus); err != nil {
 		if err == sql.ErrNoRows {
-			return models.Enabled.String(), nil
+			return "", nil
 		}
 		return "", errors.Wrap(err, "poolStatus failed")
 	}

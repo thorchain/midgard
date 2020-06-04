@@ -218,6 +218,24 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolData, error) 
 	if err != nil {
 		return nil, err
 	}
+	// Query THORChain if we haven't received any pool event for the specified pool
+	if data.Status == "" {
+		status, err := uc.thorchain.GetPoolStatus(asset)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get pool status")
+		}
+		data.Status = status.String()
+		err = uc.store.CreatePoolRecord(models.EventPool{
+			Pool:   asset,
+			Status: status,
+			Event: models.Event{
+				ID: -1,
+			},
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to update pool status")
+		}
+	}
 	return &data, nil
 }
 
