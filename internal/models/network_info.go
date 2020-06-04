@@ -17,7 +17,7 @@ type NetworkInfo struct {
 }
 
 type BlockRewards struct {
-	BlockReward float64
-	BondReward  float64
-	StakeReward float64
+	BlockReward uint64
+	BondReward  uint64
+	StakeReward uint64
 }

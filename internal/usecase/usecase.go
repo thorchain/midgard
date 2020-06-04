@@ -288,8 +288,8 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
-		BondingROI:              (rewards.BondReward * blocksPerYear) / float64(totalBond),
-		StakingROI:              (rewards.StakeReward * blocksPerYear) / float64(totalStaked),
+		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalBond),
+		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
@@ -389,9 +389,9 @@ func (uc *Usecase) calculateRewards(totalReserve uint64, poolShareFactor float64
 	bondReward := (1 - poolShareFactor) * blockReward
 	stakeReward := blockReward - bondReward
 	return models.BlockRewards{
-		BlockReward: blockReward,
-		BondReward:  bondReward,
-		StakeReward: stakeReward,
+		BlockReward: uint64(blockReward),
+		BondReward:  uint64(bondReward),
+		StakeReward: uint64(stakeReward),
 	}
 }
 
