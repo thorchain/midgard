@@ -7,10 +7,10 @@ import (
 type PoolStatus int
 
 const (
-	Enabled PoolStatus = iota
+	Unknown PoolStatus = iota
+	Enabled
 	Bootstrap
 	Suspended
-	Unknown
 )
 
 var PoolStatusStr = map[string]PoolStatus{
