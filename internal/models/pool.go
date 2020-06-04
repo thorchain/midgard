@@ -10,6 +10,7 @@ const (
 	Enabled PoolStatus = iota
 	Bootstrap
 	Suspended
+	Unknown
 )
 
 var PoolStatusStr = map[string]PoolStatus{

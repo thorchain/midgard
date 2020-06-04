@@ -3,10 +3,11 @@ package thorchain
 import (
 	"encoding/json"
 	"fmt"
+	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 	"io/ioutil"
 	"net/http"
-
-	"gitlab.com/thorchain/midgard/internal/common"
+	"strings"
 
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
@@ -23,6 +24,7 @@ type Thorchain interface {
 	GetAsgardVaults() ([]Vault, error)
 	GetLastChainHeight() (LastHeights, error)
 	GetTx(txId common.TxID) (common.Tx, error)
+	GetPoolStatus(pool common.Asset) (models.PoolStatus, error)
 }
 
 // Client implements Thorchain and uses http to get requested data from thorchain.
@@ -168,4 +170,20 @@ func (c *Client) GetTx(txId common.TxID) (common.Tx, error) {
 		return common.Tx{}, err
 	}
 	return observedTx.Tx, nil
+}
+
+// get pool status
+func (c *Client) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
+	url := fmt.Sprintf("%s/pool/%s", c.thorchainEndpoint, pool)
+	var result Pool
+	err := c.requestEndpoint(url, &result)
+	if err != nil {
+		return models.Unknown, errors.Wrap(err, "failed to get pool status")
+	}
+	for key, item := range models.PoolStatusStr {
+		if strings.EqualFold(key, result.Status) {
+			return item, nil
+		}
+	}
+	return models.Unknown, fmt.Errorf("failed to convert %s to pool status", result.Status)
 }

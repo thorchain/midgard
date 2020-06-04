@@ -32,6 +32,9 @@ func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
 }
 
 func (s *Client) CreateEventRecord(record models.Event) error {
+	if record.Height == 0 {
+		return nil
+	}
 	// Ingest basic event
 	err := s.createEventRecord(record)
 	if err != nil {
