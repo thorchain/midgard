@@ -338,9 +338,9 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		TotalReserve:     Uint64ToString(netInfo.TotalReserve),
 		PoolShareFactor:  Float64ToString(netInfo.PoolShareFactor),
 		BlockRewards: &BlockRewards{
-			BlockReward: Float64ToString(netInfo.BlockReward.BlockReward),
-			BondReward:  Float64ToString(netInfo.BlockReward.BondReward),
-			StakeReward: Float64ToString(netInfo.BlockReward.StakeReward),
+			BlockReward: Uint64ToString(netInfo.BlockReward.BlockReward),
+			BondReward:  Uint64ToString(netInfo.BlockReward.BondReward),
+			StakeReward: Uint64ToString(netInfo.BlockReward.StakeReward),
 		},
 		BondingROI:              Float64ToString(netInfo.BondingROI),
 		StakingROI:              Float64ToString(netInfo.StakingROI),
