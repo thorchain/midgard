@@ -245,6 +245,8 @@ components:
               scannerHeight:
                 type: integer
                 format: int64
+              catching_up:
+                type: boolean
 
     TxsResponse:
       description: Returns an array of transactions

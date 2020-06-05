@@ -53,7 +53,11 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	health := h.uc.GetHealth()
+	health, err := h.uc.GetHealth()
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetHealth")
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
 	return ctx.JSON(http.StatusOK, health)
 }
 
