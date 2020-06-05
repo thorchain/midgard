@@ -931,6 +931,87 @@ func (t *TestGetNetworkInfoThorchain) GetLastChainHeight() (thorchain.LastHeight
 	return t.lastHeight, t.err
 }
 
+func (s *UsecaseSuite) TestZeroStandbyNodes(c *C) {
+	client := &TestGetNetworkInfoThorchain{
+		nodes: []thorchain.NodeAccount{
+			{
+				Status: thorchain.Active,
+				Bond:   1000,
+			},
+			{
+				Status: thorchain.Active,
+				Bond:   1200,
+			},
+			{
+				Status: thorchain.Active,
+				Bond:   2000,
+			},
+		},
+		vaultData: thorchain.VaultData{
+			TotalReserve: 1120,
+		},
+		vaults: []thorchain.Vault{
+			{
+				Status:      thorchain.ActiveVault,
+				BlockHeight: 1,
+			},
+			{
+				Status:      thorchain.InactiveVault,
+				BlockHeight: 21,
+			},
+			{
+				Status:      thorchain.ActiveVault,
+				BlockHeight: 11,
+			},
+		},
+		lastHeight: thorchain.LastHeights{
+			Thorchain: 25,
+		},
+	}
+	store := &TestGetNetworkInfoStore{
+		totalDepth: 1500,
+	}
+	uc, err := NewUsecase(client, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	stats, err := uc.GetNetworkInfo()
+	c.Assert(err, IsNil)
+	var poolShareFactor float64 = 2700.0 / 5700.0
+	var blockReward uint64 = 1120 / (emissionCurve * blocksPerYear)
+	var bondReward uint64 = uint64((1 - poolShareFactor) * float64(blockReward))
+	stakeReward := blockReward - bondReward
+	c.Assert(stats, DeepEquals, &models.NetworkInfo{
+		BondMetrics: models.BondMetrics{
+			TotalActiveBond:    4200,
+			AverageActiveBond:  4200 / 3,
+			MedianActiveBond:   1200,
+			MinimumActiveBond:  1000,
+			MaximumActiveBond:  2000,
+			TotalStandbyBond:   0,
+			AverageStandbyBond: 0,
+			MedianStandbyBond:  0,
+			MinimumStandbyBond: 0,
+			MaximumStandbyBond: 0,
+		},
+		ActiveBonds:      []uint64{1000, 1200, 2000},
+		StandbyBonds:     []uint64{},
+		TotalStaked:      1500,
+		ActiveNodeCount:  3,
+		StandbyNodeCount: 0,
+		TotalReserve:     1120,
+		PoolShareFactor:  poolShareFactor,
+		BlockReward: models.BlockRewards{
+			BlockReward: uint64(blockReward),
+			BondReward:  uint64(bondReward),
+			StakeReward: uint64(stakeReward),
+		},
+		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4485,
+		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
+		NextChurnHeight:         51851,
+		PoolActivationCountdown: 49975 * blockTimeSeconds,
+	})
+}
+
 func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	client := &TestGetNetworkInfoThorchain{
 		nodes: []thorchain.NodeAccount{
