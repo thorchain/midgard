@@ -6,6 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/tendermint/tendermint/libs/math"
+
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,7 +26,6 @@ type BlockScanner struct {
 	running  bool
 	height   int64
 	logger   zerolog.Logger
-	pageSize int64
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
@@ -35,7 +36,6 @@ func NewBlockScanner(client Tendermint, callback Callback, interval time.Duratio
 		interval: interval,
 		stopChan: make(chan struct{}),
 		logger:   log.With().Str("module", "block_scanner").Logger(),
-		pageSize: 20,
 	}
 	return sc
 }
@@ -94,40 +94,44 @@ func (sc *BlockScanner) scan() {
 }
 
 func (sc *BlockScanner) processNextBlock() (bool, error) {
-	height := sc.GetHeight()
-	info, err := sc.client.BlockchainInfo(height, height+sc.pageSize)
+	height := sc.GetHeight() + 1
+	info, err := sc.client.BlockchainInfo(height, height)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	for i, j := 0, len(info.BlockMetas)-1; i < j; i, j = i+1, j-1 {
-		info.BlockMetas[i], info.BlockMetas[j] = info.BlockMetas[j], info.BlockMetas[i]
-	}
-	if int64(len(info.BlockMetas)) != sc.pageSize {
-		fmt.Println("Oops")
-	}
-	for _, blockInfo := range info.BlockMetas {
-		if blockInfo.NumTxs > 0 {
-			block, err := sc.client.BlockResults(&blockInfo.Header.Height)
-			if err != nil {
-				return false, errors.Wrap(err, "could not get results of block")
+	batchSize := math.MinInt(int(info.LastHeight-height+1), 50)
+	blocks := make([]*coretypes.ResultBlockResults, batchSize)
+	var wg sync.WaitGroup
+	for i := 0; i < batchSize; i++ {
+		wg.Add(1)
+		go func(height int64, offset int) {
+			defer wg.Done()
+			block, err := sc.client.BlockResults(&height)
+			if err == nil {
+				blocks[offset] = block
+			} else {
+				sc.logger.Err(err)
 			}
+		}(height+int64(i), i)
+	}
+	wg.Wait()
 
-			for _, tx := range block.TxsResults {
-				events := convertEvents(tx.Events)
-				sc.callback.NewTx(blockInfo.Header.Height, events)
-			}
-
-			blockTime := info.BlockMetas[0].Header.Time
-			beginEvents := convertEvents(block.BeginBlockEvents)
-			endEvents := convertEvents(block.EndBlockEvents)
-			sc.callback.NewBlock(blockInfo.Header.Height, blockTime, beginEvents, endEvents)
+	for i := 0; i < batchSize; i++ {
+		block := blocks[i]
+		if block == nil {
+			return false, fmt.Errorf("could not get block %d", int64(i)+height)
 		}
+		for _, tx := range block.TxsResults {
+			events := convertEvents(tx.Events)
+			sc.callback.NewTx(height, events)
+		}
+		blockTime := info.BlockMetas[0].Header.Time
+		beginEvents := convertEvents(block.BeginBlockEvents)
+		endEvents := convertEvents(block.EndBlockEvents)
+		sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
 		sc.incrementHeight()
 	}
-	synced := len(info.BlockMetas) == 0 || info.BlockMetas[len(info.BlockMetas)-1].Header.Height == info.LastHeight
-	if synced {
-		fmt.Println("Synced!!!")
-	}
+	synced := info.LastHeight == height
 	return synced, nil
 }
 
