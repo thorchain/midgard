@@ -322,9 +322,9 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics {
 	totalActiveBond := calculateUint64sTotal(activeBonds)
 	totalStandbyBond := calculateUint64sTotal(standbyBonds)
-	standbyAvg := float64(totalStandbyBond) / float64(len(standbyBonds))
-	if len(standbyBonds) == 0 {
-		standbyAvg = 0
+	standbyAvg := 0.0
+	if len(standbyBonds) > 0 {
+		standbyAvg = float64(totalStandbyBond) / float64(len(standbyBonds))
 	}
 	return models.BondMetrics{
 		TotalActiveBond:    totalActiveBond,
