@@ -84,6 +84,17 @@ func (s *TestGetHealthStore) Ping() error {
 	return errors.New("store is not healthy")
 }
 
+type TestGetHealthThorchain struct {
+	ThorchainDummy
+	lastHeight int64
+}
+
+func (t *TestGetHealthThorchain) GetLastChainHeight() (thorchain.LastHeights, error) {
+	return thorchain.LastHeights{
+		LastChainHeight: t.lastHeight,
+	}, nil
+}
+
 func (s *UsecaseSuite) TestGetHealth(c *C) {
 	now := time.Now()
 	tendermint := &TestGetHealthTendermint{
@@ -111,19 +122,32 @@ func (s *UsecaseSuite) TestGetHealth(c *C) {
 	store := &TestGetHealthStore{
 		isHealthy: true,
 	}
-	uc, err := NewUsecase(s.dummyThorchain, tendermint, store, s.config)
+	thorchain := &TestGetHealthThorchain{}
+	thorchain.lastHeight = 4
+	uc, err := NewUsecase(thorchain, tendermint, store, s.config)
 	c.Assert(err, IsNil)
 	err = uc.StartScanner()
 	c.Assert(err, IsNil)
 	time.Sleep(2 * time.Second)
 
-	health := uc.GetHealth()
+	health, err := uc.GetHealth()
+	c.Assert(err, IsNil)
 	c.Assert(health.Database, Equals, store.isHealthy)
 	c.Assert(health.ScannerHeight, Equals, int64(3))
+	c.Assert(health.CatchingUp, Equals, true)
 
-	// Unhealthy situation
+	// Not synced with THORNode
+	thorchain.lastHeight = 6
+	health, err = uc.GetHealth()
+	c.Assert(err, IsNil)
+	c.Assert(health.Database, Equals, store.isHealthy)
+	c.Assert(health.ScannerHeight, Equals, int64(3))
+	c.Assert(health.CatchingUp, Equals, false)
+
+	// Unhealthy DB situation
 	store.isHealthy = false
-	health = uc.GetHealth()
+	health, err = uc.GetHealth()
+	c.Assert(err, IsNil)
 	c.Assert(health.Database, Equals, store.isHealthy)
 
 	err = uc.StopScanner()
