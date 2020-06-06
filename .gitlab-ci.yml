@@ -95,7 +95,7 @@ build-gitlab-docker:
     - docker:19-dind
   before_script:
     - apk update
-    - apk add python py-pip make git jq curl
+    - apk add make git jq curl
     - make docker-gitlab-login
   script:
     - make docker-gitlab-build

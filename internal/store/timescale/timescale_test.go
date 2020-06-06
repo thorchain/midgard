@@ -30,9 +30,6 @@ const (
 )
 
 var (
-	genesis = models.Genesis{
-		GenesisTime: time.Now().AddDate(0, 0, -21),
-	}
 	stakeBnbEvent0 = models.EventStake{
 		Event: models.Event{
 			Time:   time.Now(),

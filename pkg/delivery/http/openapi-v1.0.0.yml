@@ -245,6 +245,8 @@ components:
               scannerHeight:
                 type: integer
                 format: int64
+              catching_up:
+                type: boolean
 
     TxsResponse:
       description: Returns an array of transactions
@@ -470,7 +472,9 @@ components:
         dateFirstStaked:
           type: integer
           format: int64
-
+        heightLastStaked:
+          type: integer
+          format: int64
     Stakers:
       type: string
       description: Staker address

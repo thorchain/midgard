@@ -75,11 +75,16 @@ func (uc *Usecase) StopScanner() error {
 }
 
 // GetHealth returns health status of Midgard's crucial units.
-func (uc *Usecase) GetHealth() *models.HealthStatus {
+func (uc *Usecase) GetHealth() (*models.HealthStatus, error) {
+	nodeHeight, err := uc.thorchain.GetLastChainHeight()
+	if err != nil {
+		return nil, err
+	}
 	return &models.HealthStatus{
 		Database:      uc.store.Ping() == nil,
 		ScannerHeight: uc.scanner.GetHeight(),
-	}
+		CatchingUp:    nodeHeight.LastChainHeight-uc.scanner.GetHeight() <= 2,
+	}, nil
 }
 
 // GetTxDetails returns details and count of txs selected with query.
@@ -219,6 +224,24 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolData, error) 
 	if err != nil {
 		return nil, err
 	}
+	// Query THORChain if we haven't received any pool event for the specified pool
+	if data.Status == "" {
+		status, err := uc.thorchain.GetPoolStatus(asset)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get pool status")
+		}
+		data.Status = status.String()
+		err = uc.store.CreatePoolRecord(models.EventPool{
+			Pool:   asset,
+			Status: status,
+			Event: models.Event{
+				ID: -1,
+			},
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to update pool status")
+		}
+	}
 	return &data, nil
 }
 
@@ -289,8 +312,8 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
-		BondingROI:              (rewards.BondReward * blocksPerYear) / float64(totalBond),
-		StakingROI:              (rewards.StakeReward * blocksPerYear) / float64(totalStaked),
+		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalBond),
+		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
@@ -300,6 +323,10 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics {
 	totalActiveBond := calculateUint64sTotal(activeBonds)
 	totalStandbyBond := calculateUint64sTotal(standbyBonds)
+	standbyAvg := 0.0
+	if len(standbyBonds) > 0 {
+		standbyAvg = float64(totalStandbyBond) / float64(len(standbyBonds))
+	}
 	return models.BondMetrics{
 		TotalActiveBond:    totalActiveBond,
 		AverageActiveBond:  float64(totalActiveBond) / float64(len(activeBonds)),
@@ -307,7 +334,7 @@ func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics
 		MinimumActiveBond:  calculateUint64sMin(activeBonds),
 		MaximumActiveBond:  calculateUint64sMax(activeBonds),
 		TotalStandbyBond:   totalStandbyBond,
-		AverageStandbyBond: float64(totalStandbyBond) / float64(len(standbyBonds)),
+		AverageStandbyBond: standbyAvg,
 		MedianStandbyBond:  calculateUint64sMedian(standbyBonds),
 		MinimumStandbyBond: calculateUint64sMin(standbyBonds),
 		MaximumStandbyBond: calculateUint64sMax(standbyBonds),
@@ -390,9 +417,9 @@ func (uc *Usecase) calculateRewards(totalReserve uint64, poolShareFactor float64
 	bondReward := (1 - poolShareFactor) * blockReward
 	stakeReward := blockReward - bondReward
 	return models.BlockRewards{
-		BlockReward: blockReward,
-		BondReward:  bondReward,
-		StakeReward: stakeReward,
+		BlockReward: uint64(blockReward),
+		BondReward:  uint64(bondReward),
+		StakeReward: uint64(stakeReward),
 	}
 }
 

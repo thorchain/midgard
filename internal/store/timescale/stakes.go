@@ -188,24 +188,30 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
+	heightLastStaked, err := s.heightLastStaked(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
 	stakersPoolROI, err := s.stakersPoolROI(address, asset)
 	if err != nil {
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
 	details := models.StakerAddressAndAssetDetails{
-		Asset:           asset,
-		StakeUnits:      stakeUnits,
-		RuneStaked:      runeStaked,
-		AssetStaked:     assetStaked,
-		PoolStaked:      poolStaked,
-		RuneEarned:      runeEarned,
-		AssetEarned:     assetEarned,
-		PoolEarned:      poolEarned,
-		RuneROI:         stakersRuneROI,
-		AssetROI:        stakersAssetROI,
-		PoolROI:         stakersPoolROI,
-		DateFirstStaked: dateFirstStaked,
+		Asset:            asset,
+		StakeUnits:       stakeUnits,
+		RuneStaked:       runeStaked,
+		AssetStaked:      assetStaked,
+		PoolStaked:       poolStaked,
+		RuneEarned:       runeEarned,
+		AssetEarned:      assetEarned,
+		PoolEarned:       poolEarned,
+		RuneROI:          stakersRuneROI,
+		AssetROI:         stakersAssetROI,
+		PoolROI:          stakersPoolROI,
+		DateFirstStaked:  dateFirstStaked,
+		HeightLastStaked: heightLastStaked,
 	}
 	return details, nil
 }
@@ -397,6 +403,30 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 
 	if firstStaked.Valid {
 		return uint64(firstStaked.Time.Unix()), nil
+	}
+
+	return 0, nil
+}
+
+func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (uint64, error) {
+	query := `
+		SELECT MAX(events.height) 
+		FROM   stakes 
+		INNER JOIN events 
+		ON stakes.event_id = events.id 
+		WHERE  stakes.from_address = $1 
+		AND stakes.pool = $2
+		AND stakes.units > 0 
+		`
+
+	lastStaked := sql.NullInt64{}
+	err := s.db.Get(&lastStaked, query, address.String(), asset.String())
+	if err != nil {
+		return 0, errors.Wrap(err, "heightLastStaked failed")
+	}
+
+	if lastStaked.Valid {
+		return uint64(lastStaked.Int64), nil
 	}
 
 	return 0, nil

@@ -53,7 +53,11 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	health := h.uc.GetHealth()
+	health, err := h.uc.GetHealth()
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetHealth")
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
 	return ctx.JSON(http.StatusOK, health)
 }
 
@@ -287,18 +291,19 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		}
 
 		response[i] = StakersAssetData{
-			Asset:           ConvertAssetForAPI(details.Asset),
-			AssetEarned:     Int64ToString(details.AssetEarned),
-			AssetROI:        Float64ToString(details.AssetROI),
-			AssetStaked:     Int64ToString(details.AssetStaked),
-			DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
-			PoolEarned:      Int64ToString(details.PoolEarned),
-			PoolROI:         Float64ToString(details.PoolROI),
-			PoolStaked:      Int64ToString(details.PoolStaked),
-			RuneEarned:      Int64ToString(details.RuneEarned),
-			RuneROI:         Float64ToString(details.RuneROI),
-			RuneStaked:      Int64ToString(details.RuneStaked),
-			StakeUnits:      Uint64ToString(details.StakeUnits),
+			Asset:            ConvertAssetForAPI(details.Asset),
+			AssetEarned:      Int64ToString(details.AssetEarned),
+			AssetROI:         Float64ToString(details.AssetROI),
+			AssetStaked:      Int64ToString(details.AssetStaked),
+			DateFirstStaked:  pointy.Int64(int64(details.DateFirstStaked)),
+			PoolEarned:       Int64ToString(details.PoolEarned),
+			PoolROI:          Float64ToString(details.PoolROI),
+			PoolStaked:       Int64ToString(details.PoolStaked),
+			RuneEarned:       Int64ToString(details.RuneEarned),
+			RuneROI:          Float64ToString(details.RuneROI),
+			RuneStaked:       Int64ToString(details.RuneStaked),
+			StakeUnits:       Uint64ToString(details.StakeUnits),
+			HeightLastStaked: pointy.Int64(int64(details.HeightLastStaked)),
 		}
 	}
 
@@ -338,9 +343,9 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		TotalReserve:     Uint64ToString(netInfo.TotalReserve),
 		PoolShareFactor:  Float64ToString(netInfo.PoolShareFactor),
 		BlockRewards: &BlockRewards{
-			BlockReward: Float64ToString(netInfo.BlockReward.BlockReward),
-			BondReward:  Float64ToString(netInfo.BlockReward.BondReward),
-			StakeReward: Float64ToString(netInfo.BlockReward.StakeReward),
+			BlockReward: Uint64ToString(netInfo.BlockReward.BlockReward),
+			BondReward:  Uint64ToString(netInfo.BlockReward.BondReward),
+			StakeReward: Uint64ToString(netInfo.BlockReward.StakeReward),
 		},
 		BondingROI:              Float64ToString(netInfo.BondingROI),
 		StakingROI:              Float64ToString(netInfo.StakingROI),
