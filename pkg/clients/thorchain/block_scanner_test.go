@@ -126,7 +126,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 		},
 	}
 	callback := &TestCallback{}
-	bc := NewBlockScanner(client, callback, time.Second*3, 1)
+	bc := NewBlockScanner(client, callback, time.Second*3, 2)
 
 	err := bc.Start()
 	c.Assert(err, IsNil)
@@ -166,7 +166,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 		},
 		{
 			height:    2,
-			blockTime: now.Add(time.Second * 3),
+			blockTime: now,
 			begin:     []Event{},
 			end: []Event{
 				{
