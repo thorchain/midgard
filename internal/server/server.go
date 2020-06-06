@@ -82,7 +82,8 @@ func New(cfgFile *string) (*Server, error) {
 	}
 
 	usecaseConf := &usecase.Config{
-		ScanInterval: cfg.ThorChain.NoEventsBackoff,
+		ScanInterval:     cfg.ThorChain.NoEventsBackoff,
+		ScannerBatchSize: cfg.ThorChain.BlockScannerBatchSize,
 	}
 	uc, err := usecase.NewUsecase(thorchainClient, tendermintClient, timescale, usecaseConf)
 	if err != nil {

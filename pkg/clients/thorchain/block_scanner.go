@@ -6,8 +6,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/tendermint/tendermint/libs/math"
-
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -18,24 +16,26 @@ import (
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
 // with websocket or directly by requesting http endpoint.
 type BlockScanner struct {
-	client   Tendermint
-	callback Callback
-	interval time.Duration
-	stopChan chan struct{}
-	wg       sync.WaitGroup
-	running  bool
-	height   int64
-	logger   zerolog.Logger
+	client    Tendermint
+	callback  Callback
+	interval  time.Duration
+	batchSize int
+	stopChan  chan struct{}
+	wg        sync.WaitGroup
+	running   bool
+	height    int64
+	logger    zerolog.Logger
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
-func NewBlockScanner(client Tendermint, callback Callback, interval time.Duration) *BlockScanner {
+func NewBlockScanner(client Tendermint, callback Callback, interval time.Duration, batchSize int) *BlockScanner {
 	sc := &BlockScanner{
-		client:   client,
-		callback: callback,
-		interval: interval,
-		stopChan: make(chan struct{}),
-		logger:   log.With().Str("module", "block_scanner").Logger(),
+		client:    client,
+		callback:  callback,
+		interval:  interval,
+		batchSize: batchSize,
+		stopChan:  make(chan struct{}),
+		logger:    log.With().Str("module", "block_scanner").Logger(),
 	}
 	return sc
 }
@@ -99,7 +99,10 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	batchSize := math.MinInt(int(info.LastHeight-height+1), 50)
+	batchSize := sc.batchSize
+	if batchSize < int(info.LastHeight-height+1) {
+		batchSize = int(info.LastHeight - height + 1)
+	}
 	blocks := make([]*coretypes.ResultBlockResults, batchSize)
 	var wg sync.WaitGroup
 	for i := 0; i < batchSize; i++ {

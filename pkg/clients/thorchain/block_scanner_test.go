@@ -85,7 +85,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 				},
 			},
 			{
-				Height: 1,
+				Height: 2,
 				TxsResults: []*abcitypes.ResponseDeliverTx{
 					{
 						Events: []abcitypes.Event{
@@ -126,7 +126,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 		},
 	}
 	callback := &TestCallback{}
-	bc := NewBlockScanner(client, callback, time.Second*3)
+	bc := NewBlockScanner(client, callback, time.Second*3, 1)
 
 	err := bc.Start()
 	c.Assert(err, IsNil)
@@ -213,7 +213,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 func (s *BlockScannerSuite) TestScanningRestart(c *C) {
 	client := &TestTendermint{}
 	calback := &TestCallback{}
-	bc := NewBlockScanner(client, calback, time.Second*3)
+	bc := NewBlockScanner(client, calback, time.Second*3, 2)
 
 	// Scanner should be able to restart.
 	err := bc.Start()
@@ -235,7 +235,7 @@ func (s *BlockScannerSuite) TestScanningFaultTolerant(c *C) {
 		err: errors.New("failed to fetch data"),
 	}
 	calback := &TestCallback{}
-	bc := NewBlockScanner(client, calback, time.Second)
+	bc := NewBlockScanner(client, calback, time.Second, 2)
 
 	err := bc.Start()
 	c.Assert(err, IsNil)

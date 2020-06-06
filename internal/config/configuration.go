@@ -41,6 +41,7 @@ type ThorChainConfiguration struct {
 	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
 	CacheTTL                    time.Duration `json:"cache_ttl" mapstructure:"cache_ttl"`
 	CacheCleanup                time.Duration `json:"cache_cleanup" mapstructure:"cache_cleanup"`
+	BlockScannerBatchSize       int           `json:"block_scanner_batch_size" mapstructure:"block_scanner_batch_size"`
 }
 
 func applyDefaultConfig() {
@@ -51,6 +52,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.cache_ttl", "5s")
 	viper.SetDefault("thorchain.cache_cleanup", "10s")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
+	viper.SetDefault("thorchain.block_scanner_batch_size", 100)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {

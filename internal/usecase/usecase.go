@@ -18,7 +18,8 @@ const (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScanInterval time.Duration
+	ScanInterval     time.Duration
+	ScannerBatchSize int
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
@@ -63,7 +64,7 @@ func (uc *Usecase) StartScanner() error {
 		uc.eh = eh
 	}
 	if uc.scanner == nil {
-		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.eh, uc.conf.ScanInterval)
+		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.eh, uc.conf.ScanInterval, uc.conf.ScannerBatchSize)
 	}
 	return uc.scanner.Start()
 }
