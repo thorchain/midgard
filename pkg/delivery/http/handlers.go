@@ -291,18 +291,19 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		}
 
 		response[i] = StakersAssetData{
-			Asset:           ConvertAssetForAPI(details.Asset),
-			AssetEarned:     Int64ToString(details.AssetEarned),
-			AssetROI:        Float64ToString(details.AssetROI),
-			AssetStaked:     Int64ToString(details.AssetStaked),
-			DateFirstStaked: pointy.Int64(int64(details.DateFirstStaked)),
-			PoolEarned:      Int64ToString(details.PoolEarned),
-			PoolROI:         Float64ToString(details.PoolROI),
-			PoolStaked:      Int64ToString(details.PoolStaked),
-			RuneEarned:      Int64ToString(details.RuneEarned),
-			RuneROI:         Float64ToString(details.RuneROI),
-			RuneStaked:      Int64ToString(details.RuneStaked),
-			StakeUnits:      Uint64ToString(details.StakeUnits),
+			Asset:            ConvertAssetForAPI(details.Asset),
+			AssetEarned:      Int64ToString(details.AssetEarned),
+			AssetROI:         Float64ToString(details.AssetROI),
+			AssetStaked:      Int64ToString(details.AssetStaked),
+			DateFirstStaked:  pointy.Int64(int64(details.DateFirstStaked)),
+			PoolEarned:       Int64ToString(details.PoolEarned),
+			PoolROI:          Float64ToString(details.PoolROI),
+			PoolStaked:       Int64ToString(details.PoolStaked),
+			RuneEarned:       Int64ToString(details.RuneEarned),
+			RuneROI:          Float64ToString(details.RuneROI),
+			RuneStaked:       Int64ToString(details.RuneStaked),
+			StakeUnits:       Uint64ToString(details.StakeUnits),
+			HeightLastStaked: pointy.Int64(int64(details.HeightLastStaked)),
 		}
 	}
 
