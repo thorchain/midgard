@@ -123,15 +123,15 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 		}
 		for _, tx := range block.TxsResults {
 			events := convertEvents(tx.Events)
-			sc.callback.NewTx(height, events)
+			sc.callback.NewTx(block.Height, events)
 		}
 		blockTime := info.BlockMetas[0].Header.Time
 		beginEvents := convertEvents(block.BeginBlockEvents)
 		endEvents := convertEvents(block.EndBlockEvents)
-		sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
+		sc.callback.NewBlock(block.Height, blockTime, beginEvents, endEvents)
 		sc.incrementHeight()
 	}
-	synced := info.LastHeight == height
+	synced := info.LastHeight == sc.GetHeight()
 	return synced, nil
 }
 
