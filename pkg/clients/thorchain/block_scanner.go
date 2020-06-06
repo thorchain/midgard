@@ -23,7 +23,7 @@ type BlockScanner struct {
 	running  bool
 	height   int64
 	logger   zerolog.Logger
-	Synced   bool
+	synced   bool
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
@@ -34,7 +34,7 @@ func NewBlockScanner(client Tendermint, callback Callback, interval time.Duratio
 		interval: interval,
 		stopChan: make(chan struct{}),
 		logger:   log.With().Str("module", "block_scanner").Logger(),
-		Synced:   false,
+		synced:   false,
 	}
 	return sc
 }
@@ -52,6 +52,11 @@ func (sc *BlockScanner) SetHeight(height int64) error {
 // GetHeight returns the latest processed block height.
 func (sc *BlockScanner) GetHeight() int64 {
 	return atomic.LoadInt64(&sc.height)
+}
+
+// IsSynced returns true if latest processed block height is equal to latest block on the chain.
+func (sc *BlockScanner) IsSynced() bool {
+	return sc.synced
 }
 
 // Start will start the scanner.
@@ -75,11 +80,11 @@ func (sc *BlockScanner) scan() {
 			return
 		default:
 			var err error
-			sc.Synced, err = sc.processNextBlock()
+			sc.synced, err = sc.processNextBlock()
 			if err != nil {
 				sc.logger.Error().Int64("height", sc.GetHeight()).Err(err).Msg("failed to process the next block")
 			} else {
-				if !sc.Synced {
+				if !sc.synced {
 					continue
 				}
 			}

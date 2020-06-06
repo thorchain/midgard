@@ -78,7 +78,7 @@ func (uc *Usecase) GetHealth() *models.HealthStatus {
 	return &models.HealthStatus{
 		Database:      uc.store.Ping() == nil,
 		ScannerHeight: uc.scanner.GetHeight(),
-		CatchingUp:    uc.scanner.Synced,
+		CatchingUp:    uc.scanner.IsSynced(),
 	}
 }
 
