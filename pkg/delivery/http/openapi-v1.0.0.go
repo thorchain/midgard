@@ -8,12 +8,11 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"net/http"
+	"strings"
 )
 
 // AssetDetail defines model for AssetDetail.
@@ -32,16 +31,36 @@ type BlockRewards struct {
 
 // BondMetrics defines model for BondMetrics.
 type BondMetrics struct {
-	AverageActiveBond  *string `json:"averageActiveBond,omitempty"`
+
+	// Average bond of active nodes
+	AverageActiveBond *string `json:"averageActiveBond,omitempty"`
+
+	// Average bond of standby nodes
 	AverageStandbyBond *string `json:"averageStandbyBond,omitempty"`
-	MaximumActiveBond  *string `json:"maximumActiveBond,omitempty"`
+
+	// Maxinum bond of active nodes
+	MaximumActiveBond *string `json:"maximumActiveBond,omitempty"`
+
+	// Maximum bond of standby nodes
 	MaximumStandbyBond *string `json:"maximumStandbyBond,omitempty"`
-	MedianActiveBond   *string `json:"medianActiveBond,omitempty"`
-	MedianStandbyBond  *string `json:"medianStandbyBond,omitempty"`
-	MinimumActiveBond  *string `json:"minimumActiveBond,omitempty"`
+
+	// Median bond of active nodes
+	MedianActiveBond *string `json:"medianActiveBond,omitempty"`
+
+	// Median bond of standby nodes
+	MedianStandbyBond *string `json:"medianStandbyBond,omitempty"`
+
+	// Minumum bond of active nodes
+	MinimumActiveBond *string `json:"minimumActiveBond,omitempty"`
+
+	// Minumum bond of standby nodes
 	MinimumStandbyBond *string `json:"minimumStandbyBond,omitempty"`
-	TotalActiveBond    *string `json:"totalActiveBond,omitempty"`
-	TotalStandbyBond   *string `json:"totalStandbyBond,omitempty"`
+
+	// Total bond of active nodes
+	TotalActiveBond *string `json:"totalActiveBond,omitempty"`
+
+	// Total bond of standby nodes
+	TotalStandbyBond *string `json:"totalStandbyBond,omitempty"`
 }
 
 // Error defines model for Error.
@@ -51,67 +70,157 @@ type Error struct {
 
 // NetworkInfo defines model for NetworkInfo.
 type NetworkInfo struct {
-	ActiveBonds             *[]string     `json:"activeBonds,omitempty"`
-	ActiveNodeCount         *int          `json:"activeNodeCount,omitempty"`
-	BlockRewards            *BlockRewards `json:"blockRewards,omitempty"`
-	BondMetrics             *BondMetrics  `json:"bondMetrics,omitempty"`
-	BondingROI              *string       `json:"bondingROI,omitempty"`
-	NextChurnHeight         *string       `json:"nextChurnHeight,omitempty"`
-	PoolActivationCountdown *int64        `json:"poolActivationCountdown,omitempty"`
-	PoolShareFactor         *string       `json:"poolShareFactor,omitempty"`
-	StakingROI              *string       `json:"stakingROI,omitempty"`
-	StandbyBonds            *[]string     `json:"standbyBonds,omitempty"`
-	StandbyNodeCount        *int          `json:"standbyNodeCount,omitempty"`
-	TotalReserve            *string       `json:"totalReserve,omitempty"`
-	TotalStaked             *string       `json:"totalStaked,omitempty"`
+
+	// Array of Active Bonds
+	ActiveBonds *[]string `json:"activeBonds,omitempty"`
+
+	// Number of Active Nodes
+	ActiveNodeCount *int          `json:"activeNodeCount,omitempty"`
+	BlockRewards    *BlockRewards `json:"blockRewards,omitempty"`
+	BondMetrics     *BondMetrics  `json:"bondMetrics,omitempty"`
+	BondingROI      *string       `json:"bondingROI,omitempty"`
+	NextChurnHeight *string       `json:"nextChurnHeight,omitempty"`
+
+	// The remaining time of pool activation (in seconds)
+	PoolActivationCountdown *int64  `json:"poolActivationCountdown,omitempty"`
+	PoolShareFactor         *string `json:"poolShareFactor,omitempty"`
+	StakingROI              *string `json:"stakingROI,omitempty"`
+
+	// Array of Standby Bonds
+	StandbyBonds *[]string `json:"standbyBonds,omitempty"`
+
+	// Number of Standby Nodes
+	StandbyNodeCount *int `json:"standbyNodeCount,omitempty"`
+
+	// Total left in Reserve
+	TotalReserve *string `json:"totalReserve,omitempty"`
+
+	// Total Rune Staked in Pools
+	TotalStaked *string `json:"totalStaked,omitempty"`
 }
 
 // NodeKey defines model for NodeKey.
 type NodeKey struct {
-	Ed25519   *string `json:"ed25519,omitempty"`
+
+	// ed25519 public key
+	Ed25519 *string `json:"ed25519,omitempty"`
+
+	// secp256k1 public key
 	Secp256k1 *string `json:"secp256k1,omitempty"`
 }
 
 // PoolDetail defines model for PoolDetail.
 type PoolDetail struct {
-	Asset            *Asset  `json:"asset,omitempty"`
-	AssetDepth       *string `json:"assetDepth,omitempty"`
-	AssetROI         *string `json:"assetROI,omitempty"`
+	Asset *Asset `json:"asset,omitempty"`
+
+	// Total current Asset balance
+	AssetDepth *string `json:"assetDepth,omitempty"`
+
+	// Asset return on investment
+	AssetROI *string `json:"assetROI,omitempty"`
+
+	// Total Asset staked
 	AssetStakedTotal *string `json:"assetStakedTotal,omitempty"`
-	BuyAssetCount    *string `json:"buyAssetCount,omitempty"`
-	BuyFeeAverage    *string `json:"buyFeeAverage,omitempty"`
-	BuyFeesTotal     *string `json:"buyFeesTotal,omitempty"`
-	BuySlipAverage   *string `json:"buySlipAverage,omitempty"`
-	BuyTxAverage     *string `json:"buyTxAverage,omitempty"`
-	BuyVolume        *string `json:"buyVolume,omitempty"`
-	PoolDepth        *string `json:"poolDepth,omitempty"`
-	PoolFeeAverage   *string `json:"poolFeeAverage,omitempty"`
-	PoolFeesTotal    *string `json:"poolFeesTotal,omitempty"`
-	PoolROI          *string `json:"poolROI,omitempty"`
-	PoolROI12        *string `json:"poolROI12,omitempty"`
-	PoolSlipAverage  *string `json:"poolSlipAverage,omitempty"`
-	PoolStakedTotal  *string `json:"poolStakedTotal,omitempty"`
-	PoolTxAverage    *string `json:"poolTxAverage,omitempty"`
-	PoolUnits        *string `json:"poolUnits,omitempty"`
-	PoolVolume       *string `json:"poolVolume,omitempty"`
-	PoolVolume24hr   *string `json:"poolVolume24hr,omitempty"`
-	Price            *string `json:"price,omitempty"`
-	RuneDepth        *string `json:"runeDepth,omitempty"`
-	RuneROI          *string `json:"runeROI,omitempty"`
-	RuneStakedTotal  *string `json:"runeStakedTotal,omitempty"`
-	SellAssetCount   *string `json:"sellAssetCount,omitempty"`
-	SellFeeAverage   *string `json:"sellFeeAverage,omitempty"`
-	SellFeesTotal    *string `json:"sellFeesTotal,omitempty"`
-	SellSlipAverage  *string `json:"sellSlipAverage,omitempty"`
-	SellTxAverage    *string `json:"sellTxAverage,omitempty"`
-	SellVolume       *string `json:"sellVolume,omitempty"`
-	StakeTxCount     *string `json:"stakeTxCount,omitempty"`
-	StakersCount     *string `json:"stakersCount,omitempty"`
-	StakingTxCount   *string `json:"stakingTxCount,omitempty"`
-	Status           *string `json:"status,omitempty"`
-	SwappersCount    *string `json:"swappersCount,omitempty"`
-	SwappingTxCount  *string `json:"swappingTxCount,omitempty"`
-	WithdrawTxCount  *string `json:"withdrawTxCount,omitempty"`
+
+	// Number of RUNE->ASSET transactions
+	BuyAssetCount *string `json:"buyAssetCount,omitempty"`
+
+	// Average sell Asset fee size for RUNE->ASSET (in ASSET)
+	BuyFeeAverage *string `json:"buyFeeAverage,omitempty"`
+
+	// Total fees (in Asset)
+	BuyFeesTotal *string `json:"buyFeesTotal,omitempty"`
+
+	// Average trade slip for RUNE->ASSET in %
+	BuySlipAverage *string `json:"buySlipAverage,omitempty"`
+
+	// Average Asset buy transaction size for (RUNE->ASSET) (in ASSET)
+	BuyTxAverage *string `json:"buyTxAverage,omitempty"`
+
+	// Total Asset buy volume (RUNE->ASSET) (in Asset)
+	BuyVolume *string `json:"buyVolume,omitempty"`
+
+	// Total depth of both sides (in RUNE)
+	PoolDepth *string `json:"poolDepth,omitempty"`
+
+	// Average pool fee
+	PoolFeeAverage *string `json:"poolFeeAverage,omitempty"`
+
+	// Total fees
+	PoolFeesTotal *string `json:"poolFeesTotal,omitempty"`
+
+	// Pool ROI (average of RUNE and Asset ROI)
+	PoolROI *string `json:"poolROI,omitempty"`
+
+	// Pool ROI over 12 months
+	PoolROI12 *string `json:"poolROI12,omitempty"`
+
+	// Average pool slip
+	PoolSlipAverage *string `json:"poolSlipAverage,omitempty"`
+
+	// Rune value staked Total
+	PoolStakedTotal *string `json:"poolStakedTotal,omitempty"`
+
+	// Average pool transaction
+	PoolTxAverage *string `json:"poolTxAverage,omitempty"`
+
+	// Total pool units outstanding
+	PoolUnits *string `json:"poolUnits,omitempty"`
+
+	// Two-way volume of all-time (in RUNE)
+	PoolVolume *string `json:"poolVolume,omitempty"`
+
+	// Two-way volume in 24hrs (in RUNE)
+	PoolVolume24hr *string `json:"poolVolume24hr,omitempty"`
+
+	// Price of Asset (in RUNE).
+	Price *string `json:"price,omitempty"`
+
+	// Total current Rune balance
+	RuneDepth *string `json:"runeDepth,omitempty"`
+
+	// RUNE return on investment
+	RuneROI *string `json:"runeROI,omitempty"`
+
+	// Total RUNE staked
+	RuneStakedTotal *string `json:"runeStakedTotal,omitempty"`
+
+	// Number of ASSET->RUNE transactions
+	SellAssetCount *string `json:"sellAssetCount,omitempty"`
+
+	// Average buy Asset fee size for ASSET->RUNE (in RUNE)
+	SellFeeAverage *string `json:"sellFeeAverage,omitempty"`
+
+	// Total fees (in RUNE)
+	SellFeesTotal *string `json:"sellFeesTotal,omitempty"`
+
+	// Average trade slip for ASSET->RUNE in %
+	SellSlipAverage *string `json:"sellSlipAverage,omitempty"`
+
+	// Average Asset sell transaction size (ASSET>RUNE) (in RUNE)
+	SellTxAverage *string `json:"sellTxAverage,omitempty"`
+
+	// Total Asset sell volume (ASSET>RUNE) (in RUNE).
+	SellVolume *string `json:"sellVolume,omitempty"`
+
+	// Number of stake transactions
+	StakeTxCount *string `json:"stakeTxCount,omitempty"`
+
+	// Number of unique stakers
+	StakersCount *string `json:"stakersCount,omitempty"`
+
+	// Number of stake & withdraw transactions
+	StakingTxCount *string `json:"stakingTxCount,omitempty"`
+	Status         *string `json:"status,omitempty"`
+
+	// Number of unique swappers interacting with pool
+	SwappersCount *string `json:"swappersCount,omitempty"`
+
+	// Number of swapping transactions in the pool (buys and sells)
+	SwappingTxCount *string `json:"swappingTxCount,omitempty"`
+
+	// Number of withdraw transactions
+	WithdrawTxCount *string `json:"withdrawTxCount,omitempty"`
 }
 
 // Stakers defines model for Stakers.
@@ -119,46 +228,105 @@ type Stakers string
 
 // StakersAddressData defines model for StakersAddressData.
 type StakersAddressData struct {
-	PoolsArray  *[]Asset `json:"poolsArray,omitempty"`
-	TotalEarned *string  `json:"totalEarned,omitempty"`
-	TotalROI    *string  `json:"totalROI,omitempty"`
-	TotalStaked *string  `json:"totalStaked,omitempty"`
+	PoolsArray *[]Asset `json:"poolsArray,omitempty"`
+
+	// Total value of earnings (in RUNE) across all pools.
+	TotalEarned *string `json:"totalEarned,omitempty"`
+
+	// Average of all pool ROIs.
+	TotalROI *string `json:"totalROI,omitempty"`
+
+	// Total staked (in RUNE) across all pools.
+	TotalStaked *string `json:"totalStaked,omitempty"`
 }
 
 // StakersAssetData defines model for StakersAssetData.
 type StakersAssetData struct {
-	Asset           *Asset  `json:"asset,omitempty"`
-	AssetEarned     *string `json:"assetEarned,omitempty"`
-	AssetROI        *string `json:"assetROI,omitempty"`
-	AssetStaked     *string `json:"assetStaked,omitempty"`
-	DateFirstStaked *int64  `json:"dateFirstStaked,omitempty"`
-	PoolEarned      *string `json:"poolEarned,omitempty"`
-	PoolROI         *string `json:"poolROI,omitempty"`
-	PoolStaked      *string `json:"poolStaked,omitempty"`
-	RuneEarned      *string `json:"runeEarned,omitempty"`
-	RuneROI         *string `json:"runeROI,omitempty"`
-	RuneStaked      *string `json:"runeStaked,omitempty"`
-	StakeUnits      *string `json:"stakeUnits,omitempty"`
+	Asset *Asset `json:"asset,omitempty"`
+
+	// Value of Assets earned from the pool.
+	AssetEarned *string `json:"assetEarned,omitempty"`
+
+	// ROI of the Asset side
+	AssetROI *string `json:"assetROI,omitempty"`
+
+	// Amount of Assets staked.
+	AssetStaked      *string `json:"assetStaked,omitempty"`
+	DateFirstStaked  *int64  `json:"dateFirstStaked,omitempty"`
+	HeightLastStaked *int64  `json:"heightLastStaked,omitempty"`
+
+	// Total value of earnings (in RUNE).
+	PoolEarned *string `json:"poolEarned,omitempty"`
+
+	// Average ROI (in RUNE) of both sides
+	PoolROI *string `json:"poolROI,omitempty"`
+
+	// RUNE value staked.
+	PoolStaked *string `json:"poolStaked,omitempty"`
+
+	// Value of RUNE earned from the pool.
+	RuneEarned *string `json:"runeEarned,omitempty"`
+
+	// ROI of the Rune side.
+	RuneROI *string `json:"runeROI,omitempty"`
+
+	// Amount of RUNE staked.
+	RuneStaked *string `json:"runeStaked,omitempty"`
+
+	// Represents ownership of a pool.
+	StakeUnits *string `json:"stakeUnits,omitempty"`
 }
 
 // StatsData defines model for StatsData.
 type StatsData struct {
-	DailyActiveUsers   *string `json:"dailyActiveUsers,omitempty"`
-	DailyTx            *string `json:"dailyTx,omitempty"`
+
+	// Daily active users (unique addresses interacting)
+	DailyActiveUsers *string `json:"dailyActiveUsers,omitempty"`
+
+	// Daily transactions
+	DailyTx *string `json:"dailyTx,omitempty"`
+
+	// Monthly active users
 	MonthlyActiveUsers *string `json:"monthlyActiveUsers,omitempty"`
-	MonthlyTx          *string `json:"monthlyTx,omitempty"`
-	PoolCount          *string `json:"poolCount,omitempty"`
-	TotalAssetBuys     *string `json:"totalAssetBuys,omitempty"`
-	TotalAssetSells    *string `json:"totalAssetSells,omitempty"`
-	TotalDepth         *string `json:"totalDepth,omitempty"`
-	TotalEarned        *string `json:"totalEarned,omitempty"`
-	TotalStakeTx       *string `json:"totalStakeTx,omitempty"`
-	TotalStaked        *string `json:"totalStaked,omitempty"`
-	TotalTx            *string `json:"totalTx,omitempty"`
-	TotalUsers         *string `json:"totalUsers,omitempty"`
-	TotalVolume        *string `json:"totalVolume,omitempty"`
-	TotalVolume24hr    *string `json:"totalVolume24hr,omitempty"`
-	TotalWithdrawTx    *string `json:"totalWithdrawTx,omitempty"`
+
+	// Monthly transactions
+	MonthlyTx *string `json:"monthlyTx,omitempty"`
+
+	// Number of active pools
+	PoolCount *string `json:"poolCount,omitempty"`
+
+	// Total buying transactions
+	TotalAssetBuys *string `json:"totalAssetBuys,omitempty"`
+
+	// Total selling transactions
+	TotalAssetSells *string `json:"totalAssetSells,omitempty"`
+
+	// Total RUNE balances
+	TotalDepth *string `json:"totalDepth,omitempty"`
+
+	// Total earned (in RUNE Value).
+	TotalEarned *string `json:"totalEarned,omitempty"`
+
+	// Total staking transactions
+	TotalStakeTx *string `json:"totalStakeTx,omitempty"`
+
+	// Total staked (in RUNE Value).
+	TotalStaked *string `json:"totalStaked,omitempty"`
+
+	// Total transactions
+	TotalTx *string `json:"totalTx,omitempty"`
+
+	// Total unique swappers & stakers
+	TotalUsers *string `json:"totalUsers,omitempty"`
+
+	// Total (in RUNE Value) of all assets swapped since start.
+	TotalVolume *string `json:"totalVolume,omitempty"`
+
+	// Total (in RUNE Value) of all assets swapped in 24hrs
+	TotalVolume24hr *string `json:"totalVolume24hr,omitempty"`
+
+	// Total withdrawing transactions
+	TotalWithdrawTx *string `json:"totalWithdrawTx,omitempty"`
 }
 
 // ThorchainEndpoint defines model for ThorchainEndpoint.
@@ -235,6 +403,7 @@ type GeneralErrorResponse Error
 
 // HealthResponse defines model for HealthResponse.
 type HealthResponse struct {
+	CatchingUp    *bool  `json:"catching_up,omitempty"`
 	Database      *bool  `json:"database,omitempty"`
 	ScannerHeight *int64 `json:"scannerHeight,omitempty"`
 }
@@ -274,58 +443,90 @@ type TxsResponse struct {
 
 // GetAssetInfoParams defines parameters for GetAssetInfo.
 type GetAssetInfoParams struct {
+
+	// One or more comma separated unique asset (CHAIN.SYMBOL)
 	Asset string `json:"asset"`
 }
 
 // GetPoolsDataParams defines parameters for GetPoolsData.
 type GetPoolsDataParams struct {
+
+	// One or more comma separated unique asset (CHAIN.SYMBOL)
 	Asset string `json:"asset"`
 }
 
 // GetStakersAddressAndAssetDataParams defines parameters for GetStakersAddressAndAssetData.
 type GetStakersAddressAndAssetDataParams struct {
+
+	// One or more comma separated unique asset (CHAIN.SYMBOL)
 	Asset string `json:"asset"`
 }
 
 // GetTxDetailsParams defines parameters for GetTxDetails.
 type GetTxDetailsParams struct {
+
+	// Address of sender or recipient of any in/out tx in event
 	Address *string `json:"address,omitempty"`
-	Txid    *string `json:"txid,omitempty"`
-	Asset   *string `json:"asset,omitempty"`
-	Type    *string `json:"type,omitempty"`
-	Offset  int64   `json:"offset"`
-	Limit   int64   `json:"limit"`
+
+	// ID of any in/out tx in event
+	Txid *string `json:"txid,omitempty"`
+
+	// Any asset used in event (CHAIN.SYMBOL)
+	Asset *string `json:"asset,omitempty"`
+
+	// Requested type of events
+	Type *string `json:"type,omitempty"`
+
+	// pagination offset
+	Offset int64 `json:"offset"`
+
+	// pagination limit
+	Limit int64 `json:"limit"`
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Get Asset Information// (GET /v1/assets)
+	// Get Asset Information
+	// (GET /v1/assets)
 	GetAssetInfo(ctx echo.Context, params GetAssetInfoParams) error
-	// Get Documents// (GET /v1/doc)
+	// Get Documents
+	// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
-	// Get Health// (GET /v1/health)
+	// Get Health
+	// (GET /v1/health)
 	GetHealth(ctx echo.Context) error
-	// Get Network Data// (GET /v1/network)
+	// Get Network Data
+	// (GET /v1/network)
 	GetNetworkData(ctx echo.Context) error
-	// Get Node public keys// (GET /v1/nodes)
+	// Get Node public keys
+	// (GET /v1/nodes)
 	GetNodes(ctx echo.Context) error
-	// Get Asset Pools// (GET /v1/pools)
+	// Get Asset Pools
+	// (GET /v1/pools)
 	GetPools(ctx echo.Context) error
-	// Get Pools Data// (GET /v1/pools/detail)
+	// Get Pools Data
+	// (GET /v1/pools/detail)
 	GetPoolsData(ctx echo.Context, params GetPoolsDataParams) error
-	// Get Stakers// (GET /v1/stakers)
+	// Get Stakers
+	// (GET /v1/stakers)
 	GetStakersData(ctx echo.Context) error
-	// Get Staker Data// (GET /v1/stakers/{address})
+	// Get Staker Data
+	// (GET /v1/stakers/{address})
 	GetStakersAddressData(ctx echo.Context, address string) error
-	// Get Staker Pool Data// (GET /v1/stakers/{address}/pools)
+	// Get Staker Pool Data
+	// (GET /v1/stakers/{address}/pools)
 	GetStakersAddressAndAssetData(ctx echo.Context, address string, params GetStakersAddressAndAssetDataParams) error
-	// Get Global Stats// (GET /v1/stats)
+	// Get Global Stats
+	// (GET /v1/stats)
 	GetStats(ctx echo.Context) error
-	// Get Swagger// (GET /v1/swagger.json)
+	// Get Swagger
+	// (GET /v1/swagger.json)
 	GetSwagger(ctx echo.Context) error
-	// Get the Proxied Pool Addresses// (GET /v1/thorchain/pool_addresses)
+	// Get the Proxied Pool Addresses
+	// (GET /v1/thorchain/pool_addresses)
 	GetThorchainProxiedEndpoints(ctx echo.Context) error
-	// Get details of a tx by address, asset or tx-id// (GET /v1/txs)
+	// Get details of a tx by address, asset or tx-id
+	// (GET /v1/txs)
 	GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error
 }
 
@@ -341,10 +542,6 @@ func (w *ServerInterfaceWrapper) GetAssetInfo(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetAssetInfoParams
 	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
 
 	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -408,10 +605,6 @@ func (w *ServerInterfaceWrapper) GetPoolsData(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetPoolsDataParams
 	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
 
 	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -462,10 +655,6 @@ func (w *ServerInterfaceWrapper) GetStakersAddressAndAssetData(ctx echo.Context)
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetStakersAddressAndAssetDataParams
 	// ------------- Required query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
-	}
 
 	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -511,8 +700,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetTxDetailsParams
 	// ------------- Optional query parameter "address" -------------
-	if paramValue := ctx.QueryParam("address"); paramValue != "" {
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "address", ctx.QueryParams(), &params.Address)
 	if err != nil {
@@ -520,8 +707,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Optional query parameter "txid" -------------
-	if paramValue := ctx.QueryParam("txid"); paramValue != "" {
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "txid", ctx.QueryParams(), &params.Txid)
 	if err != nil {
@@ -529,8 +714,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Optional query parameter "asset" -------------
-	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -538,8 +721,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Optional query parameter "type" -------------
-	if paramValue := ctx.QueryParam("type"); paramValue != "" {
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "type", ctx.QueryParams(), &params.Type)
 	if err != nil {
@@ -547,10 +728,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Required query parameter "offset" -------------
-	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument offset is required, but not found"))
-	}
 
 	err = runtime.BindQueryParameter("form", true, true, "offset", ctx.QueryParams(), &params.Offset)
 	if err != nil {
@@ -558,10 +735,6 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Required query parameter "limit" -------------
-	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument limit is required, but not found"))
-	}
 
 	err = runtime.BindQueryParameter("form", true, true, "limit", ctx.QueryParams(), &params.Limit)
 	if err != nil {
@@ -573,8 +746,24 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	return err
 }
 
+// This is a simple interface which specifies echo.Route addition functions which
+// are present on both echo.Echo and echo.Group, since we want to allow using
+// either of them for path registration
+type EchoRouter interface {
+	CONNECT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	HEAD(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	OPTIONS(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	PATCH(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+}
+
 // RegisterHandlers adds each server route to the EchoRouter.
-func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
+func RegisterHandlers(router EchoRouter, si ServerInterface) {
+
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
@@ -593,74 +782,75 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	router.GET("/v1/swagger.json", wrapper.GetSwagger)
 	router.GET("/v1/thorchain/pool_addresses", wrapper.GetThorchainProxiedEndpoints)
 	router.GET("/v1/txs", wrapper.GetTxDetails)
+
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"o3ejyChw+115Bnx5+f8AAAD///30HoMpSQAA",
+	"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",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
