@@ -108,6 +108,33 @@ func (c *Client) GetLastChainHeight() (LastHeights, error) {
 	return last, nil
 }
 
+// GetTx fetch the tx details from thorchain by txID.
+func (c *Client) GetTx(txID common.TxID) (common.Tx, error) {
+	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint, txID.String())
+	var observedTx ObservedTx
+	err := c.requestEndpoint(url, &observedTx)
+	if err != nil {
+		return common.Tx{}, err
+	}
+	return observedTx.Tx, nil
+}
+
+// GetPoolStatus returns current pool status.
+func (c *Client) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
+	url := fmt.Sprintf("%s/pool/%s", c.thorchainEndpoint, pool)
+	var result Pool
+	err := c.requestEndpoint(url, &result)
+	if err != nil {
+		return models.Unknown, errors.Wrap(err, "failed to get pool status")
+	}
+	for key, item := range models.PoolStatusStr {
+		if strings.EqualFold(key, result.Status) {
+			return item, nil
+		}
+	}
+	return models.Unknown, fmt.Errorf("failed to convert %s to pool status", result.Status)
+}
+
 func (c *Client) requestEndpoint(url string, result interface{}) error {
 	data := c.checkCache(url)
 	if data != nil {
@@ -160,31 +187,4 @@ func (c *Client) ping() (string, error) {
 		return t, nil
 	}
 	return "", errors.New("time field is not available")
-}
-
-// get tx by TxID
-func (c *Client) GetTx(txId common.TxID) (common.Tx, error) {
-	url := fmt.Sprintf("%s/tx/%s", c.thorchainEndpoint, txId.String())
-	var observedTx ObservedTx
-	err := c.requestEndpoint(url, &observedTx)
-	if err != nil {
-		return common.Tx{}, err
-	}
-	return observedTx.Tx, nil
-}
-
-// get pool status
-func (c *Client) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
-	url := fmt.Sprintf("%s/pool/%s", c.thorchainEndpoint, pool)
-	var result Pool
-	err := c.requestEndpoint(url, &result)
-	if err != nil {
-		return models.Unknown, errors.Wrap(err, "failed to get pool status")
-	}
-	for key, item := range models.PoolStatusStr {
-		if strings.EqualFold(key, result.Status) {
-			return item, nil
-		}
-	}
-	return models.Unknown, fmt.Errorf("failed to convert %s to pool status", result.Status)
 }
