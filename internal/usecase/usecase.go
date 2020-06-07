@@ -18,24 +18,24 @@ const (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScanInterval     time.Duration
-	ScannerBatchSize int
+	ScanInterval time.Duration
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store      store.Store
-	thorchain  thorchain.Thorchain
-	tendermint thorchain.Tendermint
-	conf       *Config
-	consts     thorchain.ConstantValues
-	eh         *eventHandler
-	scanner    *thorchain.BlockScanner
+	store           store.Store
+	thorchain       thorchain.Thorchain
+	tendermint      thorchain.Tendermint
+	tendermintBatch thorchain.TendermintBatch
+	conf            *Config
+	consts          thorchain.ConstantValues
+	eh              *eventHandler
+	scanner         *thorchain.BlockScanner
 }
 
 // NewUsecase initiate a new Usecase.
-func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, store store.Store, conf *Config) (*Usecase, error) {
+func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, tendermintBatch thorchain.TendermintBatch, store store.Store, conf *Config) (*Usecase, error) {
 	if conf == nil {
 		return nil, errors.New("conf can't be nil")
 	}
@@ -45,11 +45,12 @@ func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, sto
 		return nil, errors.New("could not fetch network constants")
 	}
 	uc := Usecase{
-		store:      store,
-		thorchain:  client,
-		tendermint: tendermint,
-		conf:       conf,
-		consts:     consts,
+		store:           store,
+		thorchain:       client,
+		tendermint:      tendermint,
+		tendermintBatch: tendermintBatch,
+		conf:            conf,
+		consts:          consts,
 	}
 	return &uc, nil
 }
@@ -64,7 +65,7 @@ func (uc *Usecase) StartScanner() error {
 		uc.eh = eh
 	}
 	if uc.scanner == nil {
-		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.eh, uc.conf.ScanInterval, uc.conf.ScannerBatchSize)
+		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.tendermintBatch, uc.eh, uc.conf.ScanInterval)
 	}
 	return uc.scanner.Start()
 }

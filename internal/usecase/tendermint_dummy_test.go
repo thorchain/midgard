@@ -17,3 +17,7 @@ func (t *TendermintDummy) BlockchainInfo(_, _ int64) (*coretypes.ResultBlockchai
 func (t *TendermintDummy) BlockResults(_ *int64) (*coretypes.ResultBlockResults, error) {
 	return nil, ErrNotImplemented
 }
+
+func (t *TendermintDummy) Send() ([]interface{}, error) {
+	return nil, nil
+}

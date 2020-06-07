@@ -80,12 +80,12 @@ func New(cfgFile *string) (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create tendermint rpc client instance")
 	}
+	tendermintBatch := tendermintClient.NewBatch()
 
 	usecaseConf := &usecase.Config{
-		ScanInterval:     cfg.ThorChain.NoEventsBackoff,
-		ScannerBatchSize: cfg.ThorChain.BlockScannerBatchSize,
+		ScanInterval: cfg.ThorChain.NoEventsBackoff,
 	}
-	uc, err := usecase.NewUsecase(thorchainClient, tendermintClient, timescale, usecaseConf)
+	uc, err := usecase.NewUsecase(thorchainClient, tendermintClient, tendermintBatch, timescale, usecaseConf)
 	if err != nil {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create usecase instance")
