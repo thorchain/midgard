@@ -52,7 +52,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.cache_ttl", "5s")
 	viper.SetDefault("thorchain.cache_cleanup", "10s")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
-	viper.SetDefault("thorchain.block_scanner_batch_size", 100)
+	viper.SetDefault("thorchain.block_scanner_batch_size", 20)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {

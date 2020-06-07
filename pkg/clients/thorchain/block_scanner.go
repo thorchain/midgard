@@ -95,17 +95,13 @@ func (sc *BlockScanner) scan() {
 
 func (sc *BlockScanner) processNextBlock() (bool, error) {
 	height := sc.GetHeight() + 1
-	info, err := sc.client.BlockchainInfo(height, height)
+	info, err := sc.client.BlockchainInfo(height, height+int64(sc.batchSize))
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	batchSize := sc.batchSize
-	if batchSize < int(info.LastHeight-height+1) {
-		batchSize = int(info.LastHeight - height + 1)
-	}
-	blocks := make([]*coretypes.ResultBlockResults, batchSize)
+	blocks := make([]*coretypes.ResultBlockResults, len(info.BlockMetas))
 	var wg sync.WaitGroup
-	for i := 0; i < batchSize; i++ {
+	for i := 0; i < len(info.BlockMetas); i++ {
 		wg.Add(1)
 		go func(height int64, offset int) {
 			defer wg.Done()
@@ -119,7 +115,7 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	}
 	wg.Wait()
 
-	for i := 0; i < batchSize; i++ {
+	for i := 0; i < len(info.BlockMetas); i++ {
 		block := blocks[i]
 		if block == nil {
 			return false, fmt.Errorf("could not get block %d", int64(i)+height)
@@ -128,7 +124,7 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 			events := convertEvents(tx.Events)
 			sc.callback.NewTx(block.Height, events)
 		}
-		blockTime := info.BlockMetas[0].Header.Time
+		blockTime := info.BlockMetas[i].Header.Time
 		beginEvents := convertEvents(block.BeginBlockEvents)
 		endEvents := convertEvents(block.EndBlockEvents)
 		sc.callback.NewBlock(block.Height, blockTime, beginEvents, endEvents)
