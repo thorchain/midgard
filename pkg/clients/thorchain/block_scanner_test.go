@@ -166,7 +166,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 		},
 		{
 			height:    2,
-			blockTime: now,
+			blockTime: now.Add(time.Second * 3),
 			begin:     []Event{},
 			end: []Event{
 				{

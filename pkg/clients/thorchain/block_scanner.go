@@ -95,7 +95,7 @@ func (sc *BlockScanner) scan() {
 
 func (sc *BlockScanner) processNextBlock() (bool, error) {
 	height := sc.GetHeight() + 1
-	info, err := sc.client.BlockchainInfo(height, height+int64(sc.batchSize))
+	info, err := sc.client.BlockchainInfo(height, height+int64(sc.batchSize)-1)
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
