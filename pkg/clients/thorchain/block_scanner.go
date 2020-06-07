@@ -102,8 +102,12 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 		return false, err
 	}
 
+	// BlockMetas are in descending order and our tests on ascending.
 	from := info.BlockMetas[0].Header.Height
 	to := info.BlockMetas[len(info.BlockMetas)-1].Header.Height
+	if from > to {
+		from, to = to, from
+	}
 	blocks, err := sc.fetchResults(from, to)
 	if err != nil {
 		return false, errors.Wrapf(err, "could not get block results from %d to %d", from, to)
