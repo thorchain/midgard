@@ -2,6 +2,7 @@ package thorchain
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/rpc/client/http"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -99,25 +100,17 @@ func (sc *BlockScanner) processNextBlock() (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "could not get blockchain info")
 	}
-	blocks := make([]*coretypes.ResultBlockResults, len(info.BlockMetas))
-	var wg sync.WaitGroup
-	for i := 0; i < len(info.BlockMetas); i++ {
-		wg.Add(1)
-		go func(height int64, offset int) {
-			defer wg.Done()
-			block, err := sc.client.BlockResults(&height)
-			if err == nil {
-				blocks[offset] = block
-			} else {
-				sc.logger.Err(err)
-			}
-		}(height+int64(i), i)
+	batch := sc.client.NewBatch()
+	for i := height; i < height+int64(len(info.BlockMetas)); i++ {
+		batch.BlockResults(&i)
 	}
-	wg.Wait()
-
+	blocks, err := batch.Send()
+	if err != nil {
+		return false, errors.Wrap(err, "could not fetch blocks")
+	}
 	for i := 0; i < len(info.BlockMetas); i++ {
-		block := blocks[i]
-		if block == nil {
+		block, ok := blocks[i].(*coretypes.ResultBlockResults)
+		if block == nil || !ok {
 			return false, fmt.Errorf("could not get block %d", int64(i)+height)
 		}
 		for _, tx := range block.TxsResults {
@@ -165,6 +158,7 @@ func convertEvents(tes []abcitypes.Event) []Event {
 type Tendermint interface {
 	BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error)
 	BlockResults(height *int64) (*coretypes.ResultBlockResults, error)
+	NewBatch() *http.BatchHTTP
 }
 
 // Callback represents methods required by Scanner to notify events.
