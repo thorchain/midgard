@@ -102,7 +102,7 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 		return false, err
 	}
 
-	// BlockMetas are in descending order and our tests on ascending.
+	// BlockMetas are in descending order and our tests in ascending.
 	from := info.BlockMetas[0].Header.Height
 	to := info.BlockMetas[len(info.BlockMetas)-1].Header.Height
 	if from > to {
