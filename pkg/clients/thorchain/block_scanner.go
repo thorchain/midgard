@@ -97,17 +97,14 @@ func (sc *BlockScanner) scan() {
 }
 
 func (sc *BlockScanner) processNextBatch() (bool, error) {
-	info, err := sc.fetchInfo()
+	from := sc.GetHeight() + 1
+	to := from + maxBlockchainInfoSize - 1
+	info, err := sc.fetchInfo(from, to)
 	if err != nil {
 		return false, err
 	}
+	to = from + int64(len(info.BlockMetas)) - 1
 
-	// BlockMetas are in descending order and our tests in ascending.
-	from := info.BlockMetas[0].Header.Height
-	to := info.BlockMetas[len(info.BlockMetas)-1].Header.Height
-	if from > to {
-		from, to = to, from
-	}
 	blocks, err := sc.fetchResults(from, to)
 	if err != nil {
 		return false, errors.Wrapf(err, "could not get block results from %d to %d", from, to)
@@ -125,9 +122,7 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 	return synced, nil
 }
 
-func (sc *BlockScanner) fetchInfo() (*coretypes.ResultBlockchainInfo, error) {
-	from := sc.GetHeight() + 1
-	to := from + maxBlockchainInfoSize - 1
+func (sc *BlockScanner) fetchInfo(from, to int64) (*coretypes.ResultBlockchainInfo, error) {
 	info, err := sc.client.BlockchainInfo(from, to)
 	return info, errors.Wrap(err, "could not get blockchain info")
 }
