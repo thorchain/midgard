@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -84,12 +85,27 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
 		sb.Where(sb.Equal("coins.ticker", asset))
 	}
+	doubleSwap := false
 	if len(eventTypes) > 0 {
-		types := make([]interface{}, len(eventTypes))
-		for i, ev := range eventTypes {
-			types[i] = ev
+		var types []interface{}
+		for _, ev := range eventTypes {
+			if ev == "doubleSwap" {
+				doubleSwap = true
+			} else {
+				types = append(types, ev)
+			}
 		}
-		sb.Where(sb.In("events.type", types...))
+		if len(types) > 0 {
+			sb.Where(sb.In("events.type", types...))
+		}
+	}
+	if doubleSwap {
+		query := `SELECT Min(event_id) 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+		sb.Where(fmt.Sprintf("txs.event_id in (%s)",query))
 	}
 	return sb.Build()
 }
