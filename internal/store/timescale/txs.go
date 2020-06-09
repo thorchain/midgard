@@ -105,7 +105,7 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 				WHERE  direction = 'in' 
 				GROUP  BY tx_hash 
 				HAVING Count(*) = 2 `
-		sb.Where(fmt.Sprintf("txs.event_id in (%s)",query))
+		sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
 	}
 	return sb.Build()
 }
