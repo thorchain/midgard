@@ -63,11 +63,10 @@ paths:
           example: BNB.TOMOB-1E1
         - in: query
           name: type
-          description: Requested type of events
+          description: One or more comma separated unique types of event
           required: false
           schema:
             type: string
-            enum: [swap, stake, unstake, add, refund]
           example: [swap, stake, unstake, add, refund]
         - in: query
           name: offset

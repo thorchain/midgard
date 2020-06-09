@@ -72,7 +72,7 @@ func (s *StoreDummy) Ping() error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) GetTxDetails(_ common.Address, _ common.TxID, _ common.Asset, _ string, _, _ int64) ([]models.TxDetails, int64, error) {
+func (s *StoreDummy) GetTxDetails(_ common.Address, _ common.TxID, _ common.Asset, _ []string, _, _ int64) ([]models.TxDetails, int64, error) {
 	return nil, 0, ErrNotImplemented
 }
 

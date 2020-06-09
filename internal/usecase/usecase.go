@@ -83,7 +83,7 @@ func (uc *Usecase) GetHealth() *models.HealthStatus {
 }
 
 // GetTxDetails returns details and count of txs selected with query.
-func (uc *Usecase) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, page models.Page) ([]models.TxDetails, int64, error) {
+func (uc *Usecase) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType []string, page models.Page) ([]models.TxDetails, int64, error) {
 	err := page.Validate()
 	if err != nil {
 		return nil, 0, err

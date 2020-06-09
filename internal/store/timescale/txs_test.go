@@ -12,7 +12,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -48,7 +48,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	events, count, err = s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, "", 0, 2)
+	events, count, err = s.Store.GetTxDetails(address, common.EmptyTxID, common.EmptyAsset, nil, 0, 2)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -88,7 +88,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ := common.NewAsset("BNB")
-	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, asset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 
@@ -127,7 +127,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 
 	address, _ = common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	events, count, err = s.Store.GetTxDetails(address, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails(address, common.EmptyTxID, asset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -167,7 +167,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txid, _ := common.NewTxID("2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4")
-	events, count, err := s.Store.GetTxDetails(address, txid, common.EmptyAsset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(address, txid, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -204,7 +204,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	c.Assert(err, IsNil)
 
 	txid, _ = common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
-	events, count, err = s.Store.GetTxDetails(address, txid, common.EmptyAsset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails(address, txid, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -243,7 +243,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB")
-	events, count, err := s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -280,7 +280,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.TOML-4BC")
-	events, count, err = s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0].Pool.Chain.String(), Equals, "BNB")
@@ -314,7 +314,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
-	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(0))
 
@@ -351,7 +351,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 		txDetail,
 	}
 
-	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "stake", 0, 1)
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"stake"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
@@ -388,7 +388,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 	}
 	evts = append(evts, txDetail)
 
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "stake", 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"stake"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(events[0], DeepEquals, evts[1])
@@ -396,14 +396,14 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 	err = s.Store.CreateSwapRecord(swapSellTusdb2RuneEvent0)
 	c.Assert(err, IsNil)
 
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "stake", 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"stake"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(events[0], DeepEquals, evts[1])
 }
 
 func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
-	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(0))
 
@@ -411,7 +411,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(len(events), Equals, 1)
@@ -420,25 +420,25 @@ func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(len(events), Equals, 1)
 
 	// Change page limit
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 0, 2)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 2)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(len(events), Equals, 2)
 
 	// Change offset
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 1, 2)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 1, 2)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(len(events), Equals, 1)
 
 	// Change offset
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, "", 2, 2)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 2, 2)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(len(events), Equals, 0)
