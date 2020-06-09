@@ -161,7 +161,7 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 
 func (s *Client) inTx(eventId uint64) models.TxData {
 	tx := s.txForDirection(eventId, "in")
-	tx.Coin = s.coinsForTxHash(tx.TxID)
+	tx.Coin = s.coinsForTxHash(tx.TxID, eventId)
 
 	return tx
 }
@@ -169,7 +169,7 @@ func (s *Client) inTx(eventId uint64) models.TxData {
 func (s *Client) outTxs(eventId uint64) []models.TxData {
 	txs := s.txsForDirection(eventId, "out")
 	for i, tx := range txs {
-		txs[i].Coin = s.coinsForTxHash(tx.TxID)
+		txs[i].Coin = s.coinsForTxHash(tx.TxID, eventId)
 	}
 
 	return txs
@@ -227,13 +227,14 @@ func (s *Client) txsForDirection(eventId uint64, direction string) []models.TxDa
 	return txs
 }
 
-func (s *Client) coinsForTxHash(txHash string) common.Coins {
+func (s *Client) coinsForTxHash(txHash string, eventID uint64) common.Coins {
 	stmnt := `
 		SELECT coins.chain, coins.symbol, coins.ticker, coins.amount
 			FROM coins
-		WHERE coins.tx_hash = $1`
+		WHERE coins.tx_hash = $1
+		AND   coins.event_Id= $2`
 
-	rows, err := s.db.Queryx(stmnt, txHash)
+	rows, err := s.db.Queryx(stmnt, txHash, eventID)
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
 		return nil
