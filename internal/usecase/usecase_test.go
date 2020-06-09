@@ -147,22 +147,22 @@ func (s *UsecaseSuite) TestScanningRestart(c *C) {
 
 type TestGetTxDetailsStore struct {
 	StoreDummy
-	address   common.Address
-	txID      common.TxID
-	asset     common.Asset
-	eventType string
-	offset    int64
-	limit     int64
-	txDetails []models.TxDetails
-	count     int64
-	err       error
+	address    common.Address
+	txID       common.TxID
+	asset      common.Asset
+	eventTypes []string
+	offset     int64
+	limit      int64
+	txDetails  []models.TxDetails
+	count      int64
+	err        error
 }
 
-func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, int64, error) {
+func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string, offset, limit int64) ([]models.TxDetails, int64, error) {
 	s.address = address
 	s.txID = txID
 	s.asset = asset
-	s.eventType = eventType
+	s.eventTypes = eventTypes
 	s.offset = offset
 	s.limit = limit
 	return s.txDetails, s.count, s.err
@@ -248,16 +248,16 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txID, _ := common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
-	eventType := "stake"
+	eventTypes := []string{"stake"}
 	page := models.NewPage(0, 2)
-	details, count, err := uc.GetTxDetails(address, txID, asset, eventType, page)
+	details, count, err := uc.GetTxDetails(address, txID, asset, eventTypes, page)
 	c.Assert(err, IsNil)
 	c.Assert(details, DeepEquals, store.txDetails)
 	c.Assert(count, Equals, store.count)
 	c.Assert(store.address, Equals, address)
 	c.Assert(store.txID, Equals, txID)
 	c.Assert(store.asset, Equals, asset)
-	c.Assert(store.eventType, Equals, eventType)
+	c.Assert(store.eventTypes, DeepEquals, eventTypes)
 	c.Assert(store.offset, Equals, page.Offset)
 	c.Assert(store.limit, Equals, page.Limit)
 
@@ -267,7 +267,7 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, _, err = uc.GetTxDetails(address, txID, asset, eventType, page)
+	_, _, err = uc.GetTxDetails(address, txID, asset, eventTypes, page)
 	c.Assert(err, NotNil)
 }
 
