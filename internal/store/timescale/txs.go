@@ -85,7 +85,6 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
 		sb.Where(sb.Equal("coins.ticker", asset))
 	}
-	doubleSwap := false
 	if len(eventTypes) > 0 {
 		doubleSwap := false
 		var types []interface{}
