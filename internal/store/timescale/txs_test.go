@@ -489,6 +489,11 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(events[0], DeepEquals, evts[0])
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap"}, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events[0], DeepEquals, evts[0])
 }
 
 func (s *TimeScaleSuite) TestEventPool(c *C) {
