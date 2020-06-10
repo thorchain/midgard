@@ -95,19 +95,21 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 				types = append(types, ev)
 			}
 		}
-		query := `SELECT Min(event_id) 
+		query := `SELECT tx_hash 
 				FROM   txs 
 				WHERE  direction = 'in' 
 				GROUP  BY tx_hash 
 				HAVING Count(*) = 2 `
 		if doubleSwap {
 			if len(types) > 0 {
-				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
+				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.tx_hash in (%s)", query)))
 			} else {
-				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
+				sb.Where(fmt.Sprintf("txs.tx_hash in (%s)", query))
 			}
 		} else {
 			sb.Where(sb.In("events.type", types...))
+			sb.Where(fmt.Sprintf("txs.tx_hash not in (%s)", query))
+			sb.Where(" txs.direction = 'in'")
 		}
 	}
 	return sb.Build()
