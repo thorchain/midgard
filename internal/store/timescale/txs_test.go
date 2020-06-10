@@ -444,6 +444,53 @@ func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
 	c.Assert(len(events), Equals, 0)
 }
 
+func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
+	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(0))
+
+	err = s.Store.CreateSwapRecord(swapBNB2Tusdb0)
+	c.Assert(err, IsNil)
+	err = s.Store.CreateSwapRecord(swapBNB2Tusdb1)
+	c.Assert(err, IsNil)
+
+	txDetail := models.TxDetails{
+		Status: swapBNB2Tusdb0.Status,
+		Type:   swapBNB2Tusdb0.Type,
+		Height: uint64(swapBNB2Tusdb0.Height),
+		Pool:   swapBNB2Tusdb0.Pool,
+		In: models.TxData{
+			Address: swapBNB2Tusdb0.Event.InTx.FromAddress.String(),
+			Coin:    swapBNB2Tusdb0.Event.InTx.Coins,
+			Memo:    string(swapBNB2Tusdb0.InTx.Memo),
+			TxID:    swapBNB2Tusdb0.InTx.ID.String(),
+		},
+		Events: models.Events{
+			Fee:  uint64(swapBNB2Tusdb0.LiquidityFee),
+			Slip: float64(swapBNB2Tusdb0.TradeSlip) / slipBasisPoints,
+		},
+		Date: uint64(swapBNB2Tusdb0.Time.Unix()),
+		Out:  make([]models.TxData, 0),
+	}
+	for _, tx := range swapBNB2Tusdb0.OutTxs {
+		outTx := models.TxData{
+			Address: tx.FromAddress.String(),
+			Coin:    tx.Coins,
+			Memo:    string(tx.Memo),
+			TxID:    tx.ID.String(),
+		}
+		txDetail.Out = append(txDetail.Out, outTx)
+	}
+	evts := []models.TxDetails{
+		txDetail,
+	}
+
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(events[0], DeepEquals, evts[0])
+}
+
 func (s *TimeScaleSuite) TestEventPool(c *C) {
 	// Single stake
 	err := s.Store.CreateStakeRecord(stakeBnbEvent0)
