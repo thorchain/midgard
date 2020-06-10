@@ -95,20 +95,20 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 				types = append(types, ev)
 			}
 		}
-		query := `SELECT tx_hash 
+		query := `SELECT MIN(event_id) 
 				FROM   txs 
 				WHERE  direction = 'in' 
 				GROUP  BY tx_hash 
 				HAVING Count(*) = 2 `
 		if doubleSwap {
 			if len(types) > 0 {
-				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.tx_hash in (%s)", query)))
+				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
 			} else {
-				sb.Where(fmt.Sprintf("txs.tx_hash in (%s)", query))
+				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
 			}
 		} else {
 			sb.Where(sb.In("events.type", types...))
-			sb.Where(fmt.Sprintf("txs.tx_hash not in (%s)", query))
+			sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
 			sb.Where(" txs.direction = 'in'")
 		}
 	}
@@ -124,15 +124,24 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "processEvents failed")
 		}
+		outTx := s.outTxs(eventId)
+		event1 := s.events(eventId, eventType)
+		if eventType == "swap" && len(outTx) == 0 {
+			outTx = s.outTxs(eventId + 1)
+			event2 := s.events(eventId+1, eventType)
+			eventType = "doubleSwap"
+			event1.Slip += event2.Slip
+			event1.Fee += event2.Fee
+		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
 			Type:    eventType,
 			Status:  status,
 			In:      s.inTx(eventId),
-			Out:     s.outTxs(eventId),
+			Out:     outTx,
 			Gas:     s.gas(eventId),
 			Options: s.options(eventId, eventType),
-			Events:  s.events(eventId, eventType),
+			Events:  event1,
 			Date:    uint64(eventDate.Unix()),
 			Height:  height,
 		})
