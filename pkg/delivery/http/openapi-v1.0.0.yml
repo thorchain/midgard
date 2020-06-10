@@ -342,7 +342,7 @@ components:
           $ref: '#/components/schemas/asset'
         type:
           type: string
-          enum: [swap, stake, unstake, rewards, add, pool, gas, refund]
+          enum: [swap, stake, unstake, rewards, add, pool, gas, refund, doubleSwap]
         status:
           type: string
           enum: [success, refund] 
