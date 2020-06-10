@@ -85,8 +85,8 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
 		sb.Where(sb.Equal("coins.ticker", asset))
 	}
-	doubleSwap := false
 	if len(eventTypes) > 0 {
+		doubleSwap := false
 		var types []interface{}
 		for _, ev := range eventTypes {
 			if ev == "doubleSwap" {
@@ -95,17 +95,20 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 				types = append(types, ev)
 			}
 		}
-		if len(types) > 0 {
-			sb.Where(sb.In("events.type", types...))
-		}
-	}
-	if doubleSwap {
 		query := `SELECT Min(event_id) 
 				FROM   txs 
 				WHERE  direction = 'in' 
 				GROUP  BY tx_hash 
 				HAVING Count(*) = 2 `
-		sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
+		if doubleSwap {
+			if len(types) > 0 {
+				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
+			} else {
+				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
+			}
+		} else {
+			sb.Where(sb.In("events.type", types...))
+		}
 	}
 	return sb.Build()
 }
