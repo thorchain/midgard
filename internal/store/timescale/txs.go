@@ -103,6 +103,13 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		if doubleSwap {
 			if len(types) > 0 {
 				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
+				// Merge double swaps into one
+				query = `SELECT MAX(event_id) 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+				sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
 			} else {
 				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
 			}
