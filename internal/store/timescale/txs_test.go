@@ -456,7 +456,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 
 	txDetail := models.TxDetails{
 		Status: swapBNB2Tusdb0.Status,
-		Type:   swapBNB2Tusdb0.Type,
+		Type:   "doubleSwap",
 		Height: uint64(swapBNB2Tusdb0.Height),
 		Pool:   swapBNB2Tusdb0.Pool,
 		In: models.TxData{
@@ -466,13 +466,13 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 			TxID:    swapBNB2Tusdb0.InTx.ID.String(),
 		},
 		Events: models.Events{
-			Fee:  uint64(swapBNB2Tusdb0.LiquidityFee),
-			Slip: float64(swapBNB2Tusdb0.TradeSlip) / slipBasisPoints,
+			Fee:  uint64(swapBNB2Tusdb0.LiquidityFee + swapBNB2Tusdb1.LiquidityFee),
+			Slip: float64(swapBNB2Tusdb0.TradeSlip+swapBNB2Tusdb1.TradeSlip) / slipBasisPoints,
 		},
 		Date: uint64(swapBNB2Tusdb0.Time.Unix()),
 		Out:  make([]models.TxData, 0),
 	}
-	for _, tx := range swapBNB2Tusdb0.OutTxs {
+	for _, tx := range swapBNB2Tusdb1.OutTxs {
 		outTx := models.TxData{
 			Address: tx.FromAddress.String(),
 			Coin:    tx.Coins,
@@ -487,10 +487,60 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 
 	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
-	c.Assert(count, Equals, int64(2))
+	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
 
 	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap"}, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events[0], DeepEquals, evts[0])
+
+	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap", "stake"}, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(events[0], DeepEquals, evts[0])
+
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent3)
+	c.Assert(err, IsNil)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap"}, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events[0], DeepEquals, evts[0])
+
+	txDetail = models.TxDetails{
+		Status: swapBuyRune2BnbEvent3.Status,
+		Type:   swapBuyRune2BnbEvent3.Type,
+		Height: uint64(swapBuyRune2BnbEvent3.Height),
+		Pool:   swapBuyRune2BnbEvent3.Pool,
+		In: models.TxData{
+			Address: swapBuyRune2BnbEvent3.Event.InTx.FromAddress.String(),
+			Coin:    swapBuyRune2BnbEvent3.Event.InTx.Coins,
+			Memo:    string(swapBuyRune2BnbEvent3.InTx.Memo),
+			TxID:    swapBuyRune2BnbEvent3.InTx.ID.String(),
+		},
+		Events: models.Events{
+			Fee:  uint64(swapBuyRune2BnbEvent3.LiquidityFee),
+			Slip: float64(swapBuyRune2BnbEvent3.TradeSlip) / slipBasisPoints,
+		},
+		Date: uint64(swapBuyRune2BnbEvent3.Time.Unix()),
+		Out:  make([]models.TxData, 0),
+	}
+	for _, tx := range swapBuyRune2BnbEvent3.OutTxs {
+		outTx := models.TxData{
+			Address: tx.FromAddress.String(),
+			Coin:    tx.Coins,
+			Memo:    string(tx.Memo),
+			TxID:    tx.ID.String(),
+		}
+		txDetail.Out = append(txDetail.Out, outTx)
+	}
+	evts = []models.TxDetails{
+		txDetail,
+	}
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"swap"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
