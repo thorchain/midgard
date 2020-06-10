@@ -85,10 +85,9 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
 		sb.Where(sb.Equal("coins.ticker", asset))
 	}
-	doubleSwap := true
-	var types []interface{}
 	if len(eventTypes) > 0 {
-		doubleSwap = false
+		doubleSwap := false
+		var types []interface{}
 		for _, ev := range eventTypes {
 			if ev == "doubleSwap" {
 				doubleSwap = true
@@ -96,24 +95,39 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 				types = append(types, ev)
 			}
 		}
-	}
-	query := `SELECT MIN(event_id) 
+		query := `SELECT MIN(event_id) 
 				FROM   txs 
 				WHERE  direction = 'in' 
 				GROUP  BY tx_hash 
 				HAVING Count(*) = 2 `
-	if doubleSwap {
-		if len(types) > 0 {
-			sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
+		if doubleSwap {
+			if len(types) > 0 {
+				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
+			} else {
+				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
+			}
 		} else {
-			sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
+			//Remove double swaps
+			query := `SELECT tx_hash 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+			sb.Where(sb.In("events.type", types...))
+			sb.Where(fmt.Sprintf("txs.tx_hash not in (%s)", query))
+			sb.Where(" txs.direction = 'in'")
 		}
 	} else {
-		sb.Where(sb.In("events.type", types...))
+		//Merge double swaps into one
+		query := `SELECT MAX(event_id) 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
 		sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
-		sb.Where(" txs.direction = 'in'")
 	}
 	return sb.Build()
+
 }
 
 func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
