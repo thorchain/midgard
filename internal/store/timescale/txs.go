@@ -107,7 +107,7 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
 			}
 		} else {
-			//Remove double swaps
+			// Remove double swaps
 			query := `SELECT tx_hash 
 				FROM   txs 
 				WHERE  direction = 'in' 
@@ -118,7 +118,7 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 			sb.Where(" txs.direction = 'in'")
 		}
 	} else {
-		//Merge double swaps into one
+		// Merge double swaps into one
 		query := `SELECT MAX(event_id) 
 				FROM   txs 
 				WHERE  direction = 'in' 
@@ -127,7 +127,6 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
 	}
 	return sb.Build()
-
 }
 
 func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
