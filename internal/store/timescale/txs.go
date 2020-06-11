@@ -3,6 +3,7 @@ package timescale
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -149,11 +150,19 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		outTx := s.outTxs(eventId)
 		event1 := s.events(eventId, eventType)
 		if eventType == "swap" {
-			is, err := s.isDoubleSwap(inTx.TxID)
-			if err != nil {
-				return nil, err
+			isDoubleSwap := true
+			for _, coin := range inTx.Coin {
+				if common.IsRune(coin.Asset.Ticker) {
+					isDoubleSwap = false
+				}
 			}
-			if is {
+			if len(strings.Split(inTx.Memo, ":")) > 1 {
+				asset, err := common.NewAsset(strings.Split(inTx.Memo, ":")[1])
+				if err == nil && common.IsRune(asset.Ticker) {
+					isDoubleSwap = false
+				}
+			}
+			if isDoubleSwap {
 				outTx = s.outTxs(eventId + 1)
 				event2 := s.events(eventId+1, eventType)
 				eventType = "doubleSwap"
@@ -442,17 +451,4 @@ func (s *Client) eventBasic(eventId uint64) (time.Time, uint64, string, string, 
 		return eventTime, 0, "eventBasic failed", "eventBasic failed", errors.Wrap(err, "eventBasic failed")
 	}
 	return eventTime, height, eventType, status, nil
-}
-
-func (s *Client) isDoubleSwap(txHash string) (bool, error) {
-	stmnt := `
-		SELECT count(*) 
-			FROM events 
-			JOIN txs on txs.event_id = events.id 
-		WHERE txs.tx_hash = $1`
-
-	var count int64
-	row := s.db.QueryRow(stmnt, txHash)
-	err := row.Scan(&count)
-	return count == 2, errors.Wrap(err, "isDoubleSwap failed")
 }
