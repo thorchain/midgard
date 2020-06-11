@@ -87,17 +87,6 @@ func (s *TestGetHealthStore) Ping() error {
 	return errors.New("store is not healthy")
 }
 
-type TestGetHealthThorchain struct {
-	ThorchainDummy
-	lastHeight int64
-}
-
-func (t *TestGetHealthThorchain) GetLastChainHeight() (thorchain.LastHeights, error) {
-	return thorchain.LastHeights{
-		LastChainHeight: t.lastHeight,
-	}, nil
-}
-
 func (s *UsecaseSuite) TestGetHealth(c *C) {
 	now := time.Now()
 	tendermint := &TestGetHealthTendermint{
@@ -125,32 +114,19 @@ func (s *UsecaseSuite) TestGetHealth(c *C) {
 	store := &TestGetHealthStore{
 		isHealthy: true,
 	}
-	thorchain := &TestGetHealthThorchain{}
-	thorchain.lastHeight = 4
-	uc, err := NewUsecase(thorchain, tendermint, tendermint, store, s.config)
+	uc, err := NewUsecase(&ThorchainDummy{}, tendermint, tendermint, store, s.config)
 	c.Assert(err, IsNil)
 	err = uc.StartScanner()
 	c.Assert(err, IsNil)
 	time.Sleep(2 * time.Second)
 
-	health, err := uc.GetHealth()
-	c.Assert(err, IsNil)
+	health := uc.GetHealth()
 	c.Assert(health.Database, Equals, store.isHealthy)
 	c.Assert(health.ScannerHeight, Equals, int64(3))
-	c.Assert(health.CatchingUp, Equals, true)
-
-	// Not synced with THORNode
-	thorchain.lastHeight = 6
-	health, err = uc.GetHealth()
-	c.Assert(err, IsNil)
-	c.Assert(health.Database, Equals, store.isHealthy)
-	c.Assert(health.ScannerHeight, Equals, int64(3))
-	c.Assert(health.CatchingUp, Equals, false)
 
 	// Unhealthy DB situation
 	store.isHealthy = false
-	health, err = uc.GetHealth()
-	c.Assert(err, IsNil)
+	health = uc.GetHealth()
 	c.Assert(health.Database, Equals, store.isHealthy)
 
 	err = uc.StopScanner()
@@ -174,22 +150,22 @@ func (s *UsecaseSuite) TestScanningRestart(c *C) {
 
 type TestGetTxDetailsStore struct {
 	StoreDummy
-	address   common.Address
-	txID      common.TxID
-	asset     common.Asset
-	eventType string
-	offset    int64
-	limit     int64
-	txDetails []models.TxDetails
-	count     int64
-	err       error
+	address    common.Address
+	txID       common.TxID
+	asset      common.Asset
+	eventTypes []string
+	offset     int64
+	limit      int64
+	txDetails  []models.TxDetails
+	count      int64
+	err        error
 }
 
-func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, int64, error) {
+func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string, offset, limit int64) ([]models.TxDetails, int64, error) {
 	s.address = address
 	s.txID = txID
 	s.asset = asset
-	s.eventType = eventType
+	s.eventTypes = eventTypes
 	s.offset = offset
 	s.limit = limit
 	return s.txDetails, s.count, s.err
@@ -275,16 +251,16 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
 	txID, _ := common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
-	eventType := "stake"
+	eventTypes := []string{"stake"}
 	page := models.NewPage(0, 2)
-	details, count, err := uc.GetTxDetails(address, txID, asset, eventType, page)
+	details, count, err := uc.GetTxDetails(address, txID, asset, eventTypes, page)
 	c.Assert(err, IsNil)
 	c.Assert(details, DeepEquals, store.txDetails)
 	c.Assert(count, Equals, store.count)
 	c.Assert(store.address, Equals, address)
 	c.Assert(store.txID, Equals, txID)
 	c.Assert(store.asset, Equals, asset)
-	c.Assert(store.eventType, Equals, eventType)
+	c.Assert(store.eventTypes, DeepEquals, eventTypes)
 	c.Assert(store.offset, Equals, page.Offset)
 	c.Assert(store.limit, Equals, page.Limit)
 
@@ -294,7 +270,7 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, _, err = uc.GetTxDetails(address, txID, asset, eventType, page)
+	_, _, err = uc.GetTxDetails(address, txID, asset, eventTypes, page)
 	c.Assert(err, NotNil)
 }
 

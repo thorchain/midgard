@@ -76,20 +76,16 @@ func (uc *Usecase) StopScanner() error {
 }
 
 // GetHealth returns health status of Midgard's crucial units.
-func (uc *Usecase) GetHealth() (*models.HealthStatus, error) {
-	nodeHeight, err := uc.thorchain.GetLastChainHeight()
-	if err != nil {
-		return nil, err
-	}
+func (uc *Usecase) GetHealth() *models.HealthStatus {
 	return &models.HealthStatus{
 		Database:      uc.store.Ping() == nil,
 		ScannerHeight: uc.scanner.GetHeight(),
-		CatchingUp:    nodeHeight.LastChainHeight-uc.scanner.GetHeight() <= 2,
-	}, nil
+		CatchingUp:    uc.scanner.IsSynced(),
+	}
 }
 
 // GetTxDetails returns details and count of txs selected with query.
-func (uc *Usecase) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, page models.Page) ([]models.TxDetails, int64, error) {
+func (uc *Usecase) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType []string, page models.Page) ([]models.TxDetails, int64, error) {
 	err := page.Validate()
 	if err != nil {
 		return nil, 0, err

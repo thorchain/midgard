@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
@@ -53,15 +54,11 @@ func (h *Handlers) GetSwagger(ctx echo.Context) error {
 
 // (GET /v1/health)
 func (h *Handlers) GetHealth(ctx echo.Context) error {
-	health, err := h.uc.GetHealth()
-	if err != nil {
-		h.logger.Err(err).Msg("failed to GetHealth")
-		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
-	}
+	health := h.uc.GetHealth()
 	return ctx.JSON(http.StatusOK, health)
 }
 
-// (GET /v1/txs?address={address}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
+// (GET /v1/txs?address={address}&type={t1,t2,t3}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
 func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error {
 	var address common.Address
 	if params.Address != nil {
@@ -75,12 +72,12 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) err
 	if params.Asset != nil {
 		asset, _ = common.NewAsset(*params.Asset)
 	}
-	var eventType string
+	var eventTypes []string
 	if params.Type != nil {
-		eventType = *params.Type
+		eventTypes = strings.Split(*params.Type, ",")
 	}
 	page := models.NewPage(params.Offset, params.Limit)
-	txs, count, err := h.uc.GetTxDetails(address, txID, asset, eventType, page)
+	txs, count, err := h.uc.GetTxDetails(address, txID, asset, eventTypes, page)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxDetails")
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})

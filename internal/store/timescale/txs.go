@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -12,21 +13,21 @@ import (
 )
 
 // GetTxDetails returns events with pagination and given query params.
-func (s *Client) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, int64, error) {
-	txs, err := s.getTxDetails(address, txID, asset, eventType, offset, limit)
+func (s *Client) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string, offset, limit int64) ([]models.TxDetails, int64, error) {
+	txs, err := s.getTxDetails(address, txID, asset, eventTypes, offset, limit)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "GetTxDetails failed")
 	}
 
-	count, err := s.getTxsCount(address, txID, asset, eventType)
+	count, err := s.getTxsCount(address, txID, asset, eventTypes)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "GetTxDetails failed")
 	}
 	return txs, count, nil
 }
 
-func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType string, offset, limit int64) ([]models.TxDetails, error) {
-	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventType, false, limit, offset)
+func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string, offset, limit int64) ([]models.TxDetails, error) {
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventTypes, false, limit, offset)
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "getTxDetails failed")
@@ -47,8 +48,8 @@ func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset co
 	return s.processEvents(events)
 }
 
-func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset common.Asset, eventType string) (int64, error) {
-	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventType, true, 0, 0)
+func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string) (int64, error) {
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventTypes, true, 0, 0)
 	row := s.db.QueryRow(q, args...)
 
 	var count sql.NullInt64
@@ -61,7 +62,7 @@ func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset com
 	return count.Int64, nil
 }
 
-func (s *Client) buildEventsQuery(address, txID, asset, eventType string, isCount bool, limit, offset int64) (string, []interface{}) {
+func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []string, isCount bool, limit, offset int64) (string, []interface{}) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	if isCount {
 		sb.Select("COUNT(DISTINCT(txs.event_id))")
@@ -84,8 +85,53 @@ func (s *Client) buildEventsQuery(address, txID, asset, eventType string, isCoun
 		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
 		sb.Where(sb.Equal("coins.ticker", asset))
 	}
-	if eventType != "" {
-		sb.Where(sb.Equal("events.type", eventType))
+	if len(eventTypes) > 0 {
+		doubleSwap := false
+		var types []interface{}
+		for _, ev := range eventTypes {
+			if ev == "doubleSwap" {
+				doubleSwap = true
+			} else {
+				types = append(types, ev)
+			}
+		}
+		query := `SELECT MIN(event_id) 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+		if doubleSwap {
+			if len(types) > 0 {
+				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
+				// Merge double swaps into one
+				query = `SELECT MAX(event_id) 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+				sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
+			} else {
+				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
+			}
+		} else {
+			// Remove double swaps
+			query := `SELECT tx_hash 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+			sb.Where(sb.In("events.type", types...))
+			sb.Where(fmt.Sprintf("txs.tx_hash not in (%s)", query))
+			sb.Where(" txs.direction = 'in'")
+		}
+	} else {
+		// Merge double swaps into one
+		query := `SELECT MAX(event_id) 
+				FROM   txs 
+				WHERE  direction = 'in' 
+				GROUP  BY tx_hash 
+				HAVING Count(*) = 2 `
+		sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
 	}
 	return sb.Build()
 }
@@ -99,15 +145,24 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "processEvents failed")
 		}
+		outTx := s.outTxs(eventId)
+		event1 := s.events(eventId, eventType)
+		if eventType == "swap" && len(outTx) == 0 {
+			outTx = s.outTxs(eventId + 1)
+			event2 := s.events(eventId+1, eventType)
+			eventType = "doubleSwap"
+			event1.Slip += event2.Slip
+			event1.Fee += event2.Fee
+		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
 			Type:    eventType,
 			Status:  status,
 			In:      s.inTx(eventId),
-			Out:     s.outTxs(eventId),
+			Out:     outTx,
 			Gas:     s.gas(eventId),
 			Options: s.options(eventId, eventType),
-			Events:  s.events(eventId, eventType),
+			Events:  event1,
 			Date:    uint64(eventDate.Unix()),
 			Height:  height,
 		})
@@ -157,7 +212,7 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 
 func (s *Client) inTx(eventId uint64) models.TxData {
 	tx := s.txForDirection(eventId, "in")
-	tx.Coin = s.coinsForTxHash(tx.TxID)
+	tx.Coin = s.coinsForTxHash(tx.TxID, eventId)
 
 	return tx
 }
@@ -165,7 +220,7 @@ func (s *Client) inTx(eventId uint64) models.TxData {
 func (s *Client) outTxs(eventId uint64) []models.TxData {
 	txs := s.txsForDirection(eventId, "out")
 	for i, tx := range txs {
-		txs[i].Coin = s.coinsForTxHash(tx.TxID)
+		txs[i].Coin = s.coinsForTxHash(tx.TxID, eventId)
 	}
 
 	return txs
@@ -223,13 +278,14 @@ func (s *Client) txsForDirection(eventId uint64, direction string) []models.TxDa
 	return txs
 }
 
-func (s *Client) coinsForTxHash(txHash string) common.Coins {
+func (s *Client) coinsForTxHash(txHash string, eventID uint64) common.Coins {
 	stmnt := `
 		SELECT coins.chain, coins.symbol, coins.ticker, coins.amount
 			FROM coins
-		WHERE coins.tx_hash = $1`
+		WHERE coins.tx_hash = $1
+		AND   coins.event_Id= $2`
 
-	rows, err := s.db.Queryx(stmnt, txHash)
+	rows, err := s.db.Queryx(stmnt, txHash, eventID)
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
 		return nil
