@@ -145,20 +145,27 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "processEvents failed")
 		}
+		inTx := s.inTx(eventId)
 		outTx := s.outTxs(eventId)
 		event1 := s.events(eventId, eventType)
-		if eventType == "swap" && len(outTx) == 0 {
-			outTx = s.outTxs(eventId + 1)
-			event2 := s.events(eventId+1, eventType)
-			eventType = "doubleSwap"
-			event1.Slip += event2.Slip
-			event1.Fee += event2.Fee
+		if eventType == "swap" {
+			is, err := s.isDoubleSwap(inTx.TxID)
+			if err != nil {
+				return nil, err
+			}
+			if is {
+				outTx = s.outTxs(eventId + 1)
+				event2 := s.events(eventId+1, eventType)
+				eventType = "doubleSwap"
+				event1.Slip += event2.Slip
+				event1.Fee += event2.Fee
+			}
 		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
 			Type:    eventType,
 			Status:  status,
-			In:      s.inTx(eventId),
+			In:      inTx,
 			Out:     outTx,
 			Gas:     s.gas(eventId),
 			Options: s.options(eventId, eventType),
@@ -435,4 +442,17 @@ func (s *Client) eventBasic(eventId uint64) (time.Time, uint64, string, string, 
 		return eventTime, 0, "eventBasic failed", "eventBasic failed", errors.Wrap(err, "eventBasic failed")
 	}
 	return eventTime, height, eventType, status, nil
+}
+
+func (s *Client) isDoubleSwap(txHash string) (bool, error) {
+	stmnt := `
+		SELECT count(*) 
+			FROM events 
+			JOIN txs on txs.event_id = events.id 
+		WHERE txs.tx_hash = $1`
+
+	var count int64
+	row := s.db.QueryRow(stmnt, txHash)
+	err := row.Scan(&count)
+	return count == 2, errors.Wrap(err, "isDoubleSwap failed")
 }
