@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	day              = time.Hour * 24
-	month            = day * 30
-	blockTimeSeconds = 5
+	day   = time.Hour * 24
+	month = day * 30
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
