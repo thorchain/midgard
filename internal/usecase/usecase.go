@@ -453,5 +453,5 @@ func (uc *Usecase) computeLastChurn() (int64, error) {
 
 func (uc *Usecase) calculatePoolActivationCountdown(lastHeight int64) int64 {
 	newPoolCycle := uc.consts.Int64Values["NewPoolCycle"]
-	return (newPoolCycle - lastHeight%newPoolCycle) * blockTimeSeconds
+	return newPoolCycle - lastHeight%newPoolCycle
 }
