@@ -63,12 +63,11 @@ paths:
           example: BNB.TOMOB-1E1
         - in: query
           name: type
-          description: Requested type of events
+          description: One or more comma separated unique types of event
           required: false
           schema:
             type: string
-            enum: [swap, stake, unstake, add, refund]
-          example: [swap, stake, unstake, add, refund]
+          example: [swap, stake, unstake, add, refund, doubleSwap]
         - in: query
           name: offset
           description: pagination offset
@@ -245,6 +244,8 @@ components:
               scannerHeight:
                 type: integer
                 format: int64
+              catching_up:
+                type: boolean
 
     TxsResponse:
       description: Returns an array of transactions
@@ -341,7 +342,7 @@ components:
           $ref: '#/components/schemas/asset'
         type:
           type: string
-          enum: [swap, stake, unstake, rewards, add, pool, gas, refund]
+          enum: [swap, stake, unstake, rewards, add, pool, gas, refund, doubleSwap]
         status:
           type: string
           enum: [success, refund] 

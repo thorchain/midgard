@@ -8,14 +8,13 @@ import (
 
 const (
 	// Table / Measurement name
-	ModelEventsTable  = "events"
-	ModelTxsTable     = "txs"
-	ModelGasTable     = "gas"
-	ModelCoinsTable   = "coins"
-	ModelStakesTable  = "stakes"
-	ModelSwapsTable   = "swaps"
-	ModelGenesisTable = "genesis"
-	ModelPoolsTable   = "pools"
+	ModelEventsTable = "events"
+	ModelTxsTable    = "txs"
+	ModelGasTable    = "gas"
+	ModelCoinsTable  = "coins"
+	ModelStakesTable = "stakes"
+	ModelSwapsTable  = "swaps"
+	ModelPoolsTable  = "pools"
 )
 
 type Event struct {

@@ -27,8 +27,11 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
 RUN apt-get update
 RUN apt-get install -y jq apt-utils make yarn
 
-# Generate api document
 RUN make node_modules
+RUN make ${GOPATH}/bin/oapi-codegen
+# Make sure swagger.json is updated
+RUN make oapi-codegen-server
+# Generate api document
 RUN make doco
 
 # Generate config.
