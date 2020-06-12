@@ -122,10 +122,6 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 	if err != nil {
 		return nil, err
 	}
-	priceInRune, err := uc.calculateAssetPrice(assetDepth, runeDepth)
-	if err != nil {
-		return nil, err
-	}
 	dateCreated, err := uc.store.GetDateCreated(pool)
 	if err != nil {
 		return nil, err
@@ -133,16 +129,16 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 
 	details := models.AssetDetails{
 		DateCreated: int64(dateCreated),
-		PriceInRune: priceInRune,
+		PriceInRune: uc.calculateAssetPrice(assetDepth, runeDepth),
 	}
 	return &details, nil
 }
 
-func (uc *Usecase) calculateAssetPrice(assetDepth, runeDepth uint64) (float64, error) {
+func (uc *Usecase) calculateAssetPrice(assetDepth, runeDepth uint64) float64 {
 	if assetDepth > 0 {
-		return float64(runeDepth) / float64(assetDepth), nil
+		return float64(runeDepth) / float64(assetDepth)
 	}
-	return 0, nil
+	return 0
 }
 
 // GetStats returns some historical statistic data of network.
