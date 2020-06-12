@@ -1008,7 +1008,7 @@ func (s *UsecaseSuite) TestZeroStandbyNodes(c *C) {
 		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4485,
 		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
 		NextChurnHeight:         51851,
-		PoolActivationCountdown: 49975 * blockTimeSeconds,
+		PoolActivationCountdown: 49975,
 	})
 }
 
@@ -1097,7 +1097,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4485,
 		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
 		NextChurnHeight:         51851,
-		PoolActivationCountdown: 49975 * blockTimeSeconds,
+		PoolActivationCountdown: 49975,
 	})
 
 	// Store error situation

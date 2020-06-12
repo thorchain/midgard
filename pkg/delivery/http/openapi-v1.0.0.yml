@@ -764,7 +764,7 @@ components:
         poolActivationCountdown:
           type: integer
           format: int64
-          description: The remaining time of pool activation (in seconds)
+          description: The remaining time of pool activation (in blocks)
 
     NodeKey:
       type: object
