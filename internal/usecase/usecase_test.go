@@ -312,7 +312,8 @@ func (s *UsecaseSuite) TestGetPools(c *C) {
 type TestGetAssetDetailsStore struct {
 	StoreDummy
 	pool        common.Asset
-	priceInRune float64
+	assetDepth  uint64
+	runeDepth   uint64
 	dateCreated uint64
 	err         error
 }
@@ -321,8 +322,12 @@ func (s *TestGetAssetDetailsStore) GetPool(asset common.Asset) (common.Asset, er
 	return s.pool, s.err
 }
 
-func (s *TestGetAssetDetailsStore) GetPriceInRune(asset common.Asset) (float64, error) {
-	return s.priceInRune, s.err
+func (s *TestGetAssetDetailsStore) GetAssetDepth(asset common.Asset) (uint64, error) {
+	return s.assetDepth, s.err
+}
+
+func (s *TestGetAssetDetailsStore) GetRuneDepth(asset common.Asset) (uint64, error) {
+	return s.runeDepth, s.err
 }
 
 func (s *TestGetAssetDetailsStore) GetDateCreated(asset common.Asset) (uint64, error) {
@@ -336,7 +341,8 @@ func (s *UsecaseSuite) TestGetAssetDetails(c *C) {
 			Symbol: "TOML-4BC",
 			Ticker: "TOML",
 		},
-		priceInRune: 1.5,
+		assetDepth:  2,
+		runeDepth:   3,
 		dateCreated: uint64(time.Now().Unix()),
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, store, s.config)
@@ -345,7 +351,7 @@ func (s *UsecaseSuite) TestGetAssetDetails(c *C) {
 	details, err := uc.GetAssetDetails(store.pool)
 	c.Assert(err, IsNil)
 	c.Assert(details, DeepEquals, &models.AssetDetails{
-		PriceInRune: store.priceInRune,
+		PriceInRune: 1.5,
 		DateCreated: int64(store.dateCreated),
 	})
 
