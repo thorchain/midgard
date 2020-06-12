@@ -85,7 +85,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 				},
 			},
 			{
-				Height: 1,
+				Height: 2,
 				TxsResults: []*abcitypes.ResponseDeliverTx{
 					{
 						Events: []abcitypes.Event{
@@ -126,7 +126,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 		},
 	}
 	callback := &TestCallback{}
-	bc := NewBlockScanner(client, callback, time.Second*3)
+	bc := NewBlockScanner(client, client, callback, time.Second*3)
 
 	err := bc.Start()
 	c.Assert(err, IsNil)
@@ -213,7 +213,7 @@ func (s *BlockScannerSuite) TestScanning(c *C) {
 func (s *BlockScannerSuite) TestScanningRestart(c *C) {
 	client := &TestTendermint{}
 	calback := &TestCallback{}
-	bc := NewBlockScanner(client, calback, time.Second*3)
+	bc := NewBlockScanner(client, client, calback, time.Second*3)
 
 	// Scanner should be able to restart.
 	err := bc.Start()
@@ -235,7 +235,7 @@ func (s *BlockScannerSuite) TestScanningFaultTolerant(c *C) {
 		err: errors.New("failed to fetch data"),
 	}
 	calback := &TestCallback{}
-	bc := NewBlockScanner(client, calback, time.Second)
+	bc := NewBlockScanner(client, client, calback, time.Second)
 
 	err := bc.Start()
 	c.Assert(err, IsNil)
@@ -256,8 +256,11 @@ func (t *TestTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.
 	if t.err != nil {
 		return nil, t.err
 	}
-	if minHeight-1 > int64(len(t.metas)) || maxHeight > int64(len(t.metas)) {
+	if minHeight > int64(len(t.metas)) {
 		return nil, errors.Errorf("last block height is %d", len(t.metas))
+	}
+	if maxHeight > int64(len(t.metas)) {
+		maxHeight = int64(len(t.metas))
 	}
 
 	result := &coretypes.ResultBlockchainInfo{
@@ -276,6 +279,10 @@ func (t *TestTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResu
 	}
 
 	return t.results[*height-1], nil
+}
+
+func (t *TestTendermint) Send() ([]interface{}, error) {
+	return nil, t.err
 }
 
 var _ Callback = (*TestCallback)(nil)

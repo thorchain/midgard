@@ -1,6 +1,7 @@
 package thorchain
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -10,12 +11,16 @@ import (
 	"github.com/rs/zerolog/log"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
+	"github.com/tendermint/tendermint/types"
 )
+
+const maxBlockchainInfoSize = 20
 
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
 // with websocket or directly by requesting http endpoint.
 type BlockScanner struct {
 	client   Tendermint
+	batch    TendermintBatch
 	callback Callback
 	interval time.Duration
 	stopChan chan struct{}
@@ -27,9 +32,10 @@ type BlockScanner struct {
 }
 
 // NewBlockScanner will create a new instance of BlockScanner.
-func NewBlockScanner(client Tendermint, callback Callback, interval time.Duration) *BlockScanner {
+func NewBlockScanner(client Tendermint, batch TendermintBatch, callback Callback, interval time.Duration) *BlockScanner {
 	sc := &BlockScanner{
 		client:   client,
+		batch:    batch,
 		callback: callback,
 		interval: interval,
 		stopChan: make(chan struct{}),
@@ -80,7 +86,7 @@ func (sc *BlockScanner) scan() {
 			return
 		default:
 			var err error
-			sc.synced, err = sc.processNextBlock()
+			sc.synced, err = sc.processNextBatch()
 			if err != nil {
 				sc.logger.Error().Int64("height", sc.GetHeight()).Err(err).Msg("failed to process the next block")
 			} else {
@@ -98,30 +104,63 @@ func (sc *BlockScanner) scan() {
 	}
 }
 
-func (sc *BlockScanner) processNextBlock() (bool, error) {
-	height := sc.GetHeight() + 1
-	info, err := sc.client.BlockchainInfo(height, height)
+func (sc *BlockScanner) processNextBatch() (bool, error) {
+	from := sc.GetHeight() + 1
+	to := from + maxBlockchainInfoSize - 1
+	info, err := sc.fetchInfo(from, to)
 	if err != nil {
-		return false, errors.Wrap(err, "could not get blockchain info")
+		return false, err
 	}
-	block, err := sc.client.BlockResults(&height)
+	to = from + int64(len(info.BlockMetas)) - 1
+
+	blocks, err := sc.fetchResults(from, to)
 	if err != nil {
-		return false, errors.Wrap(err, "could not get results of block")
+		return false, errors.Wrapf(err, "could not get block results from %d to %d", from, to)
 	}
 
+	for i, meta := range info.BlockMetas {
+		block := blocks[i]
+		if block == nil {
+			return false, fmt.Errorf("could not get block %d", meta.Header.Height)
+		}
+		sc.executeBlock(meta, block)
+	}
+
+	synced := info.LastHeight == sc.GetHeight()
+	return synced, nil
+}
+
+func (sc *BlockScanner) fetchInfo(from, to int64) (*coretypes.ResultBlockchainInfo, error) {
+	info, err := sc.client.BlockchainInfo(from, to)
+	return info, errors.Wrap(err, "could not get blockchain info")
+}
+
+func (sc *BlockScanner) fetchResults(from, to int64) ([]*coretypes.ResultBlockResults, error) {
+	blocks := make([]*coretypes.ResultBlockResults, 0, to-from+1)
+	for i := from; i <= to; i++ {
+		block, err := sc.batch.BlockResults(&i)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not prepare request block results of height %d", i)
+		}
+		blocks = append(blocks, block)
+	}
+
+	_, err := sc.batch.Send()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not send batch request")
+	}
+	return blocks, nil
+}
+
+func (sc *BlockScanner) executeBlock(meta *types.BlockMeta, block *coretypes.ResultBlockResults) {
 	for _, tx := range block.TxsResults {
 		events := convertEvents(tx.Events)
-		sc.callback.NewTx(height, events)
+		sc.callback.NewTx(block.Height, events)
 	}
-
-	blockTime := info.BlockMetas[0].Header.Time
 	beginEvents := convertEvents(block.BeginBlockEvents)
 	endEvents := convertEvents(block.EndBlockEvents)
-	sc.callback.NewBlock(height, blockTime, beginEvents, endEvents)
-
+	sc.callback.NewBlock(block.Height, meta.Header.Time, beginEvents, endEvents)
 	sc.incrementHeight()
-	synced := info.LastHeight == height
-	return synced, nil
 }
 
 func (sc *BlockScanner) incrementHeight() {
@@ -154,7 +193,12 @@ func convertEvents(tes []abcitypes.Event) []Event {
 // Tendermint represents every method BlockScanner needs to scan blocks.
 type Tendermint interface {
 	BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error)
+}
+
+// TendermintBatch is the same as Tendermint but request in batch mode.
+type TendermintBatch interface {
 	BlockResults(height *int64) (*coretypes.ResultBlockResults, error)
+	Send() ([]interface{}, error)
 }
 
 // Callback represents methods required by Scanner to notify events.
