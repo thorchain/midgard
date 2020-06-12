@@ -31,7 +31,7 @@ func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
 	return maxId.Int64, nil
 }
 
-func (s *Client) GetMaxHeight() (int64, error) {
+func (s *Client) GetLastHeight() (int64, error) {
 	query := fmt.Sprintf(`
 		SELECT Max(height) 
 		FROM   %s`, models.ModelEventsTable)

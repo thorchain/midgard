@@ -47,5 +47,5 @@ type Store interface {
 	CreateFeeRecord(event models.Event, pool common.Asset) error
 	UpdateUnStakesRecord(record models.EventUnstake) error
 	UpdateSwapRecord(record models.EventSwap) error
-	GetMaxHeight() (int64, error)
+	GetLastHeight() (int64, error)
 }

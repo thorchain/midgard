@@ -65,7 +65,7 @@ func (uc *Usecase) StartScanner() error {
 	if uc.scanner == nil {
 		uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.eh, uc.conf.ScanInterval)
 	}
-	height, err := uc.store.GetMaxHeight()
+	height, err := uc.store.GetLastHeight()
 	if err != nil {
 		return err
 	}

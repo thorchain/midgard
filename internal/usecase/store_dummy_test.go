@@ -16,7 +16,7 @@ var _ store.Store = (*StoreDummy)(nil)
 // StoreDummy is test purpose implementation of Store.
 type StoreDummy struct{}
 
-func (s *StoreDummy) GetMaxHeight() (int64, error) {
+func (s *StoreDummy) GetLastHeight() (int64, error) {
 	return 0, nil
 }
 
