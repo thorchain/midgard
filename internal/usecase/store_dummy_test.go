@@ -84,7 +84,11 @@ func (s *StoreDummy) GetPool(asset common.Asset) (common.Asset, error) {
 	return common.EmptyAsset, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPriceInRune(asset common.Asset) (float64, error) {
+func (s *StoreDummy) GetAssetDepth(asset common.Asset) (uint64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) GetRuneDepth(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
