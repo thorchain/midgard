@@ -282,7 +282,7 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) (int64, 
 		return 0, errors.Wrap(err, "poolStaked failed")
 	}
 
-	assetPrice, err := s.GetPriceInRune(asset)
+	assetPrice, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStaked failed")
 	}
@@ -300,7 +300,7 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, 
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		runeDepth, err := s.runeDepth(asset)
+		runeDepth, err := s.GetRuneDepth(asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
@@ -332,7 +332,7 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		assetDepth, err := s.assetDepth(asset)
+		assetDepth, err := s.GetAssetDepth(asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
@@ -359,7 +359,7 @@ func (s *Client) poolEarned(address common.Address, asset common.Asset) (int64, 
 		return 0, errors.Wrap(err, "poolEarned failed")
 	}
 
-	assetPrice, err := s.GetPriceInRune(asset)
+	assetPrice, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolEarned failed")
 	}
@@ -537,7 +537,7 @@ func (s *Client) totalEarned(address common.Address, pools []common.Asset) (int6
 			return 0, errors.Wrap(err, "totalEarned failed")
 		}
 
-		priceInRune, err := s.GetPriceInRune(pool)
+		priceInRune, err := s.getPriceInRune(pool)
 		if err != nil {
 			return 0, errors.Wrap(err, "totalEarned failed")
 		}

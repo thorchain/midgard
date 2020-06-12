@@ -114,7 +114,7 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 	if err != nil {
 		return nil, err
 	}
-	priceInRune, err := uc.store.GetPriceInRune(pool)
+	priceInRune, err := uc.getPriceInRune(pool)
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +128,22 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 		PriceInRune: priceInRune,
 	}
 	return &details, nil
+}
+
+func (uc *Usecase) getPriceInRune(asset common.Asset) (float64, error) {
+	assetDepth, err := uc.store.GetAssetDepth(asset)
+	if err != nil {
+		return 0, err
+	}
+	if assetDepth > 0 {
+		runeDepth, err := uc.store.GetRuneDepth(asset)
+		if err != nil {
+			return 0, err
+		}
+		return float64(runeDepth) / float64(assetDepth), nil
+	}
+
+	return 0, nil
 }
 
 // GetStats returns some historical statistic data of network.
