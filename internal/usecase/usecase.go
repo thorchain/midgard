@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	day              = time.Hour * 24
-	month            = day * 30
-	blockTimeSeconds = 5
+	day   = time.Hour * 24
+	month = day * 30
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
@@ -453,5 +452,5 @@ func (uc *Usecase) computeLastChurn() (int64, error) {
 
 func (uc *Usecase) calculatePoolActivationCountdown(lastHeight int64) int64 {
 	newPoolCycle := uc.consts.Int64Values["NewPoolCycle"]
-	return (newPoolCycle - lastHeight%newPoolCycle) * blockTimeSeconds
+	return newPoolCycle - lastHeight%newPoolCycle
 }
