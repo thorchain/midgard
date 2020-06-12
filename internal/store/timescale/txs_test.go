@@ -544,6 +544,37 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
+
+	// Incomplete swap
+	swapEvent := swapSellBnb2RuneEvent4
+	swapEvent.OutTxs = nil
+	err = s.Store.CreateSwapRecord(swapEvent)
+	c.Assert(err, IsNil)
+	txDetail = models.TxDetails{
+		Status: swapEvent.Status,
+		Type:   swapEvent.Type,
+		Height: uint64(swapEvent.Height),
+		Pool:   swapEvent.Pool,
+		In: models.TxData{
+			Address: swapEvent.Event.InTx.FromAddress.String(),
+			Coin:    swapEvent.Event.InTx.Coins,
+			Memo:    string(swapEvent.InTx.Memo),
+			TxID:    swapEvent.InTx.ID.String(),
+		},
+		Events: models.Events{
+			Fee:  uint64(swapEvent.LiquidityFee),
+			Slip: float64(swapEvent.TradeSlip) / slipBasisPoints,
+		},
+		Date: uint64(swapEvent.Time.Unix()),
+		Out:  make([]models.TxData, 0),
+	}
+	evts = []models.TxDetails{
+		txDetail,
+	}
+	events, count, err = s.Store.GetTxDetails("", swapEvent.InTx.ID, common.EmptyAsset, []string{"swap"}, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events[0], DeepEquals, evts[0])
 }
 
 func (s *TimeScaleSuite) TestEventPool(c *C) {
