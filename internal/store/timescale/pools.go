@@ -78,7 +78,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		return models.PoolData{}, errors.New("pool does not exist")
 	}
 
-	assetDepth, err := s.assetDepth(asset)
+	assetDepth, err := s.GetAssetDepth(asset)
 	if err != nil {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -168,12 +168,12 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	GetPriceInRune, err := s.GetPriceInRune(asset)
+	getPriceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	runeDepth, err := s.runeDepth(asset)
+	runeDepth, err := s.GetRuneDepth(asset)
 	if err != nil {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -284,7 +284,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		PoolUnits:        poolUnits,
 		PoolVolume:       poolVolume,
 		PoolVolume24hr:   poolVolume24hr,
-		Price:            GetPriceInRune,
+		Price:            getPriceInRune,
 		RuneDepth:        runeDepth,
 		RuneROI:          runeROI,
 		RuneStakedTotal:  runeStakedTotal,
@@ -304,13 +304,13 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 	}, nil
 }
 
-func (s *Client) GetPriceInRune(asset common.Asset) (float64, error) {
-	assetDepth, err := s.assetDepth(asset)
+func (s *Client) getPriceInRune(asset common.Asset) (float64, error) {
+	assetDepth, err := s.GetAssetDepth(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "getPriceInRune failed")
 	}
 	if assetDepth > 0 {
-		runeDepth, err := s.runeDepth(asset)
+		runeDepth, err := s.GetRuneDepth(asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "getPriceInRune failed")
 		}
@@ -1007,7 +1007,7 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 	if err != nil {
 		return 0, nil
 	}
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolStakedTotal failed")
 	}
@@ -1026,7 +1026,7 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 // -assetGas
 // +assetFee
 // +assetSlashed
-func (s *Client) assetDepth(asset common.Asset) (uint64, error) {
+func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
 	stakes, err := s.assetStaked(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetDepth failed")
@@ -1092,7 +1092,7 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 	return uint64(depth), nil
 }
 
-func (s *Client) runeDepth(asset common.Asset) (uint64, error) {
+func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
 	stakes, err := s.runeStaked(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth failed")
@@ -1242,7 +1242,7 @@ func (s *Client) assetSwapped12m(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
-	runeDepth, err := s.runeDepth(asset)
+	runeDepth, err := s.GetRuneDepth(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolDepth failed")
 	}
@@ -1318,7 +1318,7 @@ func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyVolume failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "buyVolume failed")
 	}
@@ -1341,7 +1341,7 @@ func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyVolume24hr failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "buyVolume24hr failed")
 	}
@@ -1391,7 +1391,7 @@ func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
 		return 0, errors.Wrap(err, "sellTxAverage failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "sellTxAverage failed")
 	}
@@ -1413,7 +1413,7 @@ func (s *Client) buyTxAverage(asset common.Asset) (float64, error) {
 		return 0, errors.Wrap(err, "buyTxAverage failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "buyTxAverage failed")
 	}
@@ -1435,7 +1435,7 @@ func (s *Client) poolTxAverage(asset common.Asset) (float64, error) {
 		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolTxAverage failed")
 	}
@@ -1528,7 +1528,7 @@ func (s *Client) buyFeeAverage(asset common.Asset) (float64, error) {
 		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "buyFeeAverage failed")
 	}
@@ -1589,7 +1589,7 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyFeesTotal failed")
 	}
 
-	priceInRune, err := s.GetPriceInRune(asset)
+	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "buyFeesTotal failed")
 	}
@@ -1767,7 +1767,7 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) assetROI(asset common.Asset) (float64, error) {
-	assetDepth, err := s.assetDepth(asset)
+	assetDepth, err := s.GetAssetDepth(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetROI failed")
 	}
@@ -1809,7 +1809,7 @@ func (s *Client) assetROI12(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) runeROI(asset common.Asset) (float64, error) {
-	runeDepth, err := s.runeDepth(asset)
+	runeDepth, err := s.GetRuneDepth(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI failed")
 	}
