@@ -16,6 +16,10 @@ var _ store.Store = (*StoreDummy)(nil)
 // StoreDummy is test purpose implementation of Store.
 type StoreDummy struct{}
 
+func (s *StoreDummy) GetLastHeight() (int64, error) {
+	return 0, nil
+}
+
 func (s *StoreDummy) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
 	return ErrNotImplemented
 }

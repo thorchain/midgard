@@ -31,6 +31,18 @@ func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
 	return maxId.Int64, nil
 }
 
+func (s *Client) GetLastHeight() (int64, error) {
+	query := fmt.Sprintf(`
+		SELECT Max(height) 
+		FROM   %s`, models.ModelEventsTable)
+	var maxHeight sql.NullInt64
+	err := s.db.Get(&maxHeight, query)
+	if err != nil {
+		return 0, errors.Wrap(err, "maxID query return null or failed")
+	}
+	return maxHeight.Int64, nil
+}
+
 func (s *Client) CreateEventRecord(record models.Event) error {
 	if record.Height == 0 {
 		return nil
