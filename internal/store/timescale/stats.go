@@ -130,7 +130,7 @@ func (s *Client) PoolCount() (uint64, error) {
 		}
 
 		asset, _ := common.NewAsset(pool)
-		depth, err := s.runeDepth(asset)
+		depth, err := s.GetRuneDepth(asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "poolCount failed")
 		}
@@ -200,7 +200,7 @@ func (s *Client) TotalEarned() (uint64, error) {
 	}
 	var totalEarned int64
 	for _, pool := range pools {
-		runeDepth, err := s.runeDepth(pool)
+		runeDepth, err := s.GetRuneDepth(pool)
 		if err != nil {
 			return 0, errors.Wrap(err, "TotalEarned failed")
 		}
@@ -209,7 +209,7 @@ func (s *Client) TotalEarned() (uint64, error) {
 			return 0, errors.Wrap(err, "TotalEarned failed")
 		}
 		runeEarned := int64(runeDepth) - runeStaked
-		assetDepth, err := s.assetDepth(pool)
+		assetDepth, err := s.GetAssetDepth(pool)
 		if err != nil {
 			return 0, errors.Wrap(err, "TotalEarned failed")
 		}
@@ -218,7 +218,7 @@ func (s *Client) TotalEarned() (uint64, error) {
 			return 0, errors.Wrap(err, "TotalEarned failed")
 		}
 		assetEarned := int64(assetDepth) - assetStaked
-		priceInRune, err := s.GetPriceInRune(pool)
+		priceInRune, err := s.getPriceInRune(pool)
 		if err != nil {
 			return 0, errors.Wrap(err, "TotalEarned failed")
 		}

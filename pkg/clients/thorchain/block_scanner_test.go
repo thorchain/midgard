@@ -339,7 +339,7 @@ func (s *BlockScannerSuite) TestScanningResume(c *C) {
 		},
 	}
 	callback := &TestCallback{}
-	bc := NewBlockScanner(client, callback, time.Second*3)
+	bc := NewBlockScanner(client, client, callback, time.Second*3)
 	err := bc.Start()
 	c.Assert(err, IsNil)
 	time.Sleep(time.Second)
