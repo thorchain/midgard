@@ -344,8 +344,8 @@ func (s *UsecaseSuite) TestGetAssetDetails(c *C) {
 			Symbol: "TOML-4BC",
 			Ticker: "TOML",
 		},
-		assetDepth:  2,
-		runeDepth:   3,
+		assetDepth:  2000,
+		runeDepth:   3000,
 		dateCreated: uint64(time.Now().Unix()),
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
