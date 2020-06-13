@@ -168,7 +168,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	GetPriceInRune, err := s.getPriceInRune(asset)
+	getPriceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -284,7 +284,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		PoolUnits:        poolUnits,
 		PoolVolume:       poolVolume,
 		PoolVolume24hr:   poolVolume24hr,
-		Price:            GetPriceInRune,
+		Price:            getPriceInRune,
 		RuneDepth:        runeDepth,
 		RuneROI:          runeROI,
 		RuneStakedTotal:  runeStakedTotal,
