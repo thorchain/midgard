@@ -426,7 +426,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		evt.OutTxs = common.Txs{outTx}
 		var unstake models.EventUnstake
 		unstake.Event = evt
-		unstakeEvt, _, err := eh.store.GetTxDetails("", txID, common.EmptyAsset, nil, 0, 10)
+		unstakeEvt, _, err := eh.store.GetTxDetails(common.NoAddress, txID, common.EmptyAsset, nil, 0, 1)
 		if err != nil {
 			return err
 		}
