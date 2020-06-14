@@ -16,6 +16,10 @@ var _ store.Store = (*StoreDummy)(nil)
 // StoreDummy is test purpose implementation of Store.
 type StoreDummy struct{}
 
+func (s *StoreDummy) UpdateEventStatus(_ int64, _ string) error {
+	return ErrNotImplemented
+}
+
 func (s *StoreDummy) GetLastHeight() (int64, error) {
 	return 0, nil
 }
