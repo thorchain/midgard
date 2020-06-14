@@ -463,7 +463,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			return err
 		}
 	} else {
-		// TODO: Refund event with multiple coins in inputtx should have more than one outbound
+		// TODO: Refund event with multiple coins in input transaction should have more than one outbound
 		//refund events
 		for _, ev := range evts {
 			err = eh.store.UpdateEventStatus(ev.ID, successEvent)
