@@ -431,7 +431,10 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			return err
 		}
 		if len(unstakeEvt) > 0 && len(unstakeEvt[0].Out) == 2 {
-			eh.store.UpdateEventStatus(evt.ID, successEvent)
+			err = eh.store.UpdateEventStatus(evt.ID, successEvent)
+			if err != nil {
+				return err
+			}
 		}
 		err = eh.store.UpdateUnStakesRecord(unstake)
 		if err != nil {
@@ -443,7 +446,10 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			evt = evts[1]
 		}
 		for _, ev := range evts {
-			eh.store.UpdateEventStatus(ev.ID, successEvent)
+			err = eh.store.UpdateEventStatus(ev.ID, successEvent)
+			if err != nil {
+				return err
+			}
 		}
 		evt.OutTxs = common.Txs{outTx}
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
