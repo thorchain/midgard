@@ -247,6 +247,7 @@ github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5a
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.3.1 h1:Xye71clBPdm5HgqGwUkwhbynsUJZhDbS20FvLhQ2izg=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
+github.com/google/go-cmp v0.4.0 h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/gofuzz v1.0.0 h1:A8PeW59pxE9IoFRqBp37U+mSNaQoZ46F1f0f863XSXw=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
@@ -900,6 +901,8 @@ mvdan.cc/gofumpt v0.0.0-20200129124340-2a103673760e h1:+bRq4ux0JFiwiXfHrwH0U8VoH
 mvdan.cc/gofumpt v0.0.0-20200129124340-2a103673760e/go.mod h1:Cdyj5i63ZSqB4219tCL1kClr9yNjkywGjPg0EifCz7Q=
 mvdan.cc/gofumpt v0.0.0-20200428204718-3c354cfe1172 h1:V+8T7SIbiX7d6X1E+K+0is74B1pBkyv3ClAf7fyPYhU=
 mvdan.cc/gofumpt v0.0.0-20200428204718-3c354cfe1172/go.mod h1:MK5vCrmqmMBc3/df6qui6sfCat8z+Av5aXXoPEK57mg=
+mvdan.cc/gofumpt v0.0.0-20200513141252-abc0db2c416a h1:TTEzidAa7rn93JGy1ACigx6o9VcsRLKG7qICdErmvUs=
+mvdan.cc/gofumpt v0.0.0-20200513141252-abc0db2c416a/go.mod h1:4q/PlrZKQLU5MowSvCKM3U4xJUPtJ8vKWx7vsWFJ3MI=
 sigs.k8s.io/yaml v1.1.0/go.mod h1:UJmg0vDUVViEyp3mgSv9WPwZCDxu4rQW1olrI1uml+o=
 sourcegraph.com/sourcegraph/appdash v0.0.0-20180110180208-2cc67fd64755/go.mod h1:hI742Nqp5OhwiqlzhgfbWU4mW4yO10fP+LoT9WOswdU=
 sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1:hI742Nqp5OhwiqlzhgfbWU4mW4yO10fP+LoT9WOswdU=

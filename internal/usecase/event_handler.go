@@ -29,6 +29,8 @@ const (
 	errataEventType   = `errata`
 	feeEventType      = `fee`
 	outboundEventType = `outbound`
+	pendingEvent      = `Pending`
+	successEvent      = `Success`
 )
 
 var (
@@ -167,6 +169,8 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to save InTx")
 		}
+		ev.Status = successEvent
+
 		err = eh.store.CreateStakeRecord(ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
@@ -187,7 +191,7 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode unstake")
 	}
-
+	unstake.Status = pendingEvent
 	err = eh.store.CreateUnStakesRecord(unstake)
 	if err != nil {
 		return errors.Wrap(err, "failed to save unstake event")
@@ -207,6 +211,7 @@ func (eh *eventHandler) processRefundEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode refund")
 	}
+	refund.Status = pendingEvent
 
 	err = eh.store.CreateRefundRecord(refund)
 	if err != nil {
@@ -227,7 +232,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode swap")
 	}
-
+	swap.Status = pendingEvent
 	err = eh.store.CreateSwapRecord(swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
@@ -247,6 +252,7 @@ func (eh *eventHandler) processPoolEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode pool")
 	}
+	pool.Event.Status = successEvent
 
 	err = eh.store.CreatePoolRecord(pool)
 	if err != nil {
@@ -267,6 +273,7 @@ func (eh *eventHandler) processAddEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode add")
 	}
+	add.Status = successEvent
 
 	err = eh.store.CreateAddRecord(add)
 	if err != nil {
@@ -285,6 +292,8 @@ func (eh *eventHandler) processGasEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode gas.gaspool")
 	}
 	gas.Pools = append(gas.Pools, pool)
+	gas.Status = successEvent
+
 	err = eh.store.CreateGasRecord(gas)
 	if err != nil {
 		return errors.Wrap(err, "failed to save gas event")
@@ -305,6 +314,7 @@ func (eh *eventHandler) processSlashEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode slash")
 	}
+	slash.Status = successEvent
 
 	err = eh.store.CreateSlashRecord(slash)
 	if err != nil {
@@ -327,6 +337,8 @@ func (eh *eventHandler) processErrataEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode errata.PoolMod")
 	}
 	errata.Pools = append(errata.Pools, pool)
+	errata.Status = successEvent
+
 	err = eh.store.CreateErrataRecord(errata)
 	if err != nil {
 		return errors.Wrap(err, "failed to save errata event")
@@ -378,6 +390,7 @@ func (eh *eventHandler) processRewardEvent(event thorchain.Event) error {
 		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
 	}
 	reward.PoolRewards = getPoolAmount(event.Attributes)
+	reward.Status = successEvent
 
 	err := eh.store.CreateRewardRecord(reward)
 	if err != nil {
@@ -413,6 +426,16 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		evt.OutTxs = common.Txs{outTx}
 		var unstake models.EventUnstake
 		unstake.Event = evt
+		unstakeEvt, _, err := eh.store.GetTxDetails(common.NoAddress, txID, common.EmptyAsset, nil, 0, 1)
+		if err != nil {
+			return err
+		}
+		if len(unstakeEvt) > 0 && len(unstakeEvt[0].Out) == 2 {
+			err = eh.store.UpdateEventStatus(evt.ID, successEvent)
+			if err != nil {
+				return err
+			}
+		}
 		err = eh.store.UpdateUnStakesRecord(unstake)
 		if err != nil {
 			return err
@@ -421,6 +444,12 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
+		}
+		for _, ev := range evts {
+			err = eh.store.UpdateEventStatus(ev.ID, successEvent)
+			if err != nil {
+				return err
+			}
 		}
 		evt.OutTxs = common.Txs{outTx}
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
@@ -434,6 +463,13 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			return err
 		}
 	} else {
+		// TODO: Refund event with multiple coins in input transaction should have more than one outbound.
+		for _, ev := range evts {
+			err = eh.store.UpdateEventStatus(ev.ID, successEvent)
+			if err != nil {
+				return err
+			}
+		}
 		evt = evts[0]
 		evt.OutTxs = common.Txs{outTx}
 		err = eh.store.ProcessTxRecord("out", evt, outTx)

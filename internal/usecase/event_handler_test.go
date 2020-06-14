@@ -82,7 +82,8 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 				Memo:  "",
 				Chain: common.BNBChain,
 			},
-			Type: "stake",
+			Type:   "stake",
+			Status: "Success",
 		},
 	}
 	c.Assert(len(store.record), Equals, 1)
@@ -130,7 +131,8 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 				Memo:  "",
 				Chain: common.BNBChain,
 			},
-			Type: "stake",
+			Type:   "stake",
+			Status: "Success",
 		},
 	}
 	expectedEvent2 := models.EventStake{
@@ -153,7 +155,8 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 				Memo:  "",
 				Chain: common.BTCChain,
 			},
-			Type: "stake",
+			Type:   "stake",
+			Status: "Success",
 		},
 	}
 	if store.record[0].InTx.Chain == expectedEvent1.InTx.Chain {
@@ -221,7 +224,8 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 				Memo:  "WITHDRAW:BTC.BTC:1000",
 				Chain: common.BNBChain,
 			},
-			Type: "unstake",
+			Type:   "unstake",
+			Status: "Pending",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -280,7 +284,8 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 				},
 				Chain: common.BNBChain,
 			},
-			Type: "refund",
+			Type:   "refund",
+			Status: "Pending",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -341,7 +346,8 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 				Chain: common.BNBChain,
 				Memo:  "SWAP:BTC.BTC:bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
 			},
-			Type: "swap",
+			Type:   "swap",
+			Status: "Pending",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -379,6 +385,7 @@ func (s *EventHandlerSuite) TestPoolEvent(c *C) {
 			ID:     1,
 			Height: 1,
 			Type:   "pool",
+			Status: "Success",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -436,7 +443,8 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 				Chain: common.BNBChain,
 				Memo:  "ADD:BNB.BNB",
 			},
-			Type: "add",
+			Type:   "add",
+			Status: "Success",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -482,6 +490,7 @@ func (s *EventHandlerSuite) TestGasEvent(c *C) {
 			Height: 1,
 			InTx:   common.Tx{},
 			Type:   "gas",
+			Status: "Success",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -570,6 +579,7 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 		ID:     1,
 		Height: 1,
 		Type:   "rewards",
+		Status: "Success",
 	})
 }
 
@@ -609,6 +619,7 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 		ID:     1,
 		Height: 1,
 		Type:   "slash",
+		Status: "Success",
 	})
 }
 
@@ -655,6 +666,7 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 			ID:     1,
 			Height: 1,
 			Type:   "errata",
+			Status: "Success",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -696,6 +708,21 @@ func (s *OutboundTestStore) CreateFeeRecord(event models.Event, _ common.Asset) 
 	return nil
 }
 
+func (s *OutboundTestStore) UpdateEventStatus(_ int64, status string) error {
+	return nil
+}
+
+func (s *OutboundTestStore) GetTxDetails(_ common.Address, _ common.TxID, _ common.Asset, _ []string, _, _ int64) ([]models.TxDetails, int64, error) {
+	return []models.TxDetails{
+		{
+			Out: []models.TxData{
+				{},
+				{},
+			},
+		},
+	}, 1, nil
+}
+
 func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 	store := &OutboundTestStore{}
 	eh, err := newEventHandler(store, s.dummyThorchain)
@@ -703,9 +730,10 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 	blockTime := time.Now()
 	store.events = []models.Event{
 		{
-			ID:   1,
-			Type: "unstake",
-			Time: blockTime.Add(-10 * time.Second),
+			ID:     1,
+			Type:   "unstake",
+			Status: "Success",
+			Time:   blockTime.Add(-10 * time.Second),
 		},
 	}
 	evt := thorchain.Event{
@@ -726,9 +754,10 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventUnstake{
 		Event: models.Event{
-			ID:   1,
-			Type: "unstake",
-			Time: blockTime.Add(-10 * time.Second),
+			ID:     1,
+			Type:   "unstake",
+			Time:   blockTime.Add(-10 * time.Second),
+			Status: "Success",
 			OutTxs: common.Txs{
 				common.Tx{
 					ID:          "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
@@ -759,9 +788,10 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 	blockTime := time.Now()
 	store.events = []models.Event{
 		{
-			ID:   1,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
+			ID:     1,
+			Type:   "swap",
+			Time:   blockTime.Add(-10 * time.Second),
+			Status: "Success",
 		},
 	}
 	evt := thorchain.Event{
@@ -783,9 +813,10 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventSwap{
 		Event: models.Event{
-			ID:   1,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
+			ID:     1,
+			Type:   "swap",
+			Status: "Success",
+			Time:   blockTime.Add(-10 * time.Second),
 			OutTxs: common.Txs{
 				common.Tx{
 					ID:          "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",
@@ -811,14 +842,16 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 	// First outbound for double swap
 	store.events = []models.Event{
 		{
-			ID:   2,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
+			ID:     2,
+			Type:   "swap",
+			Time:   blockTime.Add(-10 * time.Second),
+			Status: "Success",
 		},
 		{
-			ID:   3,
-			Type: "swap",
-			Time: blockTime.Add(-10 * time.Second),
+			ID:     3,
+			Type:   "swap",
+			Time:   blockTime.Add(-10 * time.Second),
+			Status: "Success",
 		},
 	}
 	evt.Attributes["id"] = common.BlankTxID.String()
