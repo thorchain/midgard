@@ -187,7 +187,7 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode unstake")
 	}
-
+	unstake.Status = "pending"
 	err = eh.store.CreateUnStakesRecord(unstake)
 	if err != nil {
 		return errors.Wrap(err, "failed to save unstake event")
@@ -227,7 +227,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode swap")
 	}
-
+	swap.Status = "pending"
 	err = eh.store.CreateSwapRecord(swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
