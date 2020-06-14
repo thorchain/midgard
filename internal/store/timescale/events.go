@@ -222,9 +222,9 @@ func (s *Client) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
 
 func (s *Client) UpdateEventStatus(eventID int64, status string) error {
 	query := `
-		Update     events
-		Set        status=$1
-		WHERE      events.id = $2`
+		UPDATE events 
+		SET    status = $1 
+		WHERE  events.id = $2`
 	_, err := s.db.Exec(query, status, eventID)
 	return err
 }
