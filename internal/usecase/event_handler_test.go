@@ -222,7 +222,7 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 				Chain: common.BNBChain,
 			},
 			Type:   "unstake",
-			Status: "pending",
+			Status: "Pending",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -343,7 +343,7 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 				Memo:  "SWAP:BTC.BTC:bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
 			},
 			Type:   "swap",
-			Status: "pending",
+			Status: "Pending",
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)

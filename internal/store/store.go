@@ -49,4 +49,5 @@ type Store interface {
 	UpdateUnStakesRecord(record models.EventUnstake) error
 	UpdateSwapRecord(record models.EventSwap) error
 	GetLastHeight() (int64, error)
+	UpdateEventStatus(eventID int64, status string) error
 }
