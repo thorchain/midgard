@@ -463,6 +463,13 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			return err
 		}
 	} else {
+		//refund events
+		for _, ev := range evts {
+			err = eh.store.UpdateEventStatus(ev.ID, successEvent)
+			if err != nil {
+				return err
+			}
+		}
 		evt = evts[0]
 		evt.OutTxs = common.Txs{outTx}
 		err = eh.store.ProcessTxRecord("out", evt, outTx)
