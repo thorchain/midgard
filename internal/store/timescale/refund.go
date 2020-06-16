@@ -14,7 +14,7 @@ func (s *Client) CreateRefundRecord(record models.EventRefund) error {
 	if pool.IsEmpty() {
 		return nil
 	}
-	runeDepth, err := s.GetRuneDepth(pool)
+	runeDepth, err := s.GetRuneDepth(pool, nil, nil)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get rune depth")
 	}
