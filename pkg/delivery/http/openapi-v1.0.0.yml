@@ -357,6 +357,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ThorchainConstants'
+
+    ThorchainLastblockResponse:
+      description: Get Return an object for the proxied lastblock endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainLastblock'
   schemas:
     TxDetails:
       properties:
@@ -905,7 +912,7 @@ components:
           DefaultPoolStatus:
             type: string
 
-    ThorchainLastblockResponse:
+    ThorchainLastblock:
         type: object
         properties:
           chain:
