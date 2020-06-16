@@ -12,6 +12,7 @@
     "proxied_whitelisted_endpoints": [
       "pool_addresses",
       "constants",
+      "lastblock",
       "events/tx/:id"
     ]
   },

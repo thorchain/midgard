@@ -222,6 +222,14 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/ThorchainConstantsResponse'
+  "/v1/thorchain/lastblock":
+    get:
+      operationId: GetThorchainProxiedLastblock
+      summary: Get the Proxied THORChain Lastblock
+      description: Returns a proxied endpoint for the lastblock endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainLastblockResponse'
 components:
   responses:
     PoolsDetailedResponse:
@@ -896,6 +904,21 @@ components:
         properties:
           DefaultPoolStatus:
             type: string
+
+    ThorchainLastblockResponse:
+        type: object
+        properties:
+          chain:
+            type: string
+          lastobservedin:
+            type: integer
+            format: int64
+          lastsignedout:
+            type: integer
+            format: int64
+          thorchain:
+            type: integer
+            format: int64
 
 servers:
   - url: http://127.0.0.1:8080
