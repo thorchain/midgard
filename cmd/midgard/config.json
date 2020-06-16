@@ -11,6 +11,8 @@
     "scan_start_pos": 1,
     "proxied_whitelisted_endpoints": [
       "pool_addresses",
+      "constants",
+      "lastblock",
       "events/tx/:id"
     ]
   },

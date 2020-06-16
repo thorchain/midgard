@@ -214,6 +214,22 @@ paths:
       responses:
         "200":
           "$ref": "#/components/responses/NodeKeyResponse"
+  "/v1/thorchain/constants":
+    get:
+      operationId: GetThorchainProxiedConstants
+      summary: Get the Proxied THORChain Constants
+      description: Returns a proxied endpoint for the constants endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainConstantsResponse'
+  "/v1/thorchain/lastblock":
+    get:
+      operationId: GetThorchainProxiedLastblock
+      summary: Get the Proxied THORChain Lastblock
+      description: Returns a proxied endpoint for the lastblock endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainLastblockResponse'
 components:
   responses:
     PoolsDetailedResponse:
@@ -335,6 +351,19 @@ components:
             items:
               $ref: '#/components/schemas/NodeKey'
 
+    ThorchainConstantsResponse:
+      description: Get Return an object for the proxied constants endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainConstants'
+
+    ThorchainLastblockResponse:
+      description: Get Return an object for the proxied lastblock endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainLastblock'
   schemas:
     TxDetails:
       properties:
@@ -775,6 +804,128 @@ components:
         ed25519:
           type: string
           description: ed25519 public key
+
+    ThorchainConstants:
+        type: object
+        properties:
+          int_64_values:
+            $ref: '#/components/schemas/ThorchainInt64Constants'
+          bool_values:
+            $ref: '#/components/schemas/ThorchainBooleanConstants'
+          string_values:
+            $ref: '#/components/schemas/ThorchainStringConstants'
+
+    ThorchainInt64Constants:
+        type: object
+        properties:
+          BadValidatorRate:
+            type: integer
+            format: int64
+          BlocksPerYear:
+            type: integer
+            format: int64
+          DesireValidatorSet:
+            type: integer
+            format: int64
+          DoubleSignMaxAge:
+            type: integer
+            format: int64
+          EmissionCurve:
+            type: integer
+            format: int64
+          FailKeySignSlashPoints:
+            type: integer
+            format: int64
+          FailKeygenSlashPoints:
+            type: integer
+            format: int64
+          FundMigrationInterval:
+            type: integer
+            format: int64
+          JailTimeKeygen:
+            type: integer
+            format: int64
+          JailTimeKeysign:
+            type: integer
+            format: int64
+          LackOfObservationPenalty:
+            type: integer
+            format: int64
+          MinimumBondInRune:
+            type: integer
+            format: int64
+          MinimumNodesForBFT:
+            type: integer
+            format: int64
+          MinimumNodesForYggdrasil:
+            type: integer
+            format: int64
+          NewPoolCycle:
+            type: integer
+            format: int64
+          ObserveSlashPoints:
+            type: integer
+            format: int64
+          OldValidatorRate:
+            type: integer
+            format: int64
+          RotatePerBlockHeight:
+            type: integer
+            format: int64
+          RotateRetryBlocks:
+            type: integer
+            format: int64
+          SigningTransactionPeriod:
+            type: integer
+            format: int64
+          StakeLockUpBlocks:
+            type: integer
+            format: int64
+          TransactionFee:
+            type: integer
+            format: int64
+          ValidatorRotateInNumBeforeFull:
+            type: integer
+            format: int64
+          ValidatorRotateNumAfterFull:
+            type: integer
+            format: int64
+          ValidatorRotateOutNumBeforeFull:
+            type: integer
+            format: int64
+          WhiteListGasAsset:
+            type: integer
+            format: int64
+          YggFundLimit:
+            type: integer
+            format: int64
+
+    ThorchainBooleanConstants:
+        type: object
+        properties:
+          StrictBondStakeRatio:
+            type: boolean
+
+    ThorchainStringConstants:
+        type: object
+        properties:
+          DefaultPoolStatus:
+            type: string
+
+    ThorchainLastblock:
+        type: object
+        properties:
+          chain:
+            type: string
+          lastobservedin:
+            type: integer
+            format: int64
+          lastsignedout:
+            type: integer
+            format: int64
+          thorchain:
+            type: integer
+            format: int64
 
 servers:
   - url: http://127.0.0.1:8080
