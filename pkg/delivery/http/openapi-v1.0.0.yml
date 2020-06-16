@@ -216,7 +216,7 @@ paths:
           "$ref": "#/components/responses/NodeKeyResponse"
   "/v1/thorchain/constants":
     get:
-      operationId: GetThorchainProxiedEndpoints
+      operationId: GetThorchainProxiedConstants
       summary: Get the Proxied THORChain Constants
       description: Returns a proxied endpoint for the constants endpoint from a local thornode
       responses:
