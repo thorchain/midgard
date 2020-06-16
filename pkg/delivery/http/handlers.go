@@ -26,6 +26,12 @@ func (h *Handlers) GetThorchainProxiedConstants(ctx echo.Context) error {
 	return nil
 }
 
+// GetThorchainProxiedLastblock is just here to meet the golang interface.
+// As the endpoints are generated dynamically the implemented is in server.go
+func (h *Handlers) GetThorchainProxiedLastblock(ctx echo.Context) error {
+	return nil
+}
+
 func (h *Handlers) GetNodes(ctx echo.Context) error {
 	nodes, err := h.thorChainClient.GetNodeAccounts()
 	if err != nil {
