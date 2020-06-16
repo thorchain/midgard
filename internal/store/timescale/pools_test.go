@@ -381,7 +381,7 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	assetDepth, err := s.Store.GetAssetDepth(asset)
+	assetDepth, err := s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(0))
 
@@ -389,7 +389,7 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	assetDepth, err = s.Store.GetAssetDepth(asset)
+	assetDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(10), Commentf("%v", assetDepth))
 
@@ -397,7 +397,7 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
-	assetDepth, err = s.Store.GetAssetDepth(asset)
+	assetDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(50000000010), Commentf("%v", assetDepth))
 
@@ -405,7 +405,7 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
 	c.Assert(err, IsNil)
 
-	assetDepth, err = s.Store.GetAssetDepth(asset)
+	assetDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(50000000000), Commentf("%v", assetDepth))
 
@@ -413,7 +413,7 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent2)
 	c.Assert(err, IsNil)
 
-	assetDepth, err = s.Store.GetAssetDepth(asset)
+	assetDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(49980000000), Commentf("%v", assetDepth))
 
@@ -421,7 +421,7 @@ func (s *TimeScaleSuite) TestAssetDepth(c *C) {
 	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 
-	assetDepth, err = s.Store.GetAssetDepth(asset)
+	assetDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(50000000000), Commentf("%v", assetDepth))
 }
@@ -437,7 +437,7 @@ func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	assetDepth, err = s.Store.GetAssetDepth(asset)
+	assetDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, uint64(10))
 }
@@ -445,7 +445,7 @@ func (s *TimeScaleSuite) TestAssetDepth12m(c *C) {
 func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	runeDepth, err := s.Store.GetRuneDepth(asset)
+	runeDepth, err := s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(0))
 
@@ -453,7 +453,7 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	runeDepth, err = s.Store.GetRuneDepth(asset)
+	runeDepth, err = s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(100), Commentf("%v", runeDepth))
 
@@ -461,7 +461,7 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent1)
 	c.Assert(err, IsNil)
 
-	runeDepth, err = s.Store.GetRuneDepth(asset)
+	runeDepth, err = s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(200), Commentf("%v", runeDepth))
 
@@ -469,7 +469,7 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent1)
 	c.Assert(err, IsNil)
 
-	runeDepth, err = s.Store.GetRuneDepth(asset)
+	runeDepth, err = s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(100), Commentf("%v", runeDepth))
 
@@ -477,7 +477,7 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 
-	runeDepth, err = s.Store.GetRuneDepth(asset)
+	runeDepth, err = s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(99), Commentf("%v", runeDepth))
 
@@ -485,7 +485,7 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent2)
 	c.Assert(err, IsNil)
 
-	runeDepth, err = s.Store.GetRuneDepth(asset)
+	runeDepth, err = s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(100), Commentf("%v", runeDepth))
 }
@@ -501,7 +501,7 @@ func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
 	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	runeDepth, err = s.Store.GetAssetDepth(asset)
+	runeDepth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(10))
 }

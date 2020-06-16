@@ -300,7 +300,7 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, 
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		runeDepth, err := s.GetRuneDepth(asset)
+		runeDepth, err := s.GetRuneDepth(asset, nil, nil)
 		if err != nil {
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
@@ -332,7 +332,7 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		assetDepth, err := s.GetAssetDepth(asset)
+		assetDepth, err := s.GetAssetDepth(asset, nil, nil)
 		if err != nil {
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}

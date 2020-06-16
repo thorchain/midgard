@@ -114,11 +114,11 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 	if err != nil {
 		return nil, err
 	}
-	assetDepth, err := uc.store.GetAssetDepth(asset)
+	assetDepth, err := uc.store.GetAssetDepth(asset, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	runeDepth, err := uc.store.GetRuneDepth(asset)
+	runeDepth, err := uc.store.GetRuneDepth(asset, nil, nil)
 	if err != nil {
 		return nil, err
 	}

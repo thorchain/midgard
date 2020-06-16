@@ -325,11 +325,11 @@ func (s *TestGetAssetDetailsStore) GetPool(asset common.Asset) (common.Asset, er
 	return s.pool, s.err
 }
 
-func (s *TestGetAssetDetailsStore) GetAssetDepth(asset common.Asset) (uint64, error) {
+func (s *TestGetAssetDetailsStore) GetAssetDepth(asset common.Asset, from, to *time.Time) (uint64, error) {
 	return s.assetDepth, s.err
 }
 
-func (s *TestGetAssetDetailsStore) GetRuneDepth(asset common.Asset) (uint64, error) {
+func (s *TestGetAssetDetailsStore) GetRuneDepth(asset common.Asset, from, to *time.Time) (uint64, error) {
 	return s.runeDepth, s.err
 }
 

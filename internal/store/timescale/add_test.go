@@ -17,7 +17,7 @@ func (s *TimeScaleSuite) TestAssetAdded(c *C) {
 	depth, err := s.Store.poolDepth(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(assetBolt)
+	depth, err = s.Store.GetAssetDepth(assetBolt, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 
@@ -31,7 +31,7 @@ func (s *TimeScaleSuite) TestAssetAdded(c *C) {
 	depth, err = s.Store.poolDepth(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(assetBolt)
+	depth, err = s.Store.GetAssetDepth(assetBolt, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(1000))
 
@@ -46,7 +46,7 @@ func (s *TimeScaleSuite) TestAssetAdded(c *C) {
 	depth, err = s.Store.poolDepth(assetToml)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(assetToml)
+	depth, err = s.Store.GetAssetDepth(assetToml, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(1000))
 }
@@ -66,10 +66,10 @@ func (s *TimeScaleSuite) TestRuneAdded(c *C) {
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 
@@ -83,7 +83,7 @@ func (s *TimeScaleSuite) TestRuneAdded(c *C) {
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(2000))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 
@@ -97,7 +97,7 @@ func (s *TimeScaleSuite) TestRuneAdded(c *C) {
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(6000))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 }

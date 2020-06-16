@@ -92,11 +92,11 @@ func (s *StoreDummy) GetPool(asset common.Asset) (common.Asset, error) {
 	return common.EmptyAsset, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetAssetDepth(asset common.Asset) (uint64, error) {
+func (s *StoreDummy) GetAssetDepth(asset common.Asset, from, to *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetRuneDepth(asset common.Asset) (uint64, error) {
+func (s *StoreDummy) GetRuneDepth(asset common.Asset, from, to *time.Time) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 

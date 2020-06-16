@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -78,7 +79,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		return models.PoolData{}, errors.New("pool does not exist")
 	}
 
-	assetDepth, err := s.GetAssetDepth(asset)
+	assetDepth, err := s.GetAssetDepth(asset, nil, nil)
 	if err != nil {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -173,7 +174,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	runeDepth, err := s.GetRuneDepth(asset)
+	runeDepth, err := s.GetRuneDepth(asset, nil, nil)
 	if err != nil {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -305,12 +306,12 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 }
 
 func (s *Client) getPriceInRune(asset common.Asset) (float64, error) {
-	assetDepth, err := s.GetAssetDepth(asset)
+	assetDepth, err := s.GetAssetDepth(asset, nil, nil)
 	if err != nil {
 		return 0, errors.Wrap(err, "getPriceInRune failed")
 	}
 	if assetDepth > 0 {
-		runeDepth, err := s.GetRuneDepth(asset)
+		runeDepth, err := s.GetRuneDepth(asset, nil, nil)
 		if err != nil {
 			return 0, errors.Wrap(err, "getPriceInRune failed")
 		}
@@ -1026,145 +1027,81 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 // -assetGas
 // +assetFee
 // +assetSlashed
-func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
-	stakes, err := s.assetStaked(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetDepth failed")
+func (s *Client) GetAssetDepth(asset common.Asset, from, to *time.Time) (uint64, error) {
+	if asset.IsEmpty() {
+		return 0, errors.New("can't get depth of empty asset")
 	}
-	swaps, err := s.assetSwap(asset)
+
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(assetAmt)").From("stakes")
+	stakes, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
-		return 0, nil
+		return 0, errors.Wrap(err, "runeDepth failed")
 	}
-	adds, err := s.assetAdded(asset)
+
+	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(assetAmt)").From("swaps")
+	swaps, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
-		return 0, nil
+		return 0, errors.Wrap(err, "runeDepth failed")
 	}
-	gas, err := s.assetGas(asset)
+
+	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(assetAmt)").From("gas")
+	gas, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
-		return 0, nil
+		return 0, errors.Wrap(err, "runeDepth failed")
 	}
-	fee, err := s.assetFee(asset)
-	if err != nil {
-		return 0, nil
-	}
-	slash, err := s.assetSlashed(asset)
-	if err != nil {
-		return 0, nil
-	}
-	errata, err := s.assetErrata(asset)
-	if err != nil {
-		return 0, nil
-	}
-	depth := stakes + swaps + adds - gas + fee + slash + errata
+
+	depth := stakes + swaps - gas
 	return uint64(depth), nil
 }
 
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
-	stakes, err := s.assetStaked12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetDepth12m failed")
-	}
-	swaps, err := s.assetSwapped12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetDepth12m failed")
-	}
-	adds, err := s.assetAdded12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetDepth12m failed")
-	}
-	gas, err := s.assetGas12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetGas12m failed")
-	}
-	fee, err := s.assetFee12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetFee12m failed")
-	}
-	slash, err := s.assetSlashed12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetSlashed12m failed")
-	}
-	errata, err := s.assetErrata12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "assetErrata12m failed")
-	}
-	depth := stakes + swaps + adds - gas + fee + slash + errata
-	return uint64(depth), nil
+	to := time.Now()
+	from := to.Add(-time.Hour * 12)
+	return s.GetAssetDepth(asset, &from, &to)
 }
 
-func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
-	stakes, err := s.runeStaked(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
+func (s *Client) GetRuneDepth(asset common.Asset, from, to *time.Time) (uint64, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(runeAmt)").From("stakes")
+	if !asset.IsEmpty() {
+		sb.Where(sb.Equal("pool", asset.String()))
 	}
-	swaps, err := s.runeSwapped(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
-	}
-	rewards, err := s.runeRewarded(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
-	}
-	adds, err := s.runeAdded(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
-	}
-	gas, err := s.runeGas(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
-	}
-	fee, err := s.runeFee(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
-	}
-	slash, err := s.runeSlashed(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
-	}
-	errata, err := s.runeErrata(asset)
+	stakes, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeDepth failed")
 	}
 
-	depth := stakes + swaps + rewards + adds + gas + fee + slash + errata
+	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(runeAmt)").From("swaps")
+	if !asset.IsEmpty() {
+		sb.Where(sb.Equal("pool", asset.String()))
+	}
+	swaps, err := s.queryTimestampInt64(sb, from, to)
+	if err != nil {
+		return 0, errors.Wrap(err, "runeDepth failed")
+	}
+
+	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(runeAmt)").From("gas")
+	if !asset.IsEmpty() {
+		sb.Where(sb.Equal("pool", asset.String()))
+	}
+	gas, err := s.queryTimestampInt64(sb, from, to)
+	if err != nil {
+		return 0, errors.Wrap(err, "runeDepth failed")
+	}
+
+	depth := stakes + swaps + gas
 	return uint64(depth), nil
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
-	stakes, err := s.runeStaked12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	swaps, err := s.runeSwap12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	reward, err := s.runeRewarded12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	adds, err := s.runeAdded12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	gas, err := s.runeGas12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	fee, err := s.runeFee12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	slash, err := s.runeSlashed12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	errata, err := s.runeErrata12m(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
-	}
-	depth := stakes + swaps + reward + adds + gas + fee + slash + errata
-	return uint64(depth), nil
+	to := time.Now()
+	from := to.Add(-time.Hour * 12)
+	return s.GetRuneDepth(asset, &from, &to)
 }
 
 // runeSwapped - amount rune swapped through the pool
@@ -1242,7 +1179,7 @@ func (s *Client) assetSwapped12m(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
-	runeDepth, err := s.GetRuneDepth(asset)
+	runeDepth, err := s.GetRuneDepth(asset, nil, nil)
 	if err != nil {
 		return 0, errors.Wrap(err, "poolDepth failed")
 	}
@@ -1767,7 +1704,7 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) assetROI(asset common.Asset) (float64, error) {
-	assetDepth, err := s.GetAssetDepth(asset)
+	assetDepth, err := s.GetAssetDepth(asset, nil, nil)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetROI failed")
 	}
@@ -1809,7 +1746,7 @@ func (s *Client) assetROI12(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) runeROI(asset common.Asset) (float64, error) {
-	runeDepth, err := s.GetRuneDepth(asset)
+	runeDepth, err := s.GetRuneDepth(asset, nil, nil)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI failed")
 	}

@@ -20,10 +20,10 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 
@@ -37,7 +37,7 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(2000))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 
@@ -51,7 +51,7 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(6000))
-	depth, err = s.Store.GetAssetDepth(asset)
+	depth, err = s.Store.GetAssetDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(0))
 }
