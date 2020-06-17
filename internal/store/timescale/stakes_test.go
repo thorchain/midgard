@@ -256,6 +256,20 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(assetEarned, Equals, int64(0))
 
+	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent5)
+	c.Assert(err, IsNil)
+
+	assetEarned, err = s.Store.assetEarned(address, asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetEarned, Equals, int64(10000000))
+
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	assetEarned, err = s.Store.assetEarned(address, asset)
+	c.Assert(err, IsNil)
+	c.Assert(assetEarned, Equals, int64(16669999993))
+
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
 	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
