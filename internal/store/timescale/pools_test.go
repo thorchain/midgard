@@ -291,6 +291,9 @@ func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {
 }
 
 func (s *TimeScaleSuite) TestAssetDepth(c *C) {
+	_, err := s.Store.GetAssetDepth(common.EmptyAsset, nil, nil)
+	c.Assert(err, NotNil)
+
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
 	assetDepth, err := s.Store.GetAssetDepth(asset, nil, nil)
@@ -400,6 +403,13 @@ func (s *TimeScaleSuite) TestRuneDepth(c *C) {
 	runeDepth, err = s.Store.GetRuneDepth(asset, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(100), Commentf("%v", runeDepth))
+
+	err = s.Store.CreateStakeRecord(stakeBoltEvent5)
+	c.Assert(err, IsNil)
+
+	runeDepth, err = s.Store.GetRuneDepth(common.EmptyAsset, nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(2349500100), Commentf("%v", runeDepth))
 }
 
 func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
