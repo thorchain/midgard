@@ -1033,24 +1033,28 @@ func (s *Client) GetAssetDepth(asset common.Asset, from, to *time.Time) (uint64,
 	}
 
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("SUM(assetAmt)").From("stakes")
+	sb.Select("SUM(assetAmt)").From("stakes").
+		Where(sb.Equal("pool", asset.String()))
+
 	stakes, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
+		return 0, errors.Wrap(err, "assetDepth failed")
 	}
 
 	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("SUM(assetAmt)").From("swaps")
+	sb.Select("SUM(assetAmt)").From("swaps").
+		Where(sb.Equal("pool", asset.String()))
 	swaps, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
+		return 0, errors.Wrap(err, "assetDepth failed")
 	}
 
 	sb = sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("SUM(assetAmt)").From("gas")
+	sb.Select("SUM(assetAmt)").From("gas").
+		Where(sb.Equal("pool", asset.String()))
 	gas, err := s.queryTimestampInt64(sb, from, to)
 	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth failed")
+		return 0, errors.Wrap(err, "assetDepth failed")
 	}
 
 	depth := stakes + swaps - gas
