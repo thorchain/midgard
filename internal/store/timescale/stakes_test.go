@@ -49,7 +49,7 @@ func (s *TimeScaleSuite) TestStakeUnits(c *C) {
 
 	stakeUnits, err = s.Store.stakeUnits(address, asset)
 	c.Assert(err, IsNil)
-	c.Assert(stakeUnits, Equals, uint64(25025000000), Commentf("%v", stakeUnits))
+	c.Assert(stakeUnits, Equals, uint64(200), Commentf("%v", stakeUnits))
 }
 
 func (s *TimeScaleSuite) TestRuneStaked(c *C) {
@@ -206,6 +206,20 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 	runeEarned, err = s.Store.runeEarned(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeEarned, Equals, int64(0))
+
+	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent3)
+	c.Assert(err, IsNil)
+
+	runeEarned, err = s.Store.runeEarned(address, asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeEarned, Equals, int64(200000000))
+
+	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	runeEarned, err = s.Store.runeEarned(address, asset)
+	c.Assert(err, IsNil)
+	c.Assert(runeEarned, Equals, int64(83333266))
 
 	// Additional stake
 	asset, _ = common.NewAsset("TOML-4BC")
