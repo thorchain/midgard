@@ -1897,7 +1897,6 @@ var (
 		Status: "Success",
 		Height: 15,
 		Type:   "",
-		Chain:  "BNB",
 	}
 	emptyBNBEvent1 = models.Event{
 		Time:   time.Now(),
@@ -1905,7 +1904,6 @@ var (
 		Status: "Success",
 		Height: 15,
 		Type:   "",
-		Chain:  "BNB",
 	}
 	emptyBTCEvent0 = models.Event{
 		Time:   time.Now(),
@@ -1913,7 +1911,6 @@ var (
 		Status: "Success",
 		Height: 15,
 		Type:   "",
-		Chain:  "BTC",
 	}
 	errataEvent0 = models.EventErrata{
 		Event: models.Event{

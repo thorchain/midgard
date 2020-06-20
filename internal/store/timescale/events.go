@@ -10,27 +10,6 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) GetMaxID(chain common.Chain) (int64, error) {
-	query := fmt.Sprintf(`
-		SELECT Max(id) 
-		FROM   %s 
-		WHERE  chain = $1`, models.ModelEventsTable)
-	var maxId sql.NullInt64
-	var err error
-	if chain != "" {
-		err = s.db.Get(&maxId, query, chain)
-	} else {
-		query := fmt.Sprintf(`
-		SELECT Max(id) 
-		FROM   %s `, models.ModelEventsTable)
-		err = s.db.Get(&maxId, query)
-	}
-	if err != nil {
-		return 0, errors.Wrap(err, "maxID query return null or failed")
-	}
-	return maxId.Int64, nil
-}
-
 func (s *Client) GetLastHeight() (int64, error) {
 	query := fmt.Sprintf(`
 		SELECT Max(height) 
@@ -43,7 +22,7 @@ func (s *Client) GetLastHeight() (int64, error) {
 	return maxHeight.Int64, nil
 }
 
-func (s *Client) CreateEventRecord(record models.Event) error {
+func (s *Client) CreateEventRecord(record *models.Event) error {
 	if record.Height == 0 {
 		return nil
 	}
@@ -54,13 +33,13 @@ func (s *Client) CreateEventRecord(record models.Event) error {
 	}
 
 	// Ingest InTx
-	err = s.ProcessTxRecord("in", record, record.InTx)
+	err = s.ProcessTxRecord("in", *record, record.InTx)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
 
 	// Ingest OutTxs
-	err = s.processTxsRecord("out", record, record.OutTxs)
+	err = s.processTxsRecord("out", *record, record.OutTxs)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process OutTxs")
 	}
@@ -169,22 +148,18 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 	return results.RowsAffected()
 }
 
-func (s *Client) createEventRecord(record models.Event) error {
+func (s *Client) createEventRecord(record *models.Event) error {
 	query := fmt.Sprintf(`
 			INSERT INTO %v (
 				time,
-				id,
 				height,
 				status,
-				type,
-				chain
+				type
 			) VALUES (
 				:time,
-				:id,
 				:height,
 				:status,
-				:type,
-				:chain
+				:type
 			) RETURNING id`, models.ModelEventsTable)
 
 	stmt, err := s.db.PrepareNamed(query)

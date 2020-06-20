@@ -15,7 +15,7 @@ func (s *TimeScaleSuite) TestGasSpend(c *C) {
 	c.Assert(gasSpend, Equals, int64(0))
 
 	// First gas record
-	err = s.Store.CreateGasRecord(gasEvent1)
+	err = s.Store.CreateGasRecord(&gasEvent1)
 	c.Assert(err, IsNil)
 	gasSpend, err = s.Store.assetGas(assetBolt)
 	c.Assert(err, IsNil)
@@ -27,7 +27,7 @@ func (s *TimeScaleSuite) TestGasSpend(c *C) {
 	c.Assert(gasSpend, Equals, int64(0))
 
 	// Gas Top up
-	err = s.Store.CreateGasRecord(gasEvent2)
+	err = s.Store.CreateGasRecord(&gasEvent2)
 	c.Assert(err, IsNil)
 	gasSpend, err = s.Store.assetGas(assetTcan)
 	c.Assert(err, IsNil)

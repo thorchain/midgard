@@ -2,13 +2,12 @@
 -- +migrate Up
 
 CREATE TABLE events (
-    time        TIMESTAMPTZ       not null,
-    id bigint not null,
-    height bigint not null,
-    type varchar not null,
-    status varchar not null,
-    chain varchar not null,
-    primary key (id, time)
+    time            TIMESTAMPTZ     NOT NULL,
+    id              BIGSERIAL       NOT NULL,
+    height          BIGINT          NOT NULL,
+    type            VARCHAR         NOT NULL,
+    status          VARCHAR,
+    PRIMARY KEY (id, time)
 );
 
 CREATE TABLE stakes (

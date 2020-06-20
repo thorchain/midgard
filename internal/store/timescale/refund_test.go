@@ -15,7 +15,7 @@ func (s *TimeScaleSuite) TestRefund(c *C) {
 	c.Assert(runeDepth, Equals, uint64(0))
 
 	// Successful refund with one outTx
-	err = s.Store.CreateRefundRecord(refundBOLTEvent0)
+	err = s.Store.CreateRefundRecord(&refundBOLTEvent0)
 	c.Assert(err, IsNil)
 	assetDepth, err = s.Store.GetAssetDepth(assetBolt)
 	c.Assert(err, IsNil)
@@ -25,7 +25,7 @@ func (s *TimeScaleSuite) TestRefund(c *C) {
 	c.Assert(runeDepth, Equals, uint64(0))
 
 	// Successful refund with two outTx
-	err = s.Store.CreateRefundRecord(refundBOLTEvent1)
+	err = s.Store.CreateRefundRecord(&refundBOLTEvent1)
 	c.Assert(err, IsNil)
 	assetDepth, err = s.Store.GetAssetDepth(assetBolt)
 	c.Assert(err, IsNil)
@@ -35,7 +35,7 @@ func (s *TimeScaleSuite) TestRefund(c *C) {
 	c.Assert(runeDepth, Equals, uint64(0))
 
 	// Failed refund
-	err = s.Store.CreateRefundRecord(refundBOLTEvent2)
+	err = s.Store.CreateRefundRecord(&refundBOLTEvent2)
 	c.Assert(err, IsNil)
 	assetDepth, err = s.Store.GetAssetDepth(assetBolt)
 	c.Assert(err, IsNil)

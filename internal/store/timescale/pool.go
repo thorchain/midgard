@@ -7,8 +7,8 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) CreatePoolRecord(record models.EventPool) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreatePoolRecord(record *models.EventPool) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

@@ -12,8 +12,8 @@ import (
 
 const slashEventAddress = "SLASH"
 
-func (s *Client) CreateSlashRecord(record models.EventSlash) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateSlashRecord(record *models.EventSlash) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

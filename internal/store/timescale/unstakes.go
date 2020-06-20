@@ -9,8 +9,8 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) CreateUnStakesRecord(record models.EventUnstake) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}
