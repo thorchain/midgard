@@ -31,6 +31,7 @@ const (
 	outboundEventType = `outbound`
 	pendingEvent      = `Pending`
 	successEvent      = `Success`
+	doubleSwap        = `doubleSwap`
 )
 
 var (
@@ -233,6 +234,30 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode swap")
 	}
 	swap.Status = pendingEvent
+	isDoubleSwap := true
+	for _, coin := range swap.InTx.Coins {
+		if common.IsRune(coin.Asset.Ticker) {
+			isDoubleSwap = false
+		}
+	}
+	if len(strings.Split(string(swap.InTx.Memo), ":")) > 1 {
+		asset, err := common.NewAsset(strings.Split(string(swap.InTx.Memo), ":")[1])
+		if err == nil && common.IsRune(asset.Ticker) {
+			isDoubleSwap = false
+		}
+	}
+	if isDoubleSwap {
+		swap.Event.Type = "doubleSwap"
+		evts, err := eh.store.GetEventsByTxID(swap.InTx.ID)
+		if err != nil {
+			return errors.Wrap(err, "failed to get event")
+		}
+		if len(evts) > 0 {
+			swap.Type = "-"
+		} else {
+			swap.Type = doubleSwap
+		}
+	}
 	err = eh.store.CreateSwapRecord(swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
@@ -440,7 +465,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		if err != nil {
 			return err
 		}
-	} else if evts[0].Type == swapEventType {
+	} else if evts[0].Type == swapEventType || evts[0].Type == doubleSwap {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
