@@ -17,21 +17,21 @@ import (
 )
 
 const (
-	swapEventType     = `swap`
-	stakeEventType    = `stake`
-	unstakeEventType  = `unstake`
-	addEventType      = `add`
-	poolEventType     = `pool`
-	rewardEventType   = `rewards`
-	refundEventType   = `refund`
-	gasEventType      = `gas`
-	slashEventType    = `slash`
-	errataEventType   = `errata`
-	feeEventType      = `fee`
-	outboundEventType = `outbound`
-	pendingEvent      = `Pending`
-	successEvent      = `Success`
-	doubleSwap        = `doubleSwap`
+	swapEventType       = `swap`
+	stakeEventType      = `stake`
+	doubleswapEventType = `doubleSwap`
+	unstakeEventType    = `unstake`
+	addEventType        = `add`
+	poolEventType       = `pool`
+	rewardEventType     = `rewards`
+	refundEventType     = `refund`
+	gasEventType        = `gas`
+	slashEventType      = `slash`
+	errataEventType     = `errata`
+	feeEventType        = `fee`
+	outboundEventType   = `outbound`
+	pendingEvent        = `Pending`
+	successEvent        = `Success`
 )
 
 var (
@@ -247,8 +247,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 		}
 	}
 	if isDoubleSwap {
-		swap.Event.Type = doubleSwap
-
+		swap.Event.Type = doubleswapEventType
 	} else {
 		evts, err := eh.store.GetEventsByTxID(swap.InTx.ID)
 		if err != nil {
@@ -465,7 +464,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		if err != nil {
 			return err
 		}
-	} else if evts[0].Type == swapEventType || evts[0].Type == doubleSwap {
+	} else if evts[0].Type == swapEventType || evts[0].Type == doubleswapEventType {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
