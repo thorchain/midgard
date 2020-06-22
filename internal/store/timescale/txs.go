@@ -91,7 +91,7 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		}
 		sb.Where(sb.In("events.type", types...))
 	}
-	sb.Where(sb.NotEqual("events.type", ""))
+	sb.Where("events.type != ''")
 	return sb.Build()
 }
 
@@ -106,12 +106,15 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		}
 		inTx := s.inTx(eventId)
 		outTx := s.outTxs(eventId)
-		event1 := s.events(eventId, eventType)
+		var event1 models.Events
 		if eventType == "doubleSwap" {
+			event1 = s.events(eventId, "swap")
 			outTx = s.outTxs(eventId + 1)
-			event2 := s.events(eventId+1, eventType)
+			event2 := s.events(eventId+1, "swap")
 			event1.Slip += event2.Slip
 			event1.Fee += event2.Fee
+		} else {
+			event1 = s.events(eventId, eventType)
 		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
