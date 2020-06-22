@@ -32,48 +32,44 @@ func (s *StoreDummy) CreateFeeRecord(event models.Event, pool common.Asset) erro
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateSwapRecord(_ models.EventSwap) error {
+func (s *StoreDummy) CreateSwapRecord(_ *models.EventSwap) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateStakeRecord(_ models.EventStake) error {
+func (s *StoreDummy) CreateStakeRecord(_ *models.EventStake) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateUnStakesRecord(_ models.EventUnstake) error {
+func (s *StoreDummy) CreateUnStakesRecord(_ *models.EventUnstake) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateRewardRecord(_ models.EventReward) error {
+func (s *StoreDummy) CreateRewardRecord(_ *models.EventReward) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateAddRecord(_ models.EventAdd) error {
+func (s *StoreDummy) CreateAddRecord(_ *models.EventAdd) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreatePoolRecord(_ models.EventPool) error {
+func (s *StoreDummy) CreatePoolRecord(_ *models.EventPool) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateGasRecord(_ models.EventGas) error {
+func (s *StoreDummy) CreateGasRecord(_ *models.EventGas) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateRefundRecord(_ models.EventRefund) error {
+func (s *StoreDummy) CreateRefundRecord(_ *models.EventRefund) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateSlashRecord(_ models.EventSlash) error {
+func (s *StoreDummy) CreateSlashRecord(_ *models.EventSlash) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) CreateErrataRecord(_ models.EventErrata) error {
+func (s *StoreDummy) CreateErrataRecord(_ *models.EventErrata) error {
 	return ErrNotImplemented
-}
-
-func (s *StoreDummy) GetMaxID(_ common.Chain) (int64, error) {
-	return 0, nil
 }
 
 func (s *StoreDummy) Ping() error {

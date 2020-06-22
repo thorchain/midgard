@@ -18,7 +18,7 @@ func (s *TimeScaleSuite) TestUnstake(c *C) {
 	c.Assert(runeStaked, Equals, int64(0))
 
 	// stake
-	err = s.Store.CreateStakeRecord(stakeBnbEvent0)
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
 	assetStaked, err = s.Store.assetStaked(asset)
@@ -30,7 +30,7 @@ func (s *TimeScaleSuite) TestUnstake(c *C) {
 	c.Assert(runeStaked, Equals, int64(100))
 
 	// unstake
-	err = s.Store.CreateUnStakesRecord(unstakeBnbEvent2)
+	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent2)
 	c.Assert(err, IsNil)
 
 	assetStaked, err = s.Store.assetStaked(asset)
@@ -52,7 +52,7 @@ func (s *TimeScaleSuite) TestUnstake(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(0))
 
-	err = s.Store.CreateStakeRecord(stakeTomlEvent1)
+	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
 	assetStaked, err = s.Store.assetStaked(asset)
@@ -63,7 +63,7 @@ func (s *TimeScaleSuite) TestUnstake(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(100))
 
-	err = s.Store.CreateUnStakesRecord(unstakeTomlEvent2)
+	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent2)
 	c.Assert(err, IsNil)
 
 	assetStaked, err = s.Store.assetStaked(asset)
@@ -82,7 +82,7 @@ func (s *TimeScaleSuite) TestUpdateUnStakes(c *C) {
 	unstakeEvent := unstakeBnbEvent2
 	unstakeEvent.OutTxs = nil
 	unstakeEvent.Fee = common.Fee{}
-	err = s.Store.CreateUnStakesRecord(unstakeEvent)
+	err = s.Store.CreateUnStakesRecord(&unstakeEvent)
 	c.Assert(err, IsNil)
 
 	assetStaked, err := s.Store.assetStaked(asset)
@@ -124,7 +124,7 @@ func (s *TimeScaleSuite) TestUnStakeFee(c *C) {
 	unstakeEvent := unstakeBnbEvent2
 	unstakeEvent.OutTxs = nil
 	unstakeEvent.Fee = common.Fee{}
-	err = s.Store.CreateUnStakesRecord(unstakeEvent)
+	err = s.Store.CreateUnStakesRecord(&unstakeEvent)
 	c.Assert(err, IsNil)
 	assetStaked, err := s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)

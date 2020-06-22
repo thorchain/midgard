@@ -46,17 +46,12 @@ type eventHandler struct {
 	height       int64
 	blockTime    time.Time
 	events       []thorchain.Event
-	nextEventID  int64
 	logger       zerolog.Logger
 }
 
 type handler func(thorchain.Event) error
 
 func newEventHandler(store store.Store, thorchain thorchain.Thorchain) (*eventHandler, error) {
-	maxID, err := store.GetMaxID("")
-	if err != nil {
-		return nil, err
-	}
 	decodeHook := mapstructure.ComposeDecodeHookFunc(decodeCoinsHook, decodeAssetHook, decodePoolStatusHook)
 	eh := &eventHandler{
 		thorchain: thorchain,
@@ -66,8 +61,7 @@ func newEventHandler(store store.Store, thorchain thorchain.Thorchain) (*eventHa
 			DecodeHook:       decodeHook,
 			WeaklyTypedInput: true,
 		},
-		nextEventID: maxID + 1,
-		logger:      log.With().Str("module", "event_handler").Logger(),
+		logger: log.With().Str("module", "event_handler").Logger(),
 	}
 	eh.handlers[stakeEventType] = eh.processStakeEvent
 	eh.handlers[swapEventType] = eh.processSwapEvent
@@ -126,7 +120,6 @@ func (eh *eventHandler) processEvent(event thorchain.Event) {
 		if err != nil {
 			eh.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
 		}
-		eh.nextEventID++
 	} else {
 		eh.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
@@ -134,7 +127,7 @@ func (eh *eventHandler) processEvent(event thorchain.Event) {
 
 func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 	stake := models.EventStake{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 		TxIDs: make(map[common.Chain]common.TxID),
 	}
 	err := eh.decode(event.Attributes, &stake.Event.InTx)
@@ -159,8 +152,6 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		}
 	}
 	for _, ev := range stake.GetStakes() {
-		ev.ID = eh.nextEventID
-		eh.nextEventID++
 		tx, err := eh.thorchain.GetTx(ev.InTx.ID)
 		if err != nil {
 			return errors.Wrap(err, "failed to get InTx")
@@ -171,7 +162,7 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		}
 		ev.Status = successEvent
 
-		err = eh.store.CreateStakeRecord(ev)
+		err = eh.store.CreateStakeRecord(&ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
 		}
@@ -181,7 +172,7 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 	unstake := models.EventUnstake{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &unstake.Event.InTx)
 	if err != nil {
@@ -192,7 +183,7 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode unstake")
 	}
 	unstake.Status = pendingEvent
-	err = eh.store.CreateUnStakesRecord(unstake)
+	err = eh.store.CreateUnStakesRecord(&unstake)
 	if err != nil {
 		return errors.Wrap(err, "failed to save unstake event")
 	}
@@ -201,7 +192,7 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processRefundEvent(event thorchain.Event) error {
 	refund := models.EventRefund{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &refund.Event.InTx)
 	if err != nil {
@@ -213,7 +204,7 @@ func (eh *eventHandler) processRefundEvent(event thorchain.Event) error {
 	}
 	refund.Status = pendingEvent
 
-	err = eh.store.CreateRefundRecord(refund)
+	err = eh.store.CreateRefundRecord(&refund)
 	if err != nil {
 		return errors.Wrap(err, "failed to save refund event")
 	}
@@ -222,7 +213,7 @@ func (eh *eventHandler) processRefundEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 	swap := models.EventSwap{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &swap.Event.InTx)
 	if err != nil {
@@ -233,7 +224,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode swap")
 	}
 	swap.Status = pendingEvent
-	err = eh.store.CreateSwapRecord(swap)
+	err = eh.store.CreateSwapRecord(&swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
 	}
@@ -242,7 +233,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processPoolEvent(event thorchain.Event) error {
 	pool := models.EventPool{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &pool.Event.InTx)
 	if err != nil {
@@ -254,7 +245,7 @@ func (eh *eventHandler) processPoolEvent(event thorchain.Event) error {
 	}
 	pool.Event.Status = successEvent
 
-	err = eh.store.CreatePoolRecord(pool)
+	err = eh.store.CreatePoolRecord(&pool)
 	if err != nil {
 		return errors.Wrap(err, "failed to save pool event")
 	}
@@ -263,7 +254,7 @@ func (eh *eventHandler) processPoolEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processAddEvent(event thorchain.Event) error {
 	add := models.EventAdd{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &add.Event.InTx)
 	if err != nil {
@@ -275,7 +266,7 @@ func (eh *eventHandler) processAddEvent(event thorchain.Event) error {
 	}
 	add.Status = successEvent
 
-	err = eh.store.CreateAddRecord(add)
+	err = eh.store.CreateAddRecord(&add)
 	if err != nil {
 		return errors.Wrap(err, "failed to save add event")
 	}
@@ -284,7 +275,7 @@ func (eh *eventHandler) processAddEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processGasEvent(event thorchain.Event) error {
 	gas := models.EventGas{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	var pool models.GasPool
 	err := eh.decode(event.Attributes, &pool)
@@ -294,7 +285,7 @@ func (eh *eventHandler) processGasEvent(event thorchain.Event) error {
 	gas.Pools = append(gas.Pools, pool)
 	gas.Status = successEvent
 
-	err = eh.store.CreateGasRecord(gas)
+	err = eh.store.CreateGasRecord(&gas)
 	if err != nil {
 		return errors.Wrap(err, "failed to save gas event")
 	}
@@ -303,7 +294,7 @@ func (eh *eventHandler) processGasEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processSlashEvent(event thorchain.Event) error {
 	slash := models.EventSlash{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &slash.Event.InTx)
 	if err != nil {
@@ -316,7 +307,7 @@ func (eh *eventHandler) processSlashEvent(event thorchain.Event) error {
 	}
 	slash.Status = successEvent
 
-	err = eh.store.CreateSlashRecord(slash)
+	err = eh.store.CreateSlashRecord(&slash)
 	if err != nil {
 		return errors.Wrap(err, "failed to save slash event")
 	}
@@ -325,7 +316,7 @@ func (eh *eventHandler) processSlashEvent(event thorchain.Event) error {
 
 func (eh *eventHandler) processErrataEvent(event thorchain.Event) error {
 	errata := models.EventErrata{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	err := eh.decode(event.Attributes, &errata.Event.InTx)
 	if err != nil {
@@ -339,7 +330,7 @@ func (eh *eventHandler) processErrataEvent(event thorchain.Event) error {
 	errata.Pools = append(errata.Pools, pool)
 	errata.Status = successEvent
 
-	err = eh.store.CreateErrataRecord(errata)
+	err = eh.store.CreateErrataRecord(&errata)
 	if err != nil {
 		return errors.Wrap(err, "failed to save errata event")
 	}
@@ -347,7 +338,7 @@ func (eh *eventHandler) processErrataEvent(event thorchain.Event) error {
 }
 
 func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
-	evt := newEvent(event, eh.nextEventID, eh.height, eh.blockTime)
+	evt := newEvent(event, eh.height, eh.blockTime)
 	err := eh.decode(event.Attributes, &evt.Fee)
 	if err != nil {
 		return errors.Wrap(err, "failed to decode fee")
@@ -387,12 +378,12 @@ func (eh *eventHandler) processRewardEvent(event thorchain.Event) error {
 		return nil
 	}
 	reward := models.EventReward{
-		Event: newEvent(event, eh.nextEventID, eh.height, eh.blockTime),
+		Event: newEvent(event, eh.height, eh.blockTime),
 	}
 	reward.PoolRewards = getPoolAmount(event.Attributes)
 	reward.Status = successEvent
 
-	err := eh.store.CreateRewardRecord(reward)
+	err := eh.store.CreateRewardRecord(&reward)
 	if err != nil {
 		return errors.Wrap(err, "failed to save reward event")
 	}
@@ -573,10 +564,9 @@ func getPoolAmount(attr map[string]string) []models.PoolAmount {
 	return poolAmounts
 }
 
-func newEvent(event thorchain.Event, id, height int64, blockTime time.Time) models.Event {
+func newEvent(event thorchain.Event, height int64, blockTime time.Time) models.Event {
 	return models.Event{
 		Time:   blockTime,
-		ID:     id,
 		Height: height,
 		Type:   event.Type,
 	}

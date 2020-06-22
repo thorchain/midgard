@@ -10,17 +10,16 @@ import (
 
 // Store represents methods required by Usecase to store and load data from internal data store.
 type Store interface {
-	CreateSwapRecord(record models.EventSwap) error
-	CreateStakeRecord(record models.EventStake) error
-	CreateUnStakesRecord(record models.EventUnstake) error
-	CreateRewardRecord(record models.EventReward) error
-	CreateAddRecord(record models.EventAdd) error
-	CreatePoolRecord(record models.EventPool) error
-	CreateGasRecord(record models.EventGas) error
-	CreateRefundRecord(record models.EventRefund) error
-	CreateSlashRecord(record models.EventSlash) error
-	CreateErrataRecord(record models.EventErrata) error
-	GetMaxID(chain common.Chain) (int64, error)
+	CreateSwapRecord(record *models.EventSwap) error
+	CreateStakeRecord(record *models.EventStake) error
+	CreateUnStakesRecord(record *models.EventUnstake) error
+	CreateRewardRecord(record *models.EventReward) error
+	CreateAddRecord(record *models.EventAdd) error
+	CreatePoolRecord(record *models.EventPool) error
+	CreateGasRecord(record *models.EventGas) error
+	CreateRefundRecord(record *models.EventRefund) error
+	CreateSlashRecord(record *models.EventSlash) error
+	CreateErrataRecord(record *models.EventErrata) error
 	Ping() error
 	GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string, offset, limit int64) ([]models.TxDetails, int64, error)
 	GetPools() ([]common.Asset, error)

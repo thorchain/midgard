@@ -21,7 +21,7 @@ func (s *TimeScaleSuite) TestSlash(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(assetSlashed, Equals, int64(0))
 
-	err = s.Store.CreateSlashRecord(slashBNBEvent0)
+	err = s.Store.CreateSlashRecord(&slashBNBEvent0)
 	c.Assert(err, IsNil)
 
 	runeSlashed, err = s.Store.runeSlashed(asset)

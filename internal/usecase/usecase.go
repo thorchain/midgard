@@ -246,7 +246,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolData, error) 
 			return nil, errors.Wrap(err, "failed to get pool status")
 		}
 		data.Status = status.String()
-		err = uc.store.CreatePoolRecord(models.EventPool{
+		err = uc.store.CreatePoolRecord(&models.EventPool{
 			Pool:   asset,
 			Status: status,
 			Event: models.Event{
