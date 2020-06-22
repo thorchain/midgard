@@ -2,8 +2,6 @@ package timescale
 
 import (
 	"database/sql"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -87,53 +85,13 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.Where(sb.Equal("coins.ticker", asset))
 	}
 	if len(eventTypes) > 0 {
-		doubleSwap := false
 		var types []interface{}
 		for _, ev := range eventTypes {
-			if ev == "doubleSwap" {
-				doubleSwap = true
-			} else {
-				types = append(types, ev)
-			}
+			types = append(types, ev)
 		}
-		query := `SELECT MIN(event_id) 
-				FROM   txs 
-				WHERE  direction = 'in' 
-				GROUP  BY tx_hash 
-				HAVING Count(*) = 2 `
-		if doubleSwap {
-			if len(types) > 0 {
-				sb.Where(sb.Or(sb.In("events.type", types...), fmt.Sprintf("txs.event_id in (%s)", query)))
-				// Merge double swaps into one
-				query = `SELECT MAX(event_id) 
-				FROM   txs 
-				WHERE  direction = 'in' 
-				GROUP  BY tx_hash 
-				HAVING Count(*) = 2 `
-				sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
-			} else {
-				sb.Where(fmt.Sprintf("txs.event_id in (%s)", query))
-			}
-		} else {
-			// Remove double swaps
-			query := `SELECT tx_hash 
-				FROM   txs 
-				WHERE  direction = 'in' 
-				GROUP  BY tx_hash 
-				HAVING Count(*) = 2 `
-			sb.Where(sb.In("events.type", types...))
-			sb.Where(fmt.Sprintf("txs.tx_hash not in (%s)", query))
-			sb.Where(" txs.direction = 'in'")
-		}
-	} else {
-		// Merge double swaps into one
-		query := `SELECT MAX(event_id) 
-				FROM   txs 
-				WHERE  direction = 'in' 
-				GROUP  BY tx_hash 
-				HAVING Count(*) = 2 `
-		sb.Where(fmt.Sprintf("txs.event_id not in (%s)", query))
+		sb.Where(sb.In("events.type", types...))
 	}
+	sb.Where(sb.NotEqual("events.type", ""))
 	return sb.Build()
 }
 
@@ -149,26 +107,11 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		inTx := s.inTx(eventId)
 		outTx := s.outTxs(eventId)
 		event1 := s.events(eventId, eventType)
-		if eventType == "swap" {
-			isDoubleSwap := true
-			for _, coin := range inTx.Coin {
-				if common.IsRune(coin.Asset.Ticker) {
-					isDoubleSwap = false
-				}
-			}
-			if len(strings.Split(inTx.Memo, ":")) > 1 {
-				asset, err := common.NewAsset(strings.Split(inTx.Memo, ":")[1])
-				if err == nil && common.IsRune(asset.Ticker) {
-					isDoubleSwap = false
-				}
-			}
-			if isDoubleSwap {
-				outTx = s.outTxs(eventId + 1)
-				event2 := s.events(eventId+1, eventType)
-				eventType = "doubleSwap"
-				event1.Slip += event2.Slip
-				event1.Fee += event2.Fee
-			}
+		if eventType == "doubleSwap" {
+			outTx = s.outTxs(eventId + 1)
+			event2 := s.events(eventId+1, eventType)
+			event1.Slip += event2.Slip
+			event1.Fee += event2.Fee
 		}
 		txData = append(txData, models.TxDetails{
 			Pool:    s.eventPool(eventId),
