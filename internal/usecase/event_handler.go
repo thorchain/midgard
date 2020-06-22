@@ -248,7 +248,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 			swap.Event.Type = ""
 		}
 	}
-	err = eh.store.CreateSwapRecord(swap)
+	err = eh.store.CreateSwapRecord(&swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
 	}
