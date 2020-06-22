@@ -451,11 +451,11 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 
 	swapEvnt := swapBNB2Tusdb0
 	swapEvnt.Type = "doubleSwap"
-	err = s.Store.CreateSwapRecord(swapEvnt)
+	err = s.Store.CreateSwapRecord(&swapEvnt)
 	c.Assert(err, IsNil)
 	swapEvnt = swapBNB2Tusdb1
 	swapEvnt.Type = ""
-	err = s.Store.CreateSwapRecord(swapEvnt)
+	err = s.Store.CreateSwapRecord(&swapEvnt)
 	c.Assert(err, IsNil)
 
 	txDetail := models.TxDetails{
