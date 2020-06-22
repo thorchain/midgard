@@ -247,15 +247,15 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 		}
 	}
 	if isDoubleSwap {
-		swap.Event.Type = "doubleSwap"
+		swap.Event.Type = doubleSwap
+
+	} else {
 		evts, err := eh.store.GetEventsByTxID(swap.InTx.ID)
 		if err != nil {
 			return errors.Wrap(err, "failed to get event")
 		}
-		if len(evts) > 0 {
-			swap.Type = "-"
-		} else {
-			swap.Type = doubleSwap
+		if len(evts) != 0 {
+			swap.Event.Type = ""
 		}
 	}
 	err = eh.store.CreateSwapRecord(swap)
