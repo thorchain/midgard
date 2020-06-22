@@ -197,7 +197,7 @@ var (
 			Symbol: "BNB",
 			Ticker: "BNB",
 		},
-		StakeUnits: 25025000000,
+		StakeUnits: 200,
 	}
 	stakeTcanEvent3 = models.EventStake{
 		Event: models.Event{
