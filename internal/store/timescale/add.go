@@ -11,8 +11,8 @@ import (
 
 const rewardEventAddress = "ADD"
 
-func (s *Client) CreateAddRecord(record models.EventAdd) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateAddRecord(record *models.EventAdd) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

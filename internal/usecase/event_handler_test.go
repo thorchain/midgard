@@ -22,8 +22,8 @@ type StakeTestStore struct {
 	record []models.EventStake
 }
 
-func (s *StakeTestStore) CreateStakeRecord(record models.EventStake) error {
-	s.record = append(s.record, record)
+func (s *StakeTestStore) CreateStakeRecord(record *models.EventStake) error {
+	s.record = append(s.record, *record)
 	return nil
 }
 
@@ -63,7 +63,6 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 		StakeUnits: 25075000000,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "91811747D3FBD9401CD5627F4F453BF3E7F0409D65FF6F4FDEC8772FE1387369",
@@ -116,7 +115,6 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 		StakeUnits: 0,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "9E46D2746E1C9394C4B3347A93B1FF4F9A5645FE87C0E184AB7C249664B9BD09",
@@ -140,7 +138,6 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 		StakeUnits: 25075000000,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "C4469606DCBA3AF7DFA336394CDAB460F3B07965C1A2D9E5D32EEE7E8E75901F",
@@ -160,13 +157,9 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 		},
 	}
 	if store.record[0].InTx.Chain == expectedEvent1.InTx.Chain {
-		expectedEvent1.ID = 1
-		expectedEvent2.ID = 2
 		c.Assert(store.record[0], DeepEquals, expectedEvent1)
 		c.Assert(store.record[1], DeepEquals, expectedEvent2)
 	} else {
-		expectedEvent1.ID = 2
-		expectedEvent2.ID = 1
 		c.Assert(store.record[0], DeepEquals, expectedEvent2)
 		c.Assert(store.record[1], DeepEquals, expectedEvent1)
 	}
@@ -177,8 +170,8 @@ type UnStakeTestStore struct {
 	record models.EventUnstake
 }
 
-func (s *UnStakeTestStore) CreateUnStakesRecord(record models.EventUnstake) error {
-	s.record = record
+func (s *UnStakeTestStore) CreateUnStakesRecord(record *models.EventUnstake) error {
+	s.record = *record
 	return nil
 }
 
@@ -209,7 +202,6 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 		StakeUnits: 2507500000,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
@@ -236,8 +228,8 @@ type RefundTestStore struct {
 	record models.EventRefund
 }
 
-func (s *RefundTestStore) CreateRefundRecord(record models.EventRefund) error {
-	s.record = record
+func (s *RefundTestStore) CreateRefundRecord(record *models.EventRefund) error {
+	s.record = *record
 	return nil
 }
 
@@ -266,7 +258,6 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 		Reason: "memo can't be empty",
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
@@ -296,8 +287,8 @@ type SwapTestStore struct {
 	record models.EventSwap
 }
 
-func (s *SwapTestStore) CreateSwapRecord(record models.EventSwap) error {
-	s.record = record
+func (s *SwapTestStore) CreateSwapRecord(record *models.EventSwap) error {
+	s.record = *record
 	return nil
 }
 
@@ -331,7 +322,6 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 		TradeSlip:    33,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "0F1DE3EC877075636F21AF1E7399AA9B9C710A4989E61A9F5942A78B9FA96621",
@@ -358,8 +348,8 @@ type PoolTestStore struct {
 	record models.EventPool
 }
 
-func (s *PoolTestStore) CreatePoolRecord(record models.EventPool) error {
-	s.record = record
+func (s *PoolTestStore) CreatePoolRecord(record *models.EventPool) error {
+	s.record = *record
 	return nil
 }
 
@@ -382,7 +372,6 @@ func (s *EventHandlerSuite) TestPoolEvent(c *C) {
 		Status: models.Bootstrap,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			Type:   "pool",
 			Status: "Success",
@@ -396,8 +385,8 @@ type AddTestStore struct {
 	record models.EventAdd
 }
 
-func (s *AddTestStore) CreateAddRecord(record models.EventAdd) error {
-	s.record = record
+func (s *AddTestStore) CreateAddRecord(record *models.EventAdd) error {
+	s.record = *record
 	return nil
 }
 
@@ -424,7 +413,6 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 		Pool: common.BNBAsset,
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx: common.Tx{
 				ID:          "E12194A353128677110C82224856965FA40B104D1AB69BC7034E4960AB139A0D",
@@ -455,8 +443,8 @@ type GasTestStore struct {
 	record models.EventGas
 }
 
-func (s *GasTestStore) CreateGasRecord(record models.EventGas) error {
-	s.record = record
+func (s *GasTestStore) CreateGasRecord(record *models.EventGas) error {
+	s.record = *record
 	return nil
 }
 
@@ -486,7 +474,6 @@ func (s *EventHandlerSuite) TestGasEvent(c *C) {
 		},
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			InTx:   common.Tx{},
 			Type:   "gas",
@@ -525,7 +512,6 @@ func (s *EventHandlerSuite) TestFeeEvent(c *C) {
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.Event{
 		Time:   blockTime,
-		ID:     1,
 		Height: 1,
 		InTx:   common.Tx{},
 		Type:   "fee",
@@ -548,8 +534,8 @@ type RewardTestStore struct {
 	record models.EventReward
 }
 
-func (s *RewardTestStore) CreateRewardRecord(record models.EventReward) error {
-	s.record = record
+func (s *RewardTestStore) CreateRewardRecord(record *models.EventReward) error {
+	s.record = *record
 	return nil
 }
 
@@ -576,7 +562,6 @@ func (s *EventHandlerSuite) TestRewardEvent(c *C) {
 	}
 	c.Assert(store.record.Event, DeepEquals, models.Event{
 		Time:   blockTime,
-		ID:     1,
 		Height: 1,
 		Type:   "rewards",
 		Status: "Success",
@@ -588,8 +573,8 @@ type SlashTestStore struct {
 	record models.EventSlash
 }
 
-func (s *SlashTestStore) CreateSlashRecord(record models.EventSlash) error {
-	s.record = record
+func (s *SlashTestStore) CreateSlashRecord(record *models.EventSlash) error {
+	s.record = *record
 	return nil
 }
 
@@ -616,7 +601,6 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 	}
 	c.Assert(store.record.Event, DeepEquals, models.Event{
 		Time:   blockTime,
-		ID:     1,
 		Height: 1,
 		Type:   "slash",
 		Status: "Success",
@@ -628,8 +612,8 @@ type ErrataTestStore struct {
 	record models.EventErrata
 }
 
-func (s *ErrataTestStore) CreateErrataRecord(record models.EventErrata) error {
-	s.record = record
+func (s *ErrataTestStore) CreateErrataRecord(record *models.EventErrata) error {
+	s.record = *record
 	return nil
 }
 
@@ -663,7 +647,6 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 		},
 		Event: models.Event{
 			Time:   blockTime,
-			ID:     1,
 			Height: 1,
 			Type:   "errata",
 			Status: "Success",
@@ -730,7 +713,6 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 	blockTime := time.Now()
 	store.events = []models.Event{
 		{
-			ID:     1,
 			Type:   "unstake",
 			Status: "Success",
 			Time:   blockTime.Add(-10 * time.Second),
@@ -754,7 +736,6 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventUnstake{
 		Event: models.Event{
-			ID:     1,
 			Type:   "unstake",
 			Time:   blockTime.Add(-10 * time.Second),
 			Status: "Success",
@@ -788,7 +769,6 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 	blockTime := time.Now()
 	store.events = []models.Event{
 		{
-			ID:     1,
 			Type:   "swap",
 			Time:   blockTime.Add(-10 * time.Second),
 			Status: "Success",
@@ -813,7 +793,6 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventSwap{
 		Event: models.Event{
-			ID:     1,
 			Type:   "swap",
 			Status: "Success",
 			Time:   blockTime.Add(-10 * time.Second),

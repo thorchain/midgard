@@ -22,7 +22,7 @@ func (s *TimeScaleSuite) TestAssetAdded(c *C) {
 	c.Assert(depth, Equals, uint64(0))
 
 	// Single add
-	err = s.Store.CreateAddRecord(addBnbEvent0)
+	err = s.Store.CreateAddRecord(&addBnbEvent0)
 	c.Assert(err, IsNil)
 
 	assetAdded, err = s.Store.assetAdded(assetBolt)
@@ -37,7 +37,7 @@ func (s *TimeScaleSuite) TestAssetAdded(c *C) {
 
 	// Additional add
 	assetToml, _ := common.NewAsset("TOML-4BC")
-	err = s.Store.CreateAddRecord(addTomlEvent1)
+	err = s.Store.CreateAddRecord(&addTomlEvent1)
 	c.Assert(err, IsNil)
 
 	assetAdded, err = s.Store.assetAdded(assetToml)
@@ -74,7 +74,7 @@ func (s *TimeScaleSuite) TestRuneAdded(c *C) {
 	c.Assert(depth, Equals, uint64(0))
 
 	// Single add
-	err = s.Store.CreateAddRecord(addRuneEvent0)
+	err = s.Store.CreateAddRecord(&addRuneEvent0)
 	c.Assert(err, IsNil)
 
 	runeAdded, err = s.Store.runeAdded(asset)
@@ -88,7 +88,7 @@ func (s *TimeScaleSuite) TestRuneAdded(c *C) {
 	c.Assert(depth, Equals, uint64(0))
 
 	// Additional add
-	err = s.Store.CreateAddRecord(addRuneEvent1)
+	err = s.Store.CreateAddRecord(&addRuneEvent1)
 	c.Assert(err, IsNil)
 
 	runeAdded, err = s.Store.runeAdded(asset)

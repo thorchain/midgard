@@ -10,8 +10,8 @@ import (
 
 const errataEventAddress = "ERRATA"
 
-func (s *Client) CreateErrataRecord(record models.EventErrata) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateErrataRecord(record *models.EventErrata) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

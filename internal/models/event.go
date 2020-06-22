@@ -26,5 +26,4 @@ type Event struct {
 	InTx   common.Tx
 	OutTxs common.Txs
 	Fee    common.Fee `json:"fee"`
-	Chain  common.Chain
 }

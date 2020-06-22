@@ -10,8 +10,8 @@ import (
 
 const addEventAddress = "BLOCK_REWARD"
 
-func (s *Client) CreateRewardRecord(record models.EventReward) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateRewardRecord(record *models.EventReward) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

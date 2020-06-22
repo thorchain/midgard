@@ -10,8 +10,8 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) CreateStakeRecord(record models.EventStake) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateStakeRecord(record *models.EventStake) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "createStakeRecord failed")
 	}
@@ -305,12 +305,12 @@ func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, 
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		runeStaked, err := s.runeStaked(asset)
+		runeStaked, err := s.runeStakedForAddress(address, asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "runeEarned failed")
 		}
 
-		return int64(float64(stakeUnits) / float64(poolUnits) * float64(int64(runeDepth)-runeStaked)), nil
+		return int64(float64(stakeUnits)/float64(poolUnits)*float64(runeDepth)) - runeStaked, nil
 	}
 
 	return 0, nil
@@ -337,12 +337,12 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		assetStaked, err := s.assetStaked(asset)
+		assetStaked, err := s.assetStakedForAddress(address, asset)
 		if err != nil {
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		return int64(float64(stakeUnits) / float64(poolUnits) * float64(int64(assetDepth)-assetStaked)), nil
+		return int64(float64(stakeUnits)/float64(poolUnits)*float64(assetDepth)) - assetStaked, nil
 	}
 
 	return 0, nil

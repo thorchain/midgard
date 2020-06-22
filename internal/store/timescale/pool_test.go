@@ -16,7 +16,7 @@ func (s *TimeScaleSuite) TestPool(c *C) {
 	c.Assert(poolStatus, Equals, "")
 
 	// First pool status
-	err = s.Store.CreatePoolRecord(poolStatusEvent0)
+	err = s.Store.CreatePoolRecord(&poolStatusEvent0)
 	c.Assert(err, IsNil)
 	poolStatus, err = s.Store.poolStatus(assetBolt)
 	c.Assert(err, IsNil)
@@ -28,13 +28,9 @@ func (s *TimeScaleSuite) TestPool(c *C) {
 	c.Assert(poolStatus, Equals, "")
 
 	// Second pool status
-	err = s.Store.CreatePoolRecord(poolStatusEvent1)
+	err = s.Store.CreatePoolRecord(&poolStatusEvent1)
 	c.Assert(err, IsNil)
 	poolStatus, err = s.Store.poolStatus(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(poolStatus, Equals, models.Enabled.String())
-
-	// Duplicate pool status
-	err = s.Store.CreatePoolRecord(poolStatusEvent1)
-	c.Assert(err, NotNil)
 }

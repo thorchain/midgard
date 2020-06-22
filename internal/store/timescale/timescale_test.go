@@ -197,7 +197,7 @@ var (
 			Symbol: "BNB",
 			Ticker: "BNB",
 		},
-		StakeUnits: 25025000000,
+		StakeUnits: 200,
 	}
 	stakeTcanEvent3 = models.EventStake{
 		Event: models.Event{
@@ -1897,7 +1897,6 @@ var (
 		Status: "Success",
 		Height: 15,
 		Type:   "",
-		Chain:  "BNB",
 	}
 	emptyBNBEvent1 = models.Event{
 		Time:   time.Now(),
@@ -1905,7 +1904,6 @@ var (
 		Status: "Success",
 		Height: 15,
 		Type:   "",
-		Chain:  "BNB",
 	}
 	emptyBTCEvent0 = models.Event{
 		Time:   time.Now(),
@@ -1913,7 +1911,6 @@ var (
 		Status: "Success",
 		Height: 15,
 		Type:   "",
-		Chain:  "BTC",
 	}
 	errataEvent0 = models.EventErrata{
 		Event: models.Event{

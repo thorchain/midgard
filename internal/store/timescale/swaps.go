@@ -11,8 +11,8 @@ import (
 
 const slipBasisPoints float64 = 10000
 
-func (s *Client) CreateSwapRecord(record models.EventSwap) error {
-	err := s.CreateEventRecord(record.Event)
+func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
+	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

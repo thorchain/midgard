@@ -28,7 +28,7 @@ func (s *TimeScaleSuite) TestAssetErrata(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(assetErrata, Equals, int64(0))
 
-	err = s.Store.CreateErrataRecord(errataEvent0)
+	err = s.Store.CreateErrataRecord(&errataEvent0)
 	c.Assert(err, IsNil)
 
 	assetErrata, err = s.Store.assetErrata(assetTUSDB)
@@ -68,7 +68,7 @@ func (s *TimeScaleSuite) TestRuneErrata(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeErrata, Equals, int64(0))
 
-	err = s.Store.CreateErrataRecord(errataEvent0)
+	err = s.Store.CreateErrataRecord(&errataEvent0)
 	c.Assert(err, IsNil)
 
 	runeErrata, err = s.Store.runeErrata(assetTUSDB)
