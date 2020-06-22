@@ -346,7 +346,7 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 				Chain: common.BNBChain,
 				Memo:  "SWAP:BTC.BTC:bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
 			},
-			Type:   "swap",
+			Type:   "doubleSwap",
 			Status: "Pending",
 		},
 	}
