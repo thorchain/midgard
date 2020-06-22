@@ -207,14 +207,14 @@ func (s *TimeScaleSuite) TestRuneEarned(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeEarned, Equals, int64(0))
 
-	err = s.Store.CreateSwapRecord(swapBuyRune2BnbEvent3)
+	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
 
 	runeEarned, err = s.Store.runeEarned(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeEarned, Equals, int64(200000000))
 
-	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
 	runeEarned, err = s.Store.runeEarned(address, asset)
@@ -256,14 +256,14 @@ func (s *TimeScaleSuite) TestAssetEarned(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(assetEarned, Equals, int64(0))
 
-	err = s.Store.CreateSwapRecord(swapSellBnb2RuneEvent5)
+	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent5)
 	c.Assert(err, IsNil)
 
 	assetEarned, err = s.Store.assetEarned(address, asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetEarned, Equals, int64(10000000))
 
-	err = s.Store.CreateStakeRecord(stakeBnbEvent2)
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
 	assetEarned, err = s.Store.assetEarned(address, asset)
