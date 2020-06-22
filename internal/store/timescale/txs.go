@@ -113,6 +113,9 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 			event2 := s.events(eventId+1, "swap")
 			event1.Slip += event2.Slip
 			event1.Fee += event2.Fee
+			if len(outTx) == 0 {
+				status = "pending"
+			}
 		} else {
 			event1 = s.events(eventId, eventType)
 		}
