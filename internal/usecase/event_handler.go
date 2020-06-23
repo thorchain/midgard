@@ -161,6 +161,7 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
 		}
+		stake.Event.ID=ev.ID
 		err = eh.store.ProcessTxRecord("in", stake.Event, tx)
 		if err != nil {
 			return errors.Wrap(err, "failed to save InTx")
