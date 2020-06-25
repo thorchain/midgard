@@ -383,7 +383,7 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
 				Event: evts[0],
 			})
-		} else if evts[0].Type == swapEventType {
+		} else if evts[0].Type == swapEventType || evts[0].Type == doubleswapEventType {
 			// Only second tx of double swap has fee
 			evts[len(evts)-1].Fee = evt.Fee
 			err = eh.store.UpdateSwapRecord(models.EventSwap{
