@@ -17,20 +17,21 @@ import (
 )
 
 const (
-	swapEventType     = `swap`
-	stakeEventType    = `stake`
-	unstakeEventType  = `unstake`
-	addEventType      = `add`
-	poolEventType     = `pool`
-	rewardEventType   = `rewards`
-	refundEventType   = `refund`
-	gasEventType      = `gas`
-	slashEventType    = `slash`
-	errataEventType   = `errata`
-	feeEventType      = `fee`
-	outboundEventType = `outbound`
-	pendingEvent      = `Pending`
-	successEvent      = `Success`
+	swapEventType       = `swap`
+	stakeEventType      = `stake`
+	doubleswapEventType = `doubleSwap`
+	unstakeEventType    = `unstake`
+	addEventType        = `add`
+	poolEventType       = `pool`
+	rewardEventType     = `rewards`
+	refundEventType     = `refund`
+	gasEventType        = `gas`
+	slashEventType      = `slash`
+	errataEventType     = `errata`
+	feeEventType        = `fee`
+	outboundEventType   = `outbound`
+	pendingEvent        = `Pending`
+	successEvent        = `Success`
 )
 
 var (
@@ -224,6 +225,29 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode swap")
 	}
 	swap.Status = pendingEvent
+	isDoubleSwap := true
+	for _, coin := range swap.InTx.Coins {
+		if common.IsRune(coin.Asset.Ticker) {
+			isDoubleSwap = false
+		}
+	}
+	if len(strings.Split(string(swap.InTx.Memo), ":")) > 1 {
+		asset, err := common.NewAsset(strings.Split(string(swap.InTx.Memo), ":")[1])
+		if err == nil && common.IsRune(asset.Ticker) {
+			isDoubleSwap = false
+		}
+	}
+	if isDoubleSwap {
+		swap.Event.Type = doubleswapEventType
+	} else {
+		evts, err := eh.store.GetEventsByTxID(swap.InTx.ID)
+		if err != nil {
+			return errors.Wrap(err, "failed to get event")
+		}
+		if len(evts) != 0 {
+			swap.Event.Type = ""
+		}
+	}
 	err = eh.store.CreateSwapRecord(&swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
@@ -359,7 +383,7 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
 				Event: evts[0],
 			})
-		} else if evts[0].Type == swapEventType {
+		} else if evts[0].Type == swapEventType || evts[0].Type == doubleswapEventType {
 			// Only second tx of double swap has fee
 			evts[len(evts)-1].Fee = evt.Fee
 			err = eh.store.UpdateSwapRecord(models.EventSwap{
@@ -431,7 +455,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		if err != nil {
 			return err
 		}
-	} else if evts[0].Type == swapEventType {
+	} else if evts[0].Type == swapEventType || evts[0].Type == doubleswapEventType {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
 			evt = evts[1]
