@@ -1277,12 +1277,12 @@ func (s *Client) poolStatus(asset common.Asset) (string, error) {
 	stmnt := `
 		SELECT status 
 		FROM   pools_history 
-		WHERE  pool = $1 
+		WHERE  pool = $1 AND status != $2
 		ORDER  BY event_id DESC 
 		LIMIT  1  
 		`
 	var poolStatus sql.NullInt32
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), models.Unknown)
 	if err := row.Scan(&poolStatus); err != nil {
 		if err == sql.ErrNoRows {
 			return "", nil
