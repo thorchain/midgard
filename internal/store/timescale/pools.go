@@ -501,6 +501,11 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
+	depth, err := s.getAssetDepth(asset)
+	return uint64(depth), err
+}
+
+func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
 	stmnt := `SELECT SUM(asset_amount) FROM pool_history WHERE pool = $1`
 
 	var depth sql.NullInt64
@@ -510,7 +515,7 @@ func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "GetAssetDepth failed")
 	}
 
-	return uint64(depth.Int64), nil
+	return depth.Int64, nil
 }
 
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
@@ -528,6 +533,11 @@ func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
+	depth, err := s.getRuneDepth(asset)
+	return uint64(depth), err
+}
+
+func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
 	stmnt := `SELECT SUM(rune_amount) FROM pool_history WHERE pool = $1`
 
 	var depth sql.NullInt64
@@ -537,7 +547,7 @@ func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "GetRuneDepth failed")
 	}
 
-	return uint64(depth.Int64), nil
+	return depth.Int64, nil
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
@@ -1266,7 +1276,7 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 func (s *Client) poolStatus(asset common.Asset) (string, error) {
 	stmnt := `
 		SELECT status 
-		FROM   pools 
+		FROM   pool_history 
 		WHERE  pool = $1 
 		ORDER  BY event_id DESC 
 		LIMIT  1  
