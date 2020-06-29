@@ -10,7 +10,7 @@ CREATE TABLE events (
     PRIMARY KEY (id, time)
 );
 
-CREATE TABLE pool_history (
+CREATE TABLE pools_history (
     time            TIMESTAMPTZ     NOT NULL,
     id              BIGSERIAL       NOT NULL,
     event_id        BIGINT          NOT NULL,
@@ -22,8 +22,8 @@ CREATE TABLE pool_history (
     tx_hash         VARCHAR         NOT NULL,
     PRIMARY KEY (id, time)
 );
-CREATE INDEX event_id_pool_history_idx ON pool_history (event_id);
-CREATE INDEX pool_pool_history_idx ON pool_history (pool);
+CREATE INDEX event_id_pools_history_idx ON pools_history (event_id);
+CREATE INDEX pool_pools_history_idx ON pools_history (pool);
 
 CREATE TABLE stakes (
     time        TIMESTAMPTZ       NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE coins (
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
-SELECT create_hypertable('pool_history', 'time');
+SELECT create_hypertable('pools_history', 'time');
 SELECT create_hypertable('stakes', 'time');
 SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
@@ -91,7 +91,7 @@ SELECT create_hypertable('coins', 'time');
 -- +migrate Down
 
 DROP TABLE events;
-DROP TABLE pool_history;
+DROP TABLE pools_history;
 DROP TABLE stakes;
 DROP TABLE swaps;
 DROP TABLE txs;

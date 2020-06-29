@@ -506,7 +506,7 @@ func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
-	stmnt := `SELECT SUM(asset_amount) FROM pool_history WHERE pool = $1`
+	stmnt := `SELECT SUM(asset_amount) FROM pools_history WHERE pool = $1`
 
 	var depth sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -519,7 +519,7 @@ func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
-	stmnt := `SELECT SUM(asset_amount) FROM pool_history WHERE pool = $1 
+	stmnt := `SELECT SUM(asset_amount) FROM pools_history WHERE pool = $1 
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var depth sql.NullInt64
@@ -538,7 +538,7 @@ func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
-	stmnt := `SELECT SUM(rune_amount) FROM pool_history WHERE pool = $1`
+	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1`
 
 	var depth sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -551,7 +551,7 @@ func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
-	stmnt := `SELECT SUM(rune_amount) FROM pool_history WHERE pool = $1 
+	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1 
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var depth sql.NullInt64
@@ -1276,7 +1276,7 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 func (s *Client) poolStatus(asset common.Asset) (string, error) {
 	stmnt := `
 		SELECT status 
-		FROM   pool_history 
+		FROM   pools_history 
 		WHERE  pool = $1 
 		ORDER  BY event_id DESC 
 		LIMIT  1  
