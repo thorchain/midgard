@@ -78,16 +78,11 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 
 func (s *Client) TotalRuneStaked() (int64, error) {
 	stmnt := `
-		SELECT SUM(runeAmt) FROM stakes 
-		WHERE from_address != $1
-		AND from_address != $2
-		AND from_address != $3
-		AND from_address != $4
-		AND from_address != $5	
+		SELECT SUM(runeAmt) FROM stakes	
 	`
 
 	var totalRuneStaked sql.NullInt64
-	row := s.db.QueryRow(stmnt, addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, errataEventAddress)
+	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalRuneStaked); err != nil {
 		return 0, errors.Wrap(err, "totalRuneStaked failed")
