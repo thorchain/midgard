@@ -226,38 +226,6 @@ func (s *TimeScaleSuite) TestAssetStakedTotal(c *C) {
 	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
 }
 
-func (s *TimeScaleSuite) TestAssetStakedTotal12m(c *C) {
-	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	assetStakedTotal, err := s.Store.assetStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(0))
-
-	// Single stake
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	assetStakedTotal, err = s.Store.assetStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(10))
-
-	// Another stake
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent1)
-	c.Assert(err, IsNil)
-
-	assetStakedTotal, err = s.Store.assetStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
-
-	// Withdrawal
-	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
-	c.Assert(err, IsNil)
-
-	assetStakedTotal, err = s.Store.assetStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(assetStakedTotal, Equals, uint64(20), Commentf("%v", assetStakedTotal))
-}
-
 func (s *TimeScaleSuite) TestAssetWithdrawnTotal(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
@@ -313,37 +281,6 @@ func (s *TimeScaleSuite) TestRuneStakedTotal(c *C) {
 	runeStakedTotal, err = s.Store.runeStakedTotal(asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeStakedTotal, Equals, uint64(50000100), Commentf("%v", runeStakedTotal))
-}
-
-func (s *TimeScaleSuite) TestRuneStakedTotal12m(c *C) {
-	// No stake
-	asset, _ := common.NewAsset("BNB.BNB")
-	runeStakedTotal, err := s.Store.runeStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeStakedTotal, Equals, uint64(0))
-
-	// Single stake
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeStakedTotal, Equals, uint64(100))
-
-	// Another stake
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent1)
-	c.Assert(err, IsNil)
-
-	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeStakedTotal, Equals, uint64(200))
-
-	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
-	c.Assert(err, IsNil)
-
-	runeStakedTotal, err = s.Store.runeStakedTotal12m(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeStakedTotal, Equals, uint64(200), Commentf("%v", runeStakedTotal))
 }
 
 func (s *TimeScaleSuite) TestPoolStakedTotal(c *C) {

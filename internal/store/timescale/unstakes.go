@@ -36,7 +36,6 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 	}
 
 	// TODO: Do something with Event.InTx
-
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -47,7 +46,6 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 			assetAmt,
 			units
 		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelStakesTable)
-
 	_, err = s.db.Exec(query,
 		record.Event.Time,
 		record.Event.ID,
@@ -57,12 +55,19 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 		-assetAmt,
 		-record.StakeUnits,
 	)
-
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")
 	}
 
-	return nil
+	change := &models.PoolChange{
+		Time:        record.Time,
+		EventID:     record.ID,
+		Pool:        record.Pool,
+		AssetAmount: assetAmt,
+		RuneAmount:  runeAmt,
+	}
+	err = s.UpdatePoolHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }
 
 func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
@@ -97,5 +102,13 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")
 	}
 
-	return nil
+	change := &models.PoolChange{
+		Time:        record.Time,
+		EventID:     record.ID,
+		Pool:        record.Pool,
+		AssetAmount: assetAmt,
+		RuneAmount:  runeAmt,
+	}
+	err = s.UpdatePoolHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }
