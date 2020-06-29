@@ -187,7 +187,7 @@ var (
 				Memo: "STAKE:BNB.BNB",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
@@ -232,7 +232,7 @@ var (
 				Memo: "stake:TCAN-014",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
@@ -277,7 +277,7 @@ var (
 				Memo: "stake:TCAN-014",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
@@ -322,7 +322,7 @@ var (
 				Memo: "stake:BOLT-014",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
@@ -828,7 +828,7 @@ var (
 				Memo: "swap:RUNE-B1A::124958592",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -881,7 +881,7 @@ var (
 				Memo: "swap:RUNE-B1A::124958592",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF98",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -934,7 +934,7 @@ var (
 				Memo: "swap:RUNE-B1A::124958592",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF99",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -987,7 +987,7 @@ var (
 				Memo: "swap:RUNE-B1A::124958592",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF99",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -1040,7 +1040,7 @@ var (
 				Memo: "swap:RUNE-B1A",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF99",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -1093,7 +1093,7 @@ var (
 				Memo: "swap:BOLT-014",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -1146,7 +1146,7 @@ var (
 				Memo: "swap:BNB.BNB",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -1199,7 +1199,7 @@ var (
 				Memo: "swap:BNB.BNB",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -1236,7 +1236,7 @@ var (
 			Type:   "rewards",
 		},
 		PoolRewards: []models.PoolAmount{
-			models.PoolAmount{
+			{
 				Pool: common.Asset{
 					Chain:  "BNB",
 					Symbol: "BOLT-014",
@@ -1244,7 +1244,7 @@ var (
 				},
 				Amount: 1000,
 			},
-			models.PoolAmount{
+			{
 				Pool: common.Asset{
 					Chain:  "BNB",
 					Symbol: "TCAN-014",
@@ -1263,7 +1263,7 @@ var (
 			Type:   "rewards",
 		},
 		PoolRewards: []models.PoolAmount{
-			models.PoolAmount{
+			{
 				Pool: common.Asset{
 					Chain:  "BNB",
 					Symbol: "TOML-4BC",
@@ -1271,7 +1271,7 @@ var (
 				},
 				Amount: 1000,
 			},
-			models.PoolAmount{
+			{
 				Pool: common.Asset{
 					Chain:  "BNB",
 					Symbol: "TCAN-014",
@@ -1290,7 +1290,7 @@ var (
 			Type:   "rewards",
 		},
 		PoolRewards: []models.PoolAmount{
-			models.PoolAmount{
+			{
 				Pool: common.Asset{
 					Chain:  "BNB",
 					Symbol: "BNB",
@@ -1319,7 +1319,7 @@ var (
 			Type:   "rewards",
 		},
 		PoolRewards: []models.PoolAmount{
-			models.PoolAmount{
+			{
 				Pool: common.Asset{
 					Chain:  "BNB",
 					Symbol: "BNB",
@@ -1773,7 +1773,7 @@ var (
 				Memo: "stake:TUSDB-000",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID: "0000000000000000000000000000000000000000000000000000000000000000",
 				},
 			},
@@ -1810,7 +1810,7 @@ var (
 				Memo: "swap:RUNE-B1A",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "CDA6548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -1863,7 +1863,7 @@ var (
 				Memo: "swap:TUSDB-000",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "C7D6648D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
@@ -2026,7 +2026,7 @@ var (
 				Memo: "swap:TUSDB-000",
 			},
 			OutTxs: []common.Tx{
-				common.Tx{
+				{
 					ID:          "R2D6648D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
 					Chain:       "BNB",
 					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",

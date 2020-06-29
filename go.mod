@@ -32,11 +32,10 @@ require (
 	github.com/tendermint/tendermint v0.33.4
 	github.com/ziflex/lecho/v2 v2.0.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/tools v0.0.0-20200430192856-2840dafb9ee1 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/gorp.v1 v1.7.2 // indirect
-	mvdan.cc/gofumpt v0.0.0-20200513141252-abc0db2c416a // indirect
+	mvdan.cc/gofumpt v0.0.0-20200627213337-90206bd98491 // indirect
 )
 
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
