@@ -17,7 +17,7 @@ func (s *Client) CreateRewardRecord(record *models.EventReward) error {
 			Time:       record.Time,
 			EventID:    record.ID,
 			Pool:       reward.Pool,
-			RuneAmount: int64(reward.Amount),
+			RuneAmount: reward.Amount,
 		}
 		err := s.UpdatePoolHistory(change)
 		if err != nil {
