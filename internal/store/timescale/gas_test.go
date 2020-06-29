@@ -10,26 +10,26 @@ func (s *TimeScaleSuite) TestGasSpend(c *C) {
 	assetTcan, _ := common.NewAsset("TCAN-014")
 
 	// No gas record
-	assetDepth, err := s.Store.GetAssetDepth(assetBolt)
+	assetDepth, err := s.Store.getAssetDepth(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, int64(0))
 
 	// First gas record
 	err = s.Store.CreateGasRecord(&gasEvent1)
 	c.Assert(err, IsNil)
-	assetDepth, err = s.Store.GetAssetDepth(assetBolt)
+	assetDepth, err = s.Store.getAssetDepth(assetBolt)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, int64(-8400))
 
 	// Unchanged gas spend for other pools
-	assetDepth, err = s.Store.GetAssetDepth(assetTcan)
+	assetDepth, err = s.Store.getAssetDepth(assetTcan)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, int64(0))
 
 	// Gas Top up
 	err = s.Store.CreateGasRecord(&gasEvent2)
 	c.Assert(err, IsNil)
-	assetDepth, err = s.Store.GetAssetDepth(assetTcan)
+	assetDepth, err = s.Store.getAssetDepth(assetTcan)
 	c.Assert(err, IsNil)
 	c.Assert(assetDepth, Equals, int64(0))
 }
