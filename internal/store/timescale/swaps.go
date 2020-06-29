@@ -117,8 +117,8 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		Time:        record.Time,
 		EventID:     record.ID,
 		Pool:        record.Pool,
-		AssetAmount: assetAmt,
-		RuneAmount:  runeAmt,
+		AssetAmount: -assetAmt,
+		RuneAmount:  -runeAmt,
 	}
 	err = s.UpdatePoolHistory(change)
 	return errors.Wrap(err, "could not update pool history")
