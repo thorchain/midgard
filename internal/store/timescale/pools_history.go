@@ -1,6 +1,9 @@
 package timescale
 
-import "gitlab.com/thorchain/midgard/internal/models"
+import (
+	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
+)
 
 func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 	sql := `INSERT INTO pools_history (time, event_id, pool, asset_amount, rune_amount, units, status) 
@@ -14,4 +17,15 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		change.Units,
 		change.Status)
 	return err
+}
+
+func (s *Client) GetEventPool(id int64) (common.Asset, error) {
+	sql := `SELECT pool FROM pools_history WHERE event_id = $1`
+	var poolStr string
+	err := s.db.QueryRowx(sql, id).Scan(&poolStr)
+	if err != nil {
+		return common.EmptyAsset, err
+	}
+
+	return common.NewAsset(poolStr)
 }
