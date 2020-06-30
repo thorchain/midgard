@@ -8,12 +8,11 @@ import (
 
 // PoolChange represents a change in pool state.
 type PoolChange struct {
-	Time        time.Time    `db:"time"`
-	EventID     int64        `db:"event_id"`
-	Pool        common.Asset `db:"pool"`
-	AssetAmount int64        `db:"asset_amount"`
-	RuneAmount  int64        `db:"rune_amount"`
-	Units       int64        `db:"units"`
-	Status      PoolStatus   `db:"status"`
-	TxHash      common.TxID  `db:"tx_hash"`
+	Time        time.Time
+	EventID     int64
+	Pool        common.Asset
+	AssetAmount int64
+	RuneAmount  int64
+	Units       int64
+	Status      PoolStatus
 }

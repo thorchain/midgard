@@ -26,7 +26,7 @@ func (s *Client) CreateErrataRecord(record *models.EventErrata) error {
 		if !pool.RuneAdd {
 			change.RuneAmount = -pool.RuneAmt
 		}
-		err = s.UpdatePoolHistory(change)
+		err = s.UpdatePoolsHistory(change)
 		if err != nil {
 			return errors.Wrap(err, "could not update pool history")
 		}

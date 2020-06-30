@@ -19,7 +19,7 @@ func (s *Client) CreateRewardRecord(record *models.EventReward) error {
 			Pool:       reward.Pool,
 			RuneAmount: reward.Amount,
 		}
-		err := s.UpdatePoolHistory(change)
+		err := s.UpdatePoolsHistory(change)
 		if err != nil {
 			return errors.Wrap(err, "could not update pool history")
 		}
