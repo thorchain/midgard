@@ -113,11 +113,7 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
 	}
 
-	eventID := uint64(record.Event.ID)
-	if record.Type == "" {
-		eventID = uint64(record.Event.ID - 1)
-	}
-	pool := s.eventPool(eventID)
+	pool := s.eventPool(uint64(record.Event.ID))
 	change := &models.PoolChange{
 		Time:        record.Time,
 		EventID:     record.ID,

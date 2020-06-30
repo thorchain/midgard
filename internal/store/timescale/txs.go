@@ -138,10 +138,9 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 
 func (s *Client) eventPool(eventId uint64) common.Asset {
 	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.ticker
-			FROM coins
-		WHERE event_id = $1
-		AND ticker != 'RUNE'`
+		SELECT pool
+		FROM pools_history
+		WHERE event_id = $1`
 
 	rows, err := s.db.Queryx(stmnt, eventId)
 	if err != nil {
@@ -157,19 +156,8 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 			s.logger.Err(err).Msg("MapScan error")
 			continue
 		}
-
-		c, _ := results["chain"].(string)
-		chain, _ := common.NewChain(c)
-
-		sy, _ := results["symbol"].(string)
-		symbol, _ := common.NewSymbol(sy)
-
-		t, _ := results["ticker"].(string)
-		ticker, _ := common.NewTicker(t)
-
-		asset.Chain = chain
-		asset.Symbol = symbol
-		asset.Ticker = ticker
+		pool, _ := results["pool"].(string)
+		asset, _ = common.NewAsset(pool)
 	}
 
 	return asset
