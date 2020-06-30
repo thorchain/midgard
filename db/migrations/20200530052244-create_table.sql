@@ -19,7 +19,6 @@ CREATE TABLE pools_history (
     rune_amount     BIGINT          NOT NULL,
     units           BIGINT          NOT NULL,
     status          SMALLINT        NOT NULL,
-    tx_hash         VARCHAR         NOT NULL,
     PRIMARY KEY (id, time)
 );
 CREATE INDEX event_id_pools_history_idx ON pools_history (event_id);

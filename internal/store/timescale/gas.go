@@ -23,7 +23,7 @@ func (s *Client) CreateGasRecord(record *models.EventGas) error {
 			RuneAmount:  int64(pool.RuneAmt),
 			AssetAmount: -int64(pool.AssetAmt),
 		}
-		err := s.UpdatePoolHistory(change)
+		err := s.UpdatePoolsHistory(change)
 		if err != nil {
 			return errors.Wrap(err, "could not update pool history")
 		}

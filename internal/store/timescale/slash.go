@@ -29,7 +29,7 @@ func (s *Client) CreateSlashRecord(record *models.EventSlash) error {
 			RuneAmount:  runeAmt,
 			AssetAmount: assetAmt,
 		}
-		err := s.UpdatePoolHistory(change)
+		err := s.UpdatePoolsHistory(change)
 		if err != nil {
 			return errors.Wrap(err, "could not update pool history")
 		}

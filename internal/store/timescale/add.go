@@ -17,7 +17,6 @@ func (s *Client) CreateAddRecord(record *models.EventAdd) error {
 		Time:    record.Time,
 		EventID: record.ID,
 		Pool:    record.Pool,
-		TxHash:  record.InTx.ID,
 	}
 	for _, coin := range record.InTx.Coins {
 		if common.IsRune(coin.Asset.Ticker) {
@@ -26,6 +25,6 @@ func (s *Client) CreateAddRecord(record *models.EventAdd) error {
 			change.AssetAmount = coin.Amount
 		}
 	}
-	err = s.UpdatePoolHistory(change)
+	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
 }
