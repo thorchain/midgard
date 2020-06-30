@@ -115,7 +115,6 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 
 	eventID := uint64(record.Event.ID)
 	if record.Type == "" {
-		//double swap
 		eventID = uint64(record.Event.ID - 1)
 	}
 	pool := s.eventPool(eventID)
