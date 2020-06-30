@@ -103,10 +103,11 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 		return errors.Wrap(err, "Failed to prepareNamed query for UnStakesRecord")
 	}
 
+	pool := s.eventPool(uint64(record.Event.ID))
 	change := &models.PoolChange{
 		Time:        record.Time,
 		EventID:     record.ID,
-		Pool:        record.Pool,
+		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		Units:       -record.StakeUnits,
