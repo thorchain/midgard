@@ -17,7 +17,6 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 		Pool:        pool,
 		AssetAmount: 1000,
 		RuneAmount:  -2000,
-		Units:       150,
 		Status:      models.Enabled,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
@@ -28,9 +27,6 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	runeDepth, err := s.Store.getRuneDepth(pool)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(-2000))
-	units, err := s.Store.poolUnits(pool)
-	c.Assert(err, IsNil)
-	c.Assert(units, Equals, int64(150))
 	status, err := s.Store.poolStatus(pool)
 	c.Assert(err, IsNil)
 	c.Assert(status, Equals, models.Enabled.String())
@@ -43,7 +39,6 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 		Pool:        pool,
 		AssetAmount: -3000,
 		RuneAmount:  4000,
-		Units:       120,
 		Status:      models.Bootstrap,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
@@ -54,9 +49,6 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	runeDepth, err = s.Store.getRuneDepth(pool)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(4000))
-	units, err = s.Store.poolUnits(pool)
-	c.Assert(err, IsNil)
-	c.Assert(units, Equals, int64(120))
 	status, err = s.Store.poolStatus(pool)
 	c.Assert(err, IsNil)
 	c.Assert(status, Equals, models.Bootstrap.String())
