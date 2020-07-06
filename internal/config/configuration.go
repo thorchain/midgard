@@ -19,7 +19,7 @@ type Configuration struct {
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
-	FullNodes       []NodeProxy            `json:"full_nodes" mapstructure:"log_level"`
+	FullNodes       []NodeProxy            `json:"full_nodes" mapstructure:"full_nodes"`
 }
 
 type TimeScaleConfiguration struct {
