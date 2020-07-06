@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -44,23 +45,29 @@ func NewProxyHandler(conf []config.NodeProxy, basePath string) (*ProxyHandler, e
 	return h, nil
 }
 
-// Handle implements echo.HandlerFunc
-func (h *ProxyHandler) Handle(ctx echo.Context) error {
+// RegisterHandler register the handler to echo server.
+func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler)
+}
+
+func (h *ProxyHandler) handler(ctx echo.Context) error {
 	chain := ctx.Param("chain")
 	node, ok := h.nodes[chain]
 	if !ok {
-		return echo.NewHTTPError(http.StatusNotFound, "the chain %s is not registered for proxy")
+		return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("could not find chain %s", chain))
 	}
 
 	req := ctx.Request()
 	// Remove the /{basePath}/{chain} part from the Path
 	req.URL.Path = strings.TrimPrefix(req.URL.Path, path.Join(h.basePath, chain))
-
-	if strings.HasPrefix(req.URL.Path, node.websocketPath) {
-		// Start websocket proxy agent.
-	}
-
 	res := ctx.Response()
-	node.proxy.ServeHTTP(res, req)
+	// Delete duplicate header
+	res.Header().Del("Access-Control-Allow-Origin")
+
+	if node.websocketPath != "" && strings.HasPrefix(req.URL.Path, node.websocketPath) {
+		// Start websocket proxy agent
+	} else {
+		node.proxy.ServeHTTP(res, req)
+	}
 	return nil
 }
