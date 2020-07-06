@@ -46,7 +46,7 @@ type ThorChainConfiguration struct {
 
 type NodeProxy struct {
 	Chain         string `json:"chain" mapstructure:"chain"`
-	Proxy         string `json:"proxy" mapstructure:"proxy"`
+	Target        string `json:"target" mapstructure:"target"`
 	WebsocketPath string `json:"websocket_path" mapstructure:"websocket_path"`
 }
 

@@ -24,5 +24,12 @@
     "database": "midgard",
     "sslmode": "disable",
     "migrationsDir": "./db/migrations/"
-  }
+  },
+  "fullnodes": [
+    {
+      "chain": "bnb",
+      "proxy": "https://blablbah:26657",
+      "websocket_path": "/websocket"
+    }
+  ]
 }
