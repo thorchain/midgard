@@ -2,13 +2,16 @@ package http
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.com/thorchain/midgard/internal/config"
+	"golang.org/x/net/websocket"
 	. "gopkg.in/check.v1"
 )
 
@@ -16,7 +19,7 @@ type ProxyHandlerSuite struct{}
 
 var _ = Suite(&ProxyHandlerSuite{})
 
-func (s *ProxyHandlerSuite) TestProxyHTTP(c *C) {
+func (s *ProxyHandlerSuite) TestHTTPProxy(c *C) {
 	bnbServer := httptest.NewServer(dummyHandler("BNB"))
 	defer bnbServer.Close()
 	btcServer := httptest.NewServer(dummyHandler("BTC"))
@@ -69,4 +72,37 @@ func dummyHandler(chain string) http.Handler {
 
 		fmt.Fprintf(w, "[CHAIN: %s][METHOD: %s][PATH: %s][BODY: %s]", chain, r.Method, r.URL.EscapedPath(), string(data))
 	})
+}
+
+func (s *ProxyHandlerSuite) TestWebsocketProxy(c *C) {
+	echoServer := httptest.NewServer(websocket.Handler(func(ws *websocket.Conn) {
+		io.Copy(ws, ws)
+	}))
+	defer echoServer.Close()
+
+	conf := []config.NodeProxy{
+		{
+			Chain:         "echo",
+			Target:        echoServer.URL,
+			WebsocketPath: "/websocket",
+		},
+	}
+	proxy, err := NewProxyHandler(conf, "/v1/nodes")
+	c.Assert(err, IsNil)
+
+	e := echo.New()
+	proxy.RegisterHandler(e)
+	server := httptest.NewServer(e)
+	defer server.Close()
+
+	wsURL, _ := url.Parse(echoServer.URL)
+	wsURL.Scheme = "ws"
+	ws, err := websocket.Dial(wsURL.String()+"/websocket", "", echoServer.URL)
+	c.Assert(err, IsNil)
+	_, err = ws.Write([]byte("This is a Test!"))
+	c.Assert(err, IsNil)
+	var msg = make([]byte, 15)
+	_, err = ws.Read(msg)
+	c.Assert(err, IsNil)
+	c.Assert(string(msg), Equals, "This is a Test!")
 }

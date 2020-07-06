@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
+	"github.com/yhat/wsutil"
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
@@ -20,22 +21,29 @@ type ProxyHandler struct {
 }
 
 type nodeProxy struct {
-	proxy         *httputil.ReverseProxy
-	websocketPath string
+	httpProxy      *httputil.ReverseProxy
+	websocketProxy *wsutil.ReverseProxy
+	websocketPath  string
 }
 
 // NewProxyHandler returns a new ProxyHandler with given params.
 func NewProxyHandler(conf []config.NodeProxy, basePath string) (*ProxyHandler, error) {
 	nodes := make(map[string]nodeProxy, len(conf))
 	for _, n := range conf {
-		target, err := url.Parse(n.Target)
+		httpTarget, err := url.Parse(n.Target)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid target url for chain %s", n.Chain)
 		}
-		nodes[n.Chain] = nodeProxy{
-			proxy:         httputil.NewSingleHostReverseProxy(target),
-			websocketPath: n.WebsocketPath,
+		node := nodeProxy{
+			httpProxy: httputil.NewSingleHostReverseProxy(httpTarget),
 		}
+		if n.WebsocketPath != "" {
+			// Converting the http scheme to ws scheme
+			wsTarget := convertToWsTarget(httpTarget)
+			node.websocketProxy = wsutil.NewSingleHostReverseProxy(wsTarget)
+			node.websocketPath = n.WebsocketPath
+		}
+		nodes[n.Chain] = node
 	}
 
 	h := &ProxyHandler{
@@ -43,6 +51,16 @@ func NewProxyHandler(conf []config.NodeProxy, basePath string) (*ProxyHandler, e
 		basePath: basePath,
 	}
 	return h, nil
+}
+
+func convertToWsTarget(httpTarget *url.URL) *url.URL {
+	u := *httpTarget
+	if u.Scheme == "https" {
+		u.Scheme = "wss"
+	} else {
+		u.Scheme = "ws"
+	}
+	return &u
 }
 
 // RegisterHandler register the handler to echo server.
@@ -65,9 +83,9 @@ func (h *ProxyHandler) handler(ctx echo.Context) error {
 	res.Header().Del("Access-Control-Allow-Origin")
 
 	if node.websocketPath != "" && strings.HasPrefix(req.URL.Path, node.websocketPath) {
-		// Start websocket proxy agent
+		node.websocketProxy.ServeHTTP(res, req)
 	} else {
-		node.proxy.ServeHTTP(res, req)
+		node.httpProxy.ServeHTTP(res, req)
 	}
 	return nil
 }

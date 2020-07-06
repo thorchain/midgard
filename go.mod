@@ -30,8 +30,10 @@ require (
 	github.com/spf13/viper v1.6.3
 	github.com/stumble/gorocksdb v0.0.3 // indirect
 	github.com/tendermint/tendermint v0.33.4
+	github.com/yhat/wsutil v0.0.0-20170731153501-1d66fa95c997
 	github.com/ziflex/lecho/v2 v2.0.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
 	golang.org/x/tools v0.0.0-20200430192856-2840dafb9ee1 // indirect
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
