@@ -27,7 +27,7 @@
   },
   "full_nodes": [
     {
-      "chain": "THORChain",
+      "chain": "thor",
       "target": "http://localhost:26657/",
       "websocket_path": "/websocket"
     }
