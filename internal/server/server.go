@@ -95,6 +95,11 @@ func New(cfgFile *string) (*Server, error) {
 	// Setup echo
 	echoEngine := echo.New()
 	echoEngine.Use(middleware.Recover())
+	proxy, err := httpdelivery.NewProxyHandler(cfg.FullNodes, "/v1/nodes")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create proxy")
+	}
+	proxy.RegisterHandler(echoEngine)
 
 	// CORS default
 	// Allows requests from any origin wth GET, HEAD, PUT, POST or DELETE method.
