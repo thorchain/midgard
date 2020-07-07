@@ -101,7 +101,7 @@ func (s *ProxyHandlerSuite) TestWebsocketProxy(c *C) {
 	c.Assert(err, IsNil)
 	_, err = ws.Write([]byte("This is a Test!"))
 	c.Assert(err, IsNil)
-	var msg = make([]byte, 15)
+	msg := make([]byte, 15)
 	_, err = ws.Read(msg)
 	c.Assert(err, IsNil)
 	c.Assert(string(msg), Equals, "This is a Test!")
