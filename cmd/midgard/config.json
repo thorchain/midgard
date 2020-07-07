@@ -25,10 +25,10 @@
     "sslmode": "disable",
     "migrationsDir": "./db/migrations/"
   },
-  "fullnodes": [
+  "full_nodes": [
     {
-      "chain": "bnb",
-      "proxy": "https://blablbah:26657",
+      "chain": "THORChain",
+      "target": "http://localhost:26657/",
       "websocket_path": "/websocket"
     }
   ]
