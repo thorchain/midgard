@@ -137,17 +137,25 @@ func (sc *BlockScanner) fetchInfo(from, to int64) (*coretypes.ResultBlockchainIn
 
 func (sc *BlockScanner) fetchResults(from, to int64) ([]*coretypes.ResultBlockResults, error) {
 	blocks := make([]*coretypes.ResultBlockResults, 0, to-from+1)
-	for i := from; i <= to; i++ {
-		block, err := sc.batch.BlockResults(&i)
+	if to == from {
+		block, err := sc.client.BlockResults(&from)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not prepare request block results of height %d", i)
+			return nil, errors.Wrapf(err, "could not fetch block results for height %d", from)
 		}
 		blocks = append(blocks, block)
-	}
+	} else {
+		for i := from; i <= to; i++ {
+			block, err := sc.batch.BlockResults(&i)
+			if err != nil {
+				return nil, errors.Wrapf(err, "could not prepare request block results of height %d", i)
+			}
+			blocks = append(blocks, block)
+		}
 
-	_, err := sc.batch.Send()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not send batch request")
+		_, err := sc.batch.Send()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not send batch request")
+		}
 	}
 	return blocks, nil
 }
@@ -192,6 +200,7 @@ func convertEvents(tes []abcitypes.Event) []Event {
 
 // Tendermint represents every method BlockScanner needs to scan blocks.
 type Tendermint interface {
+	BlockResults(height *int64) (*coretypes.ResultBlockResults, error)
 	BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error)
 }
 
