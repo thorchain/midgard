@@ -38,7 +38,7 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	cli := &Client{
 		db:            db,
 		logger:        logger,
-		migrationsDir: migrationsDir,
+		migrationsDir: cfg.MigrationsDir,
 	}
 
 	if err := cli.MigrationsUp(); err != nil {
