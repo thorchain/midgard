@@ -24,5 +24,6 @@
     "database": "midgard",
     "sslmode": "disable",
     "migrationsDir": "./db/migrations/"
-  }
+  },
+  "full_nodes": []
 }

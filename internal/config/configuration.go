@@ -19,6 +19,7 @@ type Configuration struct {
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
+	FullNodes       []NodeProxy            `json:"full_nodes" mapstructure:"full_nodes"`
 }
 
 type TimeScaleConfiguration struct {
@@ -41,6 +42,12 @@ type ThorChainConfiguration struct {
 	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
 	CacheTTL                    time.Duration `json:"cache_ttl" mapstructure:"cache_ttl"`
 	CacheCleanup                time.Duration `json:"cache_cleanup" mapstructure:"cache_cleanup"`
+}
+
+type NodeProxy struct {
+	Chain         string `json:"chain" mapstructure:"chain"`
+	Target        string `json:"target" mapstructure:"target"`
+	WebsocketPath string `json:"websocket_path" mapstructure:"websocket_path"`
 }
 
 func applyDefaultConfig() {
