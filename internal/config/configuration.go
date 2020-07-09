@@ -22,13 +22,15 @@ type Configuration struct {
 }
 
 type TimeScaleConfiguration struct {
-	Host          string `json:"host" mapstructure:"host"`
-	Port          int    `json:"port" mapstructure:"port"`
-	UserName      string `json:"user_name" mapstructure:"user_name"`
-	Password      string `json:"password" mapstructure:"password"`
-	Database      string `json:"database" mapstructure:"database"`
-	Sslmode       string `json:"sslmode" mapstructure:"sslmode"`
-	MigrationsDir string `json:"migrationsDir" mapstructure:"migrationsDir"`
+	Host                  string        `json:"host" mapstructure:"host"`
+	Port                  int           `json:"port" mapstructure:"port"`
+	UserName              string        `json:"user_name" mapstructure:"user_name"`
+	Password              string        `json:"password" mapstructure:"password"`
+	Database              string        `json:"database" mapstructure:"database"`
+	Sslmode               string        `json:"sslmode" mapstructure:"sslmode"`
+	MigrationsDir         string        `json:"migrationsDir" mapstructure:"migrationsDir"`
+	MaxConnections        int           `json:"max_connections" mapstructure:"max_connections"`
+	ConnectionMaxLifetime time.Duration `json:"connection_max_lifetime" mapstructure:"connection_max_lifetime"`
 }
 
 type ThorChainConfiguration struct {
@@ -51,6 +53,8 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.cache_ttl", "5s")
 	viper.SetDefault("thorchain.cache_cleanup", "10s")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
+	viper.SetDefault("timescale.max_connections", 25)
+	viper.SetDefault("timescale.connection_max_lifetime", time.Minute*5)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
