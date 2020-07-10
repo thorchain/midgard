@@ -159,7 +159,6 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 		TotalAssetBuys:     Uint64ToString(stats.TotalAssetBuys),
 		TotalAssetSells:    Uint64ToString(stats.TotalAssetSells),
 		TotalDepth:         Uint64ToString(stats.TotalDepth),
-		TotalEarned:        Uint64ToString(stats.TotalEarned),
 		TotalStakeTx:       Uint64ToString(stats.TotalStakeTx),
 		TotalStaked:        Uint64ToString(stats.TotalStaked),
 		TotalTx:            Uint64ToString(stats.TotalTx),

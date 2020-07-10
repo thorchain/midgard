@@ -426,9 +426,6 @@ components:
         totalDepth:
           type: string
           description: Total RUNE balances
-        totalEarned:
-          type: string
-          description: Total earned (in RUNE Value).
         poolCount:
           type: string
           description: Number of active pools

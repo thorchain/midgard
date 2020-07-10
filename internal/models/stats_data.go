@@ -11,7 +11,6 @@ type StatsData struct {
 	TotalVolume        uint64
 	TotalStaked        uint64
 	TotalDepth         uint64
-	TotalEarned        uint64
 	PoolCount          uint64
 	TotalAssetBuys     uint64
 	TotalAssetSells    uint64

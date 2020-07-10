@@ -187,10 +187,6 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	if err != nil {
 		return nil, err
 	}
-	totalEarned, err := uc.store.TotalEarned()
-	if err != nil {
-		return nil, err
-	}
 	poolCount, err := uc.store.PoolCount()
 	if err != nil {
 		return nil, err
@@ -223,7 +219,6 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 		TotalVolume:        totalVolume,
 		TotalStaked:        bTotalStaked,
 		TotalDepth:         totalDepth,
-		TotalEarned:        totalEarned,
 		PoolCount:          poolCount,
 		TotalAssetBuys:     totalAssetBuys,
 		TotalAssetSells:    totalAssetSells,
