@@ -380,7 +380,6 @@ type TestGetStatsStore struct {
 	totalVolume        uint64
 	totalStaked        uint64
 	totalDepth         uint64
-	totalEarned        uint64
 	poolCount          uint64
 	totalAssetBuys     uint64
 	totalAssetSells    uint64
@@ -465,10 +464,6 @@ func (s *TestGetStatsStore) TotalWithdrawTx() (uint64, error) {
 	return s.totalWithdrawTx, s.err
 }
 
-func (s *TestGetStatsStore) TotalEarned() (uint64, error) {
-	return s.totalEarned, s.err
-}
-
 func (s *UsecaseSuite) TestGetStats(c *C) {
 	store := &TestGetStatsStore{
 		dailyActiveUsers:   2,
@@ -481,7 +476,6 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 		totalVolume:        50000,
 		totalStaked:        30000,
 		totalDepth:         35000,
-		totalEarned:        0,
 		poolCount:          3,
 		totalAssetBuys:     50,
 		totalAssetSells:    60,
@@ -504,7 +498,6 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 		TotalVolume:        store.totalVolume,
 		TotalStaked:        store.totalStaked,
 		TotalDepth:         store.totalDepth,
-		TotalEarned:        store.totalEarned,
 		PoolCount:          store.poolCount,
 		TotalAssetBuys:     store.totalAssetBuys,
 		TotalAssetSells:    store.totalAssetSells,
