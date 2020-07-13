@@ -28,7 +28,11 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	var a string
 
 	if err := row.Scan(&a); err != nil {
-		return common.Asset{}, errors.Wrap(err, "getPool failed")
+		if err == sql.ErrNoRows {
+			return common.Asset{}, errors.New(ErrPoolNotFound)
+		} else {
+			return common.Asset{}, errors.Wrap(err, "getPool failed")
+		}
 	}
 
 	return common.NewAsset(a)

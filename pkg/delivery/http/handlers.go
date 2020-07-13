@@ -131,7 +131,11 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam GetAssetInfoParams)
 		details, err := h.uc.GetAssetDetails(ast)
 		if err != nil {
 			h.logger.Error().Err(err).Str("asset", ast.String()).Msg("failed to get pool")
-			return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
+			if err.Error() == timescale.ErrPoolNotFound {
+				return echo.NewHTTPError(http.StatusNotFound, GeneralErrorResponse{Error: err.Error()})
+			} else {
+				return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
+			}
 		}
 
 		response[i] = AssetDetail{
@@ -300,9 +304,15 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 	for i, ast := range asts {
 		details, err := h.uc.GetStakerAssetDetails(addr, ast)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
-				Error: err.Error(),
-			})
+			if err.Error() == timescale.ErrPoolNotFound {
+				return echo.NewHTTPError(http.StatusNotFound, GeneralErrorResponse{
+					Error: err.Error(),
+				})
+			} else {
+				return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
+					Error: err.Error(),
+				})
+			}
 		}
 
 		response[i] = StakersAssetData{

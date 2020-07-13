@@ -117,7 +117,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	}
 
 	if !found {
-		return models.StakerAddressAndAssetDetails{}, errors.New("no pool exists for that asset")
+		return models.StakerAddressAndAssetDetails{}, errors.New(ErrPoolNotFound)
 	}
 
 	stakeUnits, err := s.stakeUnits(address, asset)
