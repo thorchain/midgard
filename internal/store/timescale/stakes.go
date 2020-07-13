@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/store"
 )
 
 func (s *Client) CreateStakeRecord(record *models.EventStake) error {
@@ -117,7 +118,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 	}
 
 	if !found {
-		return models.StakerAddressAndAssetDetails{}, errors.New("no pool exists for that asset")
+		return models.StakerAddressAndAssetDetails{}, store.ErrPoolNotFound
 	}
 
 	stakeUnits, err := s.stakeUnits(address, asset)
