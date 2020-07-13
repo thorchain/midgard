@@ -9,7 +9,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-var ErrPoolNotFound = "pool does not exist"
+const ErrPoolNotFound string= "pool does not exist"
 
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	query := `
