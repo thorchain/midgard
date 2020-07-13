@@ -1,9 +1,10 @@
 package http
 
 import (
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
 	"net/http"
 	"strings"
+
+	"gitlab.com/thorchain/midgard/internal/store/timescale"
 
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
