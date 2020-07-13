@@ -17,17 +17,17 @@ func (s *HelpersSuite) TestParseAssets(c *C) {
 	// Valid comma separated sequence of assets
 	str := "BNB.BNB,BNB.TCAN-014,BNB.RUNE-A1F"
 	asts := []common.Asset{
-		common.Asset{
+		{
 			Chain:  "BNB",
 			Symbol: "BNB",
 			Ticker: "BNB",
 		},
-		common.Asset{
+		{
 			Chain:  "BNB",
 			Symbol: "TCAN-014",
 			Ticker: "TCAN",
 		},
-		common.Asset{
+		{
 			Chain:  "BNB",
 			Symbol: "RUNE-A1F",
 			Ticker: "RUNE",
