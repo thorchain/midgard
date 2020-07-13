@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/store"
 	. "gopkg.in/check.v1"
 )
 
@@ -56,7 +57,7 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	c.Assert(err, IsNil)
 	_, err = s.Store.GetPool(asset)
 	c.Assert(err, NotNil)
-	c.Assert(err.Error(), Equals, ErrPoolNotFound)
+	c.Assert(err, Equals, store.ErrPoolNotFound)
 }
 
 func (s *TimeScaleSuite) TestGetPoolData(c *C) {

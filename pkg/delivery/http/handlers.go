@@ -4,13 +4,12 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
-
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
 	"github.com/rs/zerolog"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/store"
 	"gitlab.com/thorchain/midgard/internal/usecase"
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 )
@@ -131,11 +130,10 @@ func (h *Handlers) GetAssetInfo(ctx echo.Context, assetParam GetAssetInfoParams)
 		details, err := h.uc.GetAssetDetails(ast)
 		if err != nil {
 			h.logger.Error().Err(err).Str("asset", ast.String()).Msg("failed to get pool")
-			if err.Error() == timescale.ErrPoolNotFound {
+			if err == store.ErrPoolNotFound {
 				return echo.NewHTTPError(http.StatusNotFound, GeneralErrorResponse{Error: err.Error()})
-			} else {
-				return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 			}
+			return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 		}
 
 		response[i] = AssetDetail{
@@ -189,12 +187,11 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam GetPoolsDataParams)
 	for i, ast := range asts {
 		details, err := h.uc.GetPoolDetails(ast)
 		if err != nil {
-			if err.Error() == timescale.ErrPoolNotFound {
+			if err == store.ErrPoolNotFound {
 				return echo.NewHTTPError(http.StatusNotFound, GeneralErrorResponse{Error: err.Error()})
-			} else {
-				h.logger.Err(err).Msg("GetPoolDetails failed")
-				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 			}
+			h.logger.Err(err).Msg("GetPoolDetails failed")
+			return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 		}
 
 		response[i] = PoolDetail{
@@ -304,15 +301,14 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 	for i, ast := range asts {
 		details, err := h.uc.GetStakerAssetDetails(addr, ast)
 		if err != nil {
-			if err.Error() == timescale.ErrPoolNotFound {
+			if err == store.ErrPoolNotFound {
 				return echo.NewHTTPError(http.StatusNotFound, GeneralErrorResponse{
 					Error: err.Error(),
 				})
-			} else {
-				return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
-					Error: err.Error(),
-				})
 			}
+			return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{
+				Error: err.Error(),
+			})
 		}
 
 		response[i] = StakersAssetData{

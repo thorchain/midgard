@@ -7,9 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/internal/store"
 )
-
-const ErrPoolNotFound string = "pool does not exist"
 
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	query := `
@@ -29,10 +28,9 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 
 	if err := row.Scan(&a); err != nil {
 		if err == sql.ErrNoRows {
-			return common.Asset{}, errors.New(ErrPoolNotFound)
-		} else {
-			return common.Asset{}, errors.Wrap(err, "getPool failed")
+			return common.Asset{}, store.ErrPoolNotFound
 		}
+		return common.Asset{}, errors.Wrap(err, "getPool failed")
 	}
 
 	return common.NewAsset(a)
@@ -81,7 +79,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
 	}
 	if !exists {
-		return models.PoolData{}, errors.New(ErrPoolNotFound)
+		return models.PoolData{}, store.ErrPoolNotFound
 	}
 
 	assetDepth, err := s.GetAssetDepth(asset)
