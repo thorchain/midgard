@@ -827,15 +827,6 @@ func (s *TestGetStakerAssetDetailsStore) GetStakersAddressAndAssetDetails(_ comm
 	details := models.StakerAddressAndAssetDetails{
 		Asset:           s.asset,
 		StakeUnits:      s.stakeUnits,
-		RuneStaked:      s.runeStaked,
-		AssetStaked:     s.assetStaked,
-		PoolStaked:      s.poolStaked,
-		RuneEarned:      s.runeEarned,
-		AssetEarned:     s.assetEarned,
-		PoolEarned:      s.poolEarned,
-		RuneROI:         s.runeROI,
-		AssetROI:        s.assetROI,
-		PoolROI:         s.poolROI,
 		DateFirstStaked: s.dateFirstStaked,
 	}
 	return details, s.err
@@ -870,15 +861,6 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 	c.Assert(stats, DeepEquals, &models.StakerAddressAndAssetDetails{
 		Asset:           store.asset,
 		StakeUnits:      store.stakeUnits,
-		RuneStaked:      store.runeStaked,
-		AssetStaked:     store.assetStaked,
-		PoolStaked:      store.poolStaked,
-		RuneEarned:      store.runeEarned,
-		AssetEarned:     store.assetEarned,
-		PoolEarned:      store.poolEarned,
-		RuneROI:         store.runeROI,
-		AssetROI:        store.assetROI,
-		PoolROI:         store.poolROI,
 		DateFirstStaked: store.dateFirstStaked,
 	})
 
