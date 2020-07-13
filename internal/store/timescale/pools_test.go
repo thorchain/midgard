@@ -51,6 +51,12 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	pool, err := s.Store.GetPool(asset)
 	c.Assert(err, IsNil)
 	c.Check(pool.Equals(asset), Equals, true)
+
+	asset, err = common.NewAsset("BNB.TUSDB-000")
+	c.Assert(err, IsNil)
+	_, err = s.Store.GetPool(asset)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, ErrPoolNotFound)
 }
 
 func (s *TimeScaleSuite) TestGetPoolData(c *C) {

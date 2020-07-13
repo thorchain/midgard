@@ -154,6 +154,12 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
 	c.Assert(actualDetails, DeepEquals, expectedDetails)
+
+	assest, err = common.NewAsset("BNB.BNB")
+	c.Assert(err, IsNil)
+	_, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
+	c.Assert(err, NotNil)
+	c.Assert(err, Equals, ErrPoolNotFound)
 }
 
 func (s *TimeScaleSuite) TestHeightLastStaked(c *C) {
