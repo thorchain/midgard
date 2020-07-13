@@ -1,7 +1,6 @@
 package http
 
 import (
-	"gitlab.com/thorchain/midgard/internal/store/timescale"
 	"net/http"
 	"strings"
 
@@ -184,12 +183,8 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam GetPoolsDataParams)
 	for i, ast := range asts {
 		details, err := h.uc.GetPoolDetails(ast)
 		if err != nil {
-			if err.Error() == timescale.ErrPoolNotFound {
-				return echo.NewHTTPError(http.StatusNotFound, GeneralErrorResponse{Error: err.Error()})
-			} else {
-				h.logger.Err(err).Msg("GetPoolDetails failed")
-				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
-			}
+			h.logger.Err(err).Msg("GetPoolDetails failed")
+			return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 		}
 
 		response[i] = PoolDetail{
