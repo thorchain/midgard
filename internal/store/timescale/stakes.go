@@ -37,7 +37,6 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 			assetAmt,
 			units
 		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelStakesTable)
-
 	_, err = s.db.Exec(query,
 		record.Event.Time,
 		record.Event.ID,
@@ -47,11 +46,20 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		assetAmt,
 		record.StakeUnits,
 	)
-
 	if err != nil {
 		return errors.Wrap(err, "createStakeRecord failed")
 	}
-	return nil
+
+	change := &models.PoolChange{
+		Time:        record.Time,
+		EventID:     record.ID,
+		Pool:        record.Pool,
+		AssetAmount: assetAmt,
+		RuneAmount:  runeAmt,
+		Units:       record.StakeUnits,
+	}
+	err = s.UpdatePoolsHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }
 
 // GetStakerAddresses returns am array of all the staker addresses seen by the api
@@ -80,13 +88,11 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
-		if result.From_address != addEventAddress {
-			addr, err := common.NewAddress(result.From_address)
-			if err != nil {
-				return nil, errors.Wrap(err, "getStakerAddresses failed")
-			}
-			addresses = append(addresses, addr)
+		addr, err := common.NewAddress(result.From_address)
+		if err != nil {
+			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
+		addresses = append(addresses, addr)
 	}
 	return addresses, nil
 }
