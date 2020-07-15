@@ -34,7 +34,7 @@ require (
 	github.com/ziflex/lecho/v2 v2.0.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
-	golang.org/x/tools v0.0.0-20200430192856-2840dafb9ee1 // indirect
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/gorp.v1 v1.7.2 // indirect

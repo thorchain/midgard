@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"golang.org/x/time/rate"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
 	"github.com/yhat/wsutil"
 	"gitlab.com/thorchain/midgard/internal/config"
@@ -24,6 +26,40 @@ type nodeProxy struct {
 	httpProxy      *httputil.ReverseProxy
 	websocketProxy *wsutil.ReverseProxy
 	websocketPath  string
+}
+
+type RateLimitConfig struct {
+		Skipper middleware.Skipper
+		Limit   int
+		Burst   int
+}
+var DefaultRateLimitConfig = RateLimitConfig{
+	Skipper: middleware.DefaultSkipper,
+	Limit:   2,
+	Burst:   1,
+}
+
+func RateLimitMiddleware() echo.MiddlewareFunc {
+	return RateLimitWithConfig(DefaultRateLimitConfig)
+}
+
+func RateLimitWithConfig(config RateLimitConfig) echo.MiddlewareFunc {
+	// Defaults
+	if config.Skipper == nil {
+		config.Skipper = DefaultRateLimitConfig.Skipper
+	}
+	var limiter = rate.NewLimiter(rate.Limit(config.Limit), config.Burst)
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if config.Skipper(c) {
+				return next(c)
+			}
+			if limiter.Allow() == false {
+				return echo.ErrTooManyRequests
+			}
+			return next(c)
+		}
+	}
 }
 
 // NewProxyHandler returns a new ProxyHandler with given params.
@@ -66,6 +102,10 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
 	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler)
+	e.Use(RateLimitWithConfig(RateLimitConfig{
+		Limit: 2,
+		Burst: 2,
+	}))
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
