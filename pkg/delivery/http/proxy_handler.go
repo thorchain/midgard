@@ -29,17 +29,18 @@ type nodeProxy struct {
 }
 
 type RateLimitConfig struct {
-		Skipper middleware.Skipper
-		Limit   int
-		Burst   int
+	Skipper middleware.Skipper
+	Limit   float64
+	Burst   int
 }
+
 var DefaultRateLimitConfig = RateLimitConfig{
 	Skipper: middleware.DefaultSkipper,
-	Limit:   2,
+	Limit:   0.25,
 	Burst:   1,
 }
 
-func RateLimitMiddleware() echo.MiddlewareFunc {
+func NewRateLimitMiddleware() echo.MiddlewareFunc {
 	return RateLimitWithConfig(DefaultRateLimitConfig)
 }
 
@@ -101,11 +102,11 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
-	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler)
-	e.Use(RateLimitWithConfig(RateLimitConfig{
-		Limit: 2,
-		Burst: 2,
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, RateLimitWithConfig(RateLimitConfig{
+		Limit: 0.1,
+		Burst: 1,
 	}))
+	//e.Any(path.Join(h.basePath, "/:chain/*"), h.handler)
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
