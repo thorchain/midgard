@@ -77,9 +77,7 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 }
 
 func (s *Client) TotalRuneStaked() (int64, error) {
-	stmnt := `
-		SELECT SUM(runeAmt) FROM stakes	
-	`
+	stmnt := `SELECT SUM(rune_amount) FROM pools_history`
 
 	var totalRuneStaked sql.NullInt64
 	row := s.db.QueryRow(stmnt)
@@ -109,9 +107,7 @@ func (s *Client) runeSwaps() (int64, error) {
 func (s *Client) PoolCount() (uint64, error) {
 	var poolCount uint64
 
-	stmnt := `
-		SELECT DISTINCT(pool) FROM stakes
-	`
+	stmnt := `SELECT DISTINCT(pool) FROM pools_history`
 
 	rows, err := s.db.Queryx(stmnt)
 	if err != nil {
@@ -162,9 +158,7 @@ func (s *Client) TotalAssetSells() (uint64, error) {
 }
 
 func (s *Client) TotalStakeTx() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(event_id) FROM stakes WHERE units > 0
-	`
+	stmnt := `SELECT COUNT(id) FROM events WHERE type = 'stake'`
 
 	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
@@ -177,7 +171,7 @@ func (s *Client) TotalStakeTx() (uint64, error) {
 }
 
 func (s *Client) TotalWithdrawTx() (uint64, error) {
-	stmnt := `SELECT COUNT(event_id) FROM stakes WHERE units < 0`
+	stmnt := `SELECT COUNT(id) FROM events WHERE type = 'unstake'`
 	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 

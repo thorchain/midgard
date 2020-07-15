@@ -2,7 +2,6 @@ package timescale
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -27,29 +26,6 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		}
 	}
 
-	query := fmt.Sprintf(`
-		INSERT INTO %v (
-			time,
-			event_id,
-			from_address,
-			pool,
-			runeAmt,
-			assetAmt,
-			units
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelStakesTable)
-	_, err = s.db.Exec(query,
-		record.Event.Time,
-		record.Event.ID,
-		record.Event.InTx.FromAddress,
-		record.Pool.String(),
-		runeAmt,
-		assetAmt,
-		record.StakeUnits,
-	)
-	if err != nil {
-		return errors.Wrap(err, "createStakeRecord failed")
-	}
-
 	change := &models.PoolChange{
 		Time:        record.Time,
 		EventID:     record.ID,
@@ -62,33 +38,27 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 	return errors.Wrap(err, "could not update pool history")
 }
 
-// GetStakerAddresses returns am array of all the staker addresses seen by the api
+// GetStakerAddresses returns an array of all the staker addresses seen by the api
 func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 	query := `
-		SELECT from_address, SUM(units) AS units
-		FROM stakes
-		WHERE units > 0
-    GROUP BY from_address
-	`
+		SELECT DISTINCT from_address
+		FROM txs
+		JOIN pools_history ON txs.event_id = pools_history.event_id
+		WHERE pools_history.units > 0`
 
 	rows, err := s.db.Queryx(query)
 	if err != nil {
 		return nil, errors.Wrap(err, "getStakerAddresses failed")
 	}
 
-	type results struct {
-		From_address string
-		Units        int64
-	}
-
 	var addresses []common.Address
 	for rows.Next() {
-		var result results
-		err = rows.StructScan(&result)
+		var addrStr string
+		err = rows.Scan(&addrStr)
 		if err != nil {
 			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
-		addr, err := common.NewAddress(result.From_address)
+		addr, err := common.NewAddress(addrStr)
 		if err != nil {
 			return nil, errors.Wrap(err, "getStakerAddresses failed")
 		}
@@ -227,10 +197,9 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
 		SELECT SUM(units)
-		FROM stakes
-		WHERE from_address = ($1)
-		AND pool = ($2)
-	`
+		FROM pools_history
+		JOIN txs ON pools_history.event_id = txs.event_id
+		WHERE pool = $2 AND txs.from_address = $1`
 
 	var stakeUnits sql.NullInt64
 	err := s.db.Get(&stakeUnits, query, address, asset.String())
@@ -244,11 +213,10 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 // runeStakedForAddress - sum of rune staked by a specific address and pool
 func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset) (int64, error) {
 	query := `
-		SELECT SUM(runeAmt)
-		FROM stakes
-		WHERE from_address = ($1)
-		AND pool = ($2)
-	`
+		SELECT SUM(rune_amount)
+		FROM pools_history
+		JOIN txs ON pools_history.event_id = txs.event_id
+		WHERE pool = $2 AND units != 0 AND txs.from_address = $1`
 
 	var runeStaked sql.NullInt64
 	err := s.db.Get(&runeStaked, query, address, asset.String())
@@ -262,11 +230,10 @@ func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset
 // runeStakedForAddress - sum of asset staked by a specific address and pool
 func (s *Client) assetStakedForAddress(address common.Address, asset common.Asset) (int64, error) {
 	query := `
-		SELECT SUM(assetAmt)
-		FROM stakes
-		WHERE from_address = $1
-		AND pool = $2
-	`
+		SELECT SUM(asset_amount)
+		FROM pools_history
+		JOIN txs ON pools_history.event_id = txs.event_id
+		WHERE pool = $2 AND units != 0 AND txs.from_address = $1`
 
 	var assetStaked sql.NullInt64
 	err := s.db.Get(&assetStaked, query, address, asset.String())
@@ -396,10 +363,10 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT MIN(stakes.time) FROM stakes
-		WHERE from_address = $1
-		AND pool = $2
-		`
+		SELECT MIN(pools_history.time)
+		FROM pools_history
+		JOIN txs ON pools_history.event_id = txs.event_id
+		WHERE pool = $2 AND units > 0 AND txs.from_address = $1`
 
 	firstStaked := sql.NullTime{}
 	err := s.db.Get(&firstStaked, query, address.String(), asset.String())
@@ -416,14 +383,11 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 
 func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT MAX(events.height) 
-		FROM   stakes 
-		INNER JOIN events 
-		ON stakes.event_id = events.id 
-		WHERE  stakes.from_address = $1 
-		AND stakes.pool = $2
-		AND stakes.units > 0 
-		`
+		SELECT MAX(height) 
+		FROM events 
+		JOIN txs ON events.id = txs.event_id 
+		JOIN pools_history ON events.id = pools_history.event_id 
+		WHERE type = 'stake' AND pools_history.pool = $2 AND txs.from_address = $1`
 
 	lastStaked := sql.NullInt64{}
 	err := s.db.Get(&lastStaked, query, address.String(), asset.String())
@@ -494,36 +458,30 @@ func (s *Client) totalStaked(address common.Address) (int64, error) {
 
 func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 	query := `
-		SELECT pool, SUM(units) as units
-		FROM stakes
-		WHERE from_address = $1
+		SELECT pool
+		FROM pools_history
+		JOIN txs ON pools_history.event_id = txs.event_id
+		WHERE units != 0 AND txs.from_address = $1
 		GROUP BY pool
-	`
+		HAVING SUM(units) > 0`
 
 	rows, err := s.db.Queryx(query, address.String())
 	if err != nil {
 		return nil, errors.Wrap(err, "getPools failed")
 	}
 
-	type results struct {
-		Pool  string
-		Units int64
-	}
-
 	var pools []common.Asset
 	for rows.Next() {
-		var result results
-		err := rows.StructScan(&result)
+		var assetStr string
+		err := rows.Scan(&assetStr)
 		if err != nil {
 			return nil, errors.Wrap(err, "getPools failed")
 		}
-		if result.Units > 0 {
-			asset, err := common.NewAsset(result.Pool)
-			if err != nil {
-				return nil, errors.Wrap(err, "getPools failed")
-			}
-			pools = append(pools, asset)
+		asset, err := common.NewAsset(assetStr)
+		if err != nil {
+			return nil, errors.Wrap(err, "getPools failed")
 		}
+		pools = append(pools, asset)
 	}
 
 	return pools, nil

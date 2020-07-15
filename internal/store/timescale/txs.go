@@ -350,8 +350,8 @@ func (s *Client) swapEvents(eventId uint64) models.Events {
 
 func (s *Client) stakeEvents(eventId uint64) models.Events {
 	stmnt := `
-		SELECT stakes.units
-			FROM stakes
+		SELECT units
+		FROM pools_history
 		WHERE event_id = $1`
 
 	var events models.Events
