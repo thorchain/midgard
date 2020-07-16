@@ -11,24 +11,25 @@ import (
 
 type RateLimitConfig struct {
 	Skipper middleware.Skipper
-	ips     *cache.Cache
+	IPs     *cache.Cache
 	Rate    rate.Limit
 	Burst   int
 }
 
 func NewRateLimitMiddleware(r float64, b int) echo.MiddlewareFunc {
 	return RateLimitWithConfig(RateLimitConfig{
-		ips:   cache.New(10*time.Minute, 15*time.Minute),
+		IPs:   cache.New(10*time.Minute, 15*time.Minute),
 		Rate:  rate.Limit(r),
 		Burst: b,
 	})
 }
 
 func (r *RateLimitConfig) GetLimiter(ip string) *rate.Limiter {
-	limiter, exists := r.ips.Get(ip)
+	limiter, exists := r.IPs.Get(ip)
 	if !exists {
 		limiter := rate.NewLimiter(r.Rate, r.Burst)
-		r.ips.Set(ip, limiter, cache.DefaultExpiration)
+		r.IPs.Set(ip, limiter, cache.DefaultExpiration)
+		return limiter
 	}
 	return limiter.(*rate.Limiter)
 }
