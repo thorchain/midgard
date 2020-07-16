@@ -17,25 +17,12 @@ CREATE TABLE pools_history (
     pool            VARCHAR         NOT NULL,
     asset_amount    BIGINT          NOT NULL,
     rune_amount     BIGINT          NOT NULL,
-    units           BIGINT          NOT NULL,
+    units           BIGINT,
     status          SMALLINT        NOT NULL,
     PRIMARY KEY (id, time)
 );
 CREATE INDEX event_id_pools_history_idx ON pools_history (event_id);
 CREATE INDEX pool_pools_history_idx ON pools_history (pool);
-
-CREATE TABLE stakes (
-    time        TIMESTAMPTZ       NOT NULL,
-    id SERIAL,
-    event_id bigint not null,
-    from_address varchar not null,
-    pool varchar not null,
-    runeAmt bigint,
-    assetAmt bigint,
-    units bigint,
-    primary key (id, time)
-);
-CREATE INDEX idx_stakes ON stakes (from_address, pool);
 
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
@@ -82,7 +69,6 @@ CREATE TABLE coins (
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
-SELECT create_hypertable('stakes', 'time');
 SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
@@ -91,7 +77,6 @@ SELECT create_hypertable('coins', 'time');
 
 DROP TABLE events;
 DROP TABLE pools_history;
-DROP TABLE stakes;
 DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
