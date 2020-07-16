@@ -2,15 +2,16 @@ package http
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
-	"github.com/yhat/wsutil"
-	"gitlab.com/thorchain/midgard/internal/config"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
+
+	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
+	"github.com/yhat/wsutil"
+	"gitlab.com/thorchain/midgard/internal/config"
 )
 
 // ProxyHandler will proxy the request to the specified node.
@@ -64,7 +65,7 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
-	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(20, 100))
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(10, 20))
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
