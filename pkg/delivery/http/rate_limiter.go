@@ -39,7 +39,7 @@ func RateLimitWithConfig(config RateLimitConfig) echo.MiddlewareFunc {
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			var limiter = config.GetLimiter(c.RealIP())
+			limiter := config.GetLimiter(c.RealIP())
 			if config.Skipper(c) {
 				return next(c)
 			}
