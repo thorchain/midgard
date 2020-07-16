@@ -215,8 +215,11 @@ func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset
 	query := `
 		SELECT SUM(rune_amount)
 		FROM pools_history
+		JOIN events ON pools_history.event_id = events.id
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $1 AND units != 0 AND txs.from_address = $2`
+		WHERE pool = $1
+		AND events.type in ('stake', 'unstake')
+		AND txs.from_address = $2`
 
 	var runeStaked sql.NullInt64
 	err := s.db.Get(&runeStaked, query, asset.String(), address)
@@ -232,8 +235,11 @@ func (s *Client) assetStakedForAddress(address common.Address, asset common.Asse
 	query := `
 		SELECT SUM(asset_amount)
 		FROM pools_history
+		JOIN events ON pools_history.event_id = events.id
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $1 AND units != 0 AND txs.from_address = $2`
+		WHERE pool = $1
+		AND events.type in ('stake', 'unstake')
+		AND txs.from_address = $2`
 
 	var assetStaked sql.NullInt64
 	err := s.db.Get(&assetStaked, query, asset.String(), address)
@@ -366,7 +372,9 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 		SELECT MIN(pools_history.time)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $1 AND units > 0 AND txs.from_address = $2`
+		WHERE pool = $1
+		AND units > 0 AND
+		txs.from_address = $2`
 
 	firstStaked := sql.NullTime{}
 	err := s.db.Get(&firstStaked, query, asset.String(), address.String())
@@ -385,9 +393,11 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 	query := `
 		SELECT MAX(height) 
 		FROM events 
-		JOIN txs ON events.id = txs.event_id 
 		JOIN pools_history ON events.id = pools_history.event_id 
-		WHERE type = 'stake' AND pools_history.pool = $1 AND txs.from_address = $2`
+		JOIN txs ON events.id = txs.event_id 
+		WHERE type = 'stake'
+		AND pools_history.pool = $1
+		AND txs.from_address = $2`
 
 	lastStaked := sql.NullInt64{}
 	err := s.db.Get(&lastStaked, query, asset.String(), address.String())

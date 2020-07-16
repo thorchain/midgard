@@ -356,7 +356,9 @@ func (s *Client) assetStaked(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units != 0`
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type IN ('stake', 'unstake')`
 
 	var assetStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -373,7 +375,9 @@ func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units != 0 AND asset_amount > 0`
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type = 'stake'`
 
 	var assetStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -389,7 +393,9 @@ func (s *Client) assetStaked12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units != 0
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type in ('stake', 'unstake')
 		AND pools_history.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var assetStakedTotal sql.NullInt64
@@ -407,7 +413,9 @@ func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units < 0`
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type = 'unstake'`
 
 	var assetWithdrawnTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -424,7 +432,9 @@ func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units != 0 AND rune_amount > 0`
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type = 'stake'`
 
 	var runeStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -441,7 +451,9 @@ func (s *Client) runeStaked(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units != 0`
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type in ('stake', 'unstake')`
 
 	var runeStakedTotal sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -457,7 +469,9 @@ func (s *Client) runeStaked12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
 		FROM pools_history
-		WHERE pool = $1 AND units != 0
+		JOIN events ON pools_history.event_id = events.id
+		WHERE pool = $1
+		AND events.type in ('stake', 'unstake')
 		AND pools_history.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var runeStaked12m sql.NullInt64
@@ -1131,7 +1145,7 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 			SELECT COUNT(txs.from_address)
 			FROM pools_history
 			JOIN txs ON pools_history.event_id = txs.event_id
-			WHERE pool = $1 AND units != 0 
+			WHERE pool = $1
 			GROUP BY from_address
 			HAVING SUM(units) > 0`
 
