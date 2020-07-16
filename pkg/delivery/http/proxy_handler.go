@@ -33,14 +33,14 @@ type nodeProxy struct {
 type RateLimitConfig struct {
 	Skipper middleware.Skipper
 	ips     *cache.Cache
-	Limit   float64
+	Rate    rate.Limit
 	Burst   int
 }
 
 func NewRateLimitMiddleware(r float64, b int) echo.MiddlewareFunc {
 	return RateLimitWithConfig(RateLimitConfig{
 		ips:   cache.New(10*time.Minute, 15*time.Minute),
-		Limit: r,
+		Rate:  rate.Limit(r),
 		Burst: b,
 	})
 }
@@ -48,7 +48,7 @@ func NewRateLimitMiddleware(r float64, b int) echo.MiddlewareFunc {
 func (r *RateLimitConfig) GetLimiter(ip string) *rate.Limiter {
 	limiter, exists := r.ips.Get(ip)
 	if !exists {
-		limiter := rate.NewLimiter(rate.Limit(r.Limit), r.Burst)
+		limiter := rate.NewLimiter(r.Rate, r.Burst)
 		r.ips.Set(ip, limiter, cache.DefaultExpiration)
 	}
 	return limiter.(*rate.Limiter)
