@@ -77,7 +77,7 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 }
 
 func (s *Client) TotalRuneStaked() (int64, error) {
-	stmnt := `SELECT SUM(rune_amount) FROM pools_history`
+	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE units != 0`
 
 	var totalRuneStaked sql.NullInt64
 	row := s.db.QueryRow(stmnt)
