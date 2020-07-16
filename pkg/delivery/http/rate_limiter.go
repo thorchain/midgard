@@ -1,11 +1,12 @@
 package http
 
 import (
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/patrickmn/go-cache"
 	"golang.org/x/time/rate"
-	"time"
 )
 
 type RateLimitConfig struct {
