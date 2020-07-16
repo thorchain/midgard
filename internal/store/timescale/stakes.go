@@ -199,10 +199,10 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 		SELECT SUM(units)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $2 AND txs.from_address = $1`
+		WHERE pool = $1 AND txs.from_address = $2`
 
 	var stakeUnits sql.NullInt64
-	err := s.db.Get(&stakeUnits, query, address, asset.String())
+	err := s.db.Get(&stakeUnits, query, asset.String(), address)
 	if err != nil {
 		return 0, errors.Wrap(err, "stakeUnits failed")
 	}
@@ -216,10 +216,10 @@ func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset
 		SELECT SUM(rune_amount)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $2 AND units != 0 AND txs.from_address = $1`
+		WHERE pool = $1 AND units != 0 AND txs.from_address = $2`
 
 	var runeStaked sql.NullInt64
-	err := s.db.Get(&runeStaked, query, address, asset.String())
+	err := s.db.Get(&runeStaked, query, asset.String(), address)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeStakedForAddress failed")
 	}
@@ -233,10 +233,10 @@ func (s *Client) assetStakedForAddress(address common.Address, asset common.Asse
 		SELECT SUM(asset_amount)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $2 AND units != 0 AND txs.from_address = $1`
+		WHERE pool = $1 AND units != 0 AND txs.from_address = $2`
 
 	var assetStaked sql.NullInt64
-	err := s.db.Get(&assetStaked, query, address, asset.String())
+	err := s.db.Get(&assetStaked, query, asset.String(), address)
 	if err != nil {
 		return 0, errors.Wrap(err, "assetStakedForAddress failed")
 	}
@@ -366,10 +366,10 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 		SELECT MIN(pools_history.time)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $2 AND units > 0 AND txs.from_address = $1`
+		WHERE pool = $1 AND units > 0 AND txs.from_address = $2`
 
 	firstStaked := sql.NullTime{}
-	err := s.db.Get(&firstStaked, query, address.String(), asset.String())
+	err := s.db.Get(&firstStaked, query, asset.String(), address.String())
 	if err != nil {
 		return 0, errors.Wrap(err, "dateFirstStaked failed")
 	}
@@ -387,10 +387,10 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 		FROM events 
 		JOIN txs ON events.id = txs.event_id 
 		JOIN pools_history ON events.id = pools_history.event_id 
-		WHERE type = 'stake' AND pools_history.pool = $2 AND txs.from_address = $1`
+		WHERE type = 'stake' AND pools_history.pool = $1 AND txs.from_address = $2`
 
 	lastStaked := sql.NullInt64{}
-	err := s.db.Get(&lastStaked, query, address.String(), asset.String())
+	err := s.db.Get(&lastStaked, query, asset.String(), address.String())
 	if err != nil {
 		return 0, errors.Wrap(err, "heightLastStaked failed")
 	}
