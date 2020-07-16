@@ -2,12 +2,14 @@ package http
 
 import (
 	"fmt"
+	"github.com/patrickmn/go-cache"
 	"golang.org/x/time/rate"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -16,7 +18,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
-// ProxyHandler will proxy the request to the specified node.
+// ProxyHandler will proxy the request to the specified node
 type ProxyHandler struct {
 	nodes    map[string]nodeProxy
 	basePath string
@@ -30,28 +32,36 @@ type nodeProxy struct {
 
 type RateLimitConfig struct {
 	Skipper middleware.Skipper
+	ips     *cache.Cache
 	Limit   float64
 	Burst   int
 }
 
-var DefaultRateLimitConfig = RateLimitConfig{
-	Skipper: middleware.DefaultSkipper,
-	Limit:   0.25,
-	Burst:   1,
+func NewRateLimitMiddleware(r float64, b int) echo.MiddlewareFunc {
+	return RateLimitWithConfig(RateLimitConfig{
+		ips:   cache.New(10*time.Minute, 15*time.Minute),
+		Limit: r,
+		Burst: b,
+	})
 }
 
-func NewRateLimitMiddleware() echo.MiddlewareFunc {
-	return RateLimitWithConfig(DefaultRateLimitConfig)
+func (r *RateLimitConfig) GetLimiter(ip string) *rate.Limiter {
+	limiter, exists := r.ips.Get(ip)
+	if !exists {
+		limiter := rate.NewLimiter(rate.Limit(r.Limit), r.Burst)
+		r.ips.Set(ip, limiter, cache.DefaultExpiration)
+	}
+	return limiter.(*rate.Limiter)
 }
 
 func RateLimitWithConfig(config RateLimitConfig) echo.MiddlewareFunc {
-	// Defaults
 	if config.Skipper == nil {
-		config.Skipper = DefaultRateLimitConfig.Skipper
+		config.Skipper = middleware.DefaultSkipper
 	}
-	var limiter = rate.NewLimiter(rate.Limit(config.Limit), config.Burst)
+	//var limiter = rate.NewLimiter(rate.Limit(config.Limit), config.Burst)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			var limiter = config.GetLimiter(c.RealIP())
 			if config.Skipper(c) {
 				return next(c)
 			}
@@ -102,11 +112,7 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
-	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, RateLimitWithConfig(RateLimitConfig{
-		Limit: 0.1,
-		Burst: 1,
-	}))
-	//e.Any(path.Join(h.basePath, "/:chain/*"), h.handler)
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(20, 100))
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
