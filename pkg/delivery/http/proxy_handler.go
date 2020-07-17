@@ -14,6 +14,9 @@ import (
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
+const maxRate = 3
+const maxBurst = 3
+
 // ProxyHandler will proxy the request to the specified node.
 type ProxyHandler struct {
 	nodes    map[string]nodeProxy
@@ -65,7 +68,7 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
-	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(10, 20))
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(maxRate, maxBurst))
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
