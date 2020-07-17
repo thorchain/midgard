@@ -10,38 +10,38 @@ import (
 )
 
 type RateLimitConfig struct {
-	Skipper middleware.Skipper
-	IPs     *cache.Cache
-	Rate    rate.Limit
-	Burst   int
+	skipper middleware.Skipper
+	ips     *cache.Cache
+	rate    rate.Limit
+	burst   int
 }
 
 func NewRateLimitMiddleware(r float64, b int) echo.MiddlewareFunc {
-	return RateLimitWithConfig(RateLimitConfig{
-		IPs:   cache.New(10*time.Minute, 15*time.Minute),
-		Rate:  rate.Limit(r),
-		Burst: b,
+	return rateLimitWithConfig(RateLimitConfig{
+		ips:   cache.New(10*time.Minute, 15*time.Minute),
+		rate:  rate.Limit(r),
+		burst: b,
 	})
 }
 
-func (r *RateLimitConfig) GetLimiter(ip string) *rate.Limiter {
-	limiter, exists := r.IPs.Get(ip)
+func (r *RateLimitConfig) getLimiter(ip string) *rate.Limiter {
+	limiter, exists := r.ips.Get(ip)
 	if !exists {
-		limiter := rate.NewLimiter(r.Rate, r.Burst)
-		r.IPs.Set(ip, limiter, cache.DefaultExpiration)
+		limiter := rate.NewLimiter(r.rate, r.burst)
+		r.ips.Set(ip, limiter, cache.DefaultExpiration)
 		return limiter
 	}
 	return limiter.(*rate.Limiter)
 }
 
-func RateLimitWithConfig(config RateLimitConfig) echo.MiddlewareFunc {
-	if config.Skipper == nil {
-		config.Skipper = middleware.DefaultSkipper
+func rateLimitWithConfig(config RateLimitConfig) echo.MiddlewareFunc {
+	if config.skipper == nil {
+		config.skipper = middleware.DefaultSkipper
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			limiter := config.GetLimiter(c.RealIP())
-			if config.Skipper(c) {
+			limiter := config.getLimiter(c.RealIP())
+			if config.skipper(c) {
 				return next(c)
 			}
 			if limiter.Allow() == false {
