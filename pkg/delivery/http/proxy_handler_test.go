@@ -83,11 +83,15 @@ func (s *ProxyHandlerSuite) TestWebsocketProxy(c *C) {
 	}))
 	defer echoServer.Close()
 
-	conf := []config.NodeProxy{
-		{
-			Chain:         "echo",
-			Target:        echoServer.URL,
-			WebsocketPath: "/websocket",
+	conf := config.NodeProxyConfiguration{
+		BurstLimit: 10,
+		RateLimit:  10,
+		FullNodes: []config.NodeProxy{
+			{
+				Chain:         "echo",
+				Target:        echoServer.URL,
+				WebsocketPath: "/websocket",
+			},
 		},
 	}
 	proxy, err := NewProxyHandler(conf, "/v1/nodes")
