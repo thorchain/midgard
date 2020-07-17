@@ -14,8 +14,10 @@ import (
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
-const maxRate = 3
-const maxBurst = 3
+const (
+	maxRate  = 3
+	maxBurst = 3
+)
 
 // ProxyHandler will proxy the request to the specified node.
 type ProxyHandler struct {

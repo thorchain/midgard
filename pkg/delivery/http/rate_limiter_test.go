@@ -1,11 +1,12 @@
 package http
 
 import (
-	"github.com/labstack/echo/v4"
-	. "gopkg.in/check.v1"
 	"net/http"
 	"net/http/httptest"
 	"time"
+
+	"github.com/labstack/echo/v4"
+	. "gopkg.in/check.v1"
 )
 
 type RateLimitHandlerSuite struct{}
