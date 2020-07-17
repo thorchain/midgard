@@ -19,7 +19,7 @@ type Configuration struct {
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
-	FullNodes       []NodeProxy            `json:"full_nodes" mapstructure:"full_nodes"`
+	NodeProxy       NodeProxyConfiguration `json:"node_proxy" mapstructure:"node_proxy"`
 }
 
 type TimeScaleConfiguration struct {
@@ -50,6 +50,12 @@ type NodeProxy struct {
 	Chain         string `json:"chain" mapstructure:"chain"`
 	Target        string `json:"target" mapstructure:"target"`
 	WebsocketPath string `json:"websocket_path" mapstructure:"websocket_path"`
+}
+
+type NodeProxyConfiguration struct {
+	RateLimit  float64     `json:"rate_limit" mapstructure:"rate_limit"`
+	BurstLimit int         `json:"burst_limit" mapstructure:"burst_limit"`
+	FullNodes  []NodeProxy `json:"full_nodes" mapstructure:"full_nodes"`
 }
 
 func applyDefaultConfig() {

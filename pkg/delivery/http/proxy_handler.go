@@ -14,15 +14,12 @@ import (
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
-const (
-	maxRate  = 3
-	maxBurst = 3
-)
-
 // ProxyHandler will proxy the request to the specified node.
 type ProxyHandler struct {
 	nodes    map[string]nodeProxy
 	basePath string
+	maxRate  float64
+	maxBurst int
 }
 
 type nodeProxy struct {
@@ -32,9 +29,9 @@ type nodeProxy struct {
 }
 
 // NewProxyHandler returns a new ProxyHandler with given params.
-func NewProxyHandler(conf []config.NodeProxy, basePath string) (*ProxyHandler, error) {
-	nodes := make(map[string]nodeProxy, len(conf))
-	for _, n := range conf {
+func NewProxyHandler(conf config.NodeProxyConfiguration, basePath string) (*ProxyHandler, error) {
+	nodes := make(map[string]nodeProxy, len(conf.FullNodes))
+	for _, n := range conf.FullNodes {
 		httpTarget, err := url.Parse(n.Target)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid target url for chain %s", n.Chain)
@@ -54,6 +51,8 @@ func NewProxyHandler(conf []config.NodeProxy, basePath string) (*ProxyHandler, e
 	h := &ProxyHandler{
 		nodes:    nodes,
 		basePath: basePath,
+		maxRate:  conf.RateLimit,
+		maxBurst: conf.BurstLimit,
 	}
 	return h, nil
 }
@@ -70,7 +69,7 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
-	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(maxRate, maxBurst))
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(h.maxRate, h.maxBurst))
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
