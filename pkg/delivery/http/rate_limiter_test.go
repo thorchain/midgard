@@ -9,11 +9,11 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-type RateLimitHandlerSuite struct{}
+type RateLimiterHandlerSuite struct{}
 
-var _ = Suite(&RateLimitHandlerSuite{})
+var _ = Suite(&RateLimiterHandlerSuite{})
 
-func (s *RateLimitHandlerSuite) TestRateLimit(c *C) {
+func (s *RateLimiterHandlerSuite) TestRateLimiter(c *C) {
 	e := echo.New()
 	h := func(ctx echo.Context) error {
 		return nil
