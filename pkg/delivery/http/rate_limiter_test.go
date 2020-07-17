@@ -18,7 +18,7 @@ func (s *RateLimitHandlerSuite) TestRateLimit(c *C) {
 	h := func(ctx echo.Context) error {
 		return nil
 	}
-	e.GET("/foo", h, NewRateLimitMiddleware(3, 2))
+	e.GET("/foo", h, rateLimiter(3, 2))
 	server := httptest.NewServer(e)
 	defer server.Close()
 	for i := 0; i < 2; i++ {

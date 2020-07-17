@@ -9,22 +9,14 @@ import (
 	"golang.org/x/time/rate"
 )
 
-type RateLimitConfig struct {
+type rateLimiterConfig struct {
 	skipper middleware.Skipper
 	ips     *cache.Cache
 	rate    rate.Limit
 	burst   int
 }
 
-func NewRateLimitMiddleware(r float64, b int) echo.MiddlewareFunc {
-	return rateLimitWithConfig(RateLimitConfig{
-		ips:   cache.New(10*time.Minute, 15*time.Minute),
-		rate:  rate.Limit(r),
-		burst: b,
-	})
-}
-
-func (r *RateLimitConfig) getLimiter(ip string) *rate.Limiter {
+func (r *rateLimiterConfig) getLimiter(ip string) *rate.Limiter {
 	limiter, exists := r.ips.Get(ip)
 	if !exists {
 		limiter := rate.NewLimiter(r.rate, r.burst)
@@ -34,7 +26,15 @@ func (r *RateLimitConfig) getLimiter(ip string) *rate.Limiter {
 	return limiter.(*rate.Limiter)
 }
 
-func rateLimitWithConfig(config RateLimitConfig) echo.MiddlewareFunc {
+func rateLimiter(r float64, b int) echo.MiddlewareFunc {
+	return rateLimiterWithConfig(rateLimiterConfig{
+		ips:   cache.New(10*time.Minute, 15*time.Minute),
+		rate:  rate.Limit(r),
+		burst: b,
+	})
+}
+
+func rateLimiterWithConfig(config rateLimiterConfig) echo.MiddlewareFunc {
 	if config.skipper == nil {
 		config.skipper = middleware.DefaultSkipper
 	}

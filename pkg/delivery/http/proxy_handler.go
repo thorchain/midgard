@@ -69,7 +69,7 @@ func convertToWsTarget(httpTarget *url.URL) *url.URL {
 
 // RegisterHandler register the handler to echo server.
 func (h *ProxyHandler) RegisterHandler(e *echo.Echo) {
-	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, NewRateLimitMiddleware(h.maxRate, h.maxBurst))
+	e.Any(path.Join(h.basePath, "/:chain/*"), h.handler, rateLimiter(h.maxRate, h.maxBurst))
 }
 
 func (h *ProxyHandler) handler(ctx echo.Context) error {
