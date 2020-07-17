@@ -68,6 +68,8 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.scan_start_pos", 1)
 	viper.SetDefault("timescale.max_connections", 25)
 	viper.SetDefault("timescale.connection_max_lifetime", time.Minute*5)
+	viper.SetDefault("node_proxy.rate_limit", 3)
+	viper.SetDefault("node_proxy.burst_limit", 3)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
