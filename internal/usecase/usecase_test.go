@@ -1188,3 +1188,60 @@ func (s *UsecaseSuite) TestComputeLastChurn(c *C) {
 	_, err = uc.GetNetworkInfo()
 	c.Assert(err, NotNil)
 }
+
+type TestUpdateConstsThorchain struct {
+	ThorchainDummy
+	nodes      []thorchain.NodeAccount
+	vaultData  thorchain.VaultData
+	vaults     []thorchain.Vault
+	lastHeight thorchain.LastHeights
+	consts     thorchain.ConstantValues
+	err        error
+}
+
+func (t *TestUpdateConstsThorchain) GetConstants() (thorchain.ConstantValues, error) {
+	return thorchain.ConstantValues{
+		Int64Values: map[string]int64{
+			"EmissionCurve":        emissionCurve,
+			"BlocksPerYear":        blocksPerYear,
+			"RotatePerBlockHeight": rotatePerBlockHeight,
+			"RotateRetryBlocks":    rotateRetryBlocks,
+			"NewPoolCycle":         newPoolCycle,
+		},
+	}, nil
+}
+
+func (t *TestUpdateConstsThorchain) GetMimir() (map[string]string, error) {
+	return map[string]string{
+		"mimir//NEWPOOLCYCLE":         "50",
+		"mimir//ROTATEPERBLOCKHEIGHT": "130",
+	}, nil
+}
+
+func (s *UsecaseSuite) TestUpdateConstByMimir(c *C) {
+	client := &TestUpdateConstsThorchain{}
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, s.dummyStore, s.config)
+	c.Assert(err, IsNil)
+
+	c.Assert(uc.consts, DeepEquals, thorchain.ConstantValues{
+		Int64Values: map[string]int64{
+			"EmissionCurve":        emissionCurve,
+			"BlocksPerYear":        blocksPerYear,
+			"RotatePerBlockHeight": rotatePerBlockHeight,
+			"RotateRetryBlocks":    rotateRetryBlocks,
+			"NewPoolCycle":         newPoolCycle,
+		},
+	})
+
+	err = uc.updateConstantsByMimir()
+	c.Assert(err, IsNil)
+	c.Assert(uc.consts, DeepEquals, thorchain.ConstantValues{
+		Int64Values: map[string]int64{
+			"EmissionCurve":        emissionCurve,
+			"BlocksPerYear":        blocksPerYear,
+			"RotatePerBlockHeight": 130,
+			"RotateRetryBlocks":    rotateRetryBlocks,
+			"NewPoolCycle":         50,
+		},
+	})
+}
