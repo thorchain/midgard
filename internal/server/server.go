@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -94,7 +95,7 @@ func New(cfgFile *string) (*Server, error) {
 
 	// Setup echo
 	echoEngine := echo.New()
-	echoEngine.Use(middleware.Recover())
+	echoEngine.Use(middleware.Recover(), httpdelivery.HttpCache(5*time.Second, 2*time.Minute))
 	proxy, err := httpdelivery.NewProxyHandler(cfg.FullNodes, "/v1/nodes")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create proxy")
