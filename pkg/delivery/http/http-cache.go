@@ -38,7 +38,10 @@ func HttpCacheWithConfig(config HttpCacheConfig) echo.MiddlewareFunc {
 				if ok {
 					return err
 				}
-				c.Response().Writer.Write(v.([]byte))
+				_, err := c.Response().Writer.Write(v.([]byte))
+				if err != nil {
+					return err
+				}
 				return nil
 			}
 			resBody := new(bytes.Buffer)
