@@ -14,9 +14,10 @@ func (s *Client) CreateAddRecord(record *models.EventAdd) error {
 	}
 
 	change := &models.PoolChange{
-		Time:    record.Time,
-		EventID: record.ID,
-		Pool:    record.Pool,
+		Time:      record.Time,
+		EventID:   record.ID,
+		EventType: record.Type,
+		Pool:      record.Pool,
 	}
 	for _, coin := range record.InTx.Coins {
 		if common.IsRune(coin.Asset.Ticker) {

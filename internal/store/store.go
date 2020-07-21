@@ -1,6 +1,5 @@
 package store
 
-//go:generate mockgen -destination mock_store.go -package store . Store
 import (
 	"time"
 
@@ -50,3 +49,15 @@ type Store interface {
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
 }
+
+// TimeBucket specifies time preiod of aggregation functions.
+type TimeBucket int
+
+// TimeBucket options
+const (
+	DailyTimeBucket = iota
+	WeeklyTimeBucket
+	MonthlyTimeBucket
+	QuarterTimeBucket
+	YearlyTimeBucket
+)

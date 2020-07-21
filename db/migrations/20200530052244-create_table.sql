@@ -14,6 +14,7 @@ CREATE TABLE pools_history (
     time            TIMESTAMPTZ     NOT NULL,
     id              BIGSERIAL       NOT NULL,
     event_id        BIGINT          NOT NULL,
+    event_type      VARCHAR         NOT NULL,
     pool            VARCHAR         NOT NULL,
     asset_amount    BIGINT          NOT NULL,
     rune_amount     BIGINT          NOT NULL,
