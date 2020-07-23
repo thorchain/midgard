@@ -1,7 +1,7 @@
 
 -- +migrate Up
 
-CREATE VIEW pool_event_changes_daily WITH
+CREATE VIEW pool_changes_daily WITH
 (timescaledb.continuous, timescaledb.refresh_interval = '5s')
 AS
 SELECT pool, event_type, time_bucket('1 day', time) AS time,
@@ -15,4 +15,4 @@ GROUP BY pool, event_type, time_bucket('1 day', time);
 
 -- +migrate Down
 
-DROP VIEW pool_event_changes_daily CASCADE;
+DROP VIEW pool_changes_daily CASCADE;
