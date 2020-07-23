@@ -2,7 +2,10 @@ package timescale
 
 import (
 	"database/sql"
+	"fmt"
+	"time"
 
+	"github.com/huandu/go-sqlbuilder"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
@@ -39,39 +42,60 @@ func (s *Client) GetEventPool(id int64) (common.Asset, error) {
 	return common.NewAsset(poolStr)
 }
 
-func (s *Client) GetPoolAggChanges(pool common.Asset, bucket store.TimeBucket, offset, limit int64) ([]models.PoolEventAggChanges, error) {
-	q := `SELECT *, ROW_NUMBER() OVER (PARTITION BY time ORDER BY time DESC) AS r
-		FROM (
-			SELECT
-			DATE_TRUNC('$1', time) as time,
-			event_type,
-			COALESCE(SUM(pos_asset_changes), 0) as pos_asset_changes,
-			COALESCE(SUM(neg_asset_changes), 0) as neg_asset_changes,
-			SUM(COALESCE(SUM(pos_asset_changes + neg_asset_changes), 0)) OVER (PARTITION BY event_type ORDER BY time) as total_asset_depth,
-			COALESCE(SUM(pos_rune_changes), 0) as pos_rune_changes,
-			COALESCE(SUM(neg_rune_changes), 0) as neg_rune_changes,
-			SUM(COALESCE(SUM(pos_rune_changes + neg_rune_changes), 0)) OVER (PARTITION BY event_type ORDER BY time) as total_rune_depth,
-			COALESCE(SUM(units_changes), 0) as units_changes,
-			SUM(COALESCE(SUM(units_changes), 0)) OVER (PARTITION BY event_type ORDER BY time) as total_units
-			FROM pool_event_changes_daily
-			WHERE pool = $2
-			GROUP BY time, event_type
-		) t
-		WHERE $3 <= r AND r < $4`
-	rows, err := s.db.Queryx(q, bucket, pool.String(), offset, offset+limit)
+type poolAggChanges struct {
+	Time            time.Time     `db:"time"`
+	PosAssetChanges sql.NullInt64 `db:"pos_asset_changes"`
+	NegAssetChanges sql.NullInt64 `db:"neg_asset_changes"`
+	PosRuneChanges  sql.NullInt64 `db:"pos_rune_changes"`
+	NegRuneChanges  sql.NullInt64 `db:"neg_rune_changes"`
+	UnitsChanges    sql.NullInt64 `db:"units_changes"`
+}
+
+func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulative bool, bucket store.TimeBucket, from, to time.Time) ([]models.PoolAggChanges, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	colsTemplate := "%s"
+	if cumulative {
+		colsTemplate = "SUM(%s) OVER (ORDER BY time)"
+	}
+	sb.Select(
+		sb.As(fmt.Sprintf("DATE_TRUNC(%s, time)", sb.Var(bucket.String())), "time"),
+		sb.As(fmt.Sprintf(colsTemplate, "SUM(pos_asset_changes)"), "pos_asset_changes"),
+		sb.As(fmt.Sprintf(colsTemplate, "SUM(neg_asset_changes)"), "neg_asset_changes"),
+		sb.As(fmt.Sprintf(colsTemplate, "SUM(pos_rune_changes)"), "pos_rune_changes"),
+		sb.As(fmt.Sprintf(colsTemplate, "SUM(neg_rune_changes)"), "neg_rune_changes"),
+		sb.As(fmt.Sprintf(colsTemplate, "SUM(units_changes)"), "units_changes"),
+	)
+	sb.From("pool_changes_daily")
+	sb.GroupBy("time")
+	sb.Where(sb.Equal("pool", pool.String()))
+	if eventType != "" {
+		sb.Where(sb.Equal("event_type", eventType))
+	}
+
+	q, args := sb.Build()
+	q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
+	args = append(args, from, to)
+	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	result := []models.PoolEventAggChanges{}
+	result := []models.PoolAggChanges{}
 	for rows.Next() {
-		var changes models.PoolEventAggChanges
+		var changes poolAggChanges
 		err := rows.StructScan(&changes)
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, changes)
+		result = append(result, models.PoolAggChanges{
+			Time:            changes.Time,
+			PosAssetChanges: changes.PosAssetChanges.Int64,
+			NegAssetChanges: changes.NegAssetChanges.Int64,
+			PosRuneChanges:  changes.PosRuneChanges.Int64,
+			NegRuneChanges:  changes.NegRuneChanges.Int64,
+			UnitsChanges:    changes.UnitsChanges.Int64,
+		})
 	}
 	return result, nil
 }
