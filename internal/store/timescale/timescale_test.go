@@ -2118,7 +2118,7 @@ func MigrationDown(c *C, migrations Migrations) {
 
 func DbCleaner(c *C, store *Client) {
 	for _, table := range tables {
-		query := fmt.Sprintf(`TRUNCATE %s`, table)
+		query := fmt.Sprintf(`DELETE FROM %s WHERE 1 = 1`, table)
 		_, err := store.db.Exec(query)
 		if err != nil {
 			c.Fatal(err.Error())
