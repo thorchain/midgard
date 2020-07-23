@@ -50,7 +50,7 @@ type Store interface {
 	UpdateEventStatus(eventID int64, status string) error
 }
 
-// TimeBucket specifies time preiod of aggregation functions.
+// TimeBucket specifies time period of aggregation functions.
 type TimeBucket int
 
 // TimeBucket options
