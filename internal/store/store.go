@@ -55,9 +55,25 @@ type TimeBucket int
 
 // TimeBucket options
 const (
-	DailyTimeBucket = iota
+	DailyTimeBucket TimeBucket = iota
 	WeeklyTimeBucket
 	MonthlyTimeBucket
 	QuarterTimeBucket
 	YearlyTimeBucket
 )
+
+func (tb TimeBucket) String() string {
+	switch tb {
+	case DailyTimeBucket:
+		return "Day"
+	case WeeklyTimeBucket:
+		return "Week"
+	case MonthlyTimeBucket:
+		return "Month"
+	case QuarterTimeBucket:
+		return "Quarter"
+	case YearlyTimeBucket:
+		return "Year"
+	}
+	return ""
+}
