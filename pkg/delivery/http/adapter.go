@@ -21,7 +21,10 @@ func (h *connectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	writer := &responseCopy{Writer: mw, ResponseWriter: h.con.Response().Writer}
 	h.con.Response().Writer = writer
 	h.err = h.next(h.con)
-	w.Write(resBody.Bytes())
+	_, err := w.Write(resBody.Bytes())
+	if h.err == nil {
+		h.err = err
+	}
 }
 
 func New1() (http.Handler, func(h http.Handler) echo.MiddlewareFunc) {
