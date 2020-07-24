@@ -24,15 +24,18 @@ func (s *ProxyHandlerSuite) TestHTTPProxy(c *C) {
 	defer bnbServer.Close()
 	btcServer := httptest.NewServer(dummyHandler("BTC"))
 	defer btcServer.Close()
-
-	conf := []config.NodeProxy{
-		{
-			Chain:  "bnb",
-			Target: bnbServer.URL,
-		},
-		{
-			Chain:  "btc",
-			Target: btcServer.URL,
+	conf := config.NodeProxyConfiguration{
+		BurstLimit: 5,
+		RateLimit:  5,
+		FullNodes: []config.NodeProxy{
+			{
+				Chain:  "bnb",
+				Target: bnbServer.URL,
+			},
+			{
+				Chain:  "btc",
+				Target: btcServer.URL,
+			},
 		},
 	}
 	proxy, err := NewProxyHandler(conf, "/v1/nodes")
@@ -80,11 +83,15 @@ func (s *ProxyHandlerSuite) TestWebsocketProxy(c *C) {
 	}))
 	defer echoServer.Close()
 
-	conf := []config.NodeProxy{
-		{
-			Chain:         "echo",
-			Target:        echoServer.URL,
-			WebsocketPath: "/websocket",
+	conf := config.NodeProxyConfiguration{
+		BurstLimit: 10,
+		RateLimit:  10,
+		FullNodes: []config.NodeProxy{
+			{
+				Chain:         "echo",
+				Target:        echoServer.URL,
+				WebsocketPath: "/websocket",
+			},
 		},
 	}
 	proxy, err := NewProxyHandler(conf, "/v1/nodes")
