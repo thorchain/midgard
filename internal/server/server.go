@@ -94,7 +94,7 @@ func New(cfgFile *string) (*Server, error) {
 	echoEngine := echo.New()
 	cache, err := httpdelivery.HttpCacheWithConfig(httpdelivery.HttpCacheConfig{
 		CacheTime: cfg.ThorChain.CacheTTL,
-		Capacity:  40000,
+		Capacity:  cfg.ThorChain.CacheSize,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to httpcache middleware")

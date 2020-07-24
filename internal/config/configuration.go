@@ -44,6 +44,7 @@ type ThorChainConfiguration struct {
 	ProxiedWhitelistedEndpoints []string      `json:"proxied_whitelisted_endpoints" mapstructure:"proxied_whitelisted_endpoints"`
 	CacheTTL                    time.Duration `json:"cache_ttl" mapstructure:"cache_ttl"`
 	CacheCleanup                time.Duration `json:"cache_cleanup" mapstructure:"cache_cleanup"`
+	CacheSize                   int           `json:"cache_size" mapstructure:"cache_size"`
 }
 
 type NodeProxy struct {
@@ -59,6 +60,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.no_events_backoff", "5s")
 	viper.SetDefault("thorchain.cache_ttl", "5s")
 	viper.SetDefault("thorchain.cache_cleanup", "10s")
+	viper.SetDefault("thorchain.cache_size", "40000")
 	viper.SetDefault("thorchain.scan_start_pos", 1)
 	viper.SetDefault("timescale.max_connections", 25)
 	viper.SetDefault("timescale.connection_max_lifetime", time.Minute*5)
