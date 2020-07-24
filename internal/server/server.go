@@ -92,14 +92,14 @@ func New(cfgFile *string) (*Server, error) {
 
 	// Setup echo
 	echoEngine := echo.New()
-	cach, err := httpdelivery.HttpCacheWithConfig(httpdelivery.HttpCacheConfig{
+	cache, err := httpdelivery.HttpCacheWithConfig(httpdelivery.HttpCacheConfig{
 		CacheTime: cfg.ThorChain.CacheTTL,
 		Capacity:  40000,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to httpcache middleware")
 	}
-	echoEngine.Use(middleware.Recover(), httpdelivery.Wrap(cach))
+	echoEngine.Use(middleware.Recover(), httpdelivery.Wrap(cache))
 	proxy, err := httpdelivery.NewProxyHandler(cfg.FullNodes, "/v1/nodes")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create proxy")
