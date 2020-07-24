@@ -87,14 +87,19 @@ func New(cfgFile *string) (*Server, error) {
 	}
 	uc, err := usecase.NewUsecase(thorchainClient, tendermintClient, tendermintBatch, timescale, usecaseConf)
 	if err != nil {
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create usecase instance")
-		}
+		return nil, errors.Wrap(err, "failed to create usecase instance")
 	}
 
 	// Setup echo
 	echoEngine := echo.New()
-	echoEngine.Use(middleware.Recover(), httpdelivery.HttpCache(cfg.ThorChain.CacheTTL, cfg.ThorChain.CacheCleanup))
+	cach, err := httpdelivery.HttpCacheWithConfig(httpdelivery.HttpCacheConfig{
+		CacheTime: cfg.ThorChain.CacheTTL,
+		Capacity:  40000,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to httpcache middleware")
+	}
+	echoEngine.Use(middleware.Recover(), httpdelivery.Wrap(cach))
 	proxy, err := httpdelivery.NewProxyHandler(cfg.FullNodes, "/v1/nodes")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create proxy")

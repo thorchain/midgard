@@ -1,72 +1,34 @@
 package http
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/patrickmn/go-cache"
+	"github.com/victorspringer/http-cache"
+	httpcache "github.com/victorspringer/http-cache"
+	"github.com/victorspringer/http-cache/adapter/memory"
 )
 
 type HttpCacheConfig struct {
-	skipper       middleware.Skipper
-	cacheTime     time.Duration
-	cleanInterval time.Duration
+	CacheTime time.Duration
+	Capacity  int
 }
 
-func HttpCache(cachTime, cleanInterval time.Duration) echo.MiddlewareFunc {
-	return HttpCacheWithConfig(HttpCacheConfig{
-		skipper:       middleware.DefaultSkipper,
-		cacheTime:     cachTime,
-		cleanInterval: cleanInterval,
-	})
-}
-
-func HttpCacheWithConfig(config HttpCacheConfig) echo.MiddlewareFunc {
-	ch := cache.New(config.cacheTime, config.cleanInterval)
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) (err error) {
-			if config.skipper(c) {
-				return next(c)
-			}
-			v, ok := ch.Get(c.Request().RequestURI)
-			if ok {
-				err, ok = v.(error)
-				if ok {
-					return err
-				}
-				_, err := c.Response().Writer.Write(v.([]byte))
-				if err != nil {
-					return err
-				}
-				return nil
-			}
-			resBody := new(bytes.Buffer)
-			mw := io.MultiWriter(c.Response().Writer, resBody)
-			writer := &responseCopy{Writer: mw, ResponseWriter: c.Response().Writer}
-			c.Response().Writer = writer
-			if err = next(c); err != nil {
-				ch.Set(c.Request().RequestURI, err, cache.DefaultExpiration)
-				return err
-			}
-			ch.Set(c.Request().RequestURI, resBody.Bytes(), cache.DefaultExpiration)
-			return
-		}
+func HttpCacheWithConfig(config HttpCacheConfig) (func(next http.Handler) http.Handler, error) {
+	memcached, err := memory.NewAdapter(
+		memory.AdapterWithAlgorithm(memory.LRU),
+		memory.AdapterWithCapacity(config.Capacity),
+	)
+	if err != nil {
+		return nil, err
 	}
-}
-
-type responseCopy struct {
-	io.Writer
-	http.ResponseWriter
-}
-
-func (w *responseCopy) WriteHeader(code int) {
-	w.ResponseWriter.WriteHeader(code)
-}
-
-func (w *responseCopy) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
+	cacheClient, err := httpcache.NewClient(
+		cache.ClientWithAdapter(memcached),
+		cache.ClientWithTTL(config.CacheTime),
+		cache.ClientWithRefreshKey("opn"),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return cacheClient.Middleware, nil
 }
