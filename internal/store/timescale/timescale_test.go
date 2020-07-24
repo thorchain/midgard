@@ -1541,7 +1541,7 @@ var (
 					common.Coin{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "RUNE-A1F",
+							Symbol: "RUNE-67C",
 							Ticker: "RUNE",
 						},
 						Amount: 5,
@@ -1554,7 +1554,7 @@ var (
 						common.Coin{
 							Asset: common.Asset{
 								Chain:  "BNB",
-								Symbol: "RUNE-A1F",
+								Symbol: "RUNE-67C",
 								Ticker: "RUNE",
 							},
 							Amount: 3,
@@ -1604,7 +1604,7 @@ var (
 					common.Coin{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "RUNE-A1F",
+							Symbol: "RUNE-67C",
 							Ticker: "RUNE",
 						},
 						Amount: 5,
@@ -1629,7 +1629,7 @@ var (
 						common.Coin{
 							Asset: common.Asset{
 								Chain:  "BNB",
-								Symbol: "RUNE-A1F",
+								Symbol: "RUNE-67C",
 								Ticker: "RUNE",
 							},
 							Amount: 3,
@@ -1679,7 +1679,7 @@ var (
 					common.Coin{
 						Asset: common.Asset{
 							Chain:  "BNB",
-							Symbol: "RUNE-A1F",
+							Symbol: "RUNE-67C",
 							Ticker: "RUNE",
 						},
 						Amount: 5,

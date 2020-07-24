@@ -185,7 +185,7 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 			"asymmetry":    "0.000000000000000000",
 			"basis_points": "1000",
 			"chain":        "BNB",
-			"coin":         "1 BNB.RUNE-A1F",
+			"coin":         "1 BNB.RUNE-67C",
 			"from":         "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
 			"id":           "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
 			"memo":         "WITHDRAW:BTC.BTC:1000",
@@ -209,7 +209,7 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
 				Coins: common.Coins{
 					{
-						Asset:  common.RuneA1FAsset,
+						Asset:  common.Rune67CAsset,
 						Amount: 1,
 					},
 				},
@@ -242,7 +242,7 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 		Attributes: map[string]string{
 			"chain":  "BNB",
 			"code":   "105",
-			"coin":   "150000000 BNB.BNB, 50000000000 BNB.RUNE-A1F",
+			"coin":   "150000000 BNB.BNB, 50000000000 BNB.RUNE-67C",
 			"from":   "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
 			"id":     "98C1864036571E805BB0E0CCBAFF0F8D80F69BDEA32D5B26E0DDB95301C74D0C",
 			"memo":   "",
@@ -269,7 +269,7 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 						Amount: 150000000,
 					},
 					{
-						Asset:  common.RuneA1FAsset,
+						Asset:  common.Rune67CAsset,
 						Amount: 50000000000,
 					},
 				},
@@ -398,7 +398,7 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 		Type: "add",
 		Attributes: map[string]string{
 			"chain": "BNB",
-			"coin":  "30000000 BNB.BNB, 5000000000 BNB.RUNE-A1F",
+			"coin":  "30000000 BNB.BNB, 5000000000 BNB.RUNE-67C",
 			"from":  "tbnb189az9plcke2c00vns0zfmllfpfdw67dtv25kgx",
 			"id":    "E12194A353128677110C82224856965FA40B104D1AB69BC7034E4960AB139A0D",
 			"memo":  "ADD:BNB.BNB",
@@ -424,7 +424,7 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 						Amount: 30000000,
 					},
 					{
-						Asset:  common.RuneA1FAsset,
+						Asset:  common.Rune67CAsset,
 						Amount: 5000000000,
 					},
 				},
@@ -586,7 +586,7 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 		Type: "slash",
 		Attributes: map[string]string{
 			"pool":         "BNB.BNB",
-			"BNB.RUNE-A1F": "15",
+			"BNB.RUNE-67C": "15",
 			"BNB.BNB":      "20",
 		},
 	}
