@@ -2,7 +2,7 @@
 -- +migrate Up
 
 CREATE VIEW pool_changes_daily WITH
-(timescaledb.continuous, timescaledb.refresh_interval = '5s')
+(timescaledb.continuous, timescaledb.refresh_interval = '3s')
 AS
 SELECT pool, event_type, time_bucket('1 day', time) AS time,
     SUM(CASE WHEN asset_amount > 0 THEN asset_amount ELSE 0 END) AS pos_asset_changes,
