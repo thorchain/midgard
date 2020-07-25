@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
+	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
@@ -51,30 +52,39 @@ type poolAggChanges struct {
 	UnitsChanges    sql.NullInt64 `db:"units_changes"`
 }
 
-func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulative bool, bucket store.TimeBucket, from, to time.Time) ([]models.PoolAggChanges, error) {
+func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulative bool, bucket store.TimeBucket, from, to *time.Time) ([]models.PoolAggChanges, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	colsTemplate := "%s"
 	if cumulative {
 		colsTemplate = "SUM(%s) OVER (ORDER BY time)"
 	}
-	sb.Select(
-		sb.As(fmt.Sprintf("DATE_TRUNC(%s, time)", sb.Var(bucket.String())), "time"),
+	cols := []string{
 		sb.As(fmt.Sprintf(colsTemplate, "SUM(pos_asset_changes)"), "pos_asset_changes"),
 		sb.As(fmt.Sprintf(colsTemplate, "SUM(neg_asset_changes)"), "neg_asset_changes"),
 		sb.As(fmt.Sprintf(colsTemplate, "SUM(pos_rune_changes)"), "pos_rune_changes"),
 		sb.As(fmt.Sprintf(colsTemplate, "SUM(neg_rune_changes)"), "neg_rune_changes"),
 		sb.As(fmt.Sprintf(colsTemplate, "SUM(units_changes)"), "units_changes"),
-	)
+	}
+	if bucket != store.MaxTimeBucket {
+		cols = append(cols, sb.As(fmt.Sprintf("DATE_TRUNC(%s, time)", sb.Var(bucket.String())), "time"))
+		sb.GroupBy("time")
+	}
+	sb.Select(cols...)
 	sb.From("pool_changes_daily")
-	sb.GroupBy("time")
 	sb.Where(sb.Equal("pool", pool.String()))
 	if eventType != "" {
 		sb.Where(sb.Equal("event_type", eventType))
 	}
 
 	q, args := sb.Build()
-	q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
-	args = append(args, from, to)
+	if bucket != store.MaxTimeBucket {
+		if from == nil || to == nil {
+			return nil, errors.New("from or to could not be null when bucket is not Max")
+		}
+
+		q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
+		args = append(args, *from, *to)
+	}
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, err
