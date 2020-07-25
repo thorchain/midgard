@@ -134,7 +134,8 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 
-	changes, err := s.Store.GetPoolAggChanges(bnbPool, "", false, store.DailyTimeBucket, today, tomorrow)
+	// Test daily aggrigation
+	changes, err := s.Store.GetPoolAggChanges(bnbPool, "", false, store.DailyTimeBucket, &today, &tomorrow)
 	c.Assert(err, IsNil)
 	expected := map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
@@ -161,7 +162,8 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
 	}
 
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", true, store.DailyTimeBucket, today, tomorrow)
+	// Test daily cumulative aggrigation
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", true, store.DailyTimeBucket, &today, &tomorrow)
 	c.Assert(err, IsNil)
 	expected = map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
@@ -188,7 +190,8 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
 	}
 
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "stake", false, store.DailyTimeBucket, today, tomorrow)
+	// Test daily aggrigation on events
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "stake", false, store.DailyTimeBucket, &today, &tomorrow)
 	c.Assert(err, IsNil)
 	expected = map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
@@ -215,7 +218,8 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
 	}
 
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "swap", true, store.DailyTimeBucket, tomorrow, tomorrow)
+	// Test daily cumulative aggrigation on events
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "swap", true, store.DailyTimeBucket, &tomorrow, &tomorrow)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
 	c.Assert(changes[0].PosAssetChanges, Equals, int64(5))
@@ -223,4 +227,18 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	c.Assert(changes[0].PosRuneChanges, Equals, int64(20))
 	c.Assert(changes[0].NegRuneChanges, Equals, int64(-12))
 	c.Assert(changes[0].UnitsChanges, Equals, int64(0))
+
+	// Test MaxTimeBucket
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, store.MaxTimeBucket, nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(changes, HasLen, 1)
+	c.Assert(changes[0].PosAssetChanges, Equals, int64(105))
+	c.Assert(changes[0].NegAssetChanges, Equals, int64(-55))
+	c.Assert(changes[0].PosRuneChanges, Equals, int64(220))
+	c.Assert(changes[0].NegRuneChanges, Equals, int64(-122))
+	c.Assert(changes[0].UnitsChanges, Equals, int64(500))
+
+	// Test from, to = nil value with specified bucket
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, store.DailyTimeBucket, nil, nil)
+	c.Assert(err, NotNil)
 }

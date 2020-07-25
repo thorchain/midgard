@@ -55,7 +55,8 @@ type TimeBucket int
 
 // TimeBucket options
 const (
-	DailyTimeBucket TimeBucket = iota
+	MaxTimeBucket TimeBucket = iota
+	DailyTimeBucket
 	WeeklyTimeBucket
 	MonthlyTimeBucket
 	QuarterTimeBucket
