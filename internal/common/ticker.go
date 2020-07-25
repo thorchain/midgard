@@ -8,7 +8,7 @@ import (
 const (
 	BNBTicker     = Ticker("BNB")
 	RuneTicker    = Ticker("RUNE")
-	RuneA1FTicker = Ticker("RUNE-A1F")
+	RuneA1FTicker = Ticker("RUNE-67C")
 	RuneB1ATicker = Ticker("RUNE-B1A")
 )
 

@@ -26,7 +26,7 @@ func (s TickerSuite) TestTicker(c *C) {
 	c.Check(IsRune(runeB1aTicker), Equals, true)
 	c.Check(runeB1aTicker.String(), Equals, RuneB1ATicker.String())
 
-	runeA1fTicker, err := NewTicker("rune-a1f")
+	runeA1fTicker, err := NewTicker("RUNE-67C")
 	c.Assert(err, IsNil)
 	c.Check(runeA1fTicker.Equals(RuneA1FTicker), Equals, true)
 	c.Check(IsRune(runeA1fTicker), Equals, true)

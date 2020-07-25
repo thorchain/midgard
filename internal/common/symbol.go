@@ -8,7 +8,7 @@ import (
 
 const (
 	BNBSymbol     = Symbol("BNB")
-	RuneA1FSymbol = Symbol("RUNE-A1F")
+	RuneA1FSymbol = Symbol("RUNE-67C")
 	RuneB1ASymbol = Symbol("RUNE-B1A")
 )
 

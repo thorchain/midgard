@@ -55,7 +55,7 @@ func (cs Coins) String() string {
 	return strings.Join(coins, ", ")
 }
 
-// Stringify returns "55:BNB.BNB,123:BNB.RUNE-A1F" format
+// Stringify returns "55:BNB.BNB,123:BNB.RUNE-67C" format
 func (cs Coins) Stringify() string {
 	coins := make([]string, len(cs))
 	for i, c := range cs {

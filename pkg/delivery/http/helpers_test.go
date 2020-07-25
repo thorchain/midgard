@@ -15,7 +15,7 @@ var _ = Suite(&HelpersSuite{})
 
 func (s *HelpersSuite) TestParseAssets(c *C) {
 	// Valid comma separated sequence of assets
-	str := "BNB.BNB,BNB.TCAN-014,BNB.RUNE-A1F"
+	str := "BNB.BNB,BNB.TCAN-014,BNB.RUNE-67C"
 	asts := []common.Asset{
 		{
 			Chain:  "BNB",
@@ -29,7 +29,7 @@ func (s *HelpersSuite) TestParseAssets(c *C) {
 		},
 		{
 			Chain:  "BNB",
-			Symbol: "RUNE-A1F",
+			Symbol: "RUNE-67C",
 			Ticker: "RUNE",
 		},
 	}
@@ -38,7 +38,7 @@ func (s *HelpersSuite) TestParseAssets(c *C) {
 	c.Assert(got, DeepEquals, asts)
 
 	// Invalid empty asset in sequence
-	str = "BNB.BNB,,BNB.RUNE-A1F"
+	str = "BNB.BNB,,BNB.RUNE-67C"
 	asts = nil
 	got, err = ParseAssets(str)
 	c.Check(err, NotNil)
