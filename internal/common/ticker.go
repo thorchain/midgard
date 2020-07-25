@@ -8,7 +8,7 @@ import (
 const (
 	BNBTicker     = Ticker("BNB")
 	RuneTicker    = Ticker("RUNE")
-	RuneA1FTicker = Ticker("RUNE-67C")
+	Rune67CTicker = Ticker("RUNE-67C")
 	RuneB1ATicker = Ticker("RUNE-B1A")
 )
 
@@ -47,5 +47,5 @@ func IsBNB(ticker Ticker) bool {
 }
 
 func IsRune(ticker Ticker) bool {
-	return ticker.Equals(RuneTicker) || ticker.Equals(RuneA1FTicker) || ticker.Equals(RuneB1ATicker)
+	return ticker.Equals(RuneTicker) || ticker.Equals(Rune67CTicker) || ticker.Equals(RuneB1ATicker)
 }

@@ -209,7 +209,7 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 				ToAddress:   "tbnb153nknrl2d2nmvguhhvacd4dfsm4jlv8c87nscv",
 				Coins: common.Coins{
 					{
-						Asset:  common.RuneA1FAsset,
+						Asset:  common.Rune67CAsset,
 						Amount: 1,
 					},
 				},
@@ -269,7 +269,7 @@ func (s *EventHandlerSuite) TestRefundEvent(c *C) {
 						Amount: 150000000,
 					},
 					{
-						Asset:  common.RuneA1FAsset,
+						Asset:  common.Rune67CAsset,
 						Amount: 50000000000,
 					},
 				},
@@ -424,7 +424,7 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 						Amount: 30000000,
 					},
 					{
-						Asset:  common.RuneA1FAsset,
+						Asset:  common.Rune67CAsset,
 						Amount: 5000000000,
 					},
 				},
