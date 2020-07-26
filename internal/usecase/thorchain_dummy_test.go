@@ -11,6 +11,10 @@ var _ thorchain.Thorchain = (*ThorchainDummy)(nil)
 // ThorchainDummy is test purpose implementation of Thorchain.
 type ThorchainDummy struct{}
 
+func (t *ThorchainDummy) GetMimir() (map[string]string, error) {
+	return map[string]string{}, nil
+}
+
 func (t *ThorchainDummy) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
 	return models.Unknown, ErrNotImplemented
 }
