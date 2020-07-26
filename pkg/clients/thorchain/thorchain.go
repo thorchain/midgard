@@ -26,6 +26,7 @@ type Thorchain interface {
 	GetLastChainHeight() (LastHeights, error)
 	GetTx(txId common.TxID) (common.Tx, error)
 	GetPoolStatus(pool common.Asset) (models.PoolStatus, error)
+	GetMimir() (map[string]string, error)
 }
 
 // Client implements Thorchain and uses http to get requested data from thorchain.
@@ -187,4 +188,15 @@ func (c *Client) ping() (string, error) {
 		return t, nil
 	}
 	return "", errors.New("time field is not available")
+}
+
+// GetMimir fetch mimir values.
+func (c *Client) GetMimir() (map[string]string, error) {
+	url := fmt.Sprintf("%s/mimir", c.thorchainEndpoint)
+	values := make(map[string]string, 0)
+	err := c.requestEndpoint(url, &values)
+	if err != nil {
+		return nil, err
+	}
+	return values, nil
 }
