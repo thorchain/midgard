@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -286,6 +288,10 @@ func (uc *Usecase) GetStakerAssetDetails(address common.Address, asset common.As
 
 // GetNetworkInfo returns some details about nodes stats in network.
 func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
+	err := uc.updateConstantsByMimir()
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to update constants from mimir")
+	}
 	totalStaked, err := uc.store.GetTotalDepth()
 	if err != nil {
 		return nil, err
@@ -474,4 +480,24 @@ func (uc *Usecase) computeLastChurn() (int64, error) {
 func (uc *Usecase) calculatePoolActivationCountdown(lastHeight int64) int64 {
 	newPoolCycle := uc.consts.Int64Values["NewPoolCycle"]
 	return newPoolCycle - lastHeight%newPoolCycle
+}
+
+func (uc *Usecase) updateConstantsByMimir() error {
+	mimir, err := uc.thorchain.GetMimir()
+	if err != nil {
+		return err
+	}
+	for mkey, mval := range mimir {
+		mkey = strings.Replace(mkey, "mimir//", "", -1)
+		for ckey := range uc.consts.Int64Values {
+			if strings.EqualFold(mkey, ckey) {
+				uc.consts.Int64Values[ckey], err = strconv.ParseInt(mval, 10, 64)
+				if err != nil {
+					return err
+				}
+				break
+			}
+		}
+	}
+	return nil
 }
