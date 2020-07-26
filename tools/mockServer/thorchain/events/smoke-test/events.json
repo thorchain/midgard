@@ -14,7 +14,7 @@
           "amount": "150000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -59,7 +59,7 @@
           "amount": "40000000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -104,7 +104,7 @@
           "amount": "150000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -143,7 +143,7 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "50000000000"
           }
         ],
@@ -178,7 +178,7 @@
           "amount": "150000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -217,7 +217,7 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "50000000000"
           }
         ],
@@ -252,7 +252,7 @@
           "amount": "150000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -291,7 +291,7 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "50000000000"
           }
         ],
@@ -326,7 +326,7 @@
           "amount": "150000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -365,7 +365,7 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "50000000000"
           }
         ],
@@ -400,7 +400,7 @@
           "amount": "150000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "50000000000"
         }
       ],
@@ -410,7 +410,7 @@
           "amount": "60000"
         }
       ],
-      "memo": "STAKE:RUNE-A1F"
+      "memo": "STAKE:RUNE-67C"
     },
     "out_txs": [
       {
@@ -439,7 +439,7 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "50000000000"
           }
         ],
@@ -511,7 +511,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "10000000000"
         }
       ],
@@ -556,7 +556,7 @@
           "amount": "90000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "30000000000"
         }
       ],
@@ -601,7 +601,7 @@
           "amount": "30000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "5000000000"
         }
       ],
@@ -631,7 +631,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "100000000"
         }
       ],
@@ -651,7 +651,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "100000000"
           }
         ],
@@ -682,7 +682,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "100000000"
         }
       ],
@@ -702,7 +702,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "100000000"
           }
         ],
@@ -839,7 +839,7 @@
           "amount": "30000000"
         },
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "100000000"
         }
       ],
@@ -878,7 +878,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "100000000"
           }
         ],
@@ -909,7 +909,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "40000000000"
         }
       ],
@@ -944,7 +944,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": "BNB.RUNE-A1F",
+      "pool": "BNB.RUNE-67C",
       "price_target": "0",
       "trade_slip": "10194",
       "liquidity_fee": "8340191834"
@@ -962,7 +962,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "1"
         }
       ],
@@ -982,7 +982,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "1"
           }
         ],
@@ -1013,7 +1013,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "10000000000"
         }
       ],
@@ -1033,7 +1033,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "10000000000"
           }
         ],
@@ -1064,7 +1064,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "10000000000"
         }
       ],
@@ -1099,7 +1099,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": "BNB.RUNE-A1F",
+      "pool": "BNB.RUNE-67C",
       "price_target": "0",
       "trade_slip": "1536",
       "liquidity_fee": "642092663"
@@ -1127,7 +1127,7 @@
           "amount": "37500"
         }
       ],
-      "memo": "SWAP:BNB.RUNE-A1F"
+      "memo": "SWAP:BNB.RUNE-67C"
     },
     "out_txs": [
       {
@@ -1137,7 +1137,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "5990096601"
           }
         ],
@@ -1170,7 +1170,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "10000000000"
         }
       ],
@@ -1190,7 +1190,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "10000000000"
           }
         ],
@@ -1221,7 +1221,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "10000000000"
         }
       ],
@@ -1241,7 +1241,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "10000000000"
           }
         ],
@@ -1282,7 +1282,7 @@
           "amount": "37500"
         }
       ],
-      "memo": "SWAP:BNB.RUNE-A1F:TBNBTBNB1NN2HE65KL7H2LDPNE5LDVRGLREQFQVSWJ4CHZZ"
+      "memo": "SWAP:BNB.RUNE-67C:TBNBTBNB1NN2HE65KL7H2LDPNE5LDVRGLREQFQVSWJ4CHZZ"
     },
     "out_txs": [
       {
@@ -1333,7 +1333,7 @@
           "amount": "37500"
         }
       ],
-      "memo": "SWAP:BNB.RUNE-A1F"
+      "memo": "SWAP:BNB.RUNE-67C"
     },
     "out_txs": [
       {
@@ -1343,7 +1343,7 @@
         "to_address": "tbnb1dnsgcnda8knxa4xt3jadaurejfqr8pam0glst9",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "4938271604"
           }
         ],
@@ -1376,7 +1376,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "5000000000"
         }
       ],
@@ -1411,7 +1411,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": "BNB.RUNE-A1F",
+      "pool": "BNB.RUNE-67C",
       "price_target": "0",
       "trade_slip": "2342",
       "liquidity_fee": "449506706"
@@ -1429,7 +1429,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "4854247129"
         }
       ],
@@ -1482,7 +1482,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "4854247129"
         }
       ],
@@ -1517,7 +1517,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": "BNB.RUNE-A1F",
+      "pool": "BNB.RUNE-67C",
       "price_target": "0",
       "trade_slip": "711",
       "liquidity_fee": "158264282"
@@ -1535,7 +1535,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "3075070424"
         }
       ],
@@ -1588,7 +1588,7 @@
       "to_address": "tbnb1vrnt629xrq3mu49f4za3aucz3nznq527magpr6",
       "coins": [
         {
-          "asset": "BNB.RUNE-A1F",
+          "asset": "BNB.RUNE-67C",
           "amount": "3075070424"
         }
       ],
@@ -1623,7 +1623,7 @@
     ],
     "gas": null,
     "event": {
-      "pool": "BNB.RUNE-A1F",
+      "pool": "BNB.RUNE-67C",
       "price_target": "0",
       "trade_slip": "1407",
       "liquidity_fee": "183374952"
@@ -1661,7 +1661,7 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "39459469518"
           }
         ],
@@ -1733,7 +1733,7 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "39459469518"
           }
         ],
@@ -1826,7 +1826,7 @@
         "to_address": "tbnb1dyswfv5068qzt9u9kvzadvsfdt5l89tantzpsz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "61870141068"
           }
         ],
@@ -1919,7 +1919,7 @@
         "to_address": "tbnb1nn2he65kl7h2ldpne5ldvrglreqfqvswj4chzz",
         "coins": [
           {
-            "asset": "BNB.RUNE-A1F",
+            "asset": "BNB.RUNE-67C",
             "amount": "48282551691"
           }
         ],

@@ -8,7 +8,7 @@ import (
 
 const (
 	BNBSymbol     = Symbol("BNB")
-	RuneA1FSymbol = Symbol("RUNE-A1F")
+	Rune67CSymbol = Symbol("RUNE-67C")
 	RuneB1ASymbol = Symbol("RUNE-B1A")
 )
 
@@ -47,5 +47,5 @@ func IsBNBSymbol(s Symbol) bool {
 }
 
 func IsRuneSymbol(s Symbol) bool {
-	return s.Equals(RuneB1ASymbol) || s.Equals(RuneA1FSymbol)
+	return s.Equals(RuneB1ASymbol) || s.Equals(Rune67CSymbol)
 }
