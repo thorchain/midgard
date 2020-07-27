@@ -12,10 +12,11 @@ func (s *Client) CreatePoolRecord(record *models.EventPool) error {
 	}
 
 	change := &models.PoolChange{
-		Time:    record.Time,
-		EventID: record.ID,
-		Pool:    record.Pool,
-		Status:  record.Status,
+		Time:      record.Time,
+		EventID:   record.ID,
+		EventType: record.Type,
+		Pool:      record.Pool,
+		Status:    record.Status,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
