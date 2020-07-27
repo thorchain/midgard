@@ -424,7 +424,7 @@ func calculateUint64sMedian(array []uint64) uint64 {
 }
 
 func calculatePoolShareFactor(totalBond, totalStaked uint64) float64 {
-	if totalBond+totalStaked > 0 {
+	if totalBond > totalStaked {
 		return float64(totalBond-totalStaked) / float64(totalBond+totalStaked)
 	}
 	return 0

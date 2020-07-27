@@ -1227,3 +1227,11 @@ func (s *UsecaseSuite) TestUpdateConstByMimir(c *C) {
 		},
 	})
 }
+
+func (s *UsecaseSuite) TestPoolSharefactor(c *C) {
+	factor := calculatePoolShareFactor(1500, 500)
+	c.Assert(factor, Equals, float64(0.5))
+
+	factor = calculatePoolShareFactor(500, 1000)
+	c.Assert(factor, Equals, float64(0))
+}
