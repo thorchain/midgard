@@ -18,7 +18,7 @@ CREATE VIEW total_volume_changes_5_min WITH
 AS
 SELECT time_bucket('5 minute', time) AS time,
     SUM(CASE WHEN rune_amount > 0 THEN rune_amount ELSE 0 END) AS pos_changes,
-    SUM(CASE WHEN rune_amount < 0 THEN rune_amount ELSE 0 END) AS neg_changes,
+    SUM(CASE WHEN rune_amount < 0 THEN rune_amount ELSE 0 END) AS neg_changes
 FROM pools_history
 GROUP BY time_bucket('5 minute', time);
 
@@ -27,7 +27,7 @@ CREATE VIEW total_volume_changes_hourly WITH
 AS
 SELECT time_bucket('1 hour', time) AS time,
     SUM(CASE WHEN rune_amount > 0 THEN rune_amount ELSE 0 END) AS pos_changes,
-    SUM(CASE WHEN rune_amount < 0 THEN rune_amount ELSE 0 END) AS neg_changes,
+    SUM(CASE WHEN rune_amount < 0 THEN rune_amount ELSE 0 END) AS neg_changes
 FROM pools_history
 GROUP BY time_bucket('1 hour', time);
 
@@ -36,7 +36,7 @@ CREATE VIEW total_volume_changes_daily WITH
 AS
 SELECT time_bucket('1 day', time) AS time,
     SUM(CASE WHEN rune_amount > 0 THEN rune_amount ELSE 0 END) AS pos_changes,
-    SUM(CASE WHEN rune_amount < 0 THEN rune_amount ELSE 0 END) AS neg_changes,
+    SUM(CASE WHEN rune_amount < 0 THEN rune_amount ELSE 0 END) AS neg_changes
 FROM pools_history
 GROUP BY time_bucket('1 day', time);
 
