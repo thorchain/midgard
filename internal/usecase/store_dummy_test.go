@@ -171,3 +171,7 @@ func (s *StoreDummy) UpdateUnStakesRecord(record models.EventUnstake) error {
 func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
 	return ErrNotImplemented
 }
+
+func (s *StoreDummy) SetSecondSwapId(eventID, secondEventID int64) error {
+	return ErrNotImplemented
+}
