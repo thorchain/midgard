@@ -109,3 +109,64 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulati
 	}
 	return result, nil
 }
+
+type totalVolChanges struct {
+	Time         time.Time     `db:"time"`
+	PosChanges   sql.NullInt64 `db:"pos_changes"`
+	NegChanges   sql.NullInt64 `db:"neg_changes"`
+	RunningTotal sql.NullInt64 `db:"running_total"`
+}
+
+func (s *Client) GetTotalVolChanges(interval store.TimeBucket, from, to time.Time) ([]models.TotalVolChanges, error) {
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select(
+		sb.As(getTimeColumn(interval), "time"),
+		sb.As("SUM(pos_changes)", "pos_changes"),
+		sb.As("SUM(neg_changes)", "neg_changes"),
+		sb.As("SUM(SUM(pos_changes + neg_changes)) OVER (ORDER By time)", "running_total"),
+	)
+	sb.From("total_volume_changes" + getIntervalTableSuffix(interval))
+	sb.GroupBy("time")
+
+	q, args := sb.Build()
+	q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
+	args = append(args, from, to)
+	rows, err := s.db.Queryx(q, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []models.TotalVolChanges{}
+	for rows.Next() {
+		var changes totalVolChanges
+		err := rows.StructScan(&changes)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, models.TotalVolChanges{
+			Time:         changes.Time,
+			PosChanges:   changes.PosChanges.Int64,
+			NegChanges:   changes.NegChanges.Int64,
+			RunningTotal: changes.RunningTotal.Int64,
+		})
+	}
+	return result, nil
+}
+
+func getIntervalTableSuffix(interval store.TimeBucket) string {
+	switch interval {
+	case store.FiveMinTimeBucket:
+		return "_5_min"
+	case store.HourlyTimeBucket:
+		return "_hourly"
+	}
+	return "_daily"
+}
+
+func getTimeColumn(interval store.TimeBucket) string {
+	if interval > store.DailyTimeBucket {
+		return fmt.Sprintf("DATE_TRUNC('%s', time)", interval.String())
+	}
+	return "time"
+}
