@@ -25,6 +25,7 @@ CREATE TABLE pools_history (
 CREATE INDEX event_id_pools_history_idx ON pools_history (event_id);
 CREATE INDEX pool_pools_history_idx ON pools_history (pool);
 
+CREATE TYPE swap_direction as enum('buy', 'sell');
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
     event_id bigint not null,
@@ -37,6 +38,7 @@ CREATE TABLE swaps (
     runeAmt bigint,
     assetAmt bigint,
     second_event_id bigint null,
+    direction swap_direction not null,
     primary key (event_id, time)
 );
 CREATE INDEX idx_swaps ON swaps (from_address, pool);
@@ -83,3 +85,4 @@ DROP TABLE txs;
 DROP TABLE coins;
 
 DROP TYPE tx_direction;
+DROP TYPE swap_direction;

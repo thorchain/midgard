@@ -48,6 +48,7 @@ type Store interface {
 	UpdateSwapRecord(record models.EventSwap) error
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
+	SetSecondSwapId(eventID, secondEventID int64) error
 }
 
 // TimeBucket specifies time period of aggregation functions.
