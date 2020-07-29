@@ -237,10 +237,11 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 			isDoubleSwap = false
 		}
 	}
+	var evts []models.Event
 	if isDoubleSwap {
 		swap.Event.Type = doubleswapEventType
 	} else {
-		evts, err := eh.store.GetEventsByTxID(swap.InTx.ID)
+		evts, err = eh.store.GetEventsByTxID(swap.InTx.ID)
 		if err != nil {
 			return errors.Wrap(err, "failed to get event")
 		}
@@ -251,6 +252,12 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 	err = eh.store.CreateSwapRecord(&swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
+	}
+	if swap.Event.Type == "" {
+		err = eh.store.SetSecondSwapId(evts[0].ID, swap.ID)
+		if err != nil {
+			return errors.Wrap(err, "failed to update double swap")
+		}
 	}
 	return nil
 }
