@@ -30,7 +30,6 @@ CREATE INDEX pools_history_pool_idx ON pools_history (pool);
 
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
-    id SERIAL,
     event_id bigint not null,
     from_address varchar not null,
     to_address varchar not null,
@@ -40,7 +39,8 @@ CREATE TABLE swaps (
     liquidity_fee bigint,
     runeAmt bigint,
     assetAmt bigint,
-    primary key (id, time)
+    second_event_id bigint null,
+    primary key (event_id, time)
 );
 CREATE INDEX idx_swaps ON swaps (from_address, pool);
 
