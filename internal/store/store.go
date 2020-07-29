@@ -56,6 +56,8 @@ type TimeBucket int
 // TimeBucket options
 const (
 	MaxTimeBucket TimeBucket = iota
+	FiveMinTimeBucket
+	HourlyTimeBucket
 	DailyTimeBucket
 	WeeklyTimeBucket
 	MonthlyTimeBucket
@@ -65,6 +67,10 @@ const (
 
 func (tb TimeBucket) String() string {
 	switch tb {
+	case FiveMinTimeBucket:
+		return "5 Minute"
+	case HourlyTimeBucket:
+		return "Hour"
 	case DailyTimeBucket:
 		return "Day"
 	case WeeklyTimeBucket:
