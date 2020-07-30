@@ -30,17 +30,17 @@ CREATE INDEX pools_history_pool_idx ON pools_history (pool);
 
 CREATE TYPE swap_direction as enum('buy', 'sell');
 CREATE TABLE swaps (
-    time        TIMESTAMPTZ       NOT NULL,
-    event_id bigint not null,
-    from_address varchar not null,
-    to_address varchar not null,
-    pool varchar not null,
-    price_target bigint,
-    trade_slip real,
-    liquidity_fee bigint,
-    second_event_id bigint null,
-    direction swap_direction not null,
-    primary key (event_id, time)
+    time            TIMESTAMPTZ     NOT NULL,
+    event_id        BIGINT          NOT NULL,
+    from_address    VARCHAR         NOT NULL,
+    to_address      VARCHAR         NOT NULL,
+    pool            VARCHAR         NOT NULL,
+    price_target    BIGINT,
+    trade_slip      REAL,
+    liquidity_fee   BIGINT,
+    second_event_id BIGINT,
+    direction       swap_direction  NOT NULL,
+    PRIMARY KEY (event_id, time)
 );
 CREATE INDEX idx_swaps ON swaps (from_address, pool);
 
