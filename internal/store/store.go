@@ -48,39 +48,5 @@ type Store interface {
 	UpdateSwapRecord(record models.EventSwap) error
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
-}
-
-// TimeBucket specifies time period of aggregation functions.
-type TimeBucket int
-
-// TimeBucket options
-const (
-	MaxTimeBucket TimeBucket = iota
-	FiveMinTimeBucket
-	HourlyTimeBucket
-	DailyTimeBucket
-	WeeklyTimeBucket
-	MonthlyTimeBucket
-	QuarterTimeBucket
-	YearlyTimeBucket
-)
-
-func (tb TimeBucket) String() string {
-	switch tb {
-	case FiveMinTimeBucket:
-		return "5 Minute"
-	case HourlyTimeBucket:
-		return "Hour"
-	case DailyTimeBucket:
-		return "Day"
-	case WeeklyTimeBucket:
-		return "Week"
-	case MonthlyTimeBucket:
-		return "Month"
-	case QuarterTimeBucket:
-		return "Quarter"
-	case YearlyTimeBucket:
-		return "Year"
-	}
-	return ""
+	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)
 }

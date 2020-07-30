@@ -171,3 +171,7 @@ func (s *StoreDummy) UpdateUnStakesRecord(record models.EventUnstake) error {
 func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
 	return ErrNotImplemented
 }
+
+func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
+	return nil, ErrNotImplemented
+}
