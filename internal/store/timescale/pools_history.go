@@ -118,14 +118,15 @@ type totalVolChanges struct {
 
 func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	timeBucket := getTimeBucket(interval)
 	sb.Select(
-		sb.As(getTimeColumn(interval), "time"),
+		sb.As(timeBucket, "time"),
 		sb.As("SUM(pos_changes)", "pos_changes"),
 		sb.As("SUM(neg_changes)", "neg_changes"),
-		sb.As("SUM(SUM(pos_changes + neg_changes)) OVER (ORDER By time)", "running_total"),
+		sb.As(fmt.Sprintf("SUM(SUM(pos_changes + neg_changes)) OVER (ORDER By %s)", timeBucket), "running_total"),
 	)
 	sb.From("total_volume_changes" + getIntervalTableSuffix(interval))
-	sb.GroupBy("time")
+	sb.GroupBy(timeBucket)
 
 	q, args := sb.Build()
 	q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
@@ -163,7 +164,7 @@ func getIntervalTableSuffix(interval models.Interval) string {
 	return "_daily"
 }
 
-func getTimeColumn(inv models.Interval) string {
+func getTimeBucket(inv models.Interval) string {
 	if inv > models.DailyInterval {
 		return fmt.Sprintf("DATE_TRUNC('%s', time)", getIntervalDateTrunc(inv))
 	}
