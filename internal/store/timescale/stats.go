@@ -23,7 +23,7 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 		WHERE txs.direction = 'out'
 		) txs_addresses`)
 
-	count, err := s.queryTimestampInt64(sb, from, to)
+	count, err := s.queryTimestampInt64(sb, "time", from, to)
 	return uint64(count), err
 }
 
@@ -32,15 +32,16 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(tx_hash)").From("txs")
 
-	count, err := s.queryTimestampInt64(sb, from, to)
+	count, err := s.queryTimestampInt64(sb, "time", from, to)
 	return uint64(count), err
 }
 
 // GetTotalVolume returns total volume between "from" to "to".
 func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("SUM(ABS(runeAmt))").From("swaps")
-	vol, err := s.queryTimestampInt64(sb, from, to)
+	sb.Select("SUM(ABS(rune_amount))").From("swaps")
+	sb.JoinWithOption(sqlbuilder.LeftJoin, "pools_history", "swaps.event_id = pools_history.event_id")
+	vol, err := s.queryTimestampInt64(sb, "swaps.time", from, to)
 	return uint64(vol), err
 }
 
