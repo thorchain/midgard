@@ -32,8 +32,6 @@ CREATE TYPE swap_direction as enum('buy', 'sell');
 CREATE TABLE swaps (
     time            TIMESTAMPTZ     NOT NULL,
     event_id        BIGINT          NOT NULL,
-    from_address    VARCHAR         NOT NULL,
-    to_address      VARCHAR         NOT NULL,
     pool            VARCHAR         NOT NULL,
     price_target    BIGINT,
     trade_slip      REAL,
@@ -42,7 +40,6 @@ CREATE TABLE swaps (
     direction       swap_direction  NOT NULL,
     PRIMARY KEY (event_id, time)
 );
-CREATE INDEX idx_swaps ON swaps (from_address, pool);
 
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (

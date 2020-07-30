@@ -52,19 +52,15 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		INSERT INTO %v (
 			time,
 			event_id,
-			from_address,
-			to_address,
 			pool,
 			price_target,
 			trade_slip,
 			liquidity_fee,
 			direction
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9 ) RETURNING event_id`, models.ModelSwapsTable)
+		)  VALUES ( $1, $2, $3, $4, $5, $6, $7 ) RETURNING event_id`, models.ModelSwapsTable)
 	_, err = s.db.Exec(query,
 		record.Event.Time,
 		record.Event.ID,
-		record.Event.InTx.FromAddress,
-		record.Event.InTx.ToAddress,
 		record.Pool.String(),
 		record.PriceTarget,
 		float64(record.TradeSlip)/slipBasisPoints,
