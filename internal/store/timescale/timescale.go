@@ -113,12 +113,12 @@ func (s *Client) MigrationsDown() error {
 	return nil
 }
 
-func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *time.Time) (int64, error) {
+func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, field string, from, to *time.Time) (int64, error) {
 	if from != nil {
-		sb.Where(sb.GE("time", *from))
+		sb.Where(sb.GE(field, *from))
 	}
 	if to != nil {
-		sb.Where(sb.LE("time", *to))
+		sb.Where(sb.LE(field, *to))
 	}
 	query, args := sb.Build()
 
