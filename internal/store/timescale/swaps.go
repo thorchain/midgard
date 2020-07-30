@@ -43,9 +43,9 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			}
 		}
 	}
-	direction := "buy"
+	direction := "sell"
 	if assetAmt < 0 || runeAmt > 0 {
-		direction = "sell"
+		direction = "buy"
 	}
 
 	query := fmt.Sprintf(`
@@ -58,10 +58,8 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			price_target,
 			trade_slip,
 			liquidity_fee,
-			runeAmt,
-			assetAmt,
 			direction
-		)  VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11 ) RETURNING event_id`, models.ModelSwapsTable)
+		)  VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9 ) RETURNING event_id`, models.ModelSwapsTable)
 	_, err = s.db.Exec(query,
 		record.Event.Time,
 		record.Event.ID,
@@ -71,8 +69,6 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		record.PriceTarget,
 		float64(record.TradeSlip)/slipBasisPoints,
 		record.LiquidityFee,
-		runeAmt,
-		assetAmt,
 		direction,
 	)
 	if err != nil {
@@ -104,20 +100,6 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 				assetAmt += coin.Amount
 			}
 		}
-	}
-	query := fmt.Sprintf(`
-		UPDATE %v 
-		SET    runeamt = runeamt   - $1, 
-			   assetamt = assetamt - $2
-		WHERE  event_id = $3 returning event_id`, models.ModelSwapsTable)
-
-	_, err := s.db.Exec(query,
-		runeAmt,
-		assetAmt,
-		record.Event.ID,
-	)
-	if err != nil {
-		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
 	}
 
 	pool, err := s.GetEventPool(record.ID)

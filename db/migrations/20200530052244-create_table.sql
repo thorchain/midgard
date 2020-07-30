@@ -38,8 +38,6 @@ CREATE TABLE swaps (
     price_target bigint,
     trade_slip real,
     liquidity_fee bigint,
-    runeAmt bigint,
-    assetAmt bigint,
     second_event_id bigint null,
     direction swap_direction not null,
     primary key (event_id, time)
