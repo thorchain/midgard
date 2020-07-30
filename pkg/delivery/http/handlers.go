@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/openlyinc/pointy"
@@ -361,5 +362,30 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		NextChurnHeight:         Int64ToString(netInfo.NextChurnHeight),
 		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
 	}
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// (GET /v1/history/total_changes)
+func (h *Handlers) GetTotalVolChanges(ctx echo.Context, params GetTotalVolChangesParams) error {
+	inv := models.GetIntervalFromString(params.Interval)
+	from := time.Unix(params.From, 0)
+	to := time.Unix(params.To, 0)
+
+	changes, err := h.uc.GetTotalVolChanges(inv, from, to)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
+
+	response := make(TotalVolChangesResponse, len(changes))
+	for i, ch := range changes {
+		t := ch.Time.Unix()
+		response[i] = TotalVolChanges{
+			Time:         &t,
+			PosChanges:   Int64ToString(ch.PosChanges),
+			NegChanges:   Int64ToString(ch.NegChanges),
+			RunningTotal: Int64ToString(ch.RunningTotal),
+		}
+	}
+
 	return ctx.JSON(http.StatusOK, response)
 }

@@ -242,7 +242,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["5min", "hourly", "daily", "weekly", "monthly", "yearly"]
+            enum: ["5min", "hour", "day", "week", "month", "year"]
         - in: query
           name: from
           description: Start time of the query as unix timestamp
@@ -969,6 +969,9 @@ components:
     TotalVolChanges:
       type: object
       properties:
+        time:
+          type: integer
+          format: int64
         pos_changes:
           type: string
         neg_changes:
