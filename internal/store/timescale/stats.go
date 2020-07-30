@@ -95,12 +95,13 @@ func (s *Client) TotalRuneStaked() (int64, error) {
 
 func (s *Client) runeSwaps() (int64, error) {
 	stmnt := `
-		SELECT SUM(runeAmt) FROM swaps
+		SELECT SUM(rune_amount) 
+		FROM swaps
+		JOIN pools_history ON swaps.event_id = pools_history.event_id
 	`
 
 	var runeIncomingSwaps sql.NullInt64
 	row := s.db.QueryRow(stmnt)
-
 	if err := row.Scan(&runeIncomingSwaps); err != nil {
 		return 0, errors.Wrap(err, "runeSwaps failed")
 	}
@@ -138,7 +139,7 @@ func (s *Client) PoolCount() (uint64, error) {
 }
 
 func (s *Client) TotalAssetBuys() (uint64, error) {
-	stmnt := `SELECT COUNT(pool) FROM swaps WHERE assetAmt > 0`
+	stmnt := `SELECT COUNT(pool) FROM swaps WHERE direction = 'sell'`
 	var totalAssetBuys sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
@@ -150,7 +151,7 @@ func (s *Client) TotalAssetBuys() (uint64, error) {
 }
 
 func (s *Client) TotalAssetSells() (uint64, error) {
-	stmnt := `SELECT COUNT(pool) FROM swaps WHERE runeAmt > 0`
+	stmnt := `SELECT COUNT(pool) FROM swaps WHERE direction = 'buy'`
 	var totalAssetSells sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 

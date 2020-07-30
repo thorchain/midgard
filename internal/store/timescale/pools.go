@@ -683,7 +683,7 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 		SELECT SUM(rune_amount)
 		FROM swaps
 		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE pool = $1
+		WHERE swaps.pool = $1
 		AND swaps.direction = 'sell'
 		AND swaps.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
@@ -703,7 +703,7 @@ func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 		SELECT SUM(asset_amount)
 		FROM swaps
 		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE pool = $1
+		WHERE swaps.pool = $1
 		AND swaps.direction = 'buy'
 	`
 
