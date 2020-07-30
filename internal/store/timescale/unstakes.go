@@ -65,10 +65,14 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 	if err != nil {
 		return errors.Wrapf(err, "could not get pool of event %d", record.ID)
 	}
+	evtType := record.Type
+	if !record.Fee.IsEmpty() {
+		evtType = "fee"
+	}
 	change := &models.PoolChange{
 		Time:        record.Time,
 		EventID:     record.ID,
-		EventType:   record.Type,
+		EventType:   evtType,
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,

@@ -31,3 +31,7 @@ func (fee *Fee) Asset() Asset {
 	}
 	return Asset{}
 }
+
+func (fee *Fee) IsEmpty() bool {
+	return fee.RuneFee() == 0 && fee.AssetFee() == 0 && fee.PoolDeduct == 0
+}
