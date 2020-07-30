@@ -228,7 +228,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	c.Assert(changes[0].UnitsChanges, Equals, int64(0))
 
 	// Test MaxTimeBucket
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, models.FiveMinInterval, nil, nil)
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, models.MaxInterval, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
 	c.Assert(changes[0].PosAssetChanges, Equals, int64(105))
