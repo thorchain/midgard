@@ -44,7 +44,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		}
 	}
 	direction := "buy"
-	if assetAmt <= 0 || runeAmt >= 0 {
+	if assetAmt < 0 || runeAmt > 0 {
 		direction = "sell"
 	}
 
