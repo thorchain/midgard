@@ -218,6 +218,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
 	}
 
+	time.Sleep(4*time.Second)
 	// Test daily cumulative aggrigation on events
 	changes, err = s.Store.GetPoolAggChanges(bnbPool, "swap", true, store.DailyTimeBucket, &tomorrow, &tomorrow)
 	c.Assert(err, IsNil)
