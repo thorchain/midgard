@@ -1072,12 +1072,11 @@ func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
 // swappersCount - number of unique swappers on the network
 func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT COUNT(from_address)
+		SELECT COUNT(DISTINCT(from_address))
 		FROM swaps
 		JOIN txs ON swaps.event_id = txs.event_id
 		WHERE pool = $1
 		AND txs.direction = 'in'
-		GROUP BY from_address
 	`
 
 	var swappersCount sql.NullInt64
