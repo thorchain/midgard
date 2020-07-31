@@ -1578,6 +1578,7 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	// Another swap
 	swap := swapBuyRune2BoltEvent1
 	swap.ID += 1
+	swap.InTx.FromAddress = "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju30"
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
