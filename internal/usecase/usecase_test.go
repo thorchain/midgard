@@ -1245,3 +1245,51 @@ func (s *UsecaseSuite) TestUpdateConstByMimir(c *C) {
 		},
 	})
 }
+
+type TestGetTotalVolChangesStore struct {
+	StoreDummy
+	changes []models.TotalVolChanges
+	err     error
+}
+
+func (s *TestGetTotalVolChangesStore) GetTotalVolChanges(_ models.Interval, _, _ time.Time) ([]models.TotalVolChanges, error) {
+	return s.changes, s.err
+}
+
+func (s *UsecaseSuite) TestGetTotalVolChanges(c *C) {
+	now := time.Now()
+	store := &TestGetTotalVolChangesStore{
+		changes: []models.TotalVolChanges{
+			{
+				Time:         now,
+				PosChanges:   10,
+				NegChanges:   -5,
+				RunningTotal: 0,
+			},
+			{
+				Time:         now,
+				PosChanges:   -10,
+				NegChanges:   5,
+				RunningTotal: -5,
+			},
+		},
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	changes, err := uc.GetTotalVolChanges(models.DailyInterval, now, now)
+	c.Assert(err, IsNil)
+	c.Assert(changes, DeepEquals, store.changes)
+
+	_, err = uc.GetTotalVolChanges(-1, now, now)
+	c.Assert(err, NotNil)
+
+	store = &TestGetTotalVolChangesStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetTotalVolChanges(models.DailyInterval, now, now)
+	c.Assert(err, NotNil)
+}

@@ -230,6 +230,36 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/ThorchainLastblockResponse'
+  "/v1/history/total_changes":
+    get:
+      operationId: GetTotalVolChanges
+      summary: Get Total Volume Changes
+      description: Returns total volume changes and running total of all pools in specified intervals
+      parameters:
+        - in: query
+          name: interval
+          description: Interval of calculations
+          required: true
+          schema:
+            type: string
+            enum: ["5min", "hour", "day", "week", "month", "year"]
+        - in: query
+          name: from
+          description: Start time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: to
+          description: End time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          $ref: '#/components/responses/TotalVolChangesResponse'
 components:
   responses:
     PoolsDetailedResponse:
@@ -364,6 +394,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ThorchainLastblock'
+
+    TotalVolChangesResponse:
+      description: Get Return an array of total volume changes.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TotalVolChanges'
   schemas:
     TxDetails:
       properties:
@@ -926,6 +965,19 @@ components:
           thorchain:
             type: integer
             format: int64
+
+    TotalVolChanges:
+      type: object
+      properties:
+        time:
+          type: integer
+          format: int64
+        pos_changes:
+          type: string
+        neg_changes:
+          type: string
+        running_total:
+          type: string
 
 servers:
   - url: http://127.0.0.1:8080

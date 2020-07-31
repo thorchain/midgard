@@ -5,7 +5,6 @@ import (
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
-	"gitlab.com/thorchain/midgard/internal/store"
 	. "gopkg.in/check.v1"
 )
 
@@ -135,7 +134,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	c.Assert(err, IsNil)
 
 	// Test daily aggrigation
-	changes, err := s.Store.GetPoolAggChanges(bnbPool, "", false, store.DailyTimeBucket, &today, &tomorrow)
+	changes, err := s.Store.GetPoolAggChanges(bnbPool, "", false, models.DailyInterval, &today, &tomorrow)
 	c.Assert(err, IsNil)
 	expected := map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
@@ -163,7 +162,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	}
 
 	// Test daily cumulative aggrigation
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", true, store.DailyTimeBucket, &today, &tomorrow)
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", true, models.DailyInterval, &today, &tomorrow)
 	c.Assert(err, IsNil)
 	expected = map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
@@ -191,7 +190,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	}
 
 	// Test daily aggrigation on events
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "stake", false, store.DailyTimeBucket, &today, &tomorrow)
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "stake", false, models.DailyInterval, &today, &tomorrow)
 	c.Assert(err, IsNil)
 	expected = map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
@@ -219,7 +218,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	}
 
 	// Test daily cumulative aggrigation on events
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "swap", true, store.DailyTimeBucket, &tomorrow, &tomorrow)
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "swap", true, models.DailyInterval, &tomorrow, &tomorrow)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
 	c.Assert(changes[0].PosAssetChanges, Equals, int64(5))
@@ -229,7 +228,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	c.Assert(changes[0].UnitsChanges, Equals, int64(0))
 
 	// Test MaxTimeBucket
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, store.MaxTimeBucket, nil, nil)
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, models.MaxInterval, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
 	c.Assert(changes[0].PosAssetChanges, Equals, int64(105))
@@ -239,6 +238,101 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	c.Assert(changes[0].UnitsChanges, Equals, int64(500))
 
 	// Test from, to = nil value with specified bucket
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, store.DailyTimeBucket, nil, nil)
+	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, models.DailyInterval, nil, nil)
 	c.Assert(err, NotNil)
+}
+
+func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
+	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
+	tomorrow := today.Add(time.Hour * 24)
+
+	change := &models.PoolChange{
+		Time:       today,
+		EventID:    1,
+		RuneAmount: 100,
+	}
+	err := s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:       today,
+		EventID:    2,
+		RuneAmount: -50,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:       today.Add(time.Minute * 5),
+		EventID:    3,
+		RuneAmount: 25,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:       tomorrow,
+		EventID:    4,
+		RuneAmount: -20,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:       tomorrow.Add(time.Minute * 5),
+		EventID:    4,
+		RuneAmount: 5,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+
+	// Test daily aggrigation
+	changes, err := s.Store.GetTotalVolChanges(models.DailyInterval, today, tomorrow)
+	c.Assert(err, IsNil)
+	expected := map[int64]models.TotalVolChanges{
+		tomorrow.Unix(): {
+			PosChanges:   5,
+			NegChanges:   -20,
+			RunningTotal: 60,
+		},
+		today.Unix(): {
+			PosChanges:   125,
+			NegChanges:   -50,
+			RunningTotal: 75,
+		},
+	}
+	for _, ch := range changes {
+		exp := expected[ch.Time.Unix()]
+		c.Assert(ch.PosChanges, Equals, exp.PosChanges)
+		c.Assert(ch.NegChanges, Equals, exp.NegChanges)
+		c.Assert(ch.RunningTotal, Equals, exp.RunningTotal)
+	}
+
+	// Test 5 minute aggrigation
+	changes, err = s.Store.GetTotalVolChanges(models.FiveMinInterval, today, tomorrow.Add(time.Minute*5))
+	c.Assert(err, IsNil)
+	expected = map[int64]models.TotalVolChanges{
+		tomorrow.Add(time.Minute * 5).Unix(): {
+			PosChanges:   5,
+			NegChanges:   0,
+			RunningTotal: 60,
+		},
+		tomorrow.Unix(): {
+			PosChanges:   0,
+			NegChanges:   -20,
+			RunningTotal: 55,
+		},
+		today.Add(time.Minute * 5).Unix(): {
+			PosChanges:   25,
+			NegChanges:   0,
+			RunningTotal: 75,
+		},
+		today.Unix(): {
+			PosChanges:   100,
+			NegChanges:   -50,
+			RunningTotal: 50,
+		},
+	}
+	for _, ch := range changes {
+		exp := expected[ch.Time.Unix()]
+		c.Assert(ch.PosChanges, Equals, exp.PosChanges)
+		c.Assert(ch.NegChanges, Equals, exp.NegChanges)
+		c.Assert(ch.RunningTotal, Equals, exp.RunningTotal)
+	}
 }

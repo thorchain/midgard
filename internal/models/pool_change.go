@@ -28,3 +28,11 @@ type PoolAggChanges struct {
 	NegRuneChanges  int64     `db:"neg_rune_changes"`
 	UnitsChanges    int64     `db:"units_changes"`
 }
+
+// TotalVolChanges contains aggregated rune volume changes and running total of all pools.
+type TotalVolChanges struct {
+	Time         time.Time
+	PosChanges   int64
+	NegChanges   int64
+	RunningTotal int64
+}
