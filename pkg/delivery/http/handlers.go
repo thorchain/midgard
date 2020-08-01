@@ -223,9 +223,7 @@ func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam GetPoolsDataParams)
 			SellVolume:       Uint64ToString(details.SellVolume),
 			StakeTxCount:     Uint64ToString(details.StakeTxCount),
 			StakersCount:     Uint64ToString(details.StakersCount),
-			StakingTxCount:   Uint64ToString(details.StakingTxCount),
 			SwappersCount:    Uint64ToString(details.SwappersCount),
-			SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
 			WithdrawTxCount:  Uint64ToString(details.WithdrawTxCount),
 		}
 	}

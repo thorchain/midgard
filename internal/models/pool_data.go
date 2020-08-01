@@ -37,8 +37,6 @@ type PoolData struct {
 	SellVolume       uint64
 	StakeTxCount     uint64
 	StakersCount     uint64
-	StakingTxCount   uint64
 	SwappersCount    uint64
-	SwappingTxCount  uint64
 	WithdrawTxCount  uint64
 }

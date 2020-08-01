@@ -601,9 +601,7 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDa
 		SellVolume:       s.sellVolume,
 		StakeTxCount:     s.stakeTxCount,
 		StakersCount:     s.stakersCount,
-		StakingTxCount:   s.stakingTxCount,
 		SwappersCount:    s.swappersCount,
-		SwappingTxCount:  s.swappingTxCount,
 		WithdrawTxCount:  s.withdrawTxCount,
 	}
 	return data, s.err
@@ -695,9 +693,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		SellVolume:       store.sellVolume,
 		StakeTxCount:     store.stakeTxCount,
 		StakersCount:     store.stakersCount,
-		StakingTxCount:   store.stakingTxCount,
 		SwappersCount:    store.swappersCount,
-		SwappingTxCount:  store.swappingTxCount,
 		WithdrawTxCount:  store.withdrawTxCount,
 	})
 
