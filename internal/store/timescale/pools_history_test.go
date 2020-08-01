@@ -55,12 +55,12 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetEventPool(c *C) {
-	bnbPool, err := common.NewAsset("BNB.BNB")
+	bnbAsset, err := common.NewAsset("BNB.BNB")
 	c.Assert(err, IsNil)
 	change := &models.PoolChange{
 		Time:    time.Now(),
 		EventID: 1,
-		Pool:    bnbPool,
+		Pool:    bnbAsset,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -77,24 +77,26 @@ func (s *TimeScaleSuite) TestGetEventPool(c *C) {
 
 	pool, err := s.Store.GetEventPool(1)
 	c.Assert(err, IsNil)
-	c.Assert(pool.String(), Equals, bnbPool.String())
+	c.Assert(pool.String(), Equals, bnbAsset.String())
 
 	pool, err = s.Store.GetEventPool(2)
 	c.Assert(err, IsNil)
 	c.Assert(pool.String(), Equals, tomobPool.String())
 }
 
-func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
+func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
 	tomorrow := today.Add(time.Hour * 24)
 
-	bnbPool, err := common.NewAsset("BNB.BNB")
+	bnbAsset, err := common.NewAsset("BNB.BNB")
+	c.Assert(err, IsNil)
+	tomlAsset, err := common.NewAsset("BNB.TOML-4BC")
 	c.Assert(err, IsNil)
 	change := &models.PoolChange{
 		Time:        today,
 		EventID:     1,
 		EventType:   "stake",
-		Pool:        bnbPool,
+		Pool:        bnbAsset,
 		AssetAmount: 100,
 		RuneAmount:  200,
 		Units:       1000,
@@ -105,7 +107,7 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		Time:        today.Add(time.Hour),
 		EventID:     2,
 		EventType:   "swap",
-		Pool:        bnbPool,
+		Pool:        tomlAsset,
 		AssetAmount: -10,
 		RuneAmount:  +20,
 	}
@@ -115,10 +117,32 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		Time:        tomorrow,
 		EventID:     3,
 		EventType:   "unstake",
-		Pool:        bnbPool,
-		AssetAmount: -45,
-		RuneAmount:  -110,
+		Pool:        tomlAsset,
+		AssetAmount: 0,
+		RuneAmount:  1,
 		Units:       -500,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventID:     3,
+		EventType:   "unstake",
+		Pool:        tomlAsset,
+		AssetAmount: -45,
+		RuneAmount:  0,
+		Units:       0,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventID:     3,
+		EventType:   "unstake",
+		Pool:        tomlAsset,
+		AssetAmount: 0,
+		RuneAmount:  -110,
+		Units:       0,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -126,7 +150,112 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 		Time:        tomorrow.Add(time.Hour),
 		EventID:     4,
 		EventType:   "swap",
-		Pool:        bnbPool,
+		Pool:        bnbAsset,
+		AssetAmount: +5,
+		RuneAmount:  -12,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+
+	changes, err := s.Store.GetPoolAggChanges([]common.Asset{bnbAsset, tomlAsset})
+	c.Assert(err, IsNil)
+	expected := map[string]models.PoolAggChanges{
+		bnbAsset.String(): {
+			Asset:        bnbAsset,
+			AssetChanges: 105,
+			AssetStaked:  100,
+			RuneChanges:  188,
+			RuneStaked:   200,
+			SellCount:    1,
+			SellVolume:   12,
+			UnitsChanges: 1000,
+			StakeCount:   1,
+		},
+		tomlAsset.String(): {
+			Asset:          tomlAsset,
+			AssetChanges:   -55,
+			AssetWithdrawn: 45,
+			BuyCount:       1,
+			BuyVolume:      20,
+			RuneChanges:    -89,
+			RuneWithdrawn:  110,
+			UnitsChanges:   -500,
+			WithdrawCount:  1,
+		},
+	}
+	c.Assert(changes, HasLen, len(expected))
+	for _, ch := range changes {
+		exp := expected[ch.Asset.String()]
+		c.Assert(ch, DeepEquals, exp)
+	}
+}
+
+func (s *TimeScaleSuite) TestGetHistPoolAggChanges(c *C) {
+	year := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
+	tomorrow := today.Add(time.Hour * 24)
+
+	bnbAsset, err := common.NewAsset("BNB.BNB")
+	c.Assert(err, IsNil)
+	change := &models.PoolChange{
+		Time:        today,
+		EventID:     1,
+		EventType:   "stake",
+		Pool:        bnbAsset,
+		AssetAmount: 100,
+		RuneAmount:  200,
+		Units:       1000,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        today.Add(time.Hour),
+		EventID:     2,
+		EventType:   "swap",
+		Pool:        bnbAsset,
+		AssetAmount: -10,
+		RuneAmount:  +20,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventID:     3,
+		EventType:   "unstake",
+		Pool:        bnbAsset,
+		AssetAmount: 0,
+		RuneAmount:  1,
+		Units:       -500,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventID:     3,
+		EventType:   "unstake",
+		Pool:        bnbAsset,
+		AssetAmount: -45,
+		RuneAmount:  0,
+		Units:       0,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventID:     3,
+		EventType:   "unstake",
+		Pool:        bnbAsset,
+		AssetAmount: 0,
+		RuneAmount:  -110,
+		Units:       0,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow.Add(time.Hour),
+		EventID:     4,
+		EventType:   "swap",
+		Pool:        bnbAsset,
 		AssetAmount: +5,
 		RuneAmount:  -12,
 	}
@@ -134,112 +263,134 @@ func (s *TimeScaleSuite) TestGetPoolEventAggChanges(c *C) {
 	c.Assert(err, IsNil)
 
 	// Test daily aggrigation
-	changes, err := s.Store.GetPoolAggChanges(bnbPool, "", false, models.DailyInterval, &today, &tomorrow)
+	changes, err := s.Store.GetHistPoolAggChanges(bnbAsset, models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
-	expected := map[int64]models.PoolAggChanges{
+	expected := map[int64]models.HistPoolAggChanges{
 		tomorrow.Unix(): {
-			PosAssetChanges: +5,
-			NegAssetChanges: -45,
-			PosRuneChanges:  0,
-			NegRuneChanges:  -122,
-			UnitsChanges:    -500,
+			PoolAggChanges: models.PoolAggChanges{
+				Asset:          bnbAsset,
+				AssetChanges:   -40,
+				AssetWithdrawn: 45,
+				RuneChanges:    -121,
+				RuneWithdrawn:  110,
+				SellCount:      1,
+				SellVolume:     12,
+				UnitsChanges:   -500,
+				WithdrawCount:  1,
+			},
+			RuneRunningTotal:  99,
+			AssetRunningTotal: 50,
 		},
 		today.Unix(): {
-			PosAssetChanges: 100,
-			NegAssetChanges: -10,
-			PosRuneChanges:  220,
-			NegRuneChanges:  0,
-			UnitsChanges:    1000,
+			PoolAggChanges: models.PoolAggChanges{
+				Asset:        bnbAsset,
+				AssetChanges: 90,
+				AssetStaked:  100,
+				BuyCount:     1,
+				BuyVolume:    20,
+				RuneChanges:  220,
+				RuneStaked:   200,
+				UnitsChanges: 1000,
+				StakeCount:   1,
+			},
+			AssetRunningTotal: 90,
+			RuneRunningTotal:  220,
 		},
 	}
 	for _, ch := range changes {
 		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.PosAssetChanges, Equals, exp.PosAssetChanges)
-		c.Assert(ch.NegAssetChanges, Equals, exp.NegAssetChanges)
-		c.Assert(ch.PosRuneChanges, Equals, exp.PosRuneChanges)
-		c.Assert(ch.NegRuneChanges, Equals, exp.NegRuneChanges)
-		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
+		c.Assert(ch.PoolAggChanges, DeepEquals, exp.PoolAggChanges)
+		c.Assert(ch.AssetRunningTotal, Equals, exp.AssetRunningTotal)
+		c.Assert(ch.RuneRunningTotal, Equals, exp.RuneRunningTotal)
 	}
 
-	// Test daily cumulative aggrigation
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", true, models.DailyInterval, &today, &tomorrow)
+	// Test hourly aggrigation
+	changes, err = s.Store.GetHistPoolAggChanges(bnbAsset, models.HourlyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
-	expected = map[int64]models.PoolAggChanges{
+	expected = map[int64]models.HistPoolAggChanges{
+		tomorrow.Add(time.Hour).Unix(): {
+			PoolAggChanges: models.PoolAggChanges{
+				Asset:        bnbAsset,
+				AssetChanges: 5,
+				RuneChanges:  -12,
+				SellCount:    1,
+				SellVolume:   12,
+			},
+			AssetRunningTotal: 50,
+			RuneRunningTotal:  98,
+		},
 		tomorrow.Unix(): {
-			PosAssetChanges: 105,
-			NegAssetChanges: -55,
-			PosRuneChanges:  220,
-			NegRuneChanges:  -122,
-			UnitsChanges:    500,
+			PoolAggChanges: models.PoolAggChanges{
+				Asset:          bnbAsset,
+				AssetChanges:   -45,
+				AssetWithdrawn: 45,
+				RuneChanges:    -109,
+				RuneWithdrawn:  110,
+				UnitsChanges:   -500,
+				WithdrawCount:  1,
+			},
+			AssetRunningTotal: 45,
+			RuneRunningTotal:  111,
+		},
+		today.Add(time.Hour).Unix(): {
+			PoolAggChanges: models.PoolAggChanges{
+				Asset:        bnbAsset,
+				AssetChanges: -10,
+				BuyCount:     1,
+				BuyVolume:    20,
+				RuneChanges:  20,
+			},
+			AssetRunningTotal: 90,
+			RuneRunningTotal:  220,
 		},
 		today.Unix(): {
-			PosAssetChanges: 100,
-			NegAssetChanges: -10,
-			PosRuneChanges:  220,
-			NegRuneChanges:  0,
-			UnitsChanges:    1000,
+			PoolAggChanges: models.PoolAggChanges{
+				Asset:        bnbAsset,
+				AssetChanges: 100,
+				AssetStaked:  100,
+				RuneChanges:  200,
+				RuneStaked:   200,
+				UnitsChanges: 1000,
+				StakeCount:   1,
+			},
+			AssetRunningTotal: 100,
+			RuneRunningTotal:  200,
 		},
 	}
 	for _, ch := range changes {
 		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.PosAssetChanges, Equals, exp.PosAssetChanges)
-		c.Assert(ch.NegAssetChanges, Equals, exp.NegAssetChanges)
-		c.Assert(ch.PosRuneChanges, Equals, exp.PosRuneChanges)
-		c.Assert(ch.NegRuneChanges, Equals, exp.NegRuneChanges)
-		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
+		c.Assert(ch.PoolAggChanges, DeepEquals, exp.PoolAggChanges)
+		c.Assert(ch.AssetRunningTotal, Equals, exp.AssetRunningTotal)
+		c.Assert(ch.RuneRunningTotal, Equals, exp.RuneRunningTotal)
 	}
 
-	// Test daily aggrigation on events
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "stake", false, models.DailyInterval, &today, &tomorrow)
-	c.Assert(err, IsNil)
-	expected = map[int64]models.PoolAggChanges{
-		tomorrow.Unix(): {
-			PosAssetChanges: 0,
-			NegAssetChanges: 0,
-			PosRuneChanges:  0,
-			NegRuneChanges:  0,
-			UnitsChanges:    0,
-		},
-		today.Unix(): {
-			PosAssetChanges: 100,
-			NegAssetChanges: 0,
-			PosRuneChanges:  200,
-			NegRuneChanges:  0,
-			UnitsChanges:    1000,
-		},
-	}
-	for _, ch := range changes {
-		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.PosAssetChanges, Equals, exp.PosAssetChanges)
-		c.Assert(ch.NegAssetChanges, Equals, exp.NegAssetChanges)
-		c.Assert(ch.PosRuneChanges, Equals, exp.PosRuneChanges)
-		c.Assert(ch.NegRuneChanges, Equals, exp.NegRuneChanges)
-		c.Assert(ch.UnitsChanges, Equals, exp.UnitsChanges)
-	}
-
-	// Test daily cumulative aggrigation on events
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "swap", true, models.DailyInterval, &tomorrow, &tomorrow)
+	// Test yearly aggrigation
+	changes, err = s.Store.GetHistPoolAggChanges(bnbAsset, models.YearlyInterval, year, year)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
-	c.Assert(changes[0].PosAssetChanges, Equals, int64(5))
-	c.Assert(changes[0].NegAssetChanges, Equals, int64(-10))
-	c.Assert(changes[0].PosRuneChanges, Equals, int64(20))
-	c.Assert(changes[0].NegRuneChanges, Equals, int64(-12))
-	c.Assert(changes[0].UnitsChanges, Equals, int64(0))
-
-	// Test MaxTimeBucket
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, models.MaxInterval, nil, nil)
-	c.Assert(err, IsNil)
-	c.Assert(changes, HasLen, 1)
-	c.Assert(changes[0].PosAssetChanges, Equals, int64(105))
-	c.Assert(changes[0].NegAssetChanges, Equals, int64(-55))
-	c.Assert(changes[0].PosRuneChanges, Equals, int64(220))
-	c.Assert(changes[0].NegRuneChanges, Equals, int64(-122))
-	c.Assert(changes[0].UnitsChanges, Equals, int64(500))
-
-	// Test from, to = nil value with specified bucket
-	changes, err = s.Store.GetPoolAggChanges(bnbPool, "", false, models.DailyInterval, nil, nil)
-	c.Assert(err, NotNil)
+	exp := models.HistPoolAggChanges{
+		PoolAggChanges: models.PoolAggChanges{
+			Asset:          bnbAsset,
+			AssetChanges:   50,
+			AssetStaked:    100,
+			AssetWithdrawn: 45,
+			BuyCount:       1,
+			BuyVolume:      20,
+			RuneChanges:    99,
+			RuneStaked:     200,
+			RuneWithdrawn:  110,
+			SellCount:      1,
+			SellVolume:     12,
+			UnitsChanges:   500,
+			StakeCount:     1,
+			WithdrawCount:  1,
+		},
+		RuneRunningTotal:  99,
+		AssetRunningTotal: 50,
+	}
+	c.Assert(changes[0].PoolAggChanges, DeepEquals, exp.PoolAggChanges)
+	c.Assert(changes[0].AssetRunningTotal, Equals, exp.AssetRunningTotal)
+	c.Assert(changes[0].RuneRunningTotal, Equals, exp.RuneRunningTotal)
 }
 
 func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {

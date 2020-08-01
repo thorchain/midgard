@@ -18,15 +18,30 @@ type PoolChange struct {
 	Status      PoolStatus
 }
 
-// PoolAggChanges contains aggregated changes of a specific pool or event
-// during a specific time bucket.
+// PoolAggChanges contains aggregated changes of a specific pool.
 type PoolAggChanges struct {
-	Time            time.Time `db:"time"`
-	PosAssetChanges int64     `db:"pos_asset_changes"`
-	NegAssetChanges int64     `db:"neg_asset_changes"`
-	PosRuneChanges  int64     `db:"pos_rune_changes"`
-	NegRuneChanges  int64     `db:"neg_rune_changes"`
-	UnitsChanges    int64     `db:"units_changes"`
+	Asset          common.Asset
+	AssetChanges   int64
+	AssetStaked    int64
+	AssetWithdrawn int64
+	BuyCount       int64
+	BuyVolume      int64
+	RuneChanges    int64
+	RuneStaked     int64
+	RuneWithdrawn  int64
+	SellCount      int64
+	SellVolume     int64
+	UnitsChanges   int64
+	StakeCount     int64
+	WithdrawCount  int64
+}
+
+// HistPoolAggChanges contains aggregated changes of a specific pool during a specific time bucket.
+type HistPoolAggChanges struct {
+	PoolAggChanges
+	Time              time.Time
+	AssetRunningTotal int64
+	RuneRunningTotal  int64
 }
 
 // TotalVolChanges contains aggregated rune volume changes and running total of all pools.

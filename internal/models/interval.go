@@ -7,14 +7,14 @@ type Interval int
 
 // Interval options
 const (
-	MaxInterval Interval = iota
-	FiveMinInterval
+	FiveMinInterval Interval = iota
 	HourlyInterval
 	DailyInterval
 	WeeklyInterval
 	MonthlyInterval
 	QuarterInterval
 	YearlyInterval
+	MaxInterval
 )
 
 // GetIntervalFromString converts string to Interval.
@@ -40,7 +40,7 @@ func GetIntervalFromString(str string) Interval {
 
 // Validate the Interval
 func (inv Interval) Validate() error {
-	if inv < MaxInterval || inv > YearlyInterval {
+	if inv < FiveMinInterval || inv > MaxInterval {
 		return errors.New("the requested interval is invalid")
 	}
 	return nil
