@@ -230,11 +230,11 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/ThorchainLastblockResponse'
-  "/v1/history/total_changes":
+  "/v1/history/total_volume":
     get:
       operationId: GetTotalVolChanges
       summary: Get Total Volume Changes
-      description: Returns total volume changes and running total of all pools in specified intervals
+      description: Returns total volume changes of all pools in specified interval
       parameters:
         - in: query
           name: interval
@@ -972,11 +972,11 @@ components:
         time:
           type: integer
           format: int64
-        pos_changes:
+        buy_volume:
           type: string
-        neg_changes:
+        sell_volume:
           type: string
-        running_total:
+        total_volume:
           type: string
 
 servers:
