@@ -29,10 +29,10 @@ type PoolAggChanges struct {
 	UnitsChanges    int64     `db:"units_changes"`
 }
 
-// TotalVolChanges contains aggregated rune volume changes and running total of all pools.
+// TotalVolChanges contains aggregated buy/sell volume changes and running total of all pools.
 type TotalVolChanges struct {
-	Time         time.Time
-	PosChanges   int64
-	NegChanges   int64
-	RunningTotal int64
+	Time        time.Time
+	BuyVolume   int64
+	SellVolume  int64
+	TotalVolume int64
 }

@@ -110,10 +110,10 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulati
 }
 
 type totalVolChanges struct {
-	Time         time.Time     `db:"time"`
-	PosChanges   sql.NullInt64 `db:"pos_changes"`
-	NegChanges   sql.NullInt64 `db:"neg_changes"`
-	RunningTotal sql.NullInt64 `db:"running_total"`
+	Time        time.Time     `db:"time"`
+	BuyVolume   sql.NullInt64 `db:"buy_volume"`
+	SellVolume  sql.NullInt64 `db:"sell_volume"`
+	TotalVolume sql.NullInt64 `db:"total_volume"`
 }
 
 func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
@@ -121,16 +121,15 @@ func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time
 	timeBucket := getTimeBucket(interval)
 	sb.Select(
 		sb.As(timeBucket, "time"),
-		sb.As("SUM(pos_changes)", "pos_changes"),
-		sb.As("SUM(neg_changes)", "neg_changes"),
-		sb.As(fmt.Sprintf("SUM(SUM(pos_changes + neg_changes)) OVER (ORDER By %s)", timeBucket), "running_total"),
+		sb.As("SUM(buy_volume)", "buy_volume"),
+		sb.As("SUM(sell_volume)", "sell_volume"),
+		sb.As("SUM(buy_volume + sell_volume)", "total_volume"),
 	)
 	sb.From("total_volume_changes" + getIntervalTableSuffix(interval))
 	sb.GroupBy(timeBucket)
+	sb.Where(sb.Between("time", from, to))
 
 	q, args := sb.Build()
-	q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
-	args = append(args, from, to)
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, err
@@ -145,10 +144,10 @@ func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time
 		}
 
 		result = append(result, models.TotalVolChanges{
-			Time:         changes.Time,
-			PosChanges:   changes.PosChanges.Int64,
-			NegChanges:   changes.NegChanges.Int64,
-			RunningTotal: changes.RunningTotal.Int64,
+			Time:        changes.Time,
+			BuyVolume:   changes.BuyVolume.Int64,
+			SellVolume:  changes.SellVolume.Int64,
+			TotalVolume: changes.TotalVolume.Int64,
 		})
 	}
 	return result, nil
