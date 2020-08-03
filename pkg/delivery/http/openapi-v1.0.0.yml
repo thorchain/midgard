@@ -972,11 +972,11 @@ components:
         time:
           type: integer
           format: int64
-        buy_volume:
+        buyVolume:
           type: string
-        sell_volume:
+        sellVolume:
           type: string
-        total_volume:
+        totalVolume:
           type: string
 
 servers:
