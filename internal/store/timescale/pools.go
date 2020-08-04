@@ -85,12 +85,12 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
 	assetStaked := changes[0].AssetStaked - changes[0].AssetWithdrawn
 	var assetROI float64
 	if assetStaked > 0 {
-		assetROI = float64(changes[0].AssetChanges) - float64(assetStaked)/float64(assetStaked)
+		assetROI = (float64(changes[0].AssetChanges) - float64(assetStaked)) / float64(assetStaked)
 	}
 	runeStaked := changes[0].RuneStaked - changes[0].RuneWithdrawn
 	var runeROI float64
 	if runeStaked > 0 {
-		assetROI = float64(changes[0].RuneChanges) - float64(runeStaked)/float64(runeStaked)
+		assetROI = (float64(changes[0].RuneChanges) - float64(runeStaked)) / float64(runeStaked)
 	}
 	poolROI := (assetROI + runeROI) / 2
 	swapCount := changes[0].BuyCount + changes[0].SellCount
