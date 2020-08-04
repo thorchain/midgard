@@ -399,6 +399,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 
 	change := &models.PoolChange{
 		Time:       today,
+		EventType:  "swap",
 		EventID:    1,
 		RuneAmount: 100,
 	}
@@ -406,6 +407,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       today,
+		EventType:  "swap",
 		EventID:    2,
 		RuneAmount: -50,
 	}
@@ -413,6 +415,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       today.Add(time.Minute * 5),
+		EventType:  "swap",
 		EventID:    3,
 		RuneAmount: 25,
 	}
@@ -420,6 +423,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       tomorrow,
+		EventType:  "swap",
 		EventID:    4,
 		RuneAmount: -20,
 	}
@@ -427,6 +431,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       tomorrow.Add(time.Minute * 5),
+		EventType:  "swap",
 		EventID:    4,
 		RuneAmount: 5,
 	}
@@ -438,21 +443,21 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	expected := map[int64]models.TotalVolChanges{
 		tomorrow.Unix(): {
-			PosChanges:   5,
-			NegChanges:   -20,
-			RunningTotal: 60,
+			BuyVolume:   5,
+			SellVolume:  20,
+			TotalVolume: 25,
 		},
 		today.Unix(): {
-			PosChanges:   125,
-			NegChanges:   -50,
-			RunningTotal: 75,
+			BuyVolume:   125,
+			SellVolume:  50,
+			TotalVolume: 175,
 		},
 	}
 	for _, ch := range changes {
 		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.PosChanges, Equals, exp.PosChanges)
-		c.Assert(ch.NegChanges, Equals, exp.NegChanges)
-		c.Assert(ch.RunningTotal, Equals, exp.RunningTotal)
+		c.Assert(ch.BuyVolume, Equals, exp.BuyVolume)
+		c.Assert(ch.SellVolume, Equals, exp.SellVolume)
+		c.Assert(ch.TotalVolume, Equals, exp.TotalVolume)
 	}
 
 	// Test 5 minute aggrigation
@@ -460,30 +465,30 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	expected = map[int64]models.TotalVolChanges{
 		tomorrow.Add(time.Minute * 5).Unix(): {
-			PosChanges:   5,
-			NegChanges:   0,
-			RunningTotal: 60,
+			BuyVolume:   5,
+			SellVolume:  0,
+			TotalVolume: 5,
 		},
 		tomorrow.Unix(): {
-			PosChanges:   0,
-			NegChanges:   -20,
-			RunningTotal: 55,
+			BuyVolume:   0,
+			SellVolume:  20,
+			TotalVolume: 20,
 		},
 		today.Add(time.Minute * 5).Unix(): {
-			PosChanges:   25,
-			NegChanges:   0,
-			RunningTotal: 75,
+			BuyVolume:   25,
+			SellVolume:  0,
+			TotalVolume: 25,
 		},
 		today.Unix(): {
-			PosChanges:   100,
-			NegChanges:   -50,
-			RunningTotal: 50,
+			BuyVolume:   100,
+			SellVolume:  50,
+			TotalVolume: 150,
 		},
 	}
 	for _, ch := range changes {
 		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.PosChanges, Equals, exp.PosChanges)
-		c.Assert(ch.NegChanges, Equals, exp.NegChanges)
-		c.Assert(ch.RunningTotal, Equals, exp.RunningTotal)
+		c.Assert(ch.BuyVolume, Equals, exp.BuyVolume)
+		c.Assert(ch.SellVolume, Equals, exp.SellVolume)
+		c.Assert(ch.TotalVolume, Equals, exp.TotalVolume)
 	}
 }

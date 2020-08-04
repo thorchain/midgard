@@ -378,10 +378,10 @@ func (h *Handlers) GetTotalVolChanges(ctx echo.Context, params GetTotalVolChange
 	for i, ch := range changes {
 		t := ch.Time.Unix()
 		response[i] = TotalVolChanges{
-			Time:         &t,
-			PosChanges:   Int64ToString(ch.PosChanges),
-			NegChanges:   Int64ToString(ch.NegChanges),
-			RunningTotal: Int64ToString(ch.RunningTotal),
+			Time:        &t,
+			BuyVolume:   Int64ToString(ch.BuyVolume),
+			SellVolume:  Int64ToString(ch.SellVolume),
+			TotalVolume: Int64ToString(ch.TotalVolume),
 		}
 	}
 

@@ -1257,16 +1257,16 @@ func (s *UsecaseSuite) TestGetTotalVolChanges(c *C) {
 	store := &TestGetTotalVolChangesStore{
 		changes: []models.TotalVolChanges{
 			{
-				Time:         now,
-				PosChanges:   10,
-				NegChanges:   -5,
-				RunningTotal: 0,
+				Time:        now,
+				BuyVolume:   10,
+				SellVolume:  -5,
+				TotalVolume: 5,
 			},
 			{
-				Time:         now,
-				PosChanges:   -10,
-				NegChanges:   5,
-				RunningTotal: -5,
+				Time:        now,
+				BuyVolume:   -10,
+				SellVolume:  5,
+				TotalVolume: 5,
 			},
 		},
 	}
