@@ -1165,7 +1165,7 @@ func (s *Client) poolStatus(asset common.Asset) (string, error) {
 		SELECT status 
 		FROM   pools_history 
 		WHERE  pool = $1 AND status != $2
-		ORDER  BY event_id DESC 
+		ORDER  BY time DESC 
 		LIMIT  1  
 		`
 	var poolStatus sql.NullInt32
