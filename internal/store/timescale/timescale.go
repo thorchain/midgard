@@ -42,7 +42,6 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		db:            db,
 		logger:        logger,
 		migrationsDir: cfg.MigrationsDir,
-		pools:         map[string]*poolCache{},
 	}
 
 	if err := cli.MigrationsUp(); err != nil {
@@ -158,6 +157,7 @@ func (s *Client) initPoolCache() error {
 		return err
 	}
 
+	s.pools = map[string]*poolCache{}
 	for rows.Next() {
 		var (
 			pool       string
@@ -169,7 +169,7 @@ func (s *Client) initPoolCache() error {
 		}
 		s.pools[pool] = &poolCache{
 			assetDepth: assetDepth.Int64,
-			runeDepth:  assetDepth.Int64,
+			runeDepth:  runeDepth.Int64,
 		}
 	}
 	return nil
