@@ -18,17 +18,19 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		Valid: change.Units != 0,
 	}
 
-	s.updatePoolCache(pool, change.AssetAmount, change.RuneAmount)
+	assetDepth, runeDepth := s.updatePoolCache(pool, change.AssetAmount, change.RuneAmount)
 
-	q := `INSERT INTO pools_history (time, event_id, event_type, pool, asset_amount, rune_amount, units, status) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+	q := `INSERT INTO pools_history (time, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, status) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 	_, err := s.db.Exec(q,
 		change.Time,
 		change.EventID,
 		change.EventType,
 		change.Pool.String(),
 		change.AssetAmount,
+		assetDepth,
 		change.RuneAmount,
+		runeDepth,
 		units,
 		change.Status)
 	if err != nil {
