@@ -25,7 +25,6 @@ CREATE TABLE pools_history (
 CREATE INDEX event_id_pools_history_idx ON pools_history (event_id);
 CREATE INDEX event_type_pools_history_idx ON pools_history (event_type);
 CREATE INDEX pool_pools_history_idx ON pools_history (pool);
-CREATE INDEX status_pools_history_idx ON pools_history (status);
 
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
