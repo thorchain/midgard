@@ -510,16 +510,13 @@ func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
-	stmnt := `SELECT SUM(asset_amount) FROM pools_history WHERE pool = $1`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var depth sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&depth); err != nil {
-		return 0, errors.Wrap(err, "GetAssetDepth failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return pool.assetDepth, nil
 	}
-
-	return depth.Int64, nil
+	return 0, nil
 }
 
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
@@ -542,16 +539,13 @@ func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
-	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var depth sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&depth); err != nil {
-		return 0, errors.Wrap(err, "GetRuneDepth failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return pool.runeDepth, nil
 	}
-
-	return depth.Int64, nil
+	return 0, nil
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {

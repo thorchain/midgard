@@ -3,6 +3,7 @@ package timescale
 import (
 	"database/sql"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
@@ -20,6 +21,8 @@ type Client struct {
 	db            *sqlx.DB
 	logger        zerolog.Logger
 	migrationsDir string
+	mu            sync.RWMutex
+	pools         map[string]*poolCache
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -39,10 +42,16 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		db:            db,
 		logger:        logger,
 		migrationsDir: cfg.MigrationsDir,
+		pools:         map[string]*poolCache{},
 	}
 
 	if err := cli.MigrationsUp(); err != nil {
 		return nil, errors.Wrap(err, "failed to run migrations up")
+	}
+
+	err = cli.initPoolCache()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not fetch initial pool depths")
 	}
 	return cli, nil
 }
@@ -117,4 +126,51 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 
 	err := row.Scan(&value)
 	return value.Int64, err
+}
+
+type poolCache struct {
+	assetDepth int64
+	runeDepth  int64
+}
+
+func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges int64) (assetDepth, runeDepth int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	p, ok := s.pools[pool]
+	if !ok {
+		p = &poolCache{}
+		s.pools[pool] = p
+	}
+
+	p.assetDepth += assetChanges
+	p.runeDepth += runeChanges
+	return p.assetDepth, p.runeDepth
+}
+
+func (s *Client) initPoolCache() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	q := `SELECT pool, SUM(asset_amount), SUM(rune_amount) FROM pools_history GROUP BY pool`
+	rows, err := s.db.Queryx(q)
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		var (
+			pool       string
+			assetDepth sql.NullInt64
+			runeDepth  sql.NullInt64
+		)
+		if err := rows.Scan(&pool, &assetDepth, &runeDepth); err != nil {
+			return err
+		}
+		s.pools[pool] = &poolCache{
+			assetDepth: assetDepth.Int64,
+			runeDepth:  assetDepth.Int64,
+		}
+	}
+	return nil
 }
