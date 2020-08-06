@@ -252,7 +252,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolData, error) 
 			Pool:   asset,
 			Status: status,
 			Event: models.Event{
-				ID: -1,
+				Time: time.Now(),
 			},
 		})
 		if err != nil {
