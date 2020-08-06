@@ -132,21 +132,6 @@ type poolCache struct {
 	runeDepth  int64
 }
 
-func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges int64) (assetDepth, runeDepth int64) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	p, ok := s.pools[pool]
-	if !ok {
-		p = &poolCache{}
-		s.pools[pool] = p
-	}
-
-	p.assetDepth += assetChanges
-	p.runeDepth += runeChanges
-	return p.assetDepth, p.runeDepth
-}
-
 func (s *Client) initPoolCache() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -173,4 +158,17 @@ func (s *Client) initPoolCache() error {
 		}
 	}
 	return nil
+}
+
+func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	p, ok := s.pools[pool]
+	if !ok {
+		p = &poolCache{}
+		s.pools[pool] = p
+	}
+	p.assetDepth += assetChanges
+	p.runeDepth += runeChanges
 }

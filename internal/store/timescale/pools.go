@@ -32,6 +32,17 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	return common.NewAsset(a)
 }
 
+// GetPoolDepth returns the asset and rune depth of specified pool.
+func (s *Client) GetPoolDepth(pool common.Asset) (assetDepth, runeDepth int64, err error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if pool, ok := s.pools[pool.String()]; ok {
+		return pool.assetDepth, pool.runeDepth, nil
+	}
+	return 0, 0, errors.New("pool doesn't exist")
+}
+
 func (s *Client) GetPools() ([]common.Asset, error) {
 	var pools []common.Asset
 
