@@ -2093,6 +2093,9 @@ func NewTestStore(c *C) (*Client, error) {
 
 func (s *TimeScaleSuite) SetUpTest(c *C) {
 	DbCleaner(c, s.Store)
+
+	// Reset the pools cache
+	s.Store.pools = map[string]*poolCache{}
 }
 
 func getVar(env, fallback string) string {

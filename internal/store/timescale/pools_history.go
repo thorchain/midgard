@@ -12,23 +12,34 @@ import (
 )
 
 func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
+	pool := change.Pool.String()
+	assetDepth, runeDepth, _ := s.GetPoolDepth(change.Pool)
+	assetDepth += change.AssetAmount
+	runeDepth += change.RuneAmount
 	units := sql.NullInt64{
 		Int64: change.Units,
 		Valid: change.Units != 0,
 	}
 
-	q := `INSERT INTO pools_history (time, event_id, event_type, pool, asset_amount, rune_amount, units, status) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+	q := `INSERT INTO pools_history (time, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, status) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 	_, err := s.db.Exec(q,
 		change.Time,
 		change.EventID,
 		change.EventType,
-		change.Pool.String(),
+		pool,
 		change.AssetAmount,
+		assetDepth,
 		change.RuneAmount,
+		runeDepth,
 		units,
 		change.Status)
-	return err
+	if err != nil {
+		return err
+	}
+
+	s.updatePoolCache(pool, change.AssetAmount, change.RuneAmount)
+	return nil
 }
 
 func (s *Client) GetEventPool(id int64) (common.Asset, error) {

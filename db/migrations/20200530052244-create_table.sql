@@ -17,7 +17,9 @@ CREATE TABLE pools_history (
     event_type      VARCHAR         NOT NULL,
     pool            VARCHAR         NOT NULL,
     asset_amount    BIGINT          NOT NULL,
+    asset_depth     BIGINT          NOT NULL,
     rune_amount     BIGINT          NOT NULL,
+    rune_depth      BIGINT          NOT NULL,
     units           BIGINT,
     status          SMALLINT        NOT NULL,
     PRIMARY KEY (id, time)
