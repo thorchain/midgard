@@ -80,200 +80,200 @@ func (s *Client) GetPools() ([]common.Asset, error) {
 	return pools, nil
 }
 
-func (s *Client) GetPoolData(asset common.Asset) (models.PoolData, error) {
+func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	exists, err := s.exists(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 	if !exists {
-		return models.PoolData{}, errors.New("pool does not exist")
+		return models.PoolDetails{}, errors.New("pool does not exist")
 	}
 
 	assetDepth, err := s.GetAssetDepth(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	assetROI, err := s.assetROI(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	assetStakedTotal, err := s.assetStakedTotal(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyAssetCount, err := s.buyAssetCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyFeeAverage, err := s.buyFeeAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyFeesTotal, err := s.buyFeesTotal(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buySlipAverage, err := s.buySlipAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyTxAverage, err := s.buyTxAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	buyVolume, err := s.buyVolume(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolDepth, err := s.poolDepth(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolFeeAverage, err := s.poolFeeAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolFeesTotal, err := s.poolFeesTotal(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolSlipAverage, err := s.poolSlipAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolStakedTotal, err := s.poolStakedTotal(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolTxAverage, err := s.poolTxAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolVolume, err := s.poolVolume(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolVolume24hr, err := s.poolVolume24hr(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	getPriceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	runeDepth, err := s.GetRuneDepth(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	runeROI, err := s.runeROI(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	runeStakedTotal, err := s.runeStakedTotal(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellAssetCount, err := s.sellAssetCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellFeeAverage, err := s.sellFeeAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellFeesTotal, err := s.sellFeesTotal(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellSlipAverage, err := s.sellSlipAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellTxAverage, err := s.sellTxAverage(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	sellVolume, err := s.sellVolume(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	stakeTxCount, err := s.stakeTxCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	stakersCount, err := s.stakersCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	stakingTxCount, err := s.stakingTxCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	swappersCount, err := s.swappersCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	swappingTxCount, err := s.swappingTxCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	withdrawTxCount, err := s.withdrawTxCount(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolROI, err := s.poolROI(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
 	poolROI12, err := s.poolROI12(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 	poolStatus, err := s.poolStatus(asset)
 	if err != nil {
-		return models.PoolData{}, errors.Wrap(err, "getPoolData failed")
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	return models.PoolData{
+	return models.PoolDetails{
 		Asset:            asset,
 		AssetDepth:       assetDepth,
 		AssetROI:         assetROI,

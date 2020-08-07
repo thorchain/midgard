@@ -565,8 +565,8 @@ type TestGetPoolDetailsStore struct {
 	err              error
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolData, error) {
-	data := models.PoolData{
+func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
+	data := models.PoolDetails{
 		Status:           s.status,
 		Asset:            s.asset,
 		AssetDepth:       s.assetDepth,
@@ -660,7 +660,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
-	c.Assert(stats, DeepEquals, &models.PoolData{
+	c.Assert(stats, DeepEquals, &models.PoolDetails{
 		Status:           store.status,
 		Asset:            store.asset,
 		AssetDepth:       store.assetDepth,

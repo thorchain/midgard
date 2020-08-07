@@ -235,8 +235,27 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	return &stats, nil
 }
 
+// GetPoolDetails returns pool depths of the given assets.
+func (uc *Usecase) GetPoolsBalances(assets []common.Asset) ([]models.PoolBalances, error) {
+	balances := make([]models.PoolBalances, len(assets))
+	for i, asset := range assets {
+		assetDepth, runeDepth, err := uc.store.GetPoolDepth(asset)
+		if err != nil {
+			return nil, err
+		}
+
+		balances[i] = models.PoolBalances{
+			Asset:      asset,
+			AssetDepth: assetDepth,
+			RuneDepth:  runeDepth,
+		}
+	}
+
+	return balances, nil
+}
+
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
-func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolData, error) {
+func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
 	data, err := uc.store.GetPoolData(asset)
 	if err != nil {
 		return nil, err

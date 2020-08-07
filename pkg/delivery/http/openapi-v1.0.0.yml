@@ -124,12 +124,21 @@ paths:
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
           $ref: '#/components/responses/PoolsResponse'
-  "/v1/pools/detail":
+  "/v1/pools/details":
     get:
-      operationId: GetPoolsData
-      summary: Get Pools Data
-      description: Returns an object containing all the pool data for that asset. All assets on BEPSwap have associated pools. 
+      operationId: GetPoolsDetails
+      summary: Get Pools Details
+      description: Returns an object containing all the pool details for that asset. 
       parameters:
+        - in: query
+          name: view
+          description: Specifies the returning view
+          schema:
+            type: string
+            enum: 
+              - balances
+              - full
+            default: balances
         - in: query
           name: asset
           description: One or more comma separated unique asset (CHAIN.SYMBOL)
