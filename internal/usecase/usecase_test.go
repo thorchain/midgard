@@ -522,6 +522,60 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 	c.Assert(err, NotNil)
 }
 
+type TestGetPoolBalancesStore struct {
+	StoreDummy
+	pools map[string]models.PoolBalances
+	err   error
+}
+
+func (s *TestGetPoolBalancesStore) GetPoolDepth(asset common.Asset) (int64, int64, error) {
+	b := s.pools[asset.String()]
+	return b.AssetDepth, b.RuneDepth, s.err
+}
+
+func (s *UsecaseSuite) TestGetPoolBalances(c *C) {
+	store := &TestGetPoolBalancesStore{
+		pools: map[string]models.PoolBalances{
+			"BNB.BNB": {
+				Asset:      common.BNBAsset,
+				AssetDepth: 100,
+				RuneDepth:  2000,
+			},
+			"BTC.BTC": {
+				Asset:      common.BTCAsset,
+				AssetDepth: 10,
+				RuneDepth:  3240000000,
+			},
+		},
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	stats, err := uc.GetPoolsBalances([]common.Asset{common.BTCAsset, common.BNBAsset})
+	c.Assert(err, IsNil)
+	c.Assert(stats, DeepEquals, []models.PoolBalances{
+		{
+			Asset:      common.BTCAsset,
+			AssetDepth: 10,
+			RuneDepth:  3240000000,
+		},
+		{
+			Asset:      common.BNBAsset,
+			AssetDepth: 100,
+			RuneDepth:  2000,
+		},
+	})
+
+	store = &TestGetPoolBalancesStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetPoolsBalances([]common.Asset{common.BTCAsset})
+	c.Assert(err, NotNil)
+}
+
 type TestGetPoolDetailsStore struct {
 	StoreDummy
 	status           string
