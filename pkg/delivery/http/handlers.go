@@ -172,7 +172,7 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// (GET /v1/pools/details?view=[balances,full]&asset={a1,a2,a3})
+// (GET /v1/pools/detail?view=[balances,full]&asset={a1,a2,a3})
 func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsParams) error {
 	view := "balances"
 	if assetParam.View != nil {

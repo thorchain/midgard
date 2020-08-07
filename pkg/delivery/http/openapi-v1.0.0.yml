@@ -124,7 +124,7 @@ paths:
           $ref: '#/components/responses/GeneralErrorResponse'
         "200":
           $ref: '#/components/responses/PoolsResponse'
-  "/v1/pools/details":
+  "/v1/pools/detail":
     get:
       operationId: GetPoolsDetails
       summary: Get Pools Details
