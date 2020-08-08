@@ -9,8 +9,8 @@ type PoolBalances struct {
 }
 
 type PoolSwapStats struct {
-	PoolTxAverage   int64
-	PoolSlipAverage int64
+	PoolTxAverage   float64
+	PoolSlipAverage float64
 	SwappingTxCount int64
 }
 

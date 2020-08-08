@@ -27,7 +27,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	runeDepth, err := s.Store.getRuneDepth(pool)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(-2000))
-	status, err := s.Store.poolStatus(pool)
+	status, err := s.Store.GetPoolStatus(pool)
 	c.Assert(err, IsNil)
 	c.Assert(status, Equals, models.Enabled.String())
 
@@ -49,7 +49,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	runeDepth, err = s.Store.getRuneDepth(pool)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(4000))
-	status, err = s.Store.poolStatus(pool)
+	status, err = s.Store.GetPoolStatus(pool)
 	c.Assert(err, IsNil)
 	c.Assert(status, Equals, models.Bootstrap.String())
 }

@@ -1,6 +1,8 @@
 package timescale
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
 )
@@ -763,10 +765,13 @@ func (s *TimeScaleSuite) TestPoolVolume(c *C) {
 	c.Assert(volume, Equals, uint64(140331492), Commentf("%v", volume))
 }
 
-func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
+func (s *TimeScaleSuite) TestGetPoolVolume(c *C) {
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	volume, err := s.Store.poolVolume24hr(asset)
+	volume, err := s.Store.GetPoolVolume(asset, pastDay, now)
 	c.Assert(err, IsNil)
 	c.Assert(volume, Equals, uint64(0))
 
@@ -779,7 +784,7 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
-	volume, err = s.Store.poolVolume24hr(asset)
+	volume, err = s.Store.GetPoolVolume(asset, pastDay, now)
 	c.Assert(err, IsNil)
 	c.Assert(volume, Equals, uint64(1), Commentf("%v", volume))
 
@@ -789,7 +794,7 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
-	volume, err = s.Store.poolVolume24hr(asset)
+	volume, err = s.Store.GetPoolVolume(asset, pastDay, now)
 	c.Assert(err, IsNil)
 	c.Assert(volume, Equals, uint64(140331492), Commentf("%v", volume))
 }
