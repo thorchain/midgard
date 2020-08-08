@@ -576,6 +576,79 @@ func (s *UsecaseSuite) TestGetPoolBalances(c *C) {
 	c.Assert(err, NotNil)
 }
 
+type TestGetPoolSimpleDetailsStore struct {
+	StoreDummy
+	from              time.Time
+	to                time.Time
+	assetDepth        int64
+	runeDepth         int64
+	swapStats         models.PoolSwapStats
+	poolVolume24Hours int64
+	status            models.PoolStatus
+	err               error
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolDepth(asset common.Asset) (int64, int64, error) {
+	return s.assetDepth, s.runeDepth, s.err
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
+	return s.swapStats, s.err
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
+	s.from = from
+	s.to = to
+	return s.poolVolume24Hours, s.err
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
+	return s.status, s.err
+}
+
+func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
+	store := &TestGetPoolSimpleDetailsStore{
+		assetDepth: 1000,
+		runeDepth:  12000,
+		swapStats: models.PoolSwapStats{
+			PoolTxAverage:   1.145,
+			PoolSlipAverage: 0.98,
+			SwappingTxCount: 102,
+		},
+		poolVolume24Hours: 124,
+		status:            models.Enabled,
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	details, err := uc.GetPoolSimpleDetails(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
+	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
+		PoolBalances: models.PoolBalances{
+			Asset:      common.BNBAsset,
+			AssetDepth: 1000,
+			RuneDepth:  12000,
+		},
+		PoolSwapStats: models.PoolSwapStats{
+			PoolTxAverage:   1.145,
+			PoolSlipAverage: 0.98,
+			SwappingTxCount: 102,
+		},
+		PoolVolume24Hours: 124,
+		Status:            models.Enabled,
+	})
+
+	store = &TestGetPoolSimpleDetailsStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetPoolSimpleDetails(common.BNBAsset)
+	c.Assert(err, NotNil)
+}
+
 type TestGetPoolDetailsStore struct {
 	StoreDummy
 	status           string

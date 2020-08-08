@@ -793,7 +793,7 @@ func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
 
 func (s *Client) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
 	stmnt := `
-		SELECT SUM(ABS(runeAmt))
+		SELECT SUM(ABS(rune_amount))
 		FROM pools_history
 		WHERE pool = $1
 		AND event_type = 'swap'
