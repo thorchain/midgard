@@ -199,6 +199,25 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				RuneDepth:  Uint64ToString(uint64(b.RuneDepth)),
 			}
 		}
+	case "simple":
+		for i, asset := range assets {
+			details, err := h.uc.GetPoolSimpleDetails(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
+
+			response[i] = PoolDetail{
+				Asset:           ConvertAssetForAPI(asset),
+				AssetDepth:      Uint64ToString(uint64(details.AssetDepth)),
+				RuneDepth:       Uint64ToString(uint64(details.RuneDepth)),
+				PoolTxAverage:   Float64ToString(details.PoolTxAverage),
+				PoolSlipAverage: Float64ToString(details.PoolSlipAverage),
+				SwappingTxCount: Uint64ToString(uint64(details.SwappingTxCount)),
+				PoolVolume24hr:  Uint64ToString(uint64(details.PoolVolume24Hours)),
+				Status:          pointy.String(details.Status.String()),
+			}
+		}
 	case "full":
 		for i, asset := range assets {
 			details, err := h.uc.GetPoolDetails(asset)
