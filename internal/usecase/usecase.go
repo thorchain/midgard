@@ -303,7 +303,7 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 		Pool:   asset,
 		Status: status,
 		Event: models.Event{
-			ID: -1,
+			Time: time.Now(),
 		},
 	})
 	if err != nil {
