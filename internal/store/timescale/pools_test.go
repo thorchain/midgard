@@ -30,9 +30,13 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	pools, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
 	c.Check(len(pools), Equals, 2)
-
-	c.Assert(pools[0].String(), Equals, "BNB.BNB")
-	c.Assert(pools[1].String(), Equals, "BNB.TOML-4BC")
+	expected := map[string]bool{
+		"BNB.BNB":      true,
+		"BNB.TOML-4BC": true,
+	}
+	for _, p := range pools {
+		c.Assert(expected[p.String()], Equals, true)
+	}
 
 	// Test with an unstake
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)

@@ -522,6 +522,60 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 	c.Assert(err, NotNil)
 }
 
+type TestGetPoolBalancesStore struct {
+	StoreDummy
+	pools map[string]models.PoolBalances
+	err   error
+}
+
+func (s *TestGetPoolBalancesStore) GetPoolDepth(asset common.Asset) (int64, int64, error) {
+	b := s.pools[asset.String()]
+	return b.AssetDepth, b.RuneDepth, s.err
+}
+
+func (s *UsecaseSuite) TestGetPoolBalances(c *C) {
+	store := &TestGetPoolBalancesStore{
+		pools: map[string]models.PoolBalances{
+			"BNB.BNB": {
+				Asset:      common.BNBAsset,
+				AssetDepth: 100,
+				RuneDepth:  2000,
+			},
+			"BTC.BTC": {
+				Asset:      common.BTCAsset,
+				AssetDepth: 10,
+				RuneDepth:  3240000000,
+			},
+		},
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	stats, err := uc.GetPoolsBalances([]common.Asset{common.BTCAsset, common.BNBAsset})
+	c.Assert(err, IsNil)
+	c.Assert(stats, DeepEquals, []models.PoolBalances{
+		{
+			Asset:      common.BTCAsset,
+			AssetDepth: 10,
+			RuneDepth:  3240000000,
+		},
+		{
+			Asset:      common.BNBAsset,
+			AssetDepth: 100,
+			RuneDepth:  2000,
+		},
+	})
+
+	store = &TestGetPoolBalancesStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetPoolsBalances([]common.Asset{common.BTCAsset})
+	c.Assert(err, NotNil)
+}
+
 type TestGetPoolDetailsStore struct {
 	StoreDummy
 	status           string
@@ -565,8 +619,8 @@ type TestGetPoolDetailsStore struct {
 	err              error
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolData, error) {
-	data := models.PoolData{
+func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
+	data := models.PoolDetails{
 		Status:           s.status,
 		Asset:            s.asset,
 		AssetDepth:       s.assetDepth,
@@ -660,7 +714,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
-	c.Assert(stats, DeepEquals, &models.PoolData{
+	c.Assert(stats, DeepEquals, &models.PoolDetails{
 		Status:           store.status,
 		Asset:            store.asset,
 		AssetDepth:       store.assetDepth,

@@ -172,62 +172,85 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// (GET /v1/pools/detail?asset={a1,a2,a3})
-func (h *Handlers) GetPoolsData(ctx echo.Context, assetParam GetPoolsDataParams) error {
-	asts, err := ParseAssets(assetParam.Asset)
+// (GET /v1/pools/detail?view=[balances,full]&asset={a1,a2,a3})
+func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsParams) error {
+	view := "full"
+	if assetParam.View != nil {
+		view = *assetParam.View
+	}
+	assets, err := ParseAssets(assetParam.Asset)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", assetParam.Asset).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 	}
 
-	response := make(PoolsDetailedResponse, len(asts))
-	for i, ast := range asts {
-		details, err := h.uc.GetPoolDetails(ast)
+	response := make(PoolsDetailedResponse, len(assets))
+	switch view {
+	case "balances":
+		balances, err := h.uc.GetPoolsBalances(assets)
 		if err != nil {
-			h.logger.Err(err).Msg("GetPoolDetails failed")
+			h.logger.Err(err).Msg("GetPoolsBalances failed")
 			return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 		}
-
-		response[i] = PoolDetail{
-			Status:           pointy.String(details.Status),
-			Asset:            ConvertAssetForAPI(ast),
-			AssetDepth:       Uint64ToString(details.AssetDepth),
-			AssetROI:         Float64ToString(details.AssetROI),
-			AssetStakedTotal: Uint64ToString(details.AssetStakedTotal),
-			BuyAssetCount:    Uint64ToString(details.BuyAssetCount),
-			BuyFeeAverage:    Float64ToString(details.BuyFeeAverage),
-			BuyFeesTotal:     Uint64ToString(details.BuyFeesTotal),
-			BuySlipAverage:   Float64ToString(details.BuySlipAverage),
-			BuyTxAverage:     Float64ToString(details.BuyTxAverage),
-			BuyVolume:        Uint64ToString(details.BuyVolume),
-			PoolDepth:        Uint64ToString(details.PoolDepth),
-			PoolFeeAverage:   Float64ToString(details.PoolFeeAverage),
-			PoolFeesTotal:    Uint64ToString(details.PoolFeesTotal),
-			PoolROI:          Float64ToString(details.PoolROI),
-			PoolROI12:        Float64ToString(details.PoolROI12),
-			PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
-			PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
-			PoolTxAverage:    Float64ToString(details.PoolTxAverage),
-			PoolUnits:        Uint64ToString(details.PoolUnits),
-			PoolVolume:       Uint64ToString(details.PoolVolume),
-			PoolVolume24hr:   Uint64ToString(details.PoolVolume24hr),
-			Price:            Float64ToString(details.Price),
-			RuneDepth:        Uint64ToString(details.RuneDepth),
-			RuneROI:          Float64ToString(details.RuneROI),
-			RuneStakedTotal:  Uint64ToString(details.RuneStakedTotal),
-			SellAssetCount:   Uint64ToString(details.SellAssetCount),
-			SellFeeAverage:   Float64ToString(details.SellFeeAverage),
-			SellFeesTotal:    Uint64ToString(details.SellFeesTotal),
-			SellSlipAverage:  Float64ToString(details.SellSlipAverage),
-			SellTxAverage:    Float64ToString(details.SellTxAverage),
-			SellVolume:       Uint64ToString(details.SellVolume),
-			StakeTxCount:     Uint64ToString(details.StakeTxCount),
-			StakersCount:     Uint64ToString(details.StakersCount),
-			StakingTxCount:   Uint64ToString(details.StakingTxCount),
-			SwappersCount:    Uint64ToString(details.SwappersCount),
-			SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
-			WithdrawTxCount:  Uint64ToString(details.WithdrawTxCount),
+		for i, b := range balances {
+			response[i] = PoolDetail{
+				Asset:      ConvertAssetForAPI(b.Asset),
+				AssetDepth: Uint64ToString(uint64(b.AssetDepth)),
+				RuneDepth:  Uint64ToString(uint64(b.RuneDepth)),
+			}
 		}
+	case "full":
+		for i, asset := range assets {
+			details, err := h.uc.GetPoolDetails(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
+
+			response[i] = PoolDetail{
+				Status:           pointy.String(details.Status),
+				Asset:            ConvertAssetForAPI(asset),
+				AssetDepth:       Uint64ToString(details.AssetDepth),
+				AssetROI:         Float64ToString(details.AssetROI),
+				AssetStakedTotal: Uint64ToString(details.AssetStakedTotal),
+				BuyAssetCount:    Uint64ToString(details.BuyAssetCount),
+				BuyFeeAverage:    Float64ToString(details.BuyFeeAverage),
+				BuyFeesTotal:     Uint64ToString(details.BuyFeesTotal),
+				BuySlipAverage:   Float64ToString(details.BuySlipAverage),
+				BuyTxAverage:     Float64ToString(details.BuyTxAverage),
+				BuyVolume:        Uint64ToString(details.BuyVolume),
+				PoolDepth:        Uint64ToString(details.PoolDepth),
+				PoolFeeAverage:   Float64ToString(details.PoolFeeAverage),
+				PoolFeesTotal:    Uint64ToString(details.PoolFeesTotal),
+				PoolROI:          Float64ToString(details.PoolROI),
+				PoolROI12:        Float64ToString(details.PoolROI12),
+				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
+				PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
+				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
+				PoolUnits:        Uint64ToString(details.PoolUnits),
+				PoolVolume:       Uint64ToString(details.PoolVolume),
+				PoolVolume24hr:   Uint64ToString(details.PoolVolume24hr),
+				Price:            Float64ToString(details.Price),
+				RuneDepth:        Uint64ToString(details.RuneDepth),
+				RuneROI:          Float64ToString(details.RuneROI),
+				RuneStakedTotal:  Uint64ToString(details.RuneStakedTotal),
+				SellAssetCount:   Uint64ToString(details.SellAssetCount),
+				SellFeeAverage:   Float64ToString(details.SellFeeAverage),
+				SellFeesTotal:    Uint64ToString(details.SellFeesTotal),
+				SellSlipAverage:  Float64ToString(details.SellSlipAverage),
+				SellTxAverage:    Float64ToString(details.SellTxAverage),
+				SellVolume:       Uint64ToString(details.SellVolume),
+				StakeTxCount:     Uint64ToString(details.StakeTxCount),
+				StakersCount:     Uint64ToString(details.StakersCount),
+				StakingTxCount:   Uint64ToString(details.StakingTxCount),
+				SwappersCount:    Uint64ToString(details.SwappersCount),
+				SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
+				WithdrawTxCount:  Uint64ToString(details.WithdrawTxCount),
+			}
+		}
+	default:
+		h.logger.Error().Str("params.View", assetParam.Asset).Msg("invalid view parameter")
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: "invalid view parameter"})
 	}
 
 	return ctx.JSON(http.StatusOK, response)
