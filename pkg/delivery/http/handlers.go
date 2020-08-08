@@ -174,7 +174,7 @@ func (h *Handlers) GetStats(ctx echo.Context) error {
 
 // (GET /v1/pools/detail?view=[balances,full]&asset={a1,a2,a3})
 func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsParams) error {
-	view := "balances"
+	view := "full"
 	if assetParam.View != nil {
 		view = *assetParam.View
 	}

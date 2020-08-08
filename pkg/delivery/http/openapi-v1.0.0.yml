@@ -138,7 +138,7 @@ paths:
             enum: 
               - balances
               - full
-            default: balances
+            default: full
         - in: query
           name: asset
           description: One or more comma separated unique asset (CHAIN.SYMBOL)
