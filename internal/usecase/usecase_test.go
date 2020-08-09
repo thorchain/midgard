@@ -522,57 +522,40 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 	c.Assert(err, NotNil)
 }
 
-type TestGetPoolBalancesStore struct {
+type TestGetPoolBasicsStore struct {
 	StoreDummy
-	pools map[string]models.PoolBasics
-	err   error
+	basics models.PoolBasics
+	err    error
 }
 
-func (s *TestGetPoolBalancesStore) GetPoolDepth(asset common.Asset) (int64, int64, error) {
-	b := s.pools[asset.String()]
-	return b.AssetDepth, b.RuneDepth, s.err
+func (s *TestGetPoolBasicsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return s.basics, s.err
 }
 
-func (s *UsecaseSuite) TestGetPoolBalances(c *C) {
-	store := &TestGetPoolBalancesStore{
-		pools: map[string]models.PoolBasics{
-			"BNB.BNB": {
-				Asset:      common.BNBAsset,
-				AssetDepth: 100,
-				RuneDepth:  2000,
-			},
-			"BTC.BTC": {
-				Asset:      common.BTCAsset,
-				AssetDepth: 10,
-				RuneDepth:  3240000000,
-			},
+func (s *UsecaseSuite) TestGetPoolBasics(c *C) {
+	store := &TestGetPoolBasicsStore{
+		basics: models.PoolBasics{
+			Asset:      common.BNBAsset,
+			AssetDepth: 100,
+			RuneDepth:  2000,
+			Units:      1000,
+			Status:     models.Bootstrap,
 		},
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	stats, err := uc.GetPoolsBalances([]common.Asset{common.BTCAsset, common.BNBAsset})
+	stats, err := uc.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(stats, DeepEquals, []models.PoolBasics{
-		{
-			Asset:      common.BTCAsset,
-			AssetDepth: 10,
-			RuneDepth:  3240000000,
-		},
-		{
-			Asset:      common.BNBAsset,
-			AssetDepth: 100,
-			RuneDepth:  2000,
-		},
-	})
+	c.Assert(stats, DeepEquals, store.basics)
 
-	store = &TestGetPoolBalancesStore{
+	store = &TestGetPoolBasicsStore{
 		err: errors.New("could not fetch requested data"),
 	}
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, err = uc.GetPoolsBalances([]common.Asset{common.BTCAsset})
+	_, err = uc.GetPoolBasics(common.BTCAsset)
 	c.Assert(err, NotNil)
 }
 
@@ -603,6 +586,7 @@ func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, 
 func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	store := &TestGetPoolSimpleDetailsStore{
 		basics: models.PoolBasics{
+			Asset:      common.BNBAsset,
 			AssetDepth: 1000,
 			RuneDepth:  12000,
 			Units:      500,
