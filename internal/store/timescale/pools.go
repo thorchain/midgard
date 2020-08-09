@@ -174,7 +174,9 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	poolVolume24hr, err := s.poolVolume24hr(asset)
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+	poolVolume24hr, err := s.GetPoolVolume(asset, now, pastDay)
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -268,7 +270,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
-	poolStatus, err := s.poolStatus(asset)
+	poolStatus, err := s.GetPoolStatus(asset)
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -294,7 +296,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		PoolTxAverage:    poolTxAverage,
 		PoolUnits:        poolUnits,
 		PoolVolume:       poolVolume,
-		PoolVolume24hr:   poolVolume24hr,
+		PoolVolume24hr:   uint64(poolVolume24hr),
 		Price:            getPriceInRune,
 		RuneDepth:        runeDepth,
 		RuneROI:          runeROI,
@@ -311,7 +313,28 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		SwappersCount:    swappersCount,
 		SwappingTxCount:  swappingTxCount,
 		WithdrawTxCount:  withdrawTxCount,
-		Status:           poolStatus,
+		Status:           poolStatus.String(),
+	}, nil
+}
+
+func (s *Client) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
+	stmnt := `
+		SELECT AVG(ABS(runeAmt)), AVG(trade_slip), COUNT(*)
+		FROM swaps
+		WHERE pool = $1
+	`
+
+	var txAverge, slipAverage sql.NullFloat64
+	var count sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+	if err := row.Scan(&txAverge, &slipAverage, &count); err != nil {
+		return models.PoolSwapStats{}, errors.Wrap(err, "poolTxAverage failed")
+	}
+
+	return models.PoolSwapStats{
+		PoolTxAverage:   txAverge.Float64,
+		PoolSlipAverage: slipAverage.Float64,
+		SwappingTxCount: count.Int64,
 	}, nil
 }
 
@@ -768,18 +791,23 @@ func (s *Client) poolVolume(asset common.Asset) (uint64, error) {
 	return buyVolume + sellVolume, nil
 }
 
-func (s *Client) poolVolume24hr(asset common.Asset) (uint64, error) {
-	buyVolume24hr, err := s.buyVolume24hr(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolVolume24hr failed")
+func (s *Client) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
+	stmnt := `
+		SELECT SUM(ABS(rune_amount))
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'
+		AND time BETWEEN $2 AND $3
+	`
+
+	var vol sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), from, to)
+
+	if err := row.Scan(&vol); err != nil {
+		return 0, errors.Wrap(err, "GetPoolVolume failed")
 	}
 
-	sellVolume24hr, err := s.sellVolume24hr(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolVolume24hr failed")
-	}
-
-	return buyVolume24hr + sellVolume24hr, nil
+	return vol.Int64, nil
 }
 
 func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
@@ -1282,22 +1310,22 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	return roi, errors.Wrap(err, "poolROI12 failed")
 }
 
-// poolStatus - latest pool status
-func (s *Client) poolStatus(asset common.Asset) (string, error) {
+// GetPoolStatus - latest pool status
+func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	stmnt := `
 		SELECT status 
 		FROM   pools_history 
 		WHERE  pool = $1 AND status != $2
-		ORDER  BY event_id DESC 
+		ORDER  BY time DESC 
 		LIMIT  1  
 		`
 	var poolStatus sql.NullInt32
 	row := s.db.QueryRow(stmnt, asset.String(), models.Unknown)
 	if err := row.Scan(&poolStatus); err != nil {
 		if err == sql.ErrNoRows {
-			return "", nil
+			return models.Unknown, nil
 		}
-		return "", errors.Wrap(err, "poolStatus failed")
+		return models.Unknown, errors.Wrap(err, "GetPoolStatus failed")
 	}
-	return models.PoolStatus(poolStatus.Int32).String(), nil
+	return models.PoolStatus(poolStatus.Int32), nil
 }

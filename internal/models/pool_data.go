@@ -8,6 +8,19 @@ type PoolBalances struct {
 	RuneDepth  int64
 }
 
+type PoolSwapStats struct {
+	PoolTxAverage   float64
+	PoolSlipAverage float64
+	SwappingTxCount int64
+}
+
+type PoolSimpleDetails struct {
+	PoolBalances
+	PoolSwapStats
+	PoolVolume24Hours int64
+	Status            PoolStatus
+}
+
 type PoolDetails struct {
 	Status           string
 	Asset            common.Asset

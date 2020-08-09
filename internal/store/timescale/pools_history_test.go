@@ -27,9 +27,9 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	runeDepth, err := s.Store.getRuneDepth(pool)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(-2000))
-	status, err := s.Store.poolStatus(pool)
+	status, err := s.Store.GetPoolStatus(pool)
 	c.Assert(err, IsNil)
-	c.Assert(status, Equals, models.Enabled.String())
+	c.Assert(status, Equals, models.Enabled)
 
 	pool, err = common.NewAsset("BNB.TOMOB-1E1")
 	c.Assert(err, IsNil)
@@ -49,9 +49,9 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	runeDepth, err = s.Store.getRuneDepth(pool)
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(4000))
-	status, err = s.Store.poolStatus(pool)
+	status, err = s.Store.GetPoolStatus(pool)
 	c.Assert(err, IsNil)
-	c.Assert(status, Equals, models.Bootstrap.String())
+	c.Assert(status, Equals, models.Bootstrap)
 }
 
 func (s *TimeScaleSuite) TestGetEventPool(c *C) {

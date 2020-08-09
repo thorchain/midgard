@@ -1,7 +1,10 @@
 package timescale
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/internal/models"
 	. "gopkg.in/check.v1"
 )
 
@@ -132,6 +135,44 @@ func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 	c.Check(poolData.StakingTxCount, Equals, uint64(1), Commentf("%v", poolData.StakingTxCount))
 	c.Check(poolData.SwappersCount, Equals, uint64(3), Commentf("%v", poolData.SwappersCount))
 	c.Check(poolData.SwappingTxCount, Equals, uint64(3), Commentf("%v", poolData.SwappingTxCount))
+}
+
+func (s *TimeScaleSuite) TestGetPoolSwapStats(c *C) {
+	err := s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent1)
+	c.Assert(err, IsNil)
+
+	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent2)
+	c.Assert(err, IsNil)
+
+	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent3)
+	c.Assert(err, IsNil)
+
+	err = s.Store.CreateSwapRecord(&swapBuyRune2BoltEvent1)
+	c.Assert(err, IsNil)
+
+	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+
+	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+
+	asset, _ := common.NewAsset("BNB.BNB")
+	stats, err := s.Store.GetPoolSwapStats(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stats, DeepEquals, models.PoolSwapStats{
+		PoolTxAverage:   1,
+		PoolSlipAverage: 0.12300000339746475,
+		SwappingTxCount: 2,
+	})
+
+	asset, _ = common.NewAsset("BNB.BOLT-014")
+	stats, err = s.Store.GetPoolSwapStats(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stats, DeepEquals, models.PoolSwapStats{
+		PoolTxAverage:   1,
+		PoolSlipAverage: 0.12300000339746475,
+		SwappingTxCount: 4,
+	})
 }
 
 func (s *TimeScaleSuite) TestGetPriceInRune(c *C) {
@@ -763,12 +804,15 @@ func (s *TimeScaleSuite) TestPoolVolume(c *C) {
 	c.Assert(volume, Equals, uint64(140331492), Commentf("%v", volume))
 }
 
-func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
+func (s *TimeScaleSuite) TestGetPoolVolume(c *C) {
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	volume, err := s.Store.poolVolume24hr(asset)
+	volume, err := s.Store.GetPoolVolume(asset, pastDay, now)
 	c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(0))
+	c.Assert(volume, Equals, int64(0))
 
 	// Stake
 	err = s.Store.CreateStakeRecord(&stakeBoltEvent5)
@@ -779,9 +823,9 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
-	volume, err = s.Store.poolVolume24hr(asset)
+	volume, err = s.Store.GetPoolVolume(asset, pastDay, now)
 	c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(1), Commentf("%v", volume))
+	c.Assert(volume, Equals, int64(1), Commentf("%v", volume))
 
 	// Buy Swap
 	swap := swapBuyRune2BoltEvent1
@@ -789,9 +833,9 @@ func (s *TimeScaleSuite) TestPoolVolume24hr(c *C) {
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
-	volume, err = s.Store.poolVolume24hr(asset)
+	volume, err = s.Store.GetPoolVolume(asset, pastDay, now)
 	c.Assert(err, IsNil)
-	c.Assert(volume, Equals, uint64(140331492), Commentf("%v", volume))
+	c.Assert(volume, Equals, int64(2), Commentf("%v", volume))
 }
 
 func (s *TimeScaleSuite) TestSellTxAverage(c *C) {

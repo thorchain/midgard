@@ -100,6 +100,14 @@ func (s *StoreDummy) GetPoolDepth(asset common.Asset) (int64, int64, error) {
 	return 0, 0, ErrNotImplemented
 }
 
+func (s *StoreDummy) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
+	return 0, ErrNotImplemented
+}
+
+func (s *StoreDummy) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
+	return models.Unknown, ErrNotImplemented
+}
+
 func (s *StoreDummy) GetDateCreated(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
@@ -146,6 +154,10 @@ func (s *StoreDummy) TotalWithdrawTx() (uint64, error) {
 
 func (s *StoreDummy) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	return models.PoolDetails{}, ErrNotImplemented
+}
+
+func (s *StoreDummy) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
+	return models.PoolSwapStats{}, ErrNotImplemented
 }
 
 func (s *StoreDummy) GetStakerAddresses() ([]common.Address, error) {

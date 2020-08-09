@@ -235,7 +235,7 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	return &stats, nil
 }
 
-// GetPoolDetails returns pool depths of the given assets.
+// GetPoolsBalances returns pool depths of the given assets.
 func (uc *Usecase) GetPoolsBalances(assets []common.Asset) ([]models.PoolBalances, error) {
 	balances := make([]models.PoolBalances, len(assets))
 	for i, asset := range assets {
@@ -254,29 +254,76 @@ func (uc *Usecase) GetPoolsBalances(assets []common.Asset) ([]models.PoolBalance
 	return balances, nil
 }
 
+// GetPoolSimpleDetails returns pool depths, status and swap stats of the given asset.
+func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleDetails, error) {
+	assetDepth, runeDepth, err := uc.store.GetPoolDepth(asset)
+	if err != nil {
+		return nil, err
+	}
+	swapStats, err := uc.store.GetPoolSwapStats(asset)
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now()
+	pastDay := now.Add(-day)
+	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
+	if err != nil {
+		return nil, err
+	}
+	status, err := uc.store.GetPoolStatus(asset)
+	if err != nil {
+		return nil, err
+	}
+	if status == models.Unknown {
+		status, err = uc.fetchPoolStatus(asset)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &models.PoolSimpleDetails{
+		PoolBalances: models.PoolBalances{
+			Asset:      asset,
+			AssetDepth: assetDepth,
+			RuneDepth:  runeDepth,
+		},
+		PoolSwapStats:     swapStats,
+		PoolVolume24Hours: vol24,
+		Status:            status,
+	}, nil
+}
+
+// fetchPoolStatus fetches pool status from thorchain and update database.
+func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error) {
+	status, err := uc.thorchain.GetPoolStatus(asset)
+	if err != nil {
+		return models.Unknown, errors.Wrap(err, "failed to get pool status")
+	}
+	err = uc.store.CreatePoolRecord(&models.EventPool{
+		Pool:   asset,
+		Status: status,
+		Event: models.Event{
+			Time: time.Now(),
+		},
+	})
+	if err != nil {
+		return models.Unknown, errors.Wrap(err, "failed to update pool status")
+	}
+	return status, nil
+}
+
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
 func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
 	data, err := uc.store.GetPoolData(asset)
 	if err != nil {
 		return nil, err
 	}
-	// Query THORChain if we haven't received any pool event for the specified pool
 	if data.Status == "" {
-		status, err := uc.thorchain.GetPoolStatus(asset)
+		status, err := uc.fetchPoolStatus(asset)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get pool status")
+			return nil, err
 		}
 		data.Status = status.String()
-		err = uc.store.CreatePoolRecord(&models.EventPool{
-			Pool:   asset,
-			Status: status,
-			Event: models.Event{
-				ID: -1,
-			},
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to update pool status")
-		}
 	}
 	return &data, nil
 }
