@@ -60,6 +60,88 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	c.Check(pool.Equals(asset), Equals, true)
 }
 
+func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
+	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
+	tomorrow := today.Add(time.Hour * 24)
+
+	change := &models.PoolChange{
+		Time:        today,
+		EventID:     1,
+		EventType:   "stake",
+		Pool:        common.BNBAsset,
+		AssetAmount: 500,
+		RuneAmount:  1000,
+		Units:       10000,
+	}
+	err := s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        today,
+		EventID:     2,
+		EventType:   "swap",
+		Pool:        common.BNBAsset,
+		AssetAmount: -50,
+		RuneAmount:  100,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:      tomorrow,
+		EventID:   3,
+		EventType: "pool",
+		Pool:      common.BNBAsset,
+		Status:    models.Bootstrap,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventID:     4,
+		EventType:   "unstake",
+		Pool:        common.BNBAsset,
+		AssetAmount: -50,
+		RuneAmount:  -100,
+		Units:       -1000,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		EventType:   "stake",
+		EventID:     5,
+		Pool:        common.BTCAsset,
+		AssetAmount: 20,
+		RuneAmount:  2400,
+		Units:       1000,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+
+	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Asset:      common.BNBAsset,
+		AssetDepth: 400,
+		RuneDepth:  1000,
+		Units:      9000,
+		Status:     models.Bootstrap,
+	})
+
+	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
+	c.Assert(err, IsNil)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Asset:      common.BTCAsset,
+		AssetDepth: 20,
+		RuneDepth:  2400,
+		Units:      1000,
+		Status:     models.Unknown,
+	})
+
+	ethAsset, _ := common.NewAsset("ETH.ETH")
+	_, err = s.Store.GetPoolBasics(ethAsset)
+	c.Assert(err, NotNil)
+}
+
 func (s *TimeScaleSuite) TestGetPoolData(c *C) {
 	c.Skip("This needs revision once all others are completed. ")
 

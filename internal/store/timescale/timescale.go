@@ -203,7 +203,10 @@ func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges, unitsCh
 
 	p, ok := s.pools[pool]
 	if !ok {
-		p = &models.PoolBasics{}
+		asset, _ := common.NewAsset(pool)
+		p = &models.PoolBasics{
+			Asset: asset,
+		}
 		s.pools[pool] = p
 	}
 
