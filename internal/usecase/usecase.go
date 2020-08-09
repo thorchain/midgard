@@ -236,18 +236,18 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 }
 
 // GetPoolsBalances returns pool depths of the given assets.
-func (uc *Usecase) GetPoolsBalances(assets []common.Asset) ([]models.PoolBalances, error) {
-	balances := make([]models.PoolBalances, len(assets))
+func (uc *Usecase) GetPoolsBalances(assets []common.Asset) ([]models.PoolBasics, error) {
+	balances := make([]models.PoolBasics, len(assets))
 	for i, asset := range assets {
-		assetDepth, runeDepth, err := uc.store.GetPoolDepth(asset)
+		basics, err := uc.store.GetPoolBasics(asset)
 		if err != nil {
 			return nil, err
 		}
 
-		balances[i] = models.PoolBalances{
+		balances[i] = models.PoolBasics{
 			Asset:      asset,
-			AssetDepth: assetDepth,
-			RuneDepth:  runeDepth,
+			AssetDepth: basics.AssetDepth,
+			RuneDepth:  basics.RuneDepth,
 		}
 	}
 
@@ -256,7 +256,7 @@ func (uc *Usecase) GetPoolsBalances(assets []common.Asset) ([]models.PoolBalance
 
 // GetPoolSimpleDetails returns pool depths, status and swap stats of the given asset.
 func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleDetails, error) {
-	assetDepth, runeDepth, err := uc.store.GetPoolDepth(asset)
+	basics, err := uc.store.GetPoolBasics(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -270,26 +270,11 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	if err != nil {
 		return nil, err
 	}
-	status, err := uc.store.GetPoolStatus(asset)
-	if err != nil {
-		return nil, err
-	}
-	if status == models.Unknown {
-		status, err = uc.fetchPoolStatus(asset)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	return &models.PoolSimpleDetails{
-		PoolBalances: models.PoolBalances{
-			Asset:      asset,
-			AssetDepth: assetDepth,
-			RuneDepth:  runeDepth,
-		},
+		PoolBasics:        basics,
 		PoolSwapStats:     swapStats,
 		PoolVolume24Hours: vol24,
-		Status:            status,
 	}, nil
 }
 

@@ -32,15 +32,15 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	return common.NewAsset(a)
 }
 
-// GetPoolDepth returns the asset and rune depth of specified pool.
-func (s *Client) GetPoolDepth(pool common.Asset) (assetDepth, runeDepth int64, err error) {
+// GetPoolBasics returns the basics of pool like asset and rune depths, units and status.
+func (s *Client) GetPoolBasics(pool common.Asset) (models.PoolBasics, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if pool, ok := s.pools[pool.String()]; ok {
-		return pool.assetDepth, pool.runeDepth, nil
+	if p, ok := s.pools[pool.String()]; ok {
+		return *p, nil
 	}
-	return 0, 0, errors.New("pool doesn't exist")
+	return models.PoolBasics{}, errors.New("pool doesn't exist")
 }
 
 func (s *Client) GetPools() ([]common.Asset, error) {
@@ -176,7 +176,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 
 	now := time.Now()
 	pastDay := now.Add(-time.Hour * 24)
-	poolVolume24hr, err := s.GetPoolVolume(asset, now, pastDay)
+	poolVolume24hr, err := s.GetPoolVolume(asset, pastDay, now)
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -548,7 +548,7 @@ func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
 	defer s.mu.RUnlock()
 
 	if pool, ok := s.pools[asset.String()]; ok {
-		return pool.assetDepth, nil
+		return pool.AssetDepth, nil
 	}
 	return 0, nil
 }
@@ -577,7 +577,7 @@ func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
 	defer s.mu.RUnlock()
 
 	if pool, ok := s.pools[asset.String()]; ok {
-		return pool.runeDepth, nil
+		return pool.RuneDepth, nil
 	}
 	return 0, nil
 }

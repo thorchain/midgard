@@ -96,8 +96,8 @@ func (s *StoreDummy) GetRuneDepth(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolDepth(asset common.Asset) (int64, int64, error) {
-	return 0, 0, ErrNotImplemented
+func (s *StoreDummy) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return models.PoolBasics{}, ErrNotImplemented
 }
 
 func (s *StoreDummy) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {

@@ -524,7 +524,7 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 
 type TestGetPoolBalancesStore struct {
 	StoreDummy
-	pools map[string]models.PoolBalances
+	pools map[string]models.PoolBasics
 	err   error
 }
 
@@ -535,7 +535,7 @@ func (s *TestGetPoolBalancesStore) GetPoolDepth(asset common.Asset) (int64, int6
 
 func (s *UsecaseSuite) TestGetPoolBalances(c *C) {
 	store := &TestGetPoolBalancesStore{
-		pools: map[string]models.PoolBalances{
+		pools: map[string]models.PoolBasics{
 			"BNB.BNB": {
 				Asset:      common.BNBAsset,
 				AssetDepth: 100,
@@ -553,7 +553,7 @@ func (s *UsecaseSuite) TestGetPoolBalances(c *C) {
 
 	stats, err := uc.GetPoolsBalances([]common.Asset{common.BTCAsset, common.BNBAsset})
 	c.Assert(err, IsNil)
-	c.Assert(stats, DeepEquals, []models.PoolBalances{
+	c.Assert(stats, DeepEquals, []models.PoolBasics{
 		{
 			Asset:      common.BTCAsset,
 			AssetDepth: 10,
@@ -580,16 +580,14 @@ type TestGetPoolSimpleDetailsStore struct {
 	StoreDummy
 	from              time.Time
 	to                time.Time
-	assetDepth        int64
-	runeDepth         int64
+	basics            models.PoolBasics
 	swapStats         models.PoolSwapStats
 	poolVolume24Hours int64
-	status            models.PoolStatus
 	err               error
 }
 
-func (s *TestGetPoolSimpleDetailsStore) GetPoolDepth(asset common.Asset) (int64, int64, error) {
-	return s.assetDepth, s.runeDepth, s.err
+func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return s.basics, s.err
 }
 
 func (s *TestGetPoolSimpleDetailsStore) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
@@ -602,21 +600,20 @@ func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, 
 	return s.poolVolume24Hours, s.err
 }
 
-func (s *TestGetPoolSimpleDetailsStore) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
-	return s.status, s.err
-}
-
 func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	store := &TestGetPoolSimpleDetailsStore{
-		assetDepth: 1000,
-		runeDepth:  12000,
+		basics: models.PoolBasics{
+			AssetDepth: 1000,
+			RuneDepth:  12000,
+			Units:      500,
+			Status:     models.Enabled,
+		},
 		swapStats: models.PoolSwapStats{
 			PoolTxAverage:   1.145,
 			PoolSlipAverage: 0.98,
 			SwappingTxCount: 102,
 		},
 		poolVolume24Hours: 124,
-		status:            models.Enabled,
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
@@ -625,10 +622,12 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
 	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
-		PoolBalances: models.PoolBalances{
+		PoolBasics: models.PoolBasics{
 			Asset:      common.BNBAsset,
 			AssetDepth: 1000,
 			RuneDepth:  12000,
+			Units:      500,
+			Status:     models.Enabled,
 		},
 		PoolSwapStats: models.PoolSwapStats{
 			PoolTxAverage:   1.145,
@@ -636,7 +635,6 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 			SwappingTxCount: 102,
 		},
 		PoolVolume24Hours: 124,
-		Status:            models.Enabled,
 	})
 
 	store = &TestGetPoolSimpleDetailsStore{
