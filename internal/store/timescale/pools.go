@@ -679,20 +679,13 @@ func (s *Client) poolDepth(asset common.Asset) (uint64, error) {
 }
 
 func (s *Client) poolUnits(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(units)
-		FROM pools_history
-		WHERE pool = $1
-	`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var units sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&units); err != nil {
-		return 0, errors.Wrap(err, "poolUnits failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return uint64(pool.Units), nil
 	}
-
-	return uint64(units.Int64), nil
+	return 0, nil
 }
 
 func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
@@ -1312,20 +1305,11 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 
 // GetPoolStatus - latest pool status
 func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
-	stmnt := `
-		SELECT status 
-		FROM   pools_history 
-		WHERE  pool = $1 AND status != $2
-		ORDER  BY time DESC 
-		LIMIT  1  
-		`
-	var poolStatus sql.NullInt32
-	row := s.db.QueryRow(stmnt, asset.String(), models.Unknown)
-	if err := row.Scan(&poolStatus); err != nil {
-		if err == sql.ErrNoRows {
-			return models.Unknown, nil
-		}
-		return models.Unknown, errors.Wrap(err, "GetPoolStatus failed")
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if pool, ok := s.pools[asset.String()]; ok {
+		return pool.Status, nil
 	}
-	return models.PoolStatus(poolStatus.Int32), nil
+	return models.Unknown, nil
 }
