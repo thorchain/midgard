@@ -3,11 +3,15 @@ package models
 import "gitlab.com/thorchain/midgard/internal/common"
 
 type PoolBasics struct {
-	Asset      common.Asset
-	AssetDepth int64
-	RuneDepth  int64
-	Units      int64
-	Status     PoolStatus
+	Asset          common.Asset
+	AssetDepth     int64
+	AssetStaked    int64
+	AssetWithdrawn int64
+	RuneDepth      int64
+	RuneStaked     int64
+	RuneWithdrawn  int64
+	Units          int64
+	Status         PoolStatus
 }
 
 type PoolSwapStats struct {
@@ -20,7 +24,10 @@ type PoolSimpleDetails struct {
 	PoolBasics
 	PoolSwapStats
 	PoolVolume24Hours int64
-	PoolROI float64
+	Price             float64
+	AssetROI          float64
+	RuneROI           float64
+	PoolROI           float64
 }
 
 type PoolDetails struct {

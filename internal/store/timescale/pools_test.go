@@ -120,21 +120,27 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:      common.BNBAsset,
-		AssetDepth: 400,
-		RuneDepth:  1000,
-		Units:      9000,
-		Status:     models.Bootstrap,
+		Asset:          common.BNBAsset,
+		AssetDepth:     400,
+		AssetStaked:    500,
+		AssetWithdrawn: 50,
+		RuneDepth:      1000,
+		RuneStaked:     1000,
+		RuneWithdrawn:  100,
+		Units:          9000,
+		Status:         models.Bootstrap,
 	})
 
 	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:      common.BTCAsset,
-		AssetDepth: 20,
-		RuneDepth:  2400,
-		Units:      1000,
-		Status:     models.Unknown,
+		Asset:       common.BTCAsset,
+		AssetDepth:  20,
+		AssetStaked: 20,
+		RuneDepth:   2400,
+		RuneStaked:  2400,
+		Units:       1000,
+		Status:      models.Unknown,
 	})
 
 	ethAsset, _ := common.NewAsset("ETH.ETH")

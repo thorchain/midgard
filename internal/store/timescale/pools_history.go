@@ -38,7 +38,7 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		return err
 	}
 
-	s.updatePoolCache(pool, change.AssetAmount, change.RuneAmount, change.Units, change.Status)
+	s.updatePoolCache(change)
 	return nil
 }
 

@@ -387,40 +387,24 @@ func (s *Client) exists(asset common.Asset) (bool, error) {
 
 // assetStaked - total amount of asset staked in given pool
 func (s *Client) assetStaked(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(asset_amount)
-		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		WHERE pool = $1
-		AND events.type IN ('stake', 'unstake')`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&assetStakedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetStaked failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return pool.AssetStaked - pool.AssetWithdrawn, nil
 	}
-
-	return assetStakedTotal.Int64, nil
+	return 0, nil
 }
 
 // assetStakedTotal - total amount of asset ever staked in given pool
 func (s *Client) assetStakedTotal(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(asset_amount)
-		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		WHERE pool = $1
-		AND events.type = 'stake'`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var assetStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&assetStakedTotal); err != nil {
-		return 0, errors.Wrap(err, "assetStakedTotal failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return uint64(pool.AssetStaked), nil
 	}
-
-	return uint64(assetStakedTotal.Int64), nil
+	return 0, nil
 }
 
 func (s *Client) assetStaked12m(asset common.Asset) (int64, error) {
@@ -444,59 +428,35 @@ func (s *Client) assetStaked12m(asset common.Asset) (int64, error) {
 
 // assetWithdrawnTotal - total amount of asset withdrawn
 func (s *Client) assetWithdrawnTotal(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(asset_amount)
-		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		WHERE pool = $1
-		AND events.type = 'unstake'`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var assetWithdrawnTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&assetWithdrawnTotal); err != nil {
-		return 0, errors.Wrap(err, "assetWithdrawnTotal failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return pool.AssetWithdrawn, nil
 	}
-
-	return -assetWithdrawnTotal.Int64, nil
+	return 0, nil
 }
 
 // runeStakedTotal - total amount of rune staked on the network for given pool.
 func (s *Client) runeStakedTotal(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(rune_amount)
-		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		WHERE pool = $1
-		AND events.type = 'stake'`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&runeStakedTotal); err != nil {
-		return 0, errors.Wrap(err, "runeStakedTotal failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return uint64(pool.RuneStaked), nil
 	}
-
-	return uint64(runeStakedTotal.Int64), nil
+	return 0, nil
 }
 
 // runeStaked - amount of rune staked on the network for given pool.
 func (s *Client) runeStaked(asset common.Asset) (int64, error) {
-	stmnt := `
-		SELECT SUM(rune_amount)
-		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		WHERE pool = $1
-		AND events.type in ('stake', 'unstake')`
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	var runeStakedTotal sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&runeStakedTotal); err != nil {
-		return 0, errors.Wrap(err, "runeStakedTotal failed")
+	if pool, ok := s.pools[asset.String()]; ok {
+		return pool.RuneStaked - pool.RuneWithdrawn, nil
 	}
-
-	return runeStakedTotal.Int64, nil
+	return 0, nil
 }
 
 func (s *Client) runeStaked12m(asset common.Asset) (int64, error) {
