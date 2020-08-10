@@ -1848,7 +1848,7 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No stake
-	roi, err := s.Store.poolROI(asset)
+	roi, err := s.Store.PoolROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
 
@@ -1856,7 +1856,7 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI(asset)
+	roi, err = s.Store.PoolROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
 
@@ -1864,7 +1864,7 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent5)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI(asset)
+	roi, err = s.Store.PoolROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, -0.0999)
 
@@ -1872,7 +1872,7 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent2)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI(asset)
+	roi, err = s.Store.PoolROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, -0.10009999)
 
@@ -1880,7 +1880,7 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI(asset)
+	roi, err = s.Store.PoolROI(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 1.89970001)
 }

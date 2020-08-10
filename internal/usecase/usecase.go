@@ -257,7 +257,7 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	if err != nil {
 		return nil, err
 	}
-	poolRoi, err := uc.store.GetPoolROI(asset)
+	poolRoi, err := uc.store.PoolROI(asset)
 	if err != nil {
 		return nil, err
 	}

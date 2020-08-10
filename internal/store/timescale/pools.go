@@ -261,7 +261,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
-	poolROI, err := s.poolROI(asset)
+	poolROI, err := s.PoolROI(asset)
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
@@ -803,10 +803,6 @@ func (s *Client) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, e
 	return vol.Int64, nil
 }
 
-func (s *Client) GetPoolROI(asset common.Asset) (float64, error) {
-	return s.poolROI(asset)
-}
-
 func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(assetAmt)
@@ -1275,20 +1271,20 @@ func (s *Client) runeROI12(asset common.Asset) (float64, error) {
 	return roi, nil
 }
 
-func (s *Client) poolROI(asset common.Asset) (float64, error) {
+func (s *Client) PoolROI(asset common.Asset) (float64, error) {
 	assetROI, err := s.assetROI(asset)
 	if err != nil {
-		return 0, errors.Wrap(err, "poolROI failed")
+		return 0, errors.Wrap(err, "PoolROI failed")
 	}
 	runeROI, err := s.runeROI(asset)
 	if err != nil {
-		return 0, errors.Wrap(err, "poolROI failed")
+		return 0, errors.Wrap(err, "PoolROI failed")
 	}
 
 	var roi float64
 	roi = (assetROI + runeROI) / 2
 
-	return roi, errors.Wrap(err, "poolROI failed")
+	return roi, errors.Wrap(err, "PoolROI failed")
 }
 
 func (s *Client) poolROI12(asset common.Asset) (float64, error) {
