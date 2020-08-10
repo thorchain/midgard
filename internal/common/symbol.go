@@ -50,7 +50,6 @@ func (s Symbol) IsMiniToken() bool {
 	return len(parts[1]) == 4 && strings.HasSuffix(s.String(), "M")
 }
 
-
 func IsBNBSymbol(s Symbol) bool {
 	return s.Equals(BNBSymbol)
 }
