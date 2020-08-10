@@ -20,6 +20,7 @@ type PoolSimpleDetails struct {
 	PoolBasics
 	PoolSwapStats
 	PoolVolume24Hours int64
+	PoolROI float64
 }
 
 type PoolDetails struct {

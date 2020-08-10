@@ -803,6 +803,10 @@ func (s *Client) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, e
 	return vol.Int64, nil
 }
 
+func (s *Client) GetPoolROI(asset common.Asset) (float64, error) {
+	return s.poolROI(asset)
+}
+
 func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(assetAmt)

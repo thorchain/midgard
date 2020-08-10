@@ -216,6 +216,7 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				SwappingTxCount: Uint64ToString(uint64(details.SwappingTxCount)),
 				PoolVolume24hr:  Uint64ToString(uint64(details.PoolVolume24Hours)),
 				Status:          pointy.String(details.Status.String()),
+				PoolROI:         Float64ToString(details.PoolROI),
 			}
 		}
 	case "full":
