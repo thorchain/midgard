@@ -42,6 +42,15 @@ func (s Symbol) String() string {
 	return strings.ToUpper(string(s))
 }
 
+func (s Symbol) IsMiniToken() bool {
+	parts := strings.Split(s.String(), "-")
+	if len(parts) == 1 {
+		return false
+	}
+	return len(parts[1]) == 4 && strings.HasSuffix(s.String(), "M")
+}
+
+
 func IsBNBSymbol(s Symbol) bool {
 	return s.Equals(BNBSymbol)
 }
