@@ -148,6 +148,7 @@ func (s *Client) fetchAllPoolsBalances() error {
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var (
@@ -178,11 +179,11 @@ func (s *Client) fetchAllPoolsStatus() error {
 			WHERE status > 0
 		) t 
 		WHERE row_num = 1`
-
 	rows, err := s.db.Queryx(q)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var (
