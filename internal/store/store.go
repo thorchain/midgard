@@ -1,6 +1,5 @@
 package store
 
-//go:generate mockgen -destination mock_store.go -package store . Store
 import (
 	"time"
 
@@ -26,6 +25,9 @@ type Store interface {
 	GetPool(asset common.Asset) (common.Asset, error)
 	GetAssetDepth(asset common.Asset) (uint64, error)
 	GetRuneDepth(asset common.Asset) (uint64, error)
+	GetPoolBasics(asset common.Asset) (models.PoolBasics, error)
+	GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error)
+	GetPoolStatus(asset common.Asset) (models.PoolStatus, error)
 	GetDateCreated(asset common.Asset) (uint64, error)
 	GetTotalDepth() (uint64, error)
 	GetUsersCount(from, to *time.Time) (uint64, error)
@@ -37,7 +39,8 @@ type Store interface {
 	TotalAssetSells() (uint64, error)
 	TotalStakeTx() (uint64, error)
 	TotalWithdrawTx() (uint64, error)
-	GetPoolData(asset common.Asset) (models.PoolData, error)
+	GetPoolData(asset common.Asset) (models.PoolDetails, error)
+	GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error)
 	GetStakerAddresses() ([]common.Address, error)
 	GetStakerAddressDetails(address common.Address) (models.StakerAddressDetails, error)
 	GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (models.StakerAddressAndAssetDetails, error)
@@ -49,4 +52,5 @@ type Store interface {
 	UpdateSwapRecord(record models.EventSwap) error
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
+	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)
 }

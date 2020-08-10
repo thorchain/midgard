@@ -43,6 +43,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			}
 		}
 	}
+
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -56,7 +57,6 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			runeAmt,
 			assetAmt
 		)  VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 ) RETURNING event_id`, models.ModelSwapsTable)
-
 	_, err = s.db.Exec(query,
 		record.Event.Time,
 		record.Event.ID,
@@ -69,12 +69,20 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		runeAmt,
 		assetAmt,
 	)
-
 	if err != nil {
 		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
 	}
 
-	return nil
+	change := &models.PoolChange{
+		Time:        record.Time,
+		EventID:     record.ID,
+		EventType:   record.Type,
+		Pool:        record.Pool,
+		AssetAmount: assetAmt,
+		RuneAmount:  runeAmt,
+	}
+	err = s.UpdatePoolsHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }
 
 func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
@@ -106,5 +114,18 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
 	}
 
-	return nil
+	pool, err := s.GetEventPool(record.ID)
+	if err != nil {
+		return errors.Wrapf(err, "could not get pool of event %d", record.ID)
+	}
+	change := &models.PoolChange{
+		Time:        record.Time,
+		EventID:     record.ID,
+		EventType:   record.Type,
+		Pool:        pool,
+		AssetAmount: -assetAmt,
+		RuneAmount:  -runeAmt,
+	}
+	err = s.UpdatePoolsHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }

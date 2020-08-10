@@ -19,6 +19,7 @@ type Configuration struct {
 	TimeScale       TimeScaleConfiguration `json:"timescale" mapstructure:"timescale"`
 	ThorChain       ThorChainConfiguration `json:"thorchain" mapstructure:"thorchain"`
 	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
+	NodeProxy       NodeProxyConfiguration `json:"node_proxy" mapstructure:"node_proxy"`
 }
 
 type TimeScaleConfiguration struct {
@@ -45,6 +46,18 @@ type ThorChainConfiguration struct {
 	CacheCleanup                time.Duration `json:"cache_cleanup" mapstructure:"cache_cleanup"`
 }
 
+type NodeProxy struct {
+	Chain         string `json:"chain" mapstructure:"chain"`
+	Target        string `json:"target" mapstructure:"target"`
+	WebsocketPath string `json:"websocket_path" mapstructure:"websocket_path"`
+}
+
+type NodeProxyConfiguration struct {
+	RateLimit  float64     `json:"rate_limit" mapstructure:"rate_limit"`
+	BurstLimit int         `json:"burst_limit" mapstructure:"burst_limit"`
+	FullNodes  []NodeProxy `json:"full_nodes" mapstructure:"full_nodes"`
+}
+
 func applyDefaultConfig() {
 	viper.SetDefault("read_timeout", "30s")
 	viper.SetDefault("write_timeout", "30s")
@@ -55,6 +68,8 @@ func applyDefaultConfig() {
 	viper.SetDefault("thorchain.scan_start_pos", 1)
 	viper.SetDefault("timescale.max_connections", 25)
 	viper.SetDefault("timescale.connection_max_lifetime", time.Minute*5)
+	viper.SetDefault("node_proxy.rate_limit", 3)
+	viper.SetDefault("node_proxy.burst_limit", 3)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
