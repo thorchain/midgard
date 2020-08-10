@@ -4,8 +4,6 @@ import (
 	"time"
 
 	. "gopkg.in/check.v1"
-
-	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func (s *TimeScaleSuite) TestGetUsersCount(c *C) {
@@ -141,48 +139,6 @@ func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
 	vol, err = s.Store.GetTotalVolume(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(200000012))
-}
-
-func (s *TimeScaleSuite) TestbTotalStaked(c *C) {
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-
-	totalStaked, err := s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, int64(0))
-
-	// Single stake
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	totalStaked, err = s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, int64(200))
-
-	// Additional stake
-	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	totalStaked, err = s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, int64(400))
-
-	// Unstake
-	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
-	c.Assert(err, IsNil)
-
-	totalStaked, err = s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, int64(200))
-
-	// Additional stake
-	address, _ = common.NewAddress("tbnb1u3xts5zh9zuywdjlfmcph7pzyv4f9t4e95jmdq")
-
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
-	c.Assert(err, IsNil)
-
-	totalStaked, err = s.Store.totalStaked(address)
-	c.Assert(err, IsNil)
-	c.Assert(totalStaked, Equals, int64(100000099), Commentf("%d", totalStaked))
 }
 
 func (s *TimeScaleSuite) TestTotalDepth(c *C) {

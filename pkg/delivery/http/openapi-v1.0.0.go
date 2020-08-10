@@ -31,36 +31,16 @@ type BlockRewards struct {
 
 // BondMetrics defines model for BondMetrics.
 type BondMetrics struct {
-
-	// Average bond of active nodes
-	AverageActiveBond *string `json:"averageActiveBond,omitempty"`
-
-	// Average bond of standby nodes
+	AverageActiveBond  *string `json:"averageActiveBond,omitempty"`
 	AverageStandbyBond *string `json:"averageStandbyBond,omitempty"`
-
-	// Maxinum bond of active nodes
-	MaximumActiveBond *string `json:"maximumActiveBond,omitempty"`
-
-	// Maximum bond of standby nodes
+	MaximumActiveBond  *string `json:"maximumActiveBond,omitempty"`
 	MaximumStandbyBond *string `json:"maximumStandbyBond,omitempty"`
-
-	// Median bond of active nodes
-	MedianActiveBond *string `json:"medianActiveBond,omitempty"`
-
-	// Median bond of standby nodes
-	MedianStandbyBond *string `json:"medianStandbyBond,omitempty"`
-
-	// Minumum bond of active nodes
-	MinimumActiveBond *string `json:"minimumActiveBond,omitempty"`
-
-	// Minumum bond of standby nodes
+	MedianActiveBond   *string `json:"medianActiveBond,omitempty"`
+	MedianStandbyBond  *string `json:"medianStandbyBond,omitempty"`
+	MinimumActiveBond  *string `json:"minimumActiveBond,omitempty"`
 	MinimumStandbyBond *string `json:"minimumStandbyBond,omitempty"`
-
-	// Total bond of active nodes
-	TotalActiveBond *string `json:"totalActiveBond,omitempty"`
-
-	// Total bond of standby nodes
-	TotalStandbyBond *string `json:"totalStandbyBond,omitempty"`
+	TotalActiveBond    *string `json:"totalActiveBond,omitempty"`
+	TotalStandbyBond   *string `json:"totalStandbyBond,omitempty"`
 }
 
 // Error defines model for Error.
@@ -70,157 +50,67 @@ type Error struct {
 
 // NetworkInfo defines model for NetworkInfo.
 type NetworkInfo struct {
-
-	// Array of Active Bonds
-	ActiveBonds *[]string `json:"activeBonds,omitempty"`
-
-	// Number of Active Nodes
-	ActiveNodeCount *int          `json:"activeNodeCount,omitempty"`
-	BlockRewards    *BlockRewards `json:"blockRewards,omitempty"`
-	BondMetrics     *BondMetrics  `json:"bondMetrics,omitempty"`
-	BondingROI      *string       `json:"bondingROI,omitempty"`
-	NextChurnHeight *string       `json:"nextChurnHeight,omitempty"`
-
-	// The remaining time of pool activation (in blocks)
-	PoolActivationCountdown *int64  `json:"poolActivationCountdown,omitempty"`
-	PoolShareFactor         *string `json:"poolShareFactor,omitempty"`
-	StakingROI              *string `json:"stakingROI,omitempty"`
-
-	// Array of Standby Bonds
-	StandbyBonds *[]string `json:"standbyBonds,omitempty"`
-
-	// Number of Standby Nodes
-	StandbyNodeCount *int `json:"standbyNodeCount,omitempty"`
-
-	// Total left in Reserve
-	TotalReserve *string `json:"totalReserve,omitempty"`
-
-	// Total Rune Staked in Pools
-	TotalStaked *string `json:"totalStaked,omitempty"`
+	ActiveBonds             *[]string     `json:"activeBonds,omitempty"`
+	ActiveNodeCount         *int          `json:"activeNodeCount,omitempty"`
+	BlockRewards            *BlockRewards `json:"blockRewards,omitempty"`
+	BondMetrics             *BondMetrics  `json:"bondMetrics,omitempty"`
+	BondingROI              *string       `json:"bondingROI,omitempty"`
+	NextChurnHeight         *string       `json:"nextChurnHeight,omitempty"`
+	PoolActivationCountdown *int64        `json:"poolActivationCountdown,omitempty"`
+	PoolShareFactor         *string       `json:"poolShareFactor,omitempty"`
+	StakingROI              *string       `json:"stakingROI,omitempty"`
+	StandbyBonds            *[]string     `json:"standbyBonds,omitempty"`
+	StandbyNodeCount        *int          `json:"standbyNodeCount,omitempty"`
+	TotalReserve            *string       `json:"totalReserve,omitempty"`
+	TotalStaked             *string       `json:"totalStaked,omitempty"`
 }
 
 // NodeKey defines model for NodeKey.
 type NodeKey struct {
-
-	// ed25519 public key
-	Ed25519 *string `json:"ed25519,omitempty"`
-
-	// secp256k1 public key
+	Ed25519   *string `json:"ed25519,omitempty"`
 	Secp256k1 *string `json:"secp256k1,omitempty"`
 }
 
 // PoolDetail defines model for PoolDetail.
 type PoolDetail struct {
-	Asset *Asset `json:"asset,omitempty"`
-
-	// Total current Asset balance
-	AssetDepth *string `json:"assetDepth,omitempty"`
-
-	// Asset return on investment
-	AssetROI *string `json:"assetROI,omitempty"`
-
-	// Total Asset staked
+	Asset            *Asset  `json:"asset,omitempty"`
+	AssetDepth       *string `json:"assetDepth,omitempty"`
+	AssetROI         *string `json:"assetROI,omitempty"`
 	AssetStakedTotal *string `json:"assetStakedTotal,omitempty"`
-
-	// Number of RUNE->ASSET transactions
-	BuyAssetCount *string `json:"buyAssetCount,omitempty"`
-
-	// Average sell Asset fee size for RUNE->ASSET (in ASSET)
-	BuyFeeAverage *string `json:"buyFeeAverage,omitempty"`
-
-	// Total fees (in Asset)
-	BuyFeesTotal *string `json:"buyFeesTotal,omitempty"`
-
-	// Average trade slip for RUNE->ASSET in %
-	BuySlipAverage *string `json:"buySlipAverage,omitempty"`
-
-	// Average Asset buy transaction size for (RUNE->ASSET) (in ASSET)
-	BuyTxAverage *string `json:"buyTxAverage,omitempty"`
-
-	// Total Asset buy volume (RUNE->ASSET) (in Asset)
-	BuyVolume *string `json:"buyVolume,omitempty"`
-
-	// Total depth of both sides (in RUNE)
-	PoolDepth *string `json:"poolDepth,omitempty"`
-
-	// Average pool fee
-	PoolFeeAverage *string `json:"poolFeeAverage,omitempty"`
-
-	// Total fees
-	PoolFeesTotal *string `json:"poolFeesTotal,omitempty"`
-
-	// Pool ROI (average of RUNE and Asset ROI)
-	PoolROI *string `json:"poolROI,omitempty"`
-
-	// Pool ROI over 12 months
-	PoolROI12 *string `json:"poolROI12,omitempty"`
-
-	// Average pool slip
-	PoolSlipAverage *string `json:"poolSlipAverage,omitempty"`
-
-	// Rune value staked Total
-	PoolStakedTotal *string `json:"poolStakedTotal,omitempty"`
-
-	// Average pool transaction
-	PoolTxAverage *string `json:"poolTxAverage,omitempty"`
-
-	// Total pool units outstanding
-	PoolUnits *string `json:"poolUnits,omitempty"`
-
-	// Two-way volume of all-time (in RUNE)
-	PoolVolume *string `json:"poolVolume,omitempty"`
-
-	// Two-way volume in 24hrs (in RUNE)
-	PoolVolume24hr *string `json:"poolVolume24hr,omitempty"`
-
-	// Price of Asset (in RUNE).
-	Price *string `json:"price,omitempty"`
-
-	// Total current Rune balance
-	RuneDepth *string `json:"runeDepth,omitempty"`
-
-	// RUNE return on investment
-	RuneROI *string `json:"runeROI,omitempty"`
-
-	// Total RUNE staked
-	RuneStakedTotal *string `json:"runeStakedTotal,omitempty"`
-
-	// Number of ASSET->RUNE transactions
-	SellAssetCount *string `json:"sellAssetCount,omitempty"`
-
-	// Average buy Asset fee size for ASSET->RUNE (in RUNE)
-	SellFeeAverage *string `json:"sellFeeAverage,omitempty"`
-
-	// Total fees (in RUNE)
-	SellFeesTotal *string `json:"sellFeesTotal,omitempty"`
-
-	// Average trade slip for ASSET->RUNE in %
-	SellSlipAverage *string `json:"sellSlipAverage,omitempty"`
-
-	// Average Asset sell transaction size (ASSET>RUNE) (in RUNE)
-	SellTxAverage *string `json:"sellTxAverage,omitempty"`
-
-	// Total Asset sell volume (ASSET>RUNE) (in RUNE).
-	SellVolume *string `json:"sellVolume,omitempty"`
-
-	// Number of stake transactions
-	StakeTxCount *string `json:"stakeTxCount,omitempty"`
-
-	// Number of unique stakers
-	StakersCount *string `json:"stakersCount,omitempty"`
-
-	// Number of stake & withdraw transactions
-	StakingTxCount *string `json:"stakingTxCount,omitempty"`
-	Status         *string `json:"status,omitempty"`
-
-	// Number of unique swappers interacting with pool
-	SwappersCount *string `json:"swappersCount,omitempty"`
-
-	// Number of swapping transactions in the pool (buys and sells)
-	SwappingTxCount *string `json:"swappingTxCount,omitempty"`
-
-	// Number of withdraw transactions
-	WithdrawTxCount *string `json:"withdrawTxCount,omitempty"`
+	BuyAssetCount    *string `json:"buyAssetCount,omitempty"`
+	BuyFeeAverage    *string `json:"buyFeeAverage,omitempty"`
+	BuyFeesTotal     *string `json:"buyFeesTotal,omitempty"`
+	BuySlipAverage   *string `json:"buySlipAverage,omitempty"`
+	BuyTxAverage     *string `json:"buyTxAverage,omitempty"`
+	BuyVolume        *string `json:"buyVolume,omitempty"`
+	PoolDepth        *string `json:"poolDepth,omitempty"`
+	PoolFeeAverage   *string `json:"poolFeeAverage,omitempty"`
+	PoolFeesTotal    *string `json:"poolFeesTotal,omitempty"`
+	PoolROI          *string `json:"poolROI,omitempty"`
+	PoolROI12        *string `json:"poolROI12,omitempty"`
+	PoolSlipAverage  *string `json:"poolSlipAverage,omitempty"`
+	PoolStakedTotal  *string `json:"poolStakedTotal,omitempty"`
+	PoolTxAverage    *string `json:"poolTxAverage,omitempty"`
+	PoolUnits        *string `json:"poolUnits,omitempty"`
+	PoolVolume       *string `json:"poolVolume,omitempty"`
+	PoolVolume24hr   *string `json:"poolVolume24hr,omitempty"`
+	Price            *string `json:"price,omitempty"`
+	RuneDepth        *string `json:"runeDepth,omitempty"`
+	RuneROI          *string `json:"runeROI,omitempty"`
+	RuneStakedTotal  *string `json:"runeStakedTotal,omitempty"`
+	SellAssetCount   *string `json:"sellAssetCount,omitempty"`
+	SellFeeAverage   *string `json:"sellFeeAverage,omitempty"`
+	SellFeesTotal    *string `json:"sellFeesTotal,omitempty"`
+	SellSlipAverage  *string `json:"sellSlipAverage,omitempty"`
+	SellTxAverage    *string `json:"sellTxAverage,omitempty"`
+	SellVolume       *string `json:"sellVolume,omitempty"`
+	StakeTxCount     *string `json:"stakeTxCount,omitempty"`
+	StakersCount     *string `json:"stakersCount,omitempty"`
+	StakingTxCount   *string `json:"stakingTxCount,omitempty"`
+	Status           *string `json:"status,omitempty"`
+	SwappersCount    *string `json:"swappersCount,omitempty"`
+	SwappingTxCount  *string `json:"swappingTxCount,omitempty"`
+	WithdrawTxCount  *string `json:"withdrawTxCount,omitempty"`
 }
 
 // Stakers defines model for Stakers.
@@ -228,105 +118,38 @@ type Stakers string
 
 // StakersAddressData defines model for StakersAddressData.
 type StakersAddressData struct {
-	PoolsArray *[]Asset `json:"poolsArray,omitempty"`
-
-	// Total value of earnings (in RUNE) across all pools.
-	TotalEarned *string `json:"totalEarned,omitempty"`
-
-	// Average of all pool ROIs.
-	TotalROI *string `json:"totalROI,omitempty"`
-
-	// Total staked (in RUNE) across all pools.
-	TotalStaked *string `json:"totalStaked,omitempty"`
+	PoolsArray  *[]Asset `json:"poolsArray,omitempty"`
+	TotalEarned *string  `json:"totalEarned,omitempty"`
+	TotalROI    *string  `json:"totalROI,omitempty"`
+	TotalStaked *string  `json:"totalStaked,omitempty"`
 }
 
 // StakersAssetData defines model for StakersAssetData.
 type StakersAssetData struct {
-	Asset *Asset `json:"asset,omitempty"`
-
-	// Value of Assets earned from the pool.
-	AssetEarned *string `json:"assetEarned,omitempty"`
-
-	// ROI of the Asset side
-	AssetROI *string `json:"assetROI,omitempty"`
-
-	// Amount of Assets staked.
-	AssetStaked      *string `json:"assetStaked,omitempty"`
+	Asset            *Asset  `json:"asset,omitempty"`
 	DateFirstStaked  *int64  `json:"dateFirstStaked,omitempty"`
 	HeightLastStaked *int64  `json:"heightLastStaked,omitempty"`
-
-	// Total value of earnings (in RUNE).
-	PoolEarned *string `json:"poolEarned,omitempty"`
-
-	// Average ROI (in RUNE) of both sides
-	PoolROI *string `json:"poolROI,omitempty"`
-
-	// RUNE value staked.
-	PoolStaked *string `json:"poolStaked,omitempty"`
-
-	// Value of RUNE earned from the pool.
-	RuneEarned *string `json:"runeEarned,omitempty"`
-
-	// ROI of the Rune side.
-	RuneROI *string `json:"runeROI,omitempty"`
-
-	// Amount of RUNE staked.
-	RuneStaked *string `json:"runeStaked,omitempty"`
-
-	// Represents ownership of a pool.
-	StakeUnits *string `json:"stakeUnits,omitempty"`
+	StakeUnits       *string `json:"stakeUnits,omitempty"`
 }
 
 // StatsData defines model for StatsData.
 type StatsData struct {
-
-	// Daily active users (unique addresses interacting)
-	DailyActiveUsers *string `json:"dailyActiveUsers,omitempty"`
-
-	// Daily transactions
-	DailyTx *string `json:"dailyTx,omitempty"`
-
-	// Monthly active users
+	DailyActiveUsers   *string `json:"dailyActiveUsers,omitempty"`
+	DailyTx            *string `json:"dailyTx,omitempty"`
 	MonthlyActiveUsers *string `json:"monthlyActiveUsers,omitempty"`
-
-	// Monthly transactions
-	MonthlyTx *string `json:"monthlyTx,omitempty"`
-
-	// Number of active pools
-	PoolCount *string `json:"poolCount,omitempty"`
-
-	// Total buying transactions
-	TotalAssetBuys *string `json:"totalAssetBuys,omitempty"`
-
-	// Total selling transactions
-	TotalAssetSells *string `json:"totalAssetSells,omitempty"`
-
-	// Total RUNE balances
-	TotalDepth *string `json:"totalDepth,omitempty"`
-
-	// Total earned (in RUNE Value).
-	TotalEarned *string `json:"totalEarned,omitempty"`
-
-	// Total staking transactions
-	TotalStakeTx *string `json:"totalStakeTx,omitempty"`
-
-	// Total staked (in RUNE Value).
-	TotalStaked *string `json:"totalStaked,omitempty"`
-
-	// Total transactions
-	TotalTx *string `json:"totalTx,omitempty"`
-
-	// Total unique swappers & stakers
-	TotalUsers *string `json:"totalUsers,omitempty"`
-
-	// Total (in RUNE Value) of all assets swapped since start.
-	TotalVolume *string `json:"totalVolume,omitempty"`
-
-	// Total (in RUNE Value) of all assets swapped in 24hrs
-	TotalVolume24hr *string `json:"totalVolume24hr,omitempty"`
-
-	// Total withdrawing transactions
-	TotalWithdrawTx *string `json:"totalWithdrawTx,omitempty"`
+	MonthlyTx          *string `json:"monthlyTx,omitempty"`
+	PoolCount          *string `json:"poolCount,omitempty"`
+	TotalAssetBuys     *string `json:"totalAssetBuys,omitempty"`
+	TotalAssetSells    *string `json:"totalAssetSells,omitempty"`
+	TotalDepth         *string `json:"totalDepth,omitempty"`
+	TotalEarned        *string `json:"totalEarned,omitempty"`
+	TotalStakeTx       *string `json:"totalStakeTx,omitempty"`
+	TotalStaked        *string `json:"totalStaked,omitempty"`
+	TotalTx            *string `json:"totalTx,omitempty"`
+	TotalUsers         *string `json:"totalUsers,omitempty"`
+	TotalVolume        *string `json:"totalVolume,omitempty"`
+	TotalVolume24hr    *string `json:"totalVolume24hr,omitempty"`
+	TotalWithdrawTx    *string `json:"totalWithdrawTx,omitempty"`
 }
 
 // ThorchainBooleanConstants defines model for ThorchainBooleanConstants.
@@ -575,14 +398,11 @@ type GetTxDetailsParams struct {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Get Asset Information
-	// (GET /v1/assets)
+	// Get Asset Information// (GET /v1/assets)
 	GetAssetInfo(ctx echo.Context, params GetAssetInfoParams) error
-	// Get Documents
-	// (GET /v1/doc)
+	// Get Documents// (GET /v1/doc)
 	GetDocs(ctx echo.Context) error
-	// Get Health
-	// (GET /v1/health)
+	// Get Health// (GET /v1/health)
 	GetHealth(ctx echo.Context) error
 	// Get Total Volume Changes
 	// (GET /v1/history/total_volume)
@@ -590,11 +410,9 @@ type ServerInterface interface {
 	// Get Network Data
 	// (GET /v1/network)
 	GetNetworkData(ctx echo.Context) error
-	// Get Node public keys
-	// (GET /v1/nodes)
+	// Get Node public keys// (GET /v1/nodes)
 	GetNodes(ctx echo.Context) error
-	// Get Asset Pools
-	// (GET /v1/pools)
+	// Get Asset Pools// (GET /v1/pools)
 	GetPools(ctx echo.Context) error
 	// Get Pools Details
 	// (GET /v1/pools/detail)
@@ -602,29 +420,21 @@ type ServerInterface interface {
 	// Get Stakers
 	// (GET /v1/stakers)
 	GetStakersData(ctx echo.Context) error
-	// Get Staker Data
-	// (GET /v1/stakers/{address})
+	// Get Staker Data// (GET /v1/stakers/{address})
 	GetStakersAddressData(ctx echo.Context, address string) error
-	// Get Staker Pool Data
-	// (GET /v1/stakers/{address}/pools)
+	// Get Staker Pool Data// (GET /v1/stakers/{address}/pools)
 	GetStakersAddressAndAssetData(ctx echo.Context, address string, params GetStakersAddressAndAssetDataParams) error
-	// Get Global Stats
-	// (GET /v1/stats)
+	// Get Global Stats// (GET /v1/stats)
 	GetStats(ctx echo.Context) error
-	// Get Swagger
-	// (GET /v1/swagger.json)
+	// Get Swagger// (GET /v1/swagger.json)
 	GetSwagger(ctx echo.Context) error
-	// Get the Proxied THORChain Constants
-	// (GET /v1/thorchain/constants)
+	// Get the Proxied THORChain Constants// (GET /v1/thorchain/constants)
 	GetThorchainProxiedConstants(ctx echo.Context) error
-	// Get the Proxied THORChain Lastblock
-	// (GET /v1/thorchain/lastblock)
+	// Get the Proxied THORChain Lastblock// (GET /v1/thorchain/lastblock)
 	GetThorchainProxiedLastblock(ctx echo.Context) error
-	// Get the Proxied Pool Addresses
-	// (GET /v1/thorchain/pool_addresses)
+	// Get the Proxied Pool Addresses// (GET /v1/thorchain/pool_addresses)
 	GetThorchainProxiedEndpoints(ctx echo.Context) error
-	// Get details of a tx by address, asset or tx-id
-	// (GET /v1/txs)
+	// Get details of a tx by address, asset or tx-id// (GET /v1/txs)
 	GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error
 }
 
@@ -640,6 +450,11 @@ func (w *ServerInterfaceWrapper) GetAssetInfo(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetAssetInfoParams
 	// ------------- Required query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
+	}
 
 	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -742,6 +557,11 @@ func (w *ServerInterfaceWrapper) GetPoolsDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Required query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
+	}
 
 	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -792,6 +612,11 @@ func (w *ServerInterfaceWrapper) GetStakersAddressAndAssetData(ctx echo.Context)
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetStakersAddressAndAssetDataParams
 	// ------------- Required query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument asset is required, but not found"))
+	}
 
 	err = runtime.BindQueryParameter("form", true, true, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -855,6 +680,9 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetTxDetailsParams
 	// ------------- Optional query parameter "address" -------------
+	if paramValue := ctx.QueryParam("address"); paramValue != "" {
+
+	}
 
 	err = runtime.BindQueryParameter("form", true, false, "address", ctx.QueryParams(), &params.Address)
 	if err != nil {
@@ -862,6 +690,9 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Optional query parameter "txid" -------------
+	if paramValue := ctx.QueryParam("txid"); paramValue != "" {
+
+	}
 
 	err = runtime.BindQueryParameter("form", true, false, "txid", ctx.QueryParams(), &params.Txid)
 	if err != nil {
@@ -869,6 +700,9 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Optional query parameter "asset" -------------
+	if paramValue := ctx.QueryParam("asset"); paramValue != "" {
+
+	}
 
 	err = runtime.BindQueryParameter("form", true, false, "asset", ctx.QueryParams(), &params.Asset)
 	if err != nil {
@@ -876,6 +710,9 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Optional query parameter "type" -------------
+	if paramValue := ctx.QueryParam("type"); paramValue != "" {
+
+	}
 
 	err = runtime.BindQueryParameter("form", true, false, "type", ctx.QueryParams(), &params.Type)
 	if err != nil {
@@ -883,6 +720,11 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Required query parameter "offset" -------------
+	if paramValue := ctx.QueryParam("offset"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument offset is required, but not found"))
+	}
 
 	err = runtime.BindQueryParameter("form", true, true, "offset", ctx.QueryParams(), &params.Offset)
 	if err != nil {
@@ -890,6 +732,11 @@ func (w *ServerInterfaceWrapper) GetTxDetails(ctx echo.Context) error {
 	}
 
 	// ------------- Required query parameter "limit" -------------
+	if paramValue := ctx.QueryParam("limit"); paramValue != "" {
+
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Query argument limit is required, but not found"))
+	}
 
 	err = runtime.BindQueryParameter("form", true, true, "limit", ctx.QueryParams(), &params.Limit)
 	if err != nil {
@@ -1047,4 +894,3 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
-

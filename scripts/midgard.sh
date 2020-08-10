@@ -29,7 +29,9 @@ echo "{
     \"scanners_update_interval\": \"10s\",
     \"scan_start_pos\": 1,
     \"proxied_whitelisted_endpoints\": [
-      \"pool_addresses\"
+      \"pool_addresses\",
+      \"constants\",
+      \"lastblock\"
     ]
   },
   \"timescale\": {

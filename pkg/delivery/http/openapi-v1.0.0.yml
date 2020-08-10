@@ -519,33 +519,6 @@ components:
         stakeUnits:
           type: string
           description: Represents ownership of a pool.
-        runeStaked:
-          type: string
-          description: Amount of RUNE staked.
-        assetStaked:
-          type: string
-          description: Amount of Assets staked.
-        poolStaked:
-          type: string
-          description: RUNE value staked.
-        runeEarned:
-          type: string
-          description: Value of RUNE earned from the pool.
-        assetEarned:
-          type: string
-          description: Value of Assets earned from the pool. 
-        poolEarned:
-          type: string
-          description: Total value of earnings (in RUNE). 
-        runeROI:
-          type: string
-          description: ROI of the Rune side.
-        assetROI:
-          type: string
-          description: ROI of the Asset side
-        poolROI:
-          type: string
-          description: Average ROI (in RUNE) of both sides
         dateFirstStaked:
           type: integer
           format: int64
