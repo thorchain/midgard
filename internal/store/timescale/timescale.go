@@ -14,7 +14,9 @@ import (
 	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 type Client struct {
@@ -22,7 +24,7 @@ type Client struct {
 	logger        zerolog.Logger
 	migrationsDir string
 	mu            sync.RWMutex
-	pools         map[string]*poolCache
+	pools         map[string]*models.PoolBasics
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -127,48 +129,92 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 	return value.Int64, err
 }
 
-type poolCache struct {
-	assetDepth int64
-	runeDepth  int64
-}
-
 func (s *Client) initPoolCache() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	q := `SELECT pool, SUM(asset_amount), SUM(rune_amount) FROM pools_history GROUP BY pool`
+	s.pools = map[string]*models.PoolBasics{}
+	err := s.fetchAllPoolsBalances()
+	if err != nil {
+		return err
+	}
+	err = s.fetchAllPoolsStatus()
+	return err
+}
+
+func (s *Client) fetchAllPoolsBalances() error {
+	q := `SELECT pool, SUM(asset_amount), SUM(rune_amount), SUM(units) FROM pools_history GROUP BY pool`
 	rows, err := s.db.Queryx(q)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	s.pools = map[string]*poolCache{}
 	for rows.Next() {
 		var (
 			pool       string
 			assetDepth sql.NullInt64
 			runeDepth  sql.NullInt64
+			units      sql.NullInt64
 		)
-		if err := rows.Scan(&pool, &assetDepth, &runeDepth); err != nil {
+		if err := rows.Scan(&pool, &assetDepth, &runeDepth, &units); err != nil {
 			return err
 		}
-		s.pools[pool] = &poolCache{
-			assetDepth: assetDepth.Int64,
-			runeDepth:  runeDepth.Int64,
+		asset, _ := common.NewAsset(pool)
+		s.pools[pool] = &models.PoolBasics{
+			Asset:      asset,
+			AssetDepth: assetDepth.Int64,
+			RuneDepth:  runeDepth.Int64,
+			Units:      units.Int64,
 		}
 	}
 	return nil
 }
 
-func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges int64) {
+func (s *Client) fetchAllPoolsStatus() error {
+	q := `SELECT pool, status FROM
+		(
+			SELECT pool, status, ROW_NUMBER() OVER (PARTITION BY pool ORDER BY time DESC) as row_num
+			FROM pools_history
+			WHERE status > 0
+		) t 
+		WHERE row_num = 1`
+	rows, err := s.db.Queryx(q)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			pool   string
+			status sql.NullInt64
+		)
+		if err := rows.Scan(&pool, &status); err != nil {
+			return err
+		}
+		s.pools[pool].Status = models.PoolStatus(status.Int64)
+	}
+	return nil
+}
+
+func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges, unitsChanges int64, status models.PoolStatus) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	p, ok := s.pools[pool]
 	if !ok {
-		p = &poolCache{}
+		asset, _ := common.NewAsset(pool)
+		p = &models.PoolBasics{
+			Asset: asset,
+		}
 		s.pools[pool] = p
 	}
-	p.assetDepth += assetChanges
-	p.runeDepth += runeChanges
+
+	p.AssetDepth += assetChanges
+	p.RuneDepth += runeChanges
+	p.Units += unitsChanges
+	if status > models.Unknown {
+		p.Status = status
+	}
 }

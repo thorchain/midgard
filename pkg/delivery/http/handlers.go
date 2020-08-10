@@ -187,16 +187,16 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 	response := make(PoolsDetailedResponse, len(assets))
 	switch view {
 	case "balances":
-		balances, err := h.uc.GetPoolsBalances(assets)
-		if err != nil {
-			h.logger.Err(err).Msg("GetPoolsBalances failed")
-			return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
-		}
-		for i, b := range balances {
+		for i, asset := range assets {
+			basics, err := h.uc.GetPoolBasics(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolBasics failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
 			response[i] = PoolDetail{
-				Asset:      ConvertAssetForAPI(b.Asset),
-				AssetDepth: Uint64ToString(uint64(b.AssetDepth)),
-				RuneDepth:  Uint64ToString(uint64(b.RuneDepth)),
+				Asset:      ConvertAssetForAPI(basics.Asset),
+				AssetDepth: Uint64ToString(uint64(basics.AssetDepth)),
+				RuneDepth:  Uint64ToString(uint64(basics.RuneDepth)),
 			}
 		}
 	case "simple":

@@ -25,7 +25,7 @@ type Store interface {
 	GetPool(asset common.Asset) (common.Asset, error)
 	GetAssetDepth(asset common.Asset) (uint64, error)
 	GetRuneDepth(asset common.Asset) (uint64, error)
-	GetPoolDepth(asset common.Asset) (int64, int64, error)
+	GetPoolBasics(asset common.Asset) (models.PoolBasics, error)
 	GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error)
 	GetPoolStatus(asset common.Asset) (models.PoolStatus, error)
 	GetDateCreated(asset common.Asset) (uint64, error)

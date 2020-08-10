@@ -13,9 +13,9 @@ import (
 
 func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 	pool := change.Pool.String()
-	assetDepth, runeDepth, _ := s.GetPoolDepth(change.Pool)
-	assetDepth += change.AssetAmount
-	runeDepth += change.RuneAmount
+	basics, _ := s.GetPoolBasics(change.Pool)
+	assetDepth := basics.AssetDepth + change.AssetAmount
+	runeDepth := basics.RuneDepth + change.RuneAmount
 	units := sql.NullInt64{
 		Int64: change.Units,
 		Valid: change.Units != 0,
@@ -38,7 +38,7 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		return err
 	}
 
-	s.updatePoolCache(pool, change.AssetAmount, change.RuneAmount)
+	s.updatePoolCache(pool, change.AssetAmount, change.RuneAmount, change.Units, change.Status)
 	return nil
 }
 
