@@ -24,8 +24,9 @@ CREATE TABLE pools_history (
     status          SMALLINT        NOT NULL,
     PRIMARY KEY (id, time)
 );
-CREATE INDEX event_id_pools_history_idx ON pools_history (event_id);
-CREATE INDEX pool_pools_history_idx ON pools_history (pool);
+CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);
+CREATE INDEX pools_history_event_type_idx ON pools_history (event_type);
+CREATE INDEX pools_history_pool_idx ON pools_history (pool);
 
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
