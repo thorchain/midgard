@@ -78,6 +78,9 @@ func (s *Client) GetPools() ([]common.Asset, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "getPools failed")
 		}
+		if pool.Symbol.IsMiniToken() {
+			continue
+		}
 		pools = append(pools, pool)
 	}
 
