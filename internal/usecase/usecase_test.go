@@ -1163,7 +1163,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 
 	stats, err := uc.GetNetworkInfo()
 	c.Assert(err, IsNil)
-	var poolShareFactor float64 = 2985.0 / 5985.0
+	var poolShareFactor float64 = 2700.0 / 5700.0
 	var blockReward uint64 = 1120 / (emissionCurve * blocksPerYear)
 	var bondReward uint64 = uint64((1 - poolShareFactor) * float64(blockReward))
 	stakeReward := blockReward - bondReward

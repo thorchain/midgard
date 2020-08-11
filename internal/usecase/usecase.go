@@ -359,16 +359,17 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
-	totalBond := calculateTotalBond(nodeAccounts)
+
 	activeBonds := filterNodeBonds(nodeAccounts, thorchain.Active)
 	standbyBonds := filterNodeBonds(nodeAccounts, thorchain.Standby)
 	metrics := calculateBondMetrics(activeBonds, standbyBonds)
+	totalActiveBond := metrics.TotalActiveBond
 
 	vaultData, err := uc.thorchain.GetVaultData()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
-	poolShareFactor := calculatePoolShareFactor(totalBond, totalStaked)
+	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalStaked)
 	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
 	lastHeight, err := uc.thorchain.GetLastChainHeight()
@@ -391,7 +392,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
-		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalBond),
+		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
 		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
@@ -418,14 +419,6 @@ func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics
 		MinimumStandbyBond: calculateUint64sMin(standbyBonds),
 		MaximumStandbyBond: calculateUint64sMax(standbyBonds),
 	}
-}
-
-func calculateTotalBond(nodes []thorchain.NodeAccount) uint64 {
-	var totalBond uint64
-	for _, node := range nodes {
-		totalBond += node.Bond
-	}
-	return totalBond
 }
 
 func filterNodeBonds(nodes []thorchain.NodeAccount, status thorchain.NodeStatus) []uint64 {
