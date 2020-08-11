@@ -257,12 +257,32 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	if err != nil {
 		return nil, err
 	}
-
+	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
+	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
+	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
 	return &models.PoolSimpleDetails{
 		PoolBasics:        basics,
 		PoolSwapStats:     swapStats,
 		PoolVolume24Hours: vol24,
+		Price:             price,
+		AssetROI:          assetROI,
+		RuneROI:           runeROI,
+		PoolROI:           (assetROI + runeROI) / 2,
 	}, nil
+}
+
+func calculatePrice(assetDepth int64, runeDepth int64) float64 {
+	if assetDepth > 0 {
+		return float64(runeDepth) / float64(assetDepth)
+	}
+	return 0
+}
+
+func calculateROI(depth, staked int64) float64 {
+	if staked > 0 {
+		return float64(depth-staked) / float64(staked)
+	}
+	return 0
 }
 
 // fetchPoolStatus fetches pool status from thorchain and update database.

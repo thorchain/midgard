@@ -212,14 +212,21 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 			}
 
 			response[i] = PoolDetail{
-				Asset:           ConvertAssetForAPI(asset),
-				AssetDepth:      Uint64ToString(uint64(details.AssetDepth)),
-				RuneDepth:       Uint64ToString(uint64(details.RuneDepth)),
-				PoolTxAverage:   Float64ToString(details.PoolTxAverage),
-				PoolSlipAverage: Float64ToString(details.PoolSlipAverage),
-				SwappingTxCount: Uint64ToString(uint64(details.SwappingTxCount)),
-				PoolVolume24hr:  Uint64ToString(uint64(details.PoolVolume24Hours)),
-				Status:          pointy.String(details.Status.String()),
+				Asset:            ConvertAssetForAPI(asset),
+				AssetDepth:       Uint64ToString(uint64(details.AssetDepth)),
+				AssetROI:         Float64ToString(details.AssetROI),
+				AssetStakedTotal: Uint64ToString(uint64(details.AssetStaked)),
+				RuneDepth:        Uint64ToString(uint64(details.RuneDepth)),
+				RuneROI:          Float64ToString(details.RuneROI),
+				RuneStakedTotal:  Uint64ToString(uint64(details.RuneStaked)),
+				PoolROI:          Float64ToString(details.PoolROI),
+				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
+				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
+				PoolUnits:        Uint64ToString(uint64(details.Units)),
+				SwappingTxCount:  Uint64ToString(uint64(details.SwappingTxCount)),
+				PoolVolume24hr:   Uint64ToString(uint64(details.PoolVolume24Hours)),
+				Price:            Float64ToString(details.Price),
+				Status:           pointy.String(details.Status.String()),
 			}
 		}
 	case "full":

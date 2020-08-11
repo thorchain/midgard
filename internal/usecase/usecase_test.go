@@ -586,11 +586,15 @@ func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, 
 func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	store := &TestGetPoolSimpleDetailsStore{
 		basics: models.PoolBasics{
-			Asset:      common.BNBAsset,
-			AssetDepth: 1000,
-			RuneDepth:  12000,
-			Units:      500,
-			Status:     models.Enabled,
+			Asset:          common.BNBAsset,
+			AssetDepth:     1000,
+			AssetStaked:    750,
+			AssetWithdrawn: 250,
+			RuneDepth:      12000,
+			RuneStaked:     10000,
+			RuneWithdrawn:  2000,
+			Units:          500,
+			Status:         models.Enabled,
 		},
 		swapStats: models.PoolSwapStats{
 			PoolTxAverage:   1.145,
@@ -606,18 +610,12 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
 	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
-		PoolBasics: models.PoolBasics{
-			Asset:      common.BNBAsset,
-			AssetDepth: 1000,
-			RuneDepth:  12000,
-			Units:      500,
-			Status:     models.Enabled,
-		},
-		PoolSwapStats: models.PoolSwapStats{
-			PoolTxAverage:   1.145,
-			PoolSlipAverage: 0.98,
-			SwappingTxCount: 102,
-		},
+		PoolBasics:        store.basics,
+		PoolSwapStats:     store.swapStats,
+		Price:             12,
+		AssetROI:          1,
+		RuneROI:           0.5,
+		PoolROI:           0.75,
 		PoolVolume24Hours: 124,
 	})
 

@@ -143,7 +143,16 @@ func (s *Client) initPoolCache() error {
 }
 
 func (s *Client) fetchAllPoolsBalances() error {
-	q := `SELECT pool, SUM(asset_amount), SUM(rune_amount), SUM(units) FROM pools_history GROUP BY pool`
+	q := `SELECT pool,
+		SUM(asset_amount),
+		SUM(asset_amount) FILTER (WHERE event_type = 'stake'),
+		SUM(asset_amount) FILTER (WHERE event_type = 'unstake'),
+		SUM(rune_amount),
+		SUM(rune_amount) FILTER (WHERE event_type = 'stake'),
+		SUM(rune_amount) FILTER (WHERE event_type = 'unstake'),
+		SUM(units)
+		FROM pools_history
+		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
 	if err != nil {
 		return err
@@ -152,20 +161,29 @@ func (s *Client) fetchAllPoolsBalances() error {
 
 	for rows.Next() {
 		var (
-			pool       string
-			assetDepth sql.NullInt64
-			runeDepth  sql.NullInt64
-			units      sql.NullInt64
+			pool           string
+			assetDepth     sql.NullInt64
+			assetStaked    sql.NullInt64
+			assetWithdrawn sql.NullInt64
+			runeDepth      sql.NullInt64
+			runeStaked     sql.NullInt64
+			runeWithdrawn  sql.NullInt64
+			units          sql.NullInt64
 		)
-		if err := rows.Scan(&pool, &assetDepth, &runeDepth, &units); err != nil {
+		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
+			&runeDepth, &runeStaked, &runeWithdrawn, &units); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
 		s.pools[pool] = &models.PoolBasics{
-			Asset:      asset,
-			AssetDepth: assetDepth.Int64,
-			RuneDepth:  runeDepth.Int64,
-			Units:      units.Int64,
+			Asset:          asset,
+			AssetDepth:     assetDepth.Int64,
+			AssetStaked:    assetStaked.Int64,
+			AssetWithdrawn: assetWithdrawn.Int64,
+			RuneDepth:      runeDepth.Int64,
+			RuneStaked:     runeStaked.Int64,
+			RuneWithdrawn:  runeWithdrawn.Int64,
+			Units:          units.Int64,
 		}
 	}
 	return nil
@@ -198,10 +216,11 @@ func (s *Client) fetchAllPoolsStatus() error {
 	return nil
 }
 
-func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges, unitsChanges int64, status models.PoolStatus) {
+func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	pool := change.Pool.String()
 	p, ok := s.pools[pool]
 	if !ok {
 		asset, _ := common.NewAsset(pool)
@@ -211,10 +230,18 @@ func (s *Client) updatePoolCache(pool string, assetChanges, runeChanges, unitsCh
 		s.pools[pool] = p
 	}
 
-	p.AssetDepth += assetChanges
-	p.RuneDepth += runeChanges
-	p.Units += unitsChanges
-	if status > models.Unknown {
-		p.Status = status
+	p.AssetDepth += change.AssetAmount
+	p.RuneDepth += change.RuneAmount
+	p.Units += change.Units
+	switch change.EventType {
+	case "stake":
+		p.AssetStaked += change.AssetAmount
+		p.RuneStaked += change.RuneAmount
+	case "unstake":
+		p.AssetWithdrawn += -change.AssetAmount
+		p.RuneWithdrawn += -change.RuneAmount
+	}
+	if change.Status > models.Unknown {
+		p.Status = change.Status
 	}
 }
