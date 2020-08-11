@@ -359,10 +359,11 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
-	totalActiveBond := calculateTotalActiveBond(nodeAccounts)
+
 	activeBonds := filterNodeBonds(nodeAccounts, thorchain.Active)
 	standbyBonds := filterNodeBonds(nodeAccounts, thorchain.Standby)
 	metrics := calculateBondMetrics(activeBonds, standbyBonds)
+	totalActiveBond := metrics.TotalActiveBond
 
 	vaultData, err := uc.thorchain.GetVaultData()
 	if err != nil {
@@ -418,16 +419,6 @@ func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics
 		MinimumStandbyBond: calculateUint64sMin(standbyBonds),
 		MaximumStandbyBond: calculateUint64sMax(standbyBonds),
 	}
-}
-
-func calculateTotalActiveBond(nodes []thorchain.NodeAccount) uint64 {
-	var totalBond uint64
-	for _, node := range nodes {
-		if node.Status== thorchain.Active {
-			totalBond += node.Bond
-		}
-	}
-	return totalBond
 }
 
 func filterNodeBonds(nodes []thorchain.NodeAccount, status thorchain.NodeStatus) []uint64 {
