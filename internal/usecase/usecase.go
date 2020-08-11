@@ -238,6 +238,12 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 // GetPoolBasics returns the basics of pool like asset and rune depths, units and status.
 func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
 	basics, err := uc.store.GetPoolBasics(asset)
+	if basics.Status == models.Unknown {
+		basics.Status, err = uc.fetchPoolStatus(asset)
+		if err != nil {
+			return models.PoolBasics{}, err
+		}
+	}
 	return basics, err
 }
 
@@ -246,6 +252,12 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	basics, err := uc.store.GetPoolBasics(asset)
 	if err != nil {
 		return nil, err
+	}
+	if basics.Status == models.Unknown {
+		basics.Status, err = uc.fetchPoolStatus(asset)
+		if err != nil {
+			return nil, err
+		}
 	}
 	swapStats, err := uc.store.GetPoolSwapStats(asset)
 	if err != nil {
@@ -296,6 +308,7 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 		Status: status,
 		Event: models.Event{
 			Time: time.Now(),
+			Type: "pool",
 		},
 	})
 	if err != nil {
