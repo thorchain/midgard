@@ -549,6 +549,10 @@ func (s *UsecaseSuite) TestGetPoolBasics(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, store.basics)
 
+	store.basics.Status = models.Unknown
+	_, err = uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, NotNil)
+
 	store = &TestGetPoolBasicsStore{
 		err: errors.New("could not fetch requested data"),
 	}
@@ -618,6 +622,10 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 		PoolROI:           0.75,
 		PoolVolume24Hours: 124,
 	})
+
+	store.basics.Status = models.Unknown
+	_, err = uc.GetPoolSimpleDetails(common.BNBAsset)
+	c.Assert(err, NotNil)
 
 	store = &TestGetPoolSimpleDetailsStore{
 		err: errors.New("could not fetch requested data"),
