@@ -155,13 +155,36 @@ func (g *RandEventGenerator) generateGasEvent(count int) []thorchain.Event {
 	return gasEvents
 }
 
-func (g *RandEventGenerator) generateOutboundEvent(from common.Address, to common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
-	return nil
+func (g *RandEventGenerator) generateOutboundEvent(txID common.TxID, from common.Address, to common.Address, asset common.Asset) thorchain.Event {
+	return thorchain.Event{
+		Type: "outbound",
+		Attributes: map[string]string{
+			"in_tx_id": txID.String(),
+			"id":       g.generateTxId().String(),
+			"chain":    asset.Chain.String(),
+			"from":     from.String(),
+			"to":       to.String(),
+			"coin":     fmt.Sprintf("10 %s", asset.String()),
+			"memo":     fmt.Sprintf("OUTBOUND: %s", txID.String()),
+		},
+	}
+}
+
+func (g *RandEventGenerator) generateFeeEvent(txID common.TxID, asset common.Asset) thorchain.Event {
+	return thorchain.Event{
+		Type: "fee",
+		Attributes: map[string]string{
+			"tx_id":       txID.String(),
+			"coins":       fmt.Sprintf("1 %s", asset.String()),
+			"pool_deduct": "1",
+		},
+	}
 }
 
 func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
-	swapEvents := make([]thorchain.Event, count*3)
+	swapEvents := make([]thorchain.Event, count*4)
 	for i := 0; i < count; i++ {
+		txId := g.generateTxId()
 		swapEvents[i*3] = thorchain.Event{
 			Type: "swap",
 			Attributes: map[string]string{
@@ -170,7 +193,7 @@ func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address
 				"trade_slip":            g.randString(numCharset, 3),
 				"liquidity_fee":         g.randString(numCharset, 7),
 				"liquidity_fee_in_rune": g.randString(numCharset, 7),
-				"id":                    g.randString(numCharset, 7),
+				"id":                    txId.String(),
 				"chain":                 asset.Chain.String(),
 				"from":                  swapper.String(),
 				"to":                    poolAddress.String(),
@@ -178,50 +201,15 @@ func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address
 			},
 		}
 		if buy {
-			swapEvents[i*3].Attributes["coin"] = fmt.Sprintf("10 %s", common.RuneAsset().String())
-			swapEvents[i*3+1] = thorchain.Event{
-				Type: "fee",
-				Attributes: map[string]string{
-					"tx_id":       swapEvents[i*3].Attributes["id"],
-					"coins":       fmt.Sprintf("1 %s", asset.String()),
-					"pool_deduct": "1",
-				},
-			}
-			swapEvents[i*3+2] = thorchain.Event{
-				Type: "outbound",
-				Attributes: map[string]string{
-					"in_tx_id": swapEvents[i*3].Attributes["id"],
-					"id":       g.generateTxId().String(),
-					"chain":    asset.Chain.String(),
-					"from":     poolAddress.String(),
-					"to":       swapper.String(),
-					"coin":     fmt.Sprintf("10 %s", asset.String()),
-					"memo":     fmt.Sprintf("OUTBOUND:", swapEvents[i*3].Attributes["id"]),
-				},
-			}
+			swapEvents[i*4].Attributes["coin"] = fmt.Sprintf("10 %s", common.RuneAsset().String())
+			swapEvents[i*4+1] = g.generateFeeEvent(txId, asset)
+			swapEvents[i*4+2] = g.generateOutboundEvent(txId, poolAddress, swapper, asset)
 		} else {
-			swapEvents[i*3].Attributes["coin"] = fmt.Sprintf("10 %s", asset.String())
-			swapEvents[i*3+1] = thorchain.Event{
-				Type: "fee",
-				Attributes: map[string]string{
-					"tx_id":       swapEvents[i*3].Attributes["id"],
-					"coins":       fmt.Sprintf("1 %s", common.RuneAsset().String()),
-					"pool_deduct": "1",
-				},
-			}
-			swapEvents[i*3+2] = thorchain.Event{
-				Type: "outbound",
-				Attributes: map[string]string{
-					"in_tx_id": swapEvents[i*3].Attributes["id"],
-					"id":       g.generateTxId().String(),
-					"chain":    asset.Chain.String(),
-					"from":     poolAddress.String(),
-					"to":       swapper.String(),
-					"coin":     fmt.Sprintf("10 %s", common.RuneAsset().String()),
-					"memo":     fmt.Sprintf("OUTBOUND:", swapEvents[i*3].Attributes["id"]),
-				},
-			}
+			swapEvents[i*4].Attributes["coin"] = fmt.Sprintf("10 %s", asset.String())
+			swapEvents[i*4+1] = g.generateFeeEvent(txId, common.RuneAsset())
+			swapEvents[i*4+2] = g.generateOutboundEvent(txId, poolAddress, swapper, common.RuneAsset())
 		}
+		swapEvents[i*4+3] = g.generateGasEvent(1)[0]
 	}
 	return swapEvents
 }
