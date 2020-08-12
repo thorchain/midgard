@@ -45,7 +45,7 @@ func NewRandEventGenerator(cfg *RandEventGeneratorConfig) *RandEventGenerator {
 	return g
 }
 
-func (g *RandEventGenerator) generateEvents(store Store) error {
+func (g *RandEventGenerator) GenerateEvents(store Store) error {
 	poolAddress := g.generateAddress(1)[0]
 	for i := 0; i < g.cfg.AddEvents; i++ {
 		from := g.Stakers[i%g.cfg.Stakers]
@@ -140,10 +140,7 @@ func (g *RandEventGenerator) generateAddress(count int) []common.Address {
 	for i := 0; i < count; i++ {
 		bytes := make([]byte, 18)
 		g.rng.Read(bytes)
-		addr, err := common.NewAddress(fmt.Sprintf("%x", bytes))
-		if err != nil {
-			log.Fatalln(err)
-		}
+		addr := common.Address(fmt.Sprintf("%x", bytes))
 		addrs[i] = addr
 	}
 	return addrs
