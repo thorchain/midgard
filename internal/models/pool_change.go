@@ -15,9 +15,10 @@ type PoolChange struct {
 	AssetAmount  int64
 	RuneAmount   int64
 	Units        int64
-	TradeSlip    float64
-	LiquidityFee int64
-	PriceTarget  int64
+	SwapType     string
+	TradeSlip    *float64
+	LiquidityFee *int64
+	PriceTarget  *int64
 	Status       PoolStatus
 }
 

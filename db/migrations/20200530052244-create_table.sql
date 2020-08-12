@@ -10,6 +10,7 @@ CREATE TABLE events (
     PRIMARY KEY (id, time)
 );
 
+CREATE TYPE swap_type as enum('buy', 'sell');
 CREATE TABLE pools_history (
     time            TIMESTAMPTZ     NOT NULL,
     id              BIGSERIAL       NOT NULL,
@@ -21,6 +22,7 @@ CREATE TABLE pools_history (
     rune_amount     BIGINT          NOT NULL,
     rune_depth      BIGINT          NOT NULL,
     units           BIGINT,
+    swap_type       swap_type,
     trade_slip      REAL,
     liquidity_fee   BIGINT,
     price_target    BIGINT,
@@ -30,6 +32,7 @@ CREATE TABLE pools_history (
 CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);
 CREATE INDEX pools_history_event_type_idx ON pools_history (event_type);
 CREATE INDEX pools_history_pool_idx ON pools_history (pool);
+CREATE INDEX pools_history_swap_type ON pools_history (swap_type);
 
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
