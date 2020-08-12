@@ -24,16 +24,15 @@ type RandEventGenerator struct {
 }
 
 type RandEventGeneratorConfig struct {
-	Source        rand.Source
-	Pools         int
-	Stakers       int
-	Swappers      int
-	Blocks        int
-	StakeEvents   int
-	AddEvents     int
-	RewardEvent   int
-	UnstakeEvents int
-	SwapEvents    int
+	Source      rand.Source
+	Pools       int
+	Stakers     int
+	Swappers    int
+	Blocks      int
+	StakeEvents int
+	AddEvents   int
+	RewardEvent int
+	SwapEvents  int
 }
 
 func NewRandEventGenerator(cfg *RandEventGeneratorConfig) *RandEventGenerator {
