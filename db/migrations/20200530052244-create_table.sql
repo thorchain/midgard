@@ -21,25 +21,15 @@ CREATE TABLE pools_history (
     rune_amount     BIGINT          NOT NULL,
     rune_depth      BIGINT          NOT NULL,
     units           BIGINT,
+    trade_slip      REAL,
+    liquidity_fee   BIGINT,
+    price_target    BIGINT,
     status          SMALLINT        NOT NULL,
     PRIMARY KEY (id, time)
 );
 CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);
 CREATE INDEX pools_history_event_type_idx ON pools_history (event_type);
 CREATE INDEX pools_history_pool_idx ON pools_history (pool);
-
-CREATE TYPE swap_direction as enum('buy', 'sell');
-CREATE TABLE swaps (
-    time            TIMESTAMPTZ     NOT NULL,
-    event_id        BIGINT          NOT NULL,
-    pool            VARCHAR         NOT NULL,
-    price_target    BIGINT,
-    trade_slip      REAL,
-    liquidity_fee   BIGINT,
-    second_event_id BIGINT,
-    direction       swap_direction  NOT NULL,
-    PRIMARY KEY (event_id, time)
-);
 
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
@@ -70,7 +60,6 @@ CREATE TABLE coins (
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
-SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
 
@@ -78,9 +67,7 @@ SELECT create_hypertable('coins', 'time');
 
 DROP TABLE events;
 DROP TABLE pools_history;
-DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
 
 DROP TYPE tx_direction;
-DROP TYPE swap_direction;

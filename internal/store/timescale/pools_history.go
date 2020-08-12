@@ -20,9 +20,21 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		Int64: change.Units,
 		Valid: change.Units != 0,
 	}
+	tradeSlip := sql.NullFloat64{
+		Float64: change.TradeSlip,
+		Valid:   change.TradeSlip == 0,
+	}
+	liquidityFee := sql.NullInt64{
+		Int64: change.LiquidityFee,
+		Valid: change.LiquidityFee != 0,
+	}
+	priceTarget := sql.NullInt64{
+		Int64: change.PriceTarget,
+		Valid: change.PriceTarget != 0,
+	}
 
 	q := `INSERT INTO pools_history (time, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, status) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
 	_, err := s.db.Exec(q,
 		change.Time,
 		change.EventID,
@@ -33,6 +45,9 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		change.RuneAmount,
 		runeDepth,
 		units,
+		tradeSlip,
+		liquidityFee,
+		priceTarget,
 		change.Status)
 	if err != nil {
 		return err
