@@ -64,7 +64,7 @@ func (g *RandEventGenerator) GenerateEvents(store Store) error {
 	for i := 0; i < g.cfg.StakeEvents; i++ {
 		staker := g.Stakers[i%g.cfg.Stakers]
 		asset := g.Pools[i%g.cfg.Pools]
-		stakeEvt := g.generateStakeEvent(staker, asset)
+		stakeEvt := g.generateStakeEvent(staker, poolAddress, asset)
 		err := store.CreateStakeRecord(&stakeEvt)
 		if err != nil {
 			return err
@@ -96,6 +96,11 @@ func (g *RandEventGenerator) GenerateEvents(store Store) error {
 		}
 		rewardEvt := g.generateRewardEvent(asset)
 		err = store.CreateRewardRecord(&rewardEvt)
+		if err != nil {
+			return err
+		}
+		gasEvt := g.generateGasEvent()
+		err = store.CreateGasRecord(&gasEvt)
 		if err != nil {
 			return err
 		}
@@ -154,8 +159,8 @@ func (g *RandEventGenerator) generateTxId() common.TxID {
 	return txID
 }
 
-func (g *RandEventGenerator) generateStakeEvent(staker common.Address, asset common.Asset) models.EventStake {
-	return models.EventStake{
+func (g *RandEventGenerator) generateStakeEvent(staker common.Address, poolAddress common.Address, asset common.Asset) models.EventStake {
+	stakeEvent := models.EventStake{
 		Event:       g.newEvent("stake"),
 		Pool:        asset,
 		RuneAddress: staker,
@@ -163,6 +168,8 @@ func (g *RandEventGenerator) generateStakeEvent(staker common.Address, asset com
 		AssetAmount: 1000,
 		RuneAmount:  1000,
 	}
+	stakeEvent.InTx = common.NewTx(g.generateTxId(), staker, poolAddress, common.Coins{common.NewCoin(asset, 1000000), common.NewCoin(common.RuneAsset(), 1000000)}, common.Memo(""))
+	return stakeEvent
 }
 
 func (g *RandEventGenerator) generateRewardEvent(asset common.Asset) models.EventReward {
@@ -178,29 +185,25 @@ func (g *RandEventGenerator) generateRewardEvent(asset common.Asset) models.Even
 }
 
 func (g *RandEventGenerator) generateAddEvent(from common.Address, poolAddress common.Address, asset common.Asset) models.EventAdd {
-	addEvents := models.EventAdd{
+	addEvent := models.EventAdd{
 		Event: g.newEvent("add"),
 		Pool:  asset,
 	}
-	addEvents.InTx = common.NewTx(g.generateTxId(), from, poolAddress, common.Coins{common.NewCoin(asset, 1000000)}, common.Memo(fmt.Sprintf("ADD:%s", asset.String())))
-	return addEvents
+	addEvent.InTx = common.NewTx(g.generateTxId(), from, poolAddress, common.Coins{common.NewCoin(asset, 1000000), common.NewCoin(common.RuneAsset(), 1000000)}, common.Memo(fmt.Sprintf("ADD:%s", asset.String())))
+	return addEvent
 }
 
-func (g *RandEventGenerator) generateGasEvent(count int) []models.EventGas {
-	gasEvents := make([]models.EventGas, count)
-	for i := 0; i < count; i++ {
-		gasEvents[i] = models.EventGas{
-			Event: g.newEvent("add"),
-			Pools: []models.GasPool{
-				{
-					Asset:    common.BNBAsset,
-					RuneAmt:  g.rng.Uint64() % 10,
-					AssetAmt: g.rng.Uint64() % 10,
-				},
+func (g *RandEventGenerator) generateGasEvent() models.EventGas {
+	return models.EventGas{
+		Event: g.newEvent("add"),
+		Pools: []models.GasPool{
+			{
+				Asset:    common.BNBAsset,
+				RuneAmt:  g.rng.Uint64() % 10,
+				AssetAmt: g.rng.Uint64() % 10,
 			},
-		}
+		},
 	}
-	return gasEvents
 }
 
 func (g *RandEventGenerator) generateFeeEvent(asset common.Asset) common.Fee {
