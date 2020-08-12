@@ -46,43 +46,71 @@ func NewRandEventGenerator(cfg *RandEventGeneratorConfig) *RandEventGenerator {
 	return g
 }
 
-func (g *RandEventGenerator) generateEvents(store Store) {
+func (g *RandEventGenerator) generateEvents(store Store) error {
 	poolAddress := g.generateAddress(1)[0]
 	for i := 0; i < g.cfg.AddEvents; i++ {
 		from := g.Stakers[i%g.cfg.Stakers]
 		asset := g.Pools[i%g.cfg.Pools]
 		addEvt := g.generateAddEvent(from, poolAddress, asset)
-		store.CreateAddRecord(&addEvt)
+		err := store.CreateAddRecord(&addEvt)
+		if err != nil {
+			return err
+		}
 		rewardEvt := g.generateRewardEvent(asset)
-		store.CreateRewardRecord(&rewardEvt)
+		err = store.CreateRewardRecord(&rewardEvt)
+		if err != nil {
+			return err
+		}
 	}
 	for i := 0; i < g.cfg.StakeEvents; i++ {
 		staker := g.Stakers[i%g.cfg.Stakers]
 		asset := g.Pools[i%g.cfg.Pools]
 		stakeEvt := g.generateStakeEvent(staker, asset)
-		store.CreateStakeRecord(&stakeEvt)
+		err := store.CreateStakeRecord(&stakeEvt)
+		if err != nil {
+			return err
+		}
 		rewardEvt := g.generateRewardEvent(asset)
-		store.CreateRewardRecord(&rewardEvt)
+		err = store.CreateRewardRecord(&rewardEvt)
+		if err != nil {
+			return err
+		}
 	}
 
 	for i := 0; i < g.cfg.SwapEvents; i++ {
 		swapper := g.Stakers[i%g.cfg.Stakers]
 		asset := g.Pools[i%g.cfg.Pools]
 		swapEvt := g.generateSwapEvent(swapper, poolAddress, asset, i%2 == 0)
-		store.CreateSwapRecord(&swapEvt)
+		err := store.CreateSwapRecord(&swapEvt)
+		if err != nil {
+			return err
+		}
 		outboundEvnt := g.generateSwapOutbound(swapEvt, swapper, poolAddress, asset, i%2 == 0)
-		store.UpdateSwapRecord(outboundEvnt)
+		err = store.UpdateSwapRecord(outboundEvnt)
+		if err != nil {
+			return err
+		}
 		feeEvnt := g.generateSwapFee(swapEvt, asset, i%2 == 0)
-		store.UpdateSwapRecord(feeEvnt)
+		err = store.UpdateSwapRecord(feeEvnt)
+		if err != nil {
+			return err
+		}
 		rewardEvt := g.generateRewardEvent(asset)
-		store.CreateRewardRecord(&rewardEvt)
+		err = store.CreateRewardRecord(&rewardEvt)
+		if err != nil {
+			return err
+		}
 	}
 
 	for i := 0; i < g.cfg.SwapEvents; i++ {
 		asset := g.Pools[i%g.cfg.Pools]
 		rewardEvt := g.generateRewardEvent(asset)
-		store.CreateRewardRecord(&rewardEvt)
+		err := store.CreateRewardRecord(&rewardEvt)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (g *RandEventGenerator) generateAsset(count int) []common.Asset {
