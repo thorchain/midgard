@@ -21,6 +21,7 @@ type RandEventGenerator struct {
 	cfg       *RandEventGeneratorConfig
 	height    int
 	blockTime time.Time
+	store     Store
 }
 
 type RandEventGeneratorConfig struct {
@@ -46,73 +47,83 @@ func NewRandEventGenerator(cfg *RandEventGeneratorConfig) *RandEventGenerator {
 }
 
 func (g *RandEventGenerator) GenerateEvents(store Store) error {
+	g.store = store
 	poolAddress := g.generateAddress(1)[0]
-	for i := 0; i < g.cfg.AddEvents; i++ {
-		from := g.Stakers[i%g.cfg.Stakers]
-		asset := g.Pools[i%g.cfg.Pools]
-		addEvt := g.generateAddEvent(from, poolAddress, asset)
-		err := store.CreateAddRecord(&addEvt)
-		if err != nil {
-			return err
+	var err error
+	for i := 0; i < g.cfg.Blocks; i++ {
+		if i%g.cfg.StakeEvents == 0 {
+			err = g.generateStake(store, poolAddress)
+			if err != nil {
+				return err
+			}
 		}
-		rewardEvt := g.generateRewardEvent(asset)
-		err = store.CreateRewardRecord(&rewardEvt)
-		if err != nil {
-			return err
+		if i%g.cfg.AddEvents == 0 {
+			err = g.generateAdd(store, poolAddress)
+			if err != nil {
+				return err
+			}
 		}
-	}
-	for i := 0; i < g.cfg.StakeEvents; i++ {
-		staker := g.Stakers[i%g.cfg.Stakers]
-		asset := g.Pools[i%g.cfg.Pools]
-		stakeEvt := g.generateStakeEvent(staker, poolAddress, asset)
-		err := store.CreateStakeRecord(&stakeEvt)
-		if err != nil {
-			return err
+		if i%g.cfg.SwapEvents == 0 {
+			err = g.generateSwap(store, poolAddress)
+			if err != nil {
+				return err
+			}
 		}
-		rewardEvt := g.generateRewardEvent(asset)
-		err = store.CreateRewardRecord(&rewardEvt)
-		if err != nil {
-			return err
-		}
-	}
-
-	for i := 0; i < g.cfg.SwapEvents; i++ {
-		swapper := g.Stakers[i%g.cfg.Stakers]
-		asset := g.Pools[i%g.cfg.Pools]
-		swapEvt := g.generateSwapEvent(swapper, poolAddress, asset, i%2 == 0)
-		err := store.CreateSwapRecord(&swapEvt)
-		if err != nil {
-			return err
-		}
-		outboundEvnt := g.generateSwapOutbound(swapEvt, swapper, poolAddress, asset, i%2 == 0)
-		err = store.UpdateSwapRecord(outboundEvnt)
-		if err != nil {
-			return err
-		}
-		feeEvnt := g.generateSwapFee(swapEvt, asset, i%2 == 0)
-		err = store.UpdateSwapRecord(feeEvnt)
-		if err != nil {
-			return err
-		}
-		rewardEvt := g.generateRewardEvent(asset)
-		err = store.CreateRewardRecord(&rewardEvt)
-		if err != nil {
-			return err
-		}
-		gasEvt := g.generateGasEvent()
-		err = store.CreateGasRecord(&gasEvt)
-		if err != nil {
-			return err
-		}
-	}
-
-	for i := 0; i < g.cfg.Blocks-g.height; i++ {
-		asset := g.Pools[i%g.cfg.Pools]
-		rewardEvt := g.generateRewardEvent(asset)
+		rewardEvt := g.generateRewardEvent()
 		err := store.CreateRewardRecord(&rewardEvt)
 		if err != nil {
 			return err
 		}
+		g.height++
+	}
+	return nil
+}
+
+func (g *RandEventGenerator) generateStake(store Store, poolAddress common.Address) error {
+	staker := g.Stakers[g.height%g.cfg.Stakers]
+	asset := g.Pools[g.height%g.cfg.Pools]
+	stakeEvt := g.generateStakeEvent(staker, poolAddress, asset)
+	err := store.CreateStakeRecord(&stakeEvt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *RandEventGenerator) generateAdd(store Store, poolAddress common.Address) error {
+	from := g.Stakers[g.height%g.cfg.Stakers]
+	asset := g.Pools[g.height%g.cfg.Pools]
+	addEvt := g.generateAddEvent(from, poolAddress, asset)
+	err := store.CreateAddRecord(&addEvt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *RandEventGenerator) generateSwap(store Store, poolAddress common.Address) error {
+	swapper := g.Stakers[g.height%g.cfg.Stakers]
+	asset := g.Pools[g.height%g.cfg.Pools]
+	buy := g.rng.Int()%2 == 0
+	swapEvt := g.generateSwapEvent(swapper, poolAddress, asset, buy)
+	err := store.CreateSwapRecord(&swapEvt)
+	if err != nil {
+		return err
+	}
+	outboundEvnt := g.generateSwapOutbound(swapEvt, swapper, poolAddress, asset, buy)
+	err = store.UpdateSwapRecord(outboundEvnt)
+	if err != nil {
+		return err
+	}
+	feeEvnt := g.generateSwapFee(swapEvt, asset, buy)
+	err = store.UpdateSwapRecord(feeEvnt)
+	if err != nil {
+		return err
+	}
+	gasEvt := g.generateGasEvent()
+	err = store.CreateGasRecord(&gasEvt)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -172,12 +183,12 @@ func (g *RandEventGenerator) generateStakeEvent(staker common.Address, poolAddre
 	return stakeEvent
 }
 
-func (g *RandEventGenerator) generateRewardEvent(asset common.Asset) models.EventReward {
+func (g *RandEventGenerator) generateRewardEvent() models.EventReward {
 	return models.EventReward{
 		Event: g.newEvent("reward"),
 		PoolRewards: []models.PoolAmount{
 			{
-				Pool:   asset,
+				Pool:   common.BNBAsset,
 				Amount: 1,
 			},
 		},
@@ -256,7 +267,6 @@ func (g *RandEventGenerator) generateSwapFee(swapEvent models.EventSwap, asset c
 }
 
 func (g *RandEventGenerator) newEvent(evtType string) models.Event {
-	g.height++
 	g.blockTime = g.blockTime.Add(time.Second * 3)
 	return models.Event{
 		Time:   g.blockTime,
