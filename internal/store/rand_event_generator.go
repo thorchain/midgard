@@ -156,6 +156,7 @@ func (g *RandEventGenerator) generateGasEvent(count int) []thorchain.Event {
 }
 
 func (g *RandEventGenerator) generateOutboundEvent(from common.Address, to common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
+	return nil
 }
 
 func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
