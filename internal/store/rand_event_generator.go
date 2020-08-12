@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"time"
+
+	"gitlab.com/thorchain/midgard/internal/models"
 
 	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
-const (
-	assetCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	numCharset   = "0123456789"
-)
+const assetCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 type RandEventGenerator struct {
 	Pools    []common.Asset
@@ -43,6 +43,10 @@ func NewRandEventGenerator(cfg *RandEventGeneratorConfig) *RandEventGenerator {
 	g.Stakers = g.generateAddress(cfg.Stakers)
 	g.Swappers = g.generateAddress(cfg.Swappers)
 	return g
+}
+
+func (g *RandEventGenerator) generateEvents() []thorchain.Event {
+	return nil
 }
 
 func (g *RandEventGenerator) generateAsset(count int) []common.Asset {
@@ -90,126 +94,115 @@ func (g *RandEventGenerator) generateTxId() common.TxID {
 	return txID
 }
 
-func (g *RandEventGenerator) generateStakeEvent(count int, staker common.Address, asset common.Asset) []thorchain.Event {
-	stakeEvents := make([]thorchain.Event, count)
+func (g *RandEventGenerator) generateStakeEvent(count int, staker common.Address, asset common.Asset) []models.EventStake {
+	stakeEvents := make([]models.EventStake, count)
+	start := time.Now()
 	for i := 0; i < count; i++ {
-		stakeEvents[i] = thorchain.Event{
-			Type: "stake",
-			Attributes: map[string]string{
-				"pool":         asset.String(),
-				"stake_units":  "10",
-				"rune_address": staker.String(),
-				"rune_amount":  "1000",
-				"asset_amount": "1000",
-			},
+		stakeEvents[i] = models.EventStake{
+			Event:       newEvent("stake", int64(i), start),
+			Pool:        asset,
+			RuneAddress: staker,
+			StakeUnits:  10,
+			AssetAmount: 1000,
+			RuneAmount:  1000,
 		}
+		start = start.Add(time.Second * 3)
 	}
 	return stakeEvents
 }
 
-func (g *RandEventGenerator) generateRewardEvent(count int, asset common.Asset) []thorchain.Event {
-	rewardEvents := make([]thorchain.Event, count)
+func (g *RandEventGenerator) generateRewardEvent(count int, asset common.Asset) []models.EventReward {
+	rewardEvents := make([]models.EventReward, count)
+	start := time.Now()
 	for i := 0; i < count; i++ {
-		rewardEvents[i] = thorchain.Event{
-			Type: "reward",
-			Attributes: map[string]string{
-				"bond_reward":  g.randString(numCharset, 6),
-				asset.String(): g.randString(numCharset, 4),
+		rewardEvents[i] = models.EventReward{
+			Event: newEvent("reward", int64(i), start),
+			PoolRewards: []models.PoolAmount{
+				{
+					Pool:   asset,
+					Amount: 1,
+				},
 			},
 		}
+		start = start.Add(time.Second * 3)
 	}
 	return rewardEvents
 }
 
-func (g *RandEventGenerator) generateAddEvent(count int, staker common.Address, poolAddress common.Address, asset common.Asset) []thorchain.Event {
-	addEvents := make([]thorchain.Event, count)
+func (g *RandEventGenerator) generateAddEvent(count int, from common.Address, poolAddress common.Address, asset common.Asset) []models.EventAdd {
+	addEvents := make([]models.EventAdd, count)
+	start := time.Now()
 	for i := 0; i < count; i++ {
-		addEvents[i] = thorchain.Event{
-			Type: "add",
-			Attributes: map[string]string{
-				"pool":  g.randString(numCharset, 6),
-				"id":    g.generateTxId().String(),
-				"chain": asset.Chain.String(),
-				"from":  staker.String(),
-				"to":    poolAddress.String(),
-				"coin":  fmt.Sprintf("1000 %s, 2000 %s", asset.String(), common.RuneAsset().String()),
-				"memo":  fmt.Sprintf("ADD:%s", asset.String()),
-			},
+		addEvents[i] = models.EventAdd{
+			Event: newEvent("add", int64(i), start),
+			Pool:  asset,
 		}
+		addEvents[i].InTx = common.NewTx(g.generateTxId(), from, poolAddress, common.Coins{common.NewCoin(asset, 1)}, common.Memo(fmt.Sprintf("ADD:%s", asset.String())))
+		start = start.Add(time.Second * 3)
 	}
 	return addEvents
 }
 
-func (g *RandEventGenerator) generateGasEvent(count int) []thorchain.Event {
-	gasEvents := make([]thorchain.Event, count)
+func (g *RandEventGenerator) generateGasEvent(count int) []models.EventGas {
+	gasEvents := make([]models.EventGas, count)
+	start := time.Now()
 	for i := 0; i < count; i++ {
-		gasEvents[i] = thorchain.Event{
-			Type: "gas",
-			Attributes: map[string]string{
-				"asset":     common.BNBAsset.String(),
-				"asset_amt": g.randString(numCharset, 3),
-				"rune_amt":  g.randString(numCharset, 3),
+		gasEvents[i] = models.EventGas{
+			Event: newEvent("add", int64(i), start),
+			Pools: []models.GasPool{
+				{
+					Asset:    common.BNBAsset,
+					RuneAmt:  g.rng.Uint64() % 10,
+					AssetAmt: g.rng.Uint64() % 10,
+				},
 			},
 		}
+		start = start.Add(time.Second * 3)
 	}
 	return gasEvents
 }
 
-func (g *RandEventGenerator) generateOutboundEvent(txID common.TxID, from common.Address, to common.Address, asset common.Asset) thorchain.Event {
-	return thorchain.Event{
-		Type: "outbound",
-		Attributes: map[string]string{
-			"in_tx_id": txID.String(),
-			"id":       g.generateTxId().String(),
-			"chain":    asset.Chain.String(),
-			"from":     from.String(),
-			"to":       to.String(),
-			"coin":     fmt.Sprintf("10 %s", asset.String()),
-			"memo":     fmt.Sprintf("OUTBOUND: %s", txID.String()),
+func (g *RandEventGenerator) generateFeeEvent(asset common.Asset) common.Fee {
+	return common.Fee{
+		Coins: common.Coins{
+			common.NewCoin(asset, 1),
 		},
+		PoolDeduct: 1,
 	}
 }
 
-func (g *RandEventGenerator) generateFeeEvent(txID common.TxID, asset common.Asset) thorchain.Event {
-	return thorchain.Event{
-		Type: "fee",
-		Attributes: map[string]string{
-			"tx_id":       txID.String(),
-			"coins":       fmt.Sprintf("1 %s", asset.String()),
-			"pool_deduct": "1",
-		},
-	}
-}
-
-func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
-	swapEvents := make([]thorchain.Event, count*4)
+func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address, poolAddress common.Address, asset common.Asset, buy bool) []models.EventSwap {
+	swapEvents := make([]models.EventSwap, count*4)
+	start := time.Now()
 	for i := 0; i < count; i++ {
-		txId := g.generateTxId()
-		swapEvents[i*3] = thorchain.Event{
-			Type: "swap",
-			Attributes: map[string]string{
-				"pool":                  asset.String(),
-				"price_target":          "0",
-				"trade_slip":            g.randString(numCharset, 3),
-				"liquidity_fee":         g.randString(numCharset, 7),
-				"liquidity_fee_in_rune": g.randString(numCharset, 7),
-				"id":                    txId.String(),
-				"chain":                 asset.Chain.String(),
-				"from":                  swapper.String(),
-				"to":                    poolAddress.String(),
-				"memo":                  fmt.Sprintf("SWAP:%s::0", asset.String()),
-			},
+		swapEvents[i] = models.EventSwap{
+			Event:        newEvent("swap", int64(i), start),
+			Pool:         asset,
+			PriceTarget:  10,
+			TradeSlip:    g.rng.Int63() % 10000,
+			LiquidityFee: g.rng.Int63() % 10000,
 		}
 		if buy {
-			swapEvents[i*4].Attributes["coin"] = fmt.Sprintf("10 %s", common.RuneAsset().String())
-			swapEvents[i*4+1] = g.generateFeeEvent(txId, asset)
-			swapEvents[i*4+2] = g.generateOutboundEvent(txId, poolAddress, swapper, asset)
+			swapEvents[i].InTx = common.NewTx(g.generateTxId(), swapper, poolAddress, common.Coins{common.NewCoin(asset, 1)}, common.Memo(""))
+			swapEvents[i].OutTxs = common.Txs{
+				common.NewTx(g.generateTxId(), swapper, poolAddress, common.Coins{common.NewCoin(common.RuneAsset(), 1)}, common.Memo("")),
+			}
+			swapEvents[i].Fee = g.generateFeeEvent(common.RuneAsset())
 		} else {
-			swapEvents[i*4].Attributes["coin"] = fmt.Sprintf("10 %s", asset.String())
-			swapEvents[i*4+1] = g.generateFeeEvent(txId, common.RuneAsset())
-			swapEvents[i*4+2] = g.generateOutboundEvent(txId, poolAddress, swapper, common.RuneAsset())
+			swapEvents[i].InTx = common.NewTx(g.generateTxId(), swapper, poolAddress, common.Coins{common.NewCoin(common.RuneAsset(), 1)}, common.Memo(""))
+			swapEvents[i].OutTxs = common.Txs{
+				common.NewTx(g.generateTxId(), swapper, poolAddress, common.Coins{common.NewCoin(asset, 1)}, common.Memo("")),
+			}
+			swapEvents[i].Fee = g.generateFeeEvent(asset)
 		}
-		swapEvents[i*4+3] = g.generateGasEvent(1)[0]
 	}
 	return swapEvents
+}
+
+func newEvent(evtType string, height int64, blockTime time.Time) models.Event {
+	return models.Event{
+		Time:   blockTime,
+		Height: height,
+		Type:   evtType,
+	}
 }
