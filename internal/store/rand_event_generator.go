@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 	"log"
 	"math/rand"
 
@@ -75,4 +76,22 @@ func (g *RandEventGenerator) generateAddress(count int) []common.Address {
 		addrs[i] = addr
 	}
 	return addrs
+}
+
+func (g *RandEventGenerator) generateStakeEvent(count int, asset common.Asset) []thorchain.Event {
+	stakeEvents := make([]thorchain.Event, count)
+	address := g.generateAddress(count)
+	for i := 0; i < count; i++ {
+		stakeEvents[i] = thorchain.Event{
+			Type: "stake",
+			Attributes: map[string]string{
+				"pool":         asset.String(),
+				"stake_units":  "10",
+				"rune_address": address[i].String(),
+				"rune_amount":  "1000",
+				"asset_amount": "1000",
+			},
+		}
+	}
+	return stakeEvents
 }
