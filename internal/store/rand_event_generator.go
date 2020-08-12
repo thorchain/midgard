@@ -2,15 +2,18 @@ package store
 
 import (
 	"fmt"
-	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 	"log"
 	"math/rand"
+
+	"gitlab.com/thorchain/midgard/pkg/clients/thorchain"
 
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
-const assetCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const numCharset = "0123456789"
+const (
+	assetCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	numCharset   = "0123456789"
+)
 
 type RandEventGenerator struct {
 	Pools    []common.Asset
@@ -80,14 +83,14 @@ func (g *RandEventGenerator) generateAddress(count int) []common.Address {
 }
 
 func (g *RandEventGenerator) generateTxId() common.TxID {
-	txID,err:=common.NewTxID(g.randString(assetCharset,64))
+	txID, err := common.NewTxID(g.randString(assetCharset, 64))
 	if err != nil {
 		log.Fatalln(err)
 	}
 	return txID
 }
 
-func (g *RandEventGenerator) generateStakeEvent(count int,staker common.Address, asset common.Asset) []thorchain.Event {
+func (g *RandEventGenerator) generateStakeEvent(count int, staker common.Address, asset common.Asset) []thorchain.Event {
 	stakeEvents := make([]thorchain.Event, count)
 	for i := 0; i < count; i++ {
 		stakeEvents[i] = thorchain.Event{
@@ -110,18 +113,18 @@ func (g *RandEventGenerator) generateRewardEvent(count int, asset common.Asset) 
 		rewardEvents[i] = thorchain.Event{
 			Type: "reward",
 			Attributes: map[string]string{
-				"bond_reward":  g.randString(numCharset,6),
-				asset.String(): g.randString(numCharset,4),
+				"bond_reward":  g.randString(numCharset, 6),
+				asset.String(): g.randString(numCharset, 4),
 			},
 		}
 	}
 	return rewardEvents
 }
 
-func (g *RandEventGenerator) generateAddEvent(count int,staker common.Address,poolAddress common.Address, asset common.Asset) []thorchain.Event {
-	rewardEvents := make([]thorchain.Event, count)
+func (g *RandEventGenerator) generateAddEvent(count int, staker common.Address, poolAddress common.Address, asset common.Asset) []thorchain.Event {
+	addEvents := make([]thorchain.Event, count)
 	for i := 0; i < count; i++ {
-		rewardEvents[i] = thorchain.Event{
+		addEvents[i] = thorchain.Event{
 			Type: "add",
 			Attributes: map[string]string{
 				"pool":  g.randString(numCharset, 6),
@@ -134,5 +137,90 @@ func (g *RandEventGenerator) generateAddEvent(count int,staker common.Address,po
 			},
 		}
 	}
-	return rewardEvents
+	return addEvents
+}
+
+func (g *RandEventGenerator) generateGasEvent(count int) []thorchain.Event {
+	gasEvents := make([]thorchain.Event, count)
+	for i := 0; i < count; i++ {
+		gasEvents[i] = thorchain.Event{
+			Type: "gas",
+			Attributes: map[string]string{
+				"asset":     common.BNBAsset.String(),
+				"asset_amt": g.randString(numCharset, 3),
+				"rune_amt":  g.randString(numCharset, 3),
+			},
+		}
+	}
+	return gasEvents
+}
+
+func (g *RandEventGenerator) generateOutboundEvent(from common.Address, to common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
+}
+
+func (g *RandEventGenerator) generateSwapEvent(count int, swapper common.Address, poolAddress common.Address, asset common.Asset, buy bool) []thorchain.Event {
+	swapEvents := make([]thorchain.Event, count*3)
+	for i := 0; i < count; i++ {
+		swapEvents[i*3] = thorchain.Event{
+			Type: "swap",
+			Attributes: map[string]string{
+				"pool":                  asset.String(),
+				"price_target":          "0",
+				"trade_slip":            g.randString(numCharset, 3),
+				"liquidity_fee":         g.randString(numCharset, 7),
+				"liquidity_fee_in_rune": g.randString(numCharset, 7),
+				"id":                    g.randString(numCharset, 7),
+				"chain":                 asset.Chain.String(),
+				"from":                  swapper.String(),
+				"to":                    poolAddress.String(),
+				"memo":                  fmt.Sprintf("SWAP:%s::0", asset.String()),
+			},
+		}
+		if buy {
+			swapEvents[i*3].Attributes["coin"] = fmt.Sprintf("10 %s", common.RuneAsset().String())
+			swapEvents[i*3+1] = thorchain.Event{
+				Type: "fee",
+				Attributes: map[string]string{
+					"tx_id":       swapEvents[i*3].Attributes["id"],
+					"coins":       fmt.Sprintf("1 %s", asset.String()),
+					"pool_deduct": "1",
+				},
+			}
+			swapEvents[i*3+2] = thorchain.Event{
+				Type: "outbound",
+				Attributes: map[string]string{
+					"in_tx_id": swapEvents[i*3].Attributes["id"],
+					"id":       g.generateTxId().String(),
+					"chain":    asset.Chain.String(),
+					"from":     poolAddress.String(),
+					"to":       swapper.String(),
+					"coin":     fmt.Sprintf("10 %s", asset.String()),
+					"memo":     fmt.Sprintf("OUTBOUND:", swapEvents[i*3].Attributes["id"]),
+				},
+			}
+		} else {
+			swapEvents[i*3].Attributes["coin"] = fmt.Sprintf("10 %s", asset.String())
+			swapEvents[i*3+1] = thorchain.Event{
+				Type: "fee",
+				Attributes: map[string]string{
+					"tx_id":       swapEvents[i*3].Attributes["id"],
+					"coins":       fmt.Sprintf("1 %s", common.RuneAsset().String()),
+					"pool_deduct": "1",
+				},
+			}
+			swapEvents[i*3+2] = thorchain.Event{
+				Type: "outbound",
+				Attributes: map[string]string{
+					"in_tx_id": swapEvents[i*3].Attributes["id"],
+					"id":       g.generateTxId().String(),
+					"chain":    asset.Chain.String(),
+					"from":     poolAddress.String(),
+					"to":       swapper.String(),
+					"coin":     fmt.Sprintf("10 %s", common.RuneAsset().String()),
+					"memo":     fmt.Sprintf("OUTBOUND:", swapEvents[i*3].Attributes["id"]),
+				},
+			}
+		}
+	}
+	return swapEvents
 }
