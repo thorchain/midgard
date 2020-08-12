@@ -19,7 +19,7 @@ type RandEventGenerator struct {
 	Swappers  []common.Address
 	rng       *rand.Rand
 	cfg       *RandEventGeneratorConfig
-	height    int64
+	height    int
 	blockTime time.Time
 }
 
@@ -31,7 +31,6 @@ type RandEventGeneratorConfig struct {
 	Blocks      int
 	StakeEvents int
 	AddEvents   int
-	RewardEvent int
 	SwapEvents  int
 }
 
@@ -102,7 +101,7 @@ func (g *RandEventGenerator) generateEvents(store Store) error {
 		}
 	}
 
-	for i := 0; i < g.cfg.SwapEvents; i++ {
+	for i := 0; i < g.cfg.Blocks-g.height; i++ {
 		asset := g.Pools[i%g.cfg.Pools]
 		rewardEvt := g.generateRewardEvent(asset)
 		err := store.CreateRewardRecord(&rewardEvt)
@@ -261,7 +260,7 @@ func (g *RandEventGenerator) newEvent(evtType string) models.Event {
 	g.blockTime = g.blockTime.Add(time.Second * 3)
 	return models.Event{
 		Time:   g.blockTime,
-		Height: g.height,
+		Height: int64(g.height),
 		Type:   evtType,
 	}
 }
