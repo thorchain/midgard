@@ -166,7 +166,6 @@ func (g *RandEventGenerator) generateAddress(count int) []common.Address {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		// addr := common.Address(fmt.Sprintf("%x", bytes))
 		addrStr, err := bech32.Encode("tbnb", bytes)
 		if err != nil {
 			log.Fatalln(err)
