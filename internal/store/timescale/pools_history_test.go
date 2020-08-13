@@ -289,7 +289,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 
 	// Force refresh the materialized views
-	err = s.refreshView("total_volume_changes_5min")
+	err = s.refreshView("total_volume_changes_5_min")
 	c.Assert(err, IsNil)
 	err = s.refreshView("total_volume_changes_daily")
 	c.Assert(err, IsNil)
