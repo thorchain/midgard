@@ -46,9 +46,8 @@ func (s *BenchmarkSuite) TearDownSuite(c *C) {
 
 func (s *BenchmarkSuite) BenchmarkGetPoolData(c *C) {
 	for i := 0; i < c.N; i++ {
-		for _, pool := range s.generator.Pools {
-			_, err := s.Store.GetPoolData(pool)
-			c.Assert(err, IsNil)
-		}
+		pool := s.generator.Pools[i%len(s.generator.Pools)]
+		_, err := s.Store.GetPoolData(pool)
+		c.Assert(err, IsNil)
 	}
 }

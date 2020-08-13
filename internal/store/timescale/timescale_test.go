@@ -2080,13 +2080,15 @@ func NewTestStore(c *C) (*Client, error) {
 	}
 
 	cfg := config.TimeScaleConfiguration{
-		Host:          getVar("PG_HOST", "localhost"),
-		Port:          port,
-		UserName:      userName,
-		Password:      password,
-		Database:      database,
-		Sslmode:       sslMode,
-		MigrationsDir: migrationsDir,
+		Host:                  getVar("PG_HOST", "localhost"),
+		Port:                  port,
+		UserName:              userName,
+		Password:              password,
+		Database:              database,
+		Sslmode:               sslMode,
+		MigrationsDir:         migrationsDir,
+		MaxConnections:        5,
+		ConnectionMaxLifetime: time.Second * 5,
 	}
 	return NewClient(cfg)
 }
