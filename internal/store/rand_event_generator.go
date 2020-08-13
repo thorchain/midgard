@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/btcsuite/btcutil/bech32"
+
 	"gitlab.com/thorchain/midgard/internal/models"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -156,7 +158,19 @@ func (g *RandEventGenerator) generateAddress(count int) []common.Address {
 	for i := 0; i < count; i++ {
 		bytes := make([]byte, 18)
 		g.rng.Read(bytes)
-		addr := common.Address(fmt.Sprintf("%x", bytes))
+		bytes, err := bech32.ConvertBits(bytes, 8, 5, true)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		// addr := common.Address(fmt.Sprintf("%x", bytes))
+		addrStr, err := bech32.Encode("tbnb", bytes)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		addr, err := common.NewAddress(addrStr)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		addrs[i] = addr
 	}
 	return addrs
