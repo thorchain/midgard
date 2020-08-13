@@ -9,7 +9,6 @@ import (
 
 // Store represents methods required by Usecase to store and load data from internal data store.
 type Store interface {
-	//UpdatePoolsHistory(change *models.PoolChange) error
 	CreateSwapRecord(record *models.EventSwap) error
 	CreateStakeRecord(record *models.EventStake) error
 	CreateUnStakesRecord(record *models.EventUnstake) error
