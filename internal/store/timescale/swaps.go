@@ -10,6 +10,7 @@ import (
 const slipBasisPoints float64 = 10000
 
 func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
+	record.Event.SwapPriceTarget = &record.PriceTarget
 	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
@@ -57,7 +58,6 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		SwapType:     direction,
 		TradeSlip:    &tradeSlip,
 		LiquidityFee: &record.LiquidityFee,
-		PriceTarget:  &record.PriceTarget,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

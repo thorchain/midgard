@@ -372,7 +372,7 @@ func (s *Client) txDate(eventId uint64) (time.Time, error) {
 }
 
 func (s *Client) priceTarget(eventId uint64) uint64 {
-	stmnt := `SELECT price_target FROM pools_history WHERE event_id = $1`
+	stmnt := `SELECT swap_price_target FROM events WHERE id = $1`
 	var priceTarget uint64
 	row := s.db.QueryRow(stmnt, eventId)
 

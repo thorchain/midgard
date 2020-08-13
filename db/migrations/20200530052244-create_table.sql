@@ -2,11 +2,12 @@
 -- +migrate Up
 
 CREATE TABLE events (
-    time            TIMESTAMPTZ     NOT NULL,
-    id              BIGSERIAL       NOT NULL,
-    height          BIGINT          NOT NULL,
-    type            VARCHAR         NOT NULL,
-    status          VARCHAR,
+    time                TIMESTAMPTZ     NOT NULL,
+    id                  BIGSERIAL       NOT NULL,
+    height              BIGINT          NOT NULL,
+    type                VARCHAR         NOT NULL,
+    status              VARCHAR,
+    swap_price_target   BIGINT,
     PRIMARY KEY (id, time)
 );
 
@@ -25,7 +26,6 @@ CREATE TABLE pools_history (
     swap_type       swap_type,
     trade_slip      REAL,
     liquidity_fee   BIGINT,
-    price_target    BIGINT,
     status          SMALLINT        NOT NULL,
     PRIMARY KEY (id, time)
 );
