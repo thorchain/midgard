@@ -54,25 +54,24 @@ func (g *RandEventGenerator) GenerateEvents(store Store) error {
 	var err error
 	for i := 0; i < g.cfg.Blocks; i++ {
 		if i%g.cfg.StakeEvents == 0 {
-			err = g.generateStake(store, poolAddress)
+			err = g.addStakeEvent(store, poolAddress)
 			if err != nil {
 				return err
 			}
 		}
 		if i%g.cfg.AddEvents == 0 {
-			err = g.generateAdd(store, poolAddress)
+			err = g.addAddEvent(store, poolAddress)
 			if err != nil {
 				return err
 			}
 		}
 		if i%g.cfg.SwapEvents == 0 {
-			err = g.generateSwap(store, poolAddress)
+			err = g.addSwapEvent(store, poolAddress)
 			if err != nil {
 				return err
 			}
 		}
-		rewardEvt := g.generateRewardEvent()
-		err := store.CreateRewardRecord(&rewardEvt)
+		err := g.addRewardEvent(store)
 		if err != nil {
 			return err
 		}
@@ -81,7 +80,7 @@ func (g *RandEventGenerator) GenerateEvents(store Store) error {
 	return nil
 }
 
-func (g *RandEventGenerator) generateStake(store Store, poolAddress common.Address) error {
+func (g *RandEventGenerator) addStakeEvent(store Store, poolAddress common.Address) error {
 	staker := g.Stakers[g.height%g.cfg.Stakers]
 	asset := g.Pools[g.height%g.cfg.Pools]
 	stakeEvt := g.generateStakeEvent(staker, poolAddress, asset)
@@ -92,7 +91,7 @@ func (g *RandEventGenerator) generateStake(store Store, poolAddress common.Addre
 	return nil
 }
 
-func (g *RandEventGenerator) generateAdd(store Store, poolAddress common.Address) error {
+func (g *RandEventGenerator) addAddEvent(store Store, poolAddress common.Address) error {
 	from := g.Stakers[g.height%g.cfg.Stakers]
 	asset := g.Pools[g.height%g.cfg.Pools]
 	addEvt := g.generateAddEvent(from, poolAddress, asset)
@@ -103,7 +102,7 @@ func (g *RandEventGenerator) generateAdd(store Store, poolAddress common.Address
 	return nil
 }
 
-func (g *RandEventGenerator) generateSwap(store Store, poolAddress common.Address) error {
+func (g *RandEventGenerator) addSwapEvent(store Store, poolAddress common.Address) error {
 	swapper := g.Stakers[g.height%g.cfg.Stakers]
 	asset := g.Pools[g.height%g.cfg.Pools]
 	buy := g.rng.Int()%2 == 0
@@ -128,6 +127,11 @@ func (g *RandEventGenerator) generateSwap(store Store, poolAddress common.Addres
 		return err
 	}
 	return nil
+}
+
+func (g *RandEventGenerator) addRewardEvent(store Store) error {
+	rewardEvt := g.generateRewardEvent()
+	return store.CreateRewardRecord(&rewardEvt)
 }
 
 func (g *RandEventGenerator) generateAsset(count int) []common.Asset {
