@@ -335,8 +335,8 @@ func (s *Client) events(eventId uint64, eventType string) models.Events {
 
 func (s *Client) swapEvents(eventId uint64) models.Events {
 	stmnt := `
-		SELECT swaps.trade_slip, swaps.liquidity_fee
-			FROM swaps
+		SELECT trade_slip, liquidity_fee
+			FROM pools_history
 		WHERE event_id = $1`
 
 	var events models.Events
@@ -372,7 +372,7 @@ func (s *Client) txDate(eventId uint64) (time.Time, error) {
 }
 
 func (s *Client) priceTarget(eventId uint64) uint64 {
-	stmnt := `SELECT price_target FROM swaps WHERE event_id = $1`
+	stmnt := `SELECT price_target FROM pools_history WHERE event_id = $1`
 	var priceTarget uint64
 	row := s.db.QueryRow(stmnt, eventId)
 

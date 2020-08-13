@@ -253,12 +253,6 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
 	}
-	if swap.Event.Type == "" {
-		err = eh.store.SetSecondSwapId(evts[0].ID, swap.ID)
-		if err != nil {
-			return errors.Wrap(err, "failed to update double swap")
-		}
-	}
 	return nil
 }
 

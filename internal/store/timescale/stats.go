@@ -39,9 +39,9 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 // GetTotalVolume returns total volume between "from" to "to".
 func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("SUM(ABS(rune_amount))").From("swaps")
-	sb.JoinWithOption(sqlbuilder.LeftJoin, "pools_history", "swaps.event_id = pools_history.event_id")
-	vol, err := s.queryTimestampInt64(sb, "swaps.time", from, to)
+	sb.Select("SUM(ABS(rune_amount))").From("pools_history")
+	sb.Where(sb.IsNotNull("swap_type"))
+	vol, err := s.queryTimestampInt64(sb, "time", from, to)
 	return uint64(vol), err
 }
 
@@ -97,8 +97,8 @@ func (s *Client) TotalRuneStaked() (int64, error) {
 func (s *Client) runeSwaps() (int64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount) 
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
+		FROM pools_history
+		WHERE event_type = 'swap'
 	`
 
 	var runeIncomingSwaps sql.NullInt64
@@ -140,7 +140,7 @@ func (s *Client) PoolCount() (uint64, error) {
 }
 
 func (s *Client) TotalAssetBuys() (uint64, error) {
-	stmnt := `SELECT COUNT(pool) FROM swaps WHERE direction = 'sell'`
+	stmnt := `SELECT COUNT(*) FROM pools_history WHERE swap_type = 'sell'`
 	var totalAssetBuys sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
@@ -152,7 +152,7 @@ func (s *Client) TotalAssetBuys() (uint64, error) {
 }
 
 func (s *Client) TotalAssetSells() (uint64, error) {
-	stmnt := `SELECT COUNT(pool) FROM swaps WHERE direction = 'buy'`
+	stmnt := `SELECT COUNT(*) FROM pools_history WHERE swap_type = 'buy'`
 	var totalAssetSells sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 

@@ -14,7 +14,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-var tables = []string{"coins", "events", "pools_history", "swaps", "txs"}
+var tables = []string{"coins", "events", "pools_history", "txs"}
 
 func Test(t *testing.T) {
 	TestingT(t)

@@ -326,10 +326,10 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 
 func (s *Client) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
 	stmnt := `
-		SELECT AVG(ABS(runeAmt)), AVG(trade_slip), COUNT(*)
-		FROM swaps
+		SELECT AVG(ABS(rune_amount)), AVG(trade_slip), COUNT(*)
+		FROM pools_history
 		WHERE pool = $1
-	`
+		AND event_type = 'swap'`
 
 	var txAverge, slipAverage sql.NullFloat64
 	var count sql.NullInt64
@@ -567,10 +567,9 @@ func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
 func (s *Client) runeSwapped(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-	`
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'`
 
 	var total sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -587,10 +586,10 @@ func (s *Client) runeSwapped(asset common.Asset) (int64, error) {
 func (s *Client) runeSwap12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var runeSwap12m sql.NullInt64
@@ -607,9 +606,9 @@ func (s *Client) runeSwap12m(asset common.Asset) (int64, error) {
 func (s *Client) assetSwap(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'
 	`
 
 	var total sql.NullInt64
@@ -625,10 +624,10 @@ func (s *Client) assetSwap(asset common.Asset) (int64, error) {
 func (s *Client) assetSwapped12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 	`
 
 	var total sql.NullInt64
@@ -662,10 +661,9 @@ func (s *Client) poolUnits(asset common.Asset) (uint64, error) {
 func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.direction = 'sell'
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type = 'sell'
 	`
 
 	var sellVolume sql.NullInt64
@@ -681,11 +679,10 @@ func (s *Client) sellVolume(asset common.Asset) (uint64, error) {
 func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.direction = 'sell'
-		AND swaps.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type = 'sell'
+		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
 
 	var sellVolume sql.NullInt64
@@ -701,10 +698,9 @@ func (s *Client) sellVolume24hr(asset common.Asset) (uint64, error) {
 func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.direction = 'buy'
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type = 'buy'
 	`
 
 	var buyVolume sql.NullInt64
@@ -724,11 +720,10 @@ func (s *Client) buyVolume(asset common.Asset) (uint64, error) {
 func (s *Client) buyVolume24hr(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(asset_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.direction = 'buy'
-		AND swaps.time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type = 'buy'
+		AND time BETWEEN NOW() - INTERVAL '24 HOURS' AND NOW()
 	`
 
 	var buyVolume sql.NullInt64
@@ -781,10 +776,9 @@ func (s *Client) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, e
 func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(asset_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.direction = 'sell'
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type = 'sell'
 	`
 
 	var avg sql.NullFloat64
@@ -804,10 +798,9 @@ func (s *Client) sellTxAverage(asset common.Asset) (float64, error) {
 func (s *Client) buyTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(asset_amount)
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
-		AND swaps.direction = 'buy'
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type = 'buy'
 	`
 
 	var avg sql.NullFloat64
@@ -828,9 +821,9 @@ func (s *Client) buyTxAverage(asset common.Asset) (float64, error) {
 func (s *Client) poolTxAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(ABS(asset_amount))
-		FROM swaps
-		JOIN pools_history ON swaps.event_id = pools_history.event_id
-		WHERE swaps.pool = $1
+		FROM pools_history
+		WHERE pool = $1
+		AND swap_type IS NOT NULL
 	`
 
 	var avg sql.NullFloat64
@@ -851,9 +844,9 @@ func (s *Client) poolTxAverage(asset common.Asset) (float64, error) {
 func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(trade_slip)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'sell'
+		AND swap_type = 'sell'
 	`
 
 	var sellSlipAverage sql.NullFloat64
@@ -869,9 +862,9 @@ func (s *Client) sellSlipAverage(asset common.Asset) (float64, error) {
 func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(trade_slip)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'buy'
+		AND swap_type = 'buy'
 	`
 
 	var buySlipAverage sql.NullFloat64
@@ -887,8 +880,9 @@ func (s *Client) buySlipAverage(asset common.Asset) (float64, error) {
 func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(trade_slip)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
+		AND swap_type IS NOT NULL
 	`
 
 	var poolSlipAverage sql.NullFloat64
@@ -903,9 +897,9 @@ func (s *Client) poolSlipAverage(asset common.Asset) (float64, error) {
 func (s *Client) sellFeeAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(liquidity_fee)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'sell'
+		AND swap_type = 'sell'
 	`
 
 	var sellFeeAverage sql.NullFloat64
@@ -921,9 +915,9 @@ func (s *Client) sellFeeAverage(asset common.Asset) (float64, error) {
 func (s *Client) buyFeeAverage(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT AVG(liquidity_fee)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'buy'
+		AND swap_type = 'buy'
 	`
 
 	var buyFeeAverage sql.NullFloat64
@@ -964,9 +958,9 @@ func (s *Client) poolFeeAverage(asset common.Asset) (float64, error) {
 func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(liquidity_fee)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'sell'
+		AND swap_type = 'sell'
 	`
 
 	var sellFeesTotal sql.NullInt64
@@ -982,9 +976,9 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(liquidity_fee)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'buy'
+		AND swap_type = 'buy'
 	`
 
 	var buyFeesTotal sql.NullInt64
@@ -1018,9 +1012,9 @@ func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
 func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT COUNT(event_id)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'sell'
+		AND swap_type = 'sell'
 	`
 
 	var sellAssetCount sql.NullInt64
@@ -1036,9 +1030,9 @@ func (s *Client) sellAssetCount(asset common.Asset) (uint64, error) {
 func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT COUNT(event_id)
-		FROM swaps
+		FROM pools_history
 		WHERE pool = $1
-		AND swaps.direction = 'buy'
+		AND swap_type = 'buy'
 	`
 
 	var buyAssetCount sql.NullInt64
@@ -1053,7 +1047,7 @@ func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 
 func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT COUNT(event_id) FROM swaps WHERE pool = $1
+		SELECT COUNT(event_id) FROM pools_history WHERE pool = $1 AND swap_type IS NOT NULL
 	`
 
 	var swappingTxCount sql.NullInt64
@@ -1072,9 +1066,9 @@ func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
 // swappersCount - number of unique swappers on the network
 func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT COUNT(DISTINCT(from_address))
-		FROM swaps
-		JOIN txs ON swaps.event_id = txs.event_id
+		SELECT COUNT(DISTINCT(txs.from_address))
+		FROM pools_history
+		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
 		AND txs.direction = 'in'
 	`

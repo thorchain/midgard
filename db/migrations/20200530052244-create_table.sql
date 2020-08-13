@@ -73,4 +73,5 @@ DROP TABLE pools_history;
 DROP TABLE txs;
 DROP TABLE coins;
 
+DROP TYPE swap_type;
 DROP TYPE tx_direction;
