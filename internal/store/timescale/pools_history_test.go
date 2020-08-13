@@ -288,6 +288,12 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 
+	// Force refresh the materialized views
+	err = s.refreshView("total_volume_changes_5min")
+	c.Assert(err, IsNil)
+	err = s.refreshView("total_volume_changes_daily")
+	c.Assert(err, IsNil)
+
 	// Test daily aggrigation
 	changes, err := s.Store.GetTotalVolChanges(models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)

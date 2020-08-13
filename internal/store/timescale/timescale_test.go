@@ -2128,3 +2128,9 @@ func DbCleaner(c *C, store *Client) {
 		}
 	}
 }
+
+func (s *TimeScaleSuite) refreshView(name string) error {
+	q := fmt.Sprintf("REFRESH MATERIALIZED VIEW %s;", name)
+	_, err := s.Store.db.Exec(q)
+	return err
+}
