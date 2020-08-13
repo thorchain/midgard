@@ -48,7 +48,7 @@ func (s *BenchmarkSuite) BenchmarkGetPoolData(c *C) {
 	for i := 0; i < c.N; i++ {
 		for _, pool := range s.generator.Pools {
 			_, err := s.Store.GetPoolData(pool)
-			c.Assert(err, NotNil)
+			c.Assert(err, IsNil)
 		}
 	}
 }
