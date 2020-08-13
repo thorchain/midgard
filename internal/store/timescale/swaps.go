@@ -77,6 +77,10 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 			}
 		}
 	}
+	direction := "sell"
+	if assetAmt < 0 || runeAmt > 0 {
+		direction = "buy"
+	}
 
 	pool, err := s.GetEventPool(record.ID)
 	if err != nil {
@@ -85,10 +89,11 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 	change := &models.PoolChange{
 		Time:        record.Time,
 		EventID:     record.ID,
-		EventType:   record.Type,
+		EventType:   "swap",
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
+		SwapType:    direction,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

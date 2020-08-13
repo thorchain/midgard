@@ -326,20 +326,20 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 
 func (s *Client) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
 	stmnt := `
-		SELECT AVG(ABS(rune_amount)), AVG(trade_slip), COUNT(*)
+		SELECT SUM(ABS(rune_amount)), AVG(trade_slip), COUNT(trade_slip)
 		FROM pools_history
 		WHERE pool = $1
 		AND event_type = 'swap'`
 
-	var txAverge, slipAverage sql.NullFloat64
-	var count sql.NullInt64
+	var slipAverage sql.NullFloat64
+	var totalVolume, count sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
-	if err := row.Scan(&txAverge, &slipAverage, &count); err != nil {
+	if err := row.Scan(&totalVolume, &slipAverage, &count); err != nil {
 		return models.PoolSwapStats{}, errors.Wrap(err, "poolTxAverage failed")
 	}
 
 	return models.PoolSwapStats{
-		PoolTxAverage:   txAverge.Float64,
+		PoolTxAverage:   float64(totalVolume.Int64) / float64(count.Int64),
 		PoolSlipAverage: slipAverage.Float64,
 		SwappingTxCount: count.Int64,
 	}, nil
@@ -1047,7 +1047,7 @@ func (s *Client) buyAssetCount(asset common.Asset) (uint64, error) {
 
 func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT COUNT(event_id) FROM pools_history WHERE pool = $1 AND swap_type IS NOT NULL
+		SELECT COUNT(trade_slip) FROM pools_history WHERE pool = $1 AND event_type = 'swap'
 	`
 
 	var swappingTxCount sql.NullInt64
