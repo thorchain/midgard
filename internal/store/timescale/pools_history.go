@@ -71,6 +71,7 @@ type poolAggChanges struct {
 	WithdrawCount  sql.NullInt64 `db:"withdraw_count"`
 }
 
+// GetPoolAggChanges returns historical aggregated details of the specified pool.
 func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	colsTemplate := "%s"

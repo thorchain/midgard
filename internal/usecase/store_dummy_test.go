@@ -191,3 +191,7 @@ func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
 func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
 	return nil, ErrNotImplemented
 }
+
+func (s *StoreDummy) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
+	return nil, ErrNotImplemented
+}
