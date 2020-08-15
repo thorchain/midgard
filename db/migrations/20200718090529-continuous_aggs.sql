@@ -2,7 +2,7 @@
 -- +migrate Up
 
 CREATE VIEW pool_changes_5_min WITH
-(timescaledb.continuous, timescaledb.refresh_interval = '3s', timescaledb.materialized_only = true)
+(timescaledb.continuous, timescaledb.refresh_interval = '3s')
 AS
 SELECT pool, time_bucket('5 min', time) AS time,
     SUM(asset_amount) AS asset_changes,
@@ -24,7 +24,7 @@ FROM pools_history
 GROUP BY pool, time_bucket('5 min', time);
 
 CREATE VIEW pool_changes_hourly WITH
-(timescaledb.continuous, timescaledb.refresh_interval = '3s', timescaledb.materialized_only = true)
+(timescaledb.continuous, timescaledb.refresh_interval = '3s')
 AS
 SELECT pool, time_bucket('1 hour', time) AS time,
     SUM(asset_amount) AS asset_changes,
@@ -46,7 +46,7 @@ FROM pools_history
 GROUP BY pool, time_bucket('1 hour', time);
 
 CREATE VIEW pool_changes_daily WITH
-(timescaledb.continuous, timescaledb.refresh_interval = '3s', timescaledb.materialized_only = true)
+(timescaledb.continuous, timescaledb.refresh_interval = '3s')
 AS
 SELECT pool, time_bucket('1 day', time) AS time,
     SUM(asset_amount) AS asset_changes,
