@@ -270,6 +270,44 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/TotalVolChangesResponse'
+
+  "/v1/history/pools":
+    get:
+      operationId: GetPoolAggChanges
+      summary: Get Pool Aggregated Changes
+      description: Returns historical aggregated details of the specified pool.
+      parameters:
+        - in: query
+          name: pool
+          description: Pool asset name
+          required: true
+          schema:
+            type: string
+          example: [BNB.TOMOB-1E1, BNB.TCAN-014]
+        - in: query
+          name: interval
+          description: Interval of calculations
+          required: true
+          schema:
+            type: string
+            enum: ["5min", "hour", "day", "week", "month", "year"]
+        - in: query
+          name: from
+          description: Start time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: to
+          description: End time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          $ref: '#/components/responses/GetPoolAggChangesResponse'
 components:
   responses:
     PoolsDetailedResponse:
@@ -413,6 +451,15 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/TotalVolChanges'
+
+    GetPoolAggChangesResponse:
+      description: Get Return an array of pool changes.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/PoolAggChanges'
   schemas:
     TxDetails:
       properties:
@@ -961,6 +1008,58 @@ components:
           type: string
         totalVolume:
           type: string
+
+    PoolAggChanges:
+      type: object
+      properties:
+        time:
+          type: integer
+          format: int64
+        assetChanges:
+          type: string
+        assetDepth:
+          type: string
+        assetStaked:
+          type: string
+        assetWithdrawn:
+          type: string
+        assetROI:
+          type: string
+        buyCount:
+          type: integer
+          format: int64
+        buyVolume:
+          type: string
+        runeChanges:
+          type: string
+        runeDepth:
+          type: string
+        runeStaked:
+          type: string
+        runeWithdrawn:
+          type: string
+        runeROI:
+          type: string
+        sellCount:
+          type: integer
+          format: int64
+        sellVolume:
+          type: string
+        poolROI:
+          type: string
+        poolVolume:
+          type: string
+        unitsChanges:
+          type: string
+        stakeCount:
+          type: integer
+          format: int64
+        withdrawCount:
+          type: integer
+          format: int64
+        swapCount:
+          type: integer
+          format: int64
 
 servers:
   - url: http://127.0.0.1:8080

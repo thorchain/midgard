@@ -574,3 +574,12 @@ func (uc *Usecase) GetTotalVolChanges(inv models.Interval, from, to time.Time) (
 
 	return uc.store.GetTotalVolChanges(inv, from, to)
 }
+
+// GetPoolAggChanges returns historical aggregated details of the specified pool.
+func (uc *Usecase) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
+	if err := inv.Validate(); err != nil {
+		return nil, err
+	}
+
+	return uc.store.GetPoolAggChanges(pool, inv, from, to)
+}
