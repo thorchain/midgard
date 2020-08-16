@@ -438,3 +438,55 @@ func (h *Handlers) GetTotalVolChanges(ctx echo.Context, params GetTotalVolChange
 
 	return ctx.JSON(http.StatusOK, response)
 }
+
+// (GET /v1/history/pools)
+func (h *Handlers) GetPoolAggChanges(ctx echo.Context, params GetPoolAggChangesParams) error {
+	inv := models.GetIntervalFromString(params.Interval)
+	from := time.Unix(params.From, 0)
+	to := time.Unix(params.To, 0)
+	pool, err := common.NewAsset(params.Pool)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
+	}
+	poolAggChanges, err := h.uc.GetPoolAggChanges(pool, inv, from, to)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
+	response := make([]PoolAggChanges, len(poolAggChanges))
+	for i, poolAgg := range poolAggChanges {
+		time := poolAgg.Time.Unix()
+		swapCount := poolAgg.BuyCount + poolAgg.SellCount
+		assetROI := float64(0)
+		if poolAgg.AssetStaked > 0 {
+			assetROI = float64(poolAgg.AssetDepth-poolAgg.AssetStaked) / float64(poolAgg.AssetStaked)
+		}
+		runeROI := float64(0)
+		if poolAgg.RuneStaked > 0 {
+			runeROI = float64(poolAgg.RuneDepth-poolAgg.RuneStaked) / float64(poolAgg.RuneStaked)
+		}
+		response[i] = PoolAggChanges{
+			Time:           &(time),
+			AssetChanges:   Int64ToString(poolAgg.AssetChanges),
+			AssetDepth:     Int64ToString(poolAgg.AssetDepth),
+			AssetStaked:    Int64ToString(poolAgg.AssetStaked),
+			AssetWithdrawn: Int64ToString(poolAgg.AssetWithdrawn),
+			BuyCount:       &poolAgg.BuyCount,
+			BuyVolume:      Int64ToString(poolAgg.BuyVolume),
+			RuneChanges:    Int64ToString(poolAgg.RuneChanges),
+			RuneDepth:      Int64ToString(poolAgg.RuneDepth),
+			RuneStaked:     Int64ToString(poolAgg.RuneStaked),
+			RuneWithdrawn:  Int64ToString(poolAgg.RuneWithdrawn),
+			SellCount:      &poolAgg.SellCount,
+			UnitsChanges:   Int64ToString(poolAgg.UnitsChanges),
+			StakeCount:     &poolAgg.StakeCount,
+			WithdrawCount:  &poolAgg.WithdrawCount,
+			SwapCount:      &swapCount,
+			SellVolume:     Int64ToString(poolAgg.SellVolume),
+			PoolVolume:     Int64ToString(poolAgg.SellVolume + poolAgg.BuyVolume),
+			AssetROI:       Float64ToString(assetROI),
+			RuneROI:        Float64ToString(runeROI),
+			PoolROI:        Float64ToString((assetROI + runeROI) / 2),
+		}
+	}
+	return ctx.JSON(http.StatusOK, response)
+}
