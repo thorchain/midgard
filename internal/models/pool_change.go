@@ -21,22 +21,29 @@ type PoolChange struct {
 // PoolAggChanges contains aggregated changes of a specific pool
 // during a specific time bucket.
 type PoolAggChanges struct {
-	Time           time.Time `db:"time"`
-	AssetChanges   int64     `db:"asset_changes"`
-	AssetDepth     int64     `db:"asset_depth"`
-	AssetStaked    int64     `db:"asset_staked"`
-	AssetWithdrawn int64     `db:"asset_withdrawn"`
-	BuyCount       int64     `db:"buy_count"`
-	BuyVolume      int64     `db:"buy_volume"`
-	RuneChanges    int64     `db:"rune_changes"`
-	RuneDepth      int64     `db:"rune_depth"`
-	RuneStaked     int64     `db:"rune_staked"`
-	RuneWithdrawn  int64     `db:"rune_withdrawn"`
-	SellCount      int64     `db:"sell_count"`
-	SellVolume     int64     `db:"sell_volume"`
-	UnitsChanges   int64     `db:"units_changes"`
-	StakeCount     int64     `db:"stake_count"`
-	WithdrawCount  int64     `db:"withdraw_count"`
+	Time            time.Time
+	AssetChanges    int64
+	AssetDepth      int64
+	AssetStaked     int64
+	AssetWithdrawn  int64
+	AssetROI        float64
+	BuyCount        int64
+	BuyVolume       int64
+	RuneChanges     int64
+	RuneDepth       int64
+	RuneStaked      int64
+	RuneWithdrawn   int64
+	RuneROI         float64
+	SellCount       int64
+	SellVolume      int64
+	Price           float64
+	PoolROI         float64
+	PoolVolume      int64
+	PoolSwapAverage float64
+	UnitsChanges    int64
+	StakeCount      int64
+	WithdrawCount   int64
+	SwapCount       int64
 }
 
 // TotalVolChanges contains aggregated buy/sell volume changes and running total of all pools.

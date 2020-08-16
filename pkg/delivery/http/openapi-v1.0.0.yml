@@ -1045,9 +1045,13 @@ components:
           format: int64
         sellVolume:
           type: string
+        price:
+          type: string
         poolROI:
           type: string
         poolVolume:
+          type: string
+        poolSwapAverage:
           type: string
         unitsChanges:
           type: string
