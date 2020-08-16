@@ -39,8 +39,9 @@ type RandEventGeneratorConfig struct {
 
 func NewRandEventGenerator(cfg *RandEventGeneratorConfig) *RandEventGenerator {
 	g := &RandEventGenerator{
-		rng: rand.New(cfg.Source),
-		cfg: cfg,
+		rng:       rand.New(cfg.Source),
+		cfg:       cfg,
+		blockTime: time.Now(),
 	}
 	g.Pools = g.generateAsset(cfg.Pools)
 	g.Stakers = g.generateAddress(cfg.Stakers)
