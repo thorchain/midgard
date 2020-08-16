@@ -156,15 +156,6 @@ func (s *TimeScaleSuite) TestGetHistPoolAggChanges(c *C) {
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 
-	// Refresh the views
-	time.Sleep(time.Second * 4)
-	err = s.refreshView("pool_changes_5_min")
-	c.Assert(err, IsNil)
-	err = s.refreshView("pool_changes_hourly")
-	c.Assert(err, IsNil)
-	err = s.refreshView("pool_changes_daily")
-	c.Assert(err, IsNil)
-
 	// Test hourly aggrigation
 	changes, err := s.Store.GetPoolAggChanges(bnbAsset, models.HourlyInterval, today, tomorrow.Add(time.Hour))
 	c.Assert(err, IsNil)
@@ -317,15 +308,6 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 		RuneAmount: 5,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-
-	// Refresh the views
-	time.Sleep(time.Second * 4)
-	err = s.refreshView("total_volume_changes_5_min")
-	c.Assert(err, IsNil)
-	err = s.refreshView("total_volume_changes_hourly")
-	c.Assert(err, IsNil)
-	err = s.refreshView("total_volume_changes_daily")
 	c.Assert(err, IsNil)
 
 	// Test daily aggrigation
