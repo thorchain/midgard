@@ -52,7 +52,7 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 
 	err = cli.initPoolCache()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not fetch initial pool depths")
+		return nil, errors.Wrap(err, "could not fetch initial pool basics")
 	}
 	return cli, nil
 }
@@ -227,8 +227,8 @@ func (s *Client) fetchAllPoolsSwap() error {
 		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0),
 		COUNT(*) FILTER (WHERE runeAmt > 0),
 		SUM(runeAmt) FILTER (WHERE runeAmt < 0),
-		SUM(trade_slip) (WHERE runeAmt < 0),
-		SUM(liquidity_fee) (WHERE runeAmt < 0),
+		SUM(trade_slip) FILTER (WHERE runeAmt < 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0),
 		COUNT(*) FILTER (WHERE runeAmt < 0)
 		FROM swaps
 		GROUP BY pool`
@@ -290,22 +290,21 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
-	case "swap":
-		switch change.SwapType {
-		case models.SwapTypeBuy:
-			p.BuyVolume += change.RuneAmount
-			if change.TradeSlip != nil {
-				p.BuySlipTotal += *change.TradeSlip
-				p.BuyFeeTotal += *change.LiquidityFee
-				p.BuyCount++
-			}
-		case models.SwapTypeSell:
-			p.SellVolume += -change.RuneAmount
-			if change.TradeSlip != nil {
-				p.SellSlipTotal += *change.TradeSlip
-				p.SellFeeTotal += *change.LiquidityFee
-				p.SellCount++
-			}
+	}
+	switch change.SwapType {
+	case models.SwapTypeBuy:
+		p.BuyVolume += change.RuneAmount
+		if change.TradeSlip != nil {
+			p.BuySlipTotal += *change.TradeSlip
+			p.BuyFeeTotal += *change.LiquidityFee
+			p.BuyCount++
+		}
+	case models.SwapTypeSell:
+		p.SellVolume += -change.RuneAmount
+		if change.TradeSlip != nil {
+			p.SellSlipTotal += *change.TradeSlip
+			p.SellFeeTotal += *change.LiquidityFee
+			p.SellCount++
 		}
 	}
 
