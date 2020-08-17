@@ -24,7 +24,7 @@ type Client struct {
 	logger        zerolog.Logger
 	migrationsDir string
 	mu            sync.RWMutex
-	pools         map[string]*models.PoolBasics
+	pools         map[string]*models.PoolSimpleDetails
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -133,7 +133,7 @@ func (s *Client) initPoolCache() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.pools = map[string]*models.PoolBasics{}
+	s.pools = map[string]*models.PoolSimpleDetails{}
 	err := s.fetchAllPoolsBalances()
 	if err != nil {
 		return err
@@ -175,15 +175,17 @@ func (s *Client) fetchAllPoolsBalances() error {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
-		s.pools[pool] = &models.PoolBasics{
-			Asset:          asset,
-			AssetDepth:     assetDepth.Int64,
-			AssetStaked:    assetStaked.Int64,
-			AssetWithdrawn: assetWithdrawn.Int64,
-			RuneDepth:      runeDepth.Int64,
-			RuneStaked:     runeStaked.Int64,
-			RuneWithdrawn:  runeWithdrawn.Int64,
-			Units:          units.Int64,
+		s.pools[pool] = &models.PoolSimpleDetails{
+			PoolBasics: models.PoolBasics{
+				Asset:          asset,
+				AssetDepth:     assetDepth.Int64,
+				AssetStaked:    assetStaked.Int64,
+				AssetWithdrawn: assetWithdrawn.Int64,
+				RuneDepth:      runeDepth.Int64,
+				RuneStaked:     runeStaked.Int64,
+				RuneWithdrawn:  runeWithdrawn.Int64,
+				Units:          units.Int64,
+			},
 		}
 	}
 	return nil
@@ -224,8 +226,10 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	p, ok := s.pools[pool]
 	if !ok {
 		asset, _ := common.NewAsset(pool)
-		p = &models.PoolBasics{
-			Asset: asset,
+		p = &models.PoolSimpleDetails{
+			PoolBasics: models.PoolBasics{
+				Asset: asset,
+			},
 		}
 		s.pools[pool] = p
 	}
@@ -241,12 +245,12 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
 	case "swap":
-		p.SellVolume += change.SellVolume
-		p.BuyVolume += change.BuyVolume
-		p.SellSlipTotal += change.SellSlipTotal
-		p.BuySlipTotal += change.BuySlipTotal
-		p.SellFeeTotal += change.SellFeeTotal
-		p.BuyFeeTotal += change.BuyFeeTotal
+		p.SellVolume += uint64(change.SellVolume)
+		p.BuyVolume += uint64(change.BuyVolume)
+		p.SellSlipTotal += uint64(change.SellSlipTotal)
+		p.BuySlipTotal += uint64(change.BuySlipTotal)
+		p.SellFeeTotal += uint64(change.SellFeeTotal)
+		p.BuyFeeTotal += uint64(change.BuyFeeTotal)
 		p.SellAssetCount += change.SellAssetCount
 		p.BuyAssetCount += change.BuyAssetCount
 		p.SwappingTxCount += p.SwappingTxCount

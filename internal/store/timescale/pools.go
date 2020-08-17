@@ -42,7 +42,7 @@ func (s *Client) GetPoolBasics(pool common.Asset) (models.PoolBasics, error) {
 	defer s.mu.RUnlock()
 
 	if p, ok := s.pools[pool.String()]; ok {
-		return *p, nil
+		return p.PoolBasics, nil
 	}
 	return models.PoolBasics{}, errors.New("pool doesn't exist")
 }
@@ -341,7 +341,7 @@ func (s *Client) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, err
 	return models.PoolSwapStats{
 		PoolTxAverage:   txAverge.Float64,
 		PoolSlipAverage: slipAverage.Float64,
-		SwappingTxCount: count.Int64,
+		SwappingTxCount: uint64(count.Int64),
 	}, nil
 }
 
