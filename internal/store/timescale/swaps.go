@@ -141,6 +141,7 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 	}
+	// ignore buy swaps and fee events
 	if runeAmt != 0 && len(record.OutTxs) > 0 {
 		change.SellAssetCount = 1
 		change.SellFeeTotal = record.LiquidityFee
