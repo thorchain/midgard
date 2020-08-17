@@ -14,7 +14,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-var tables = []string{"coins", "events", "gas", "stakes", "swaps", "txs"}
+var tables = []string{"coins", "events", "pools_history", "swaps", "txs"}
 
 func Test(t *testing.T) {
 	TestingT(t)
@@ -2080,19 +2080,24 @@ func NewTestStore(c *C) (*Client, error) {
 	}
 
 	cfg := config.TimeScaleConfiguration{
-		Host:          getVar("PG_HOST", "localhost"),
-		Port:          port,
-		UserName:      userName,
-		Password:      password,
-		Database:      database,
-		Sslmode:       sslMode,
-		MigrationsDir: migrationsDir,
+		Host:                  getVar("PG_HOST", "localhost"),
+		Port:                  port,
+		UserName:              userName,
+		Password:              password,
+		Database:              database,
+		Sslmode:               sslMode,
+		MigrationsDir:         migrationsDir,
+		MaxConnections:        5,
+		ConnectionMaxLifetime: time.Second * 5,
 	}
 	return NewClient(cfg)
 }
 
 func (s *TimeScaleSuite) SetUpTest(c *C) {
 	DbCleaner(c, s.Store)
+
+	// Reset the pools cache
+	s.Store.pools = map[string]*models.PoolBasics{}
 }
 
 func getVar(env, fallback string) string {
@@ -2118,7 +2123,7 @@ func MigrationDown(c *C, migrations Migrations) {
 
 func DbCleaner(c *C, store *Client) {
 	for _, table := range tables {
-		query := fmt.Sprintf(`TRUNCATE %s`, table)
+		query := fmt.Sprintf(`DELETE FROM %s WHERE 1 = 1`, table)
 		_, err := store.db.Exec(query)
 		if err != nil {
 			c.Fatal(err.Error())

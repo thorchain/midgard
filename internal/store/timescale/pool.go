@@ -1,8 +1,6 @@
 package timescale
 
 import (
-	"fmt"
-
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
@@ -13,22 +11,13 @@ func (s *Client) CreatePoolRecord(record *models.EventPool) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
-	query := fmt.Sprintf(`
-		INSERT INTO %v (
-			time,
-			event_id,
-			pool,
-			status
-		)  VALUES ( $1, $2, $3, $4) RETURNING event_id`, models.ModelPoolsTable)
-
-	_, err = s.db.Exec(query,
-		record.Event.Time,
-		record.Event.ID,
-		record.Pool.String(),
-		record.Status,
-	)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("failed to prepareNamed query for EventRecord")
+	change := &models.PoolChange{
+		Time:      record.Time,
+		EventID:   record.ID,
+		EventType: record.Type,
+		Pool:      record.Pool,
+		Status:    record.Status,
 	}
-	return nil
+	err = s.UpdatePoolsHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }

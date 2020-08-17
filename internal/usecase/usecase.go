@@ -235,29 +235,100 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 	return &stats, nil
 }
 
+// GetPoolBasics returns the basics of pool like asset and rune depths, units and status.
+func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	basics, err := uc.store.GetPoolBasics(asset)
+	if basics.Status == models.Unknown {
+		basics.Status, err = uc.fetchPoolStatus(asset)
+		if err != nil {
+			return models.PoolBasics{}, err
+		}
+	}
+	return basics, err
+}
+
+// GetPoolSimpleDetails returns pool depths, status and swap stats of the given asset.
+func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleDetails, error) {
+	basics, err := uc.store.GetPoolBasics(asset)
+	if err != nil {
+		return nil, err
+	}
+	if basics.Status == models.Unknown {
+		basics.Status, err = uc.fetchPoolStatus(asset)
+		if err != nil {
+			return nil, err
+		}
+	}
+	swapStats, err := uc.store.GetPoolSwapStats(asset)
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now()
+	pastDay := now.Add(-day)
+	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
+	if err != nil {
+		return nil, err
+	}
+	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
+	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
+	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
+	return &models.PoolSimpleDetails{
+		PoolBasics:        basics,
+		PoolSwapStats:     swapStats,
+		PoolVolume24Hours: vol24,
+		Price:             price,
+		AssetROI:          assetROI,
+		RuneROI:           runeROI,
+		PoolROI:           (assetROI + runeROI) / 2,
+	}, nil
+}
+
+func calculatePrice(assetDepth int64, runeDepth int64) float64 {
+	if assetDepth > 0 {
+		return float64(runeDepth) / float64(assetDepth)
+	}
+	return 0
+}
+
+func calculateROI(depth, staked int64) float64 {
+	if staked > 0 {
+		return float64(depth-staked) / float64(staked)
+	}
+	return 0
+}
+
+// fetchPoolStatus fetches pool status from thorchain and update database.
+func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error) {
+	status, err := uc.thorchain.GetPoolStatus(asset)
+	if err != nil {
+		return models.Unknown, errors.Wrap(err, "failed to get pool status")
+	}
+	err = uc.store.CreatePoolRecord(&models.EventPool{
+		Pool:   asset,
+		Status: status,
+		Event: models.Event{
+			Time: time.Now(),
+			Type: "pool",
+		},
+	})
+	if err != nil {
+		return models.Unknown, errors.Wrap(err, "failed to update pool status")
+	}
+	return status, nil
+}
+
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
-func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolData, error) {
+func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
 	data, err := uc.store.GetPoolData(asset)
 	if err != nil {
 		return nil, err
 	}
-	// Query THORChain if we haven't received any pool event for the specified pool
 	if data.Status == "" {
-		status, err := uc.thorchain.GetPoolStatus(asset)
+		status, err := uc.fetchPoolStatus(asset)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get pool status")
+			return nil, err
 		}
 		data.Status = status.String()
-		err = uc.store.CreatePoolRecord(&models.EventPool{
-			Pool:   asset,
-			Status: status,
-			Event: models.Event{
-				ID: -1,
-			},
-		})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to update pool status")
-		}
 	}
 	return &data, nil
 }
@@ -301,16 +372,17 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
-	totalBond := calculateTotalBond(nodeAccounts)
+
 	activeBonds := filterNodeBonds(nodeAccounts, thorchain.Active)
 	standbyBonds := filterNodeBonds(nodeAccounts, thorchain.Standby)
 	metrics := calculateBondMetrics(activeBonds, standbyBonds)
+	totalActiveBond := metrics.TotalActiveBond
 
 	vaultData, err := uc.thorchain.GetVaultData()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
-	poolShareFactor := calculatePoolShareFactor(totalBond, totalStaked)
+	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalStaked)
 	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
 	lastHeight, err := uc.thorchain.GetLastChainHeight()
@@ -333,7 +405,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
-		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalBond),
+		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
 		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
@@ -360,14 +432,6 @@ func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics
 		MinimumStandbyBond: calculateUint64sMin(standbyBonds),
 		MaximumStandbyBond: calculateUint64sMax(standbyBonds),
 	}
-}
-
-func calculateTotalBond(nodes []thorchain.NodeAccount) uint64 {
-	var totalBond uint64
-	for _, node := range nodes {
-		totalBond += node.Bond
-	}
-	return totalBond
 }
 
 func filterNodeBonds(nodes []thorchain.NodeAccount, status thorchain.NodeStatus) []uint64 {
@@ -500,4 +564,13 @@ func (uc *Usecase) updateConstantsByMimir() error {
 		}
 	}
 	return nil
+}
+
+// GetTotalVolChanges returns an array of total changes and running total of all pools in rune.
+func (uc *Usecase) GetTotalVolChanges(inv models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
+	if err := inv.Validate(); err != nil {
+		return nil, err
+	}
+
+	return uc.store.GetTotalVolChanges(inv, from, to)
 }

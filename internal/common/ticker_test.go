@@ -26,11 +26,11 @@ func (s TickerSuite) TestTicker(c *C) {
 	c.Check(IsRune(runeB1aTicker), Equals, true)
 	c.Check(runeB1aTicker.String(), Equals, RuneB1ATicker.String())
 
-	rune67cTicker, err := NewTicker("rune-67c")
+	Rune67CTicker, err := NewTicker("RUNE-67C")
 	c.Assert(err, IsNil)
-	c.Check(rune67cTicker.Equals(Rune67CTicker), Equals, true)
-	c.Check(IsRune(rune67cTicker), Equals, true)
-	c.Check(rune67cTicker.String(), Equals, Rune67CTicker.String())
+	c.Check(Rune67CTicker.Equals(Rune67CTicker), Equals, true)
+	c.Check(IsRune(Rune67CTicker), Equals, true)
+	c.Check(Rune67CTicker.String(), Equals, Rune67CTicker.String())
 
 	tomobTicker, err := NewTicker("TOMOB-1E1")
 	c.Assert(err, IsNil)

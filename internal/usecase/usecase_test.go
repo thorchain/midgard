@@ -380,7 +380,7 @@ type TestGetStatsStore struct {
 	totalVolume        uint64
 	totalStaked        uint64
 	totalDepth         uint64
-	totalEarned        uint64
+	totalEarned        int64
 	poolCount          uint64
 	totalAssetBuys     uint64
 	totalAssetSells    uint64
@@ -465,7 +465,7 @@ func (s *TestGetStatsStore) TotalWithdrawTx() (uint64, error) {
 	return s.totalWithdrawTx, s.err
 }
 
-func (s *TestGetStatsStore) TotalEarned() (uint64, error) {
+func (s *TestGetStatsStore) TotalEarned() (int64, error) {
 	return s.totalEarned, s.err
 }
 
@@ -522,6 +522,121 @@ func (s *UsecaseSuite) TestGetStats(c *C) {
 	c.Assert(err, NotNil)
 }
 
+type TestGetPoolBasicsStore struct {
+	StoreDummy
+	basics models.PoolBasics
+	err    error
+}
+
+func (s *TestGetPoolBasicsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return s.basics, s.err
+}
+
+func (s *UsecaseSuite) TestGetPoolBasics(c *C) {
+	store := &TestGetPoolBasicsStore{
+		basics: models.PoolBasics{
+			Asset:      common.BNBAsset,
+			AssetDepth: 100,
+			RuneDepth:  2000,
+			Units:      1000,
+			Status:     models.Bootstrap,
+		},
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	stats, err := uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(stats, DeepEquals, store.basics)
+
+	store.basics.Status = models.Unknown
+	_, err = uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, NotNil)
+
+	store = &TestGetPoolBasicsStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetPoolBasics(common.BTCAsset)
+	c.Assert(err, NotNil)
+}
+
+type TestGetPoolSimpleDetailsStore struct {
+	StoreDummy
+	from              time.Time
+	to                time.Time
+	basics            models.PoolBasics
+	swapStats         models.PoolSwapStats
+	poolVolume24Hours int64
+	err               error
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return s.basics, s.err
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
+	return s.swapStats, s.err
+}
+
+func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
+	s.from = from
+	s.to = to
+	return s.poolVolume24Hours, s.err
+}
+
+func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
+	store := &TestGetPoolSimpleDetailsStore{
+		basics: models.PoolBasics{
+			Asset:          common.BNBAsset,
+			AssetDepth:     1000,
+			AssetStaked:    750,
+			AssetWithdrawn: 250,
+			RuneDepth:      12000,
+			RuneStaked:     10000,
+			RuneWithdrawn:  2000,
+			Units:          500,
+			Status:         models.Enabled,
+		},
+		swapStats: models.PoolSwapStats{
+			PoolTxAverage:   1.145,
+			PoolSlipAverage: 0.98,
+			SwappingTxCount: 102,
+		},
+		poolVolume24Hours: 124,
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	details, err := uc.GetPoolSimpleDetails(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
+	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
+		PoolBasics:        store.basics,
+		PoolSwapStats:     store.swapStats,
+		Price:             12,
+		AssetROI:          1,
+		RuneROI:           0.5,
+		PoolROI:           0.75,
+		PoolVolume24Hours: 124,
+	})
+
+	store.basics.Status = models.Unknown
+	_, err = uc.GetPoolSimpleDetails(common.BNBAsset)
+	c.Assert(err, NotNil)
+
+	store = &TestGetPoolSimpleDetailsStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetPoolSimpleDetails(common.BNBAsset)
+	c.Assert(err, NotNil)
+}
+
 type TestGetPoolDetailsStore struct {
 	StoreDummy
 	status           string
@@ -565,8 +680,8 @@ type TestGetPoolDetailsStore struct {
 	err              error
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolData, error) {
-	data := models.PoolData{
+func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
+	data := models.PoolDetails{
 		Status:           s.status,
 		Asset:            s.asset,
 		AssetDepth:       s.assetDepth,
@@ -660,7 +775,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
-	c.Assert(stats, DeepEquals, &models.PoolData{
+	c.Assert(stats, DeepEquals, &models.PoolDetails{
 		Status:           store.status,
 		Asset:            store.asset,
 		AssetDepth:       store.assetDepth,
@@ -1056,7 +1171,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 
 	stats, err := uc.GetNetworkInfo()
 	c.Assert(err, IsNil)
-	var poolShareFactor float64 = 2985.0 / 5985.0
+	var poolShareFactor float64 = 2700.0 / 5700.0
 	var blockReward uint64 = 1120 / (emissionCurve * blocksPerYear)
 	var bondReward uint64 = uint64((1 - poolShareFactor) * float64(blockReward))
 	stakeReward := blockReward - bondReward
@@ -1234,4 +1349,52 @@ func (s *UsecaseSuite) TestPoolSharefactor(c *C) {
 
 	factor = calculatePoolShareFactor(500, 1000)
 	c.Assert(factor, Equals, float64(0))
+}
+
+type TestGetTotalVolChangesStore struct {
+	StoreDummy
+	changes []models.TotalVolChanges
+	err     error
+}
+
+func (s *TestGetTotalVolChangesStore) GetTotalVolChanges(_ models.Interval, _, _ time.Time) ([]models.TotalVolChanges, error) {
+	return s.changes, s.err
+}
+
+func (s *UsecaseSuite) TestGetTotalVolChanges(c *C) {
+	now := time.Now()
+	store := &TestGetTotalVolChangesStore{
+		changes: []models.TotalVolChanges{
+			{
+				Time:        now,
+				BuyVolume:   10,
+				SellVolume:  -5,
+				TotalVolume: 5,
+			},
+			{
+				Time:        now,
+				BuyVolume:   -10,
+				SellVolume:  5,
+				TotalVolume: 5,
+			},
+		},
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	changes, err := uc.GetTotalVolChanges(models.DailyInterval, now, now)
+	c.Assert(err, IsNil)
+	c.Assert(changes, DeepEquals, store.changes)
+
+	_, err = uc.GetTotalVolChanges(-1, now, now)
+	c.Assert(err, NotNil)
+
+	store = &TestGetTotalVolChangesStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetTotalVolChanges(models.DailyInterval, now, now)
+	c.Assert(err, NotNil)
 }
