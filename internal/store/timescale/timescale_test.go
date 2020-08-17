@@ -2097,7 +2097,7 @@ func (s *TimeScaleSuite) SetUpTest(c *C) {
 	DbCleaner(c, s.Store)
 
 	// Reset the pools cache
-	s.Store.pools = map[string]*models.PoolSimpleDetails{}
+	s.Store.pools = map[string]*models.PoolBasics{}
 }
 
 func getVar(env, fallback string) string {

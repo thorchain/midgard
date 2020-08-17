@@ -8,23 +8,17 @@ import (
 
 // PoolChange represents a change in pool state.
 type PoolChange struct {
-	Time            time.Time
-	EventID         int64
-	EventType       string
-	Pool            common.Asset
-	AssetAmount     int64
-	RuneAmount      int64
-	Units           int64
-	Status          PoolStatus
-	SellVolume      int64
-	BuyVolume       int64
-	SellSlipTotal   int64
-	BuySlipTotal    int64
-	SellFeeTotal    int64
-	BuyFeeTotal     int64
-	SellAssetCount  uint64
-	BuyAssetCount   uint64
-	SwappingTxCount uint64
+	Time         time.Time
+	EventID      int64
+	EventType    string
+	Pool         common.Asset
+	AssetAmount  int64
+	RuneAmount   int64
+	Units        int64
+	Status       PoolStatus
+	SwapSlip     int64
+	LiquidityFee int64
+	SwapType     string
 }
 
 // PoolAggChanges contains aggregated changes of a specific pool
