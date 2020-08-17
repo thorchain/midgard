@@ -218,6 +218,70 @@ func (s *Client) fetchAllPoolsStatus() error {
 	return nil
 }
 
+func (s *Client) fetchAllPoolsSwap() error {
+	pools, err := s.GetPools()
+	if err != nil {
+		return err
+	}
+	for _, pool := range pools {
+		buyVolume, err := s.buyVolume(pool)
+		if err != nil {
+			return err
+		}
+		sellVolume, err := s.sellVolume(pool)
+		if err != nil {
+			return err
+		}
+		sellSlipAverage, err := s.sellSlipAverage(pool)
+		if err != nil {
+			return err
+		}
+		buySlipAverage, err := s.buySlipAverage(pool)
+		if err != nil {
+			return err
+		}
+		sellFeesTotal, err := s.sellFeesTotal(pool)
+		if err != nil {
+			return err
+		}
+		buyFeesTotal, err := s.buyFeesTotal(pool)
+		if err != nil {
+			return err
+		}
+		sellAssetCount, err := s.sellAssetCount(pool)
+		if err != nil {
+			return err
+		}
+		buyAssetCount, err := s.buyAssetCount(pool)
+		if err != nil {
+			return err
+		}
+		swappingTxCount, err := s.swappingTxCount(pool)
+		if err != nil {
+			return err
+		}
+		poolSlipAverage, err := s.poolSlipAverage(pool)
+		if err != nil {
+			return err
+		}
+		s.pools[pool.String()] = &models.PoolSimpleDetails{
+			PoolSwapStats: models.PoolSwapStats{
+				BuyVolume:       buyVolume,
+				SellVolume:      sellVolume,
+				SellSlipTotal:   uint64(sellSlipAverage * float64(swappingTxCount)),
+				BuySlipTotal:    uint64(buySlipAverage * float64(swappingTxCount)),
+				SellFeeTotal:    sellFeesTotal,
+				BuyFeeTotal:     buyFeesTotal,
+				SellAssetCount:  sellAssetCount,
+				BuyAssetCount:   buyAssetCount,
+				SwappingTxCount: swappingTxCount,
+				PoolSlipAverage: poolSlipAverage,
+			},
+		}
+	}
+	return nil
+}
+
 func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
