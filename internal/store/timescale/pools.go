@@ -925,7 +925,6 @@ func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 		SELECT COUNT(DISTINCT(from_address))
 		FROM swaps
 		WHERE pool = $1
-		GROUP BY from_address
 	`
 
 	var swappersCount sql.NullInt64

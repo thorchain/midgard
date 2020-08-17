@@ -1586,6 +1586,16 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 
 	swappersCount, err = s.Store.swappersCount(asset)
 	c.Assert(err, IsNil)
+	c.Assert(swappersCount, Equals, uint64(1), Commentf("swappersCount: %v", swappersCount))
+
+	// new swap
+	swap = swapBuyRune2BoltEvent1
+	swap.InTx.FromAddress = "tbnb19q74rcu5jzaq2jneltycjt8rp8nwsp9q8g3mjh"
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+
+	swappersCount, err = s.Store.swappersCount(asset)
+	c.Assert(err, IsNil)
 	c.Assert(swappersCount, Equals, uint64(2), Commentf("swappersCount: %v", swappersCount))
 }
 
