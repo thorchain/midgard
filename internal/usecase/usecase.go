@@ -574,3 +574,25 @@ func (uc *Usecase) GetTotalVolChanges(inv models.Interval, from, to time.Time) (
 
 	return uc.store.GetTotalVolChanges(inv, from, to)
 }
+
+// GetPoolAggChanges returns historical aggregated details of the specified pool.
+func (uc *Usecase) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
+	if err := inv.Validate(); err != nil {
+		return nil, err
+	}
+
+	changes, err := uc.store.GetPoolAggChanges(pool, inv, from, to)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(changes); i++ {
+		changes[i].Price = calculatePrice(changes[i].AssetDepth, changes[i].RuneDepth)
+		changes[i].AssetROI = float64(changes[i].AssetChanges) / float64(changes[i].AssetDepth-changes[i].AssetChanges)
+		changes[i].RuneROI = float64(changes[i].RuneChanges) / float64(changes[i].RuneDepth-changes[i].RuneChanges)
+		changes[i].PoolROI = (changes[i].AssetROI + changes[i].RuneROI) / 2
+		changes[i].PoolVolume = changes[i].BuyVolume + changes[i].SellVolume
+		changes[i].SwapCount = changes[i].BuyCount + changes[i].SellCount
+		changes[i].PoolSwapAverage = float64(changes[i].PoolVolume) / float64(changes[i].SwapCount)
+	}
+	return changes, nil
+}

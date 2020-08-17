@@ -1398,3 +1398,138 @@ func (s *UsecaseSuite) TestGetTotalVolChanges(c *C) {
 	_, err = uc.GetTotalVolChanges(models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
 }
+
+type TestGetPoolAggChangesStore struct {
+	StoreDummy
+	changes []models.PoolAggChanges
+	err     error
+}
+
+func (s *TestGetPoolAggChangesStore) GetPoolAggChanges(_ common.Asset, _ models.Interval, _, _ time.Time) ([]models.PoolAggChanges, error) {
+	return s.changes, s.err
+}
+
+func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
+	now := time.Now()
+	store := &TestGetPoolAggChangesStore{
+		changes: []models.PoolAggChanges{
+			{
+				Time:            now,
+				AssetChanges:    10,
+				AssetDepth:      100,
+				AssetStaked:     50,
+				AssetWithdrawn:  15,
+				AssetROI:        0.1,
+				BuyCount:        2,
+				BuyVolume:       15,
+				RuneChanges:     20,
+				RuneDepth:       400,
+				RuneStaked:      200,
+				RuneWithdrawn:   40,
+				RuneROI:         0.05,
+				SellCount:       3,
+				SellVolume:      70,
+				Price:           0.25,
+				PoolROI:         0.075,
+				PoolVolume:      85,
+				PoolSwapAverage: 17,
+				UnitsChanges:    25,
+				StakeCount:      2,
+				WithdrawCount:   1,
+				SwapCount:       5,
+			},
+			{
+				Time:            now.Add(time.Hour * 24),
+				AssetChanges:    30,
+				AssetDepth:      130,
+				AssetStaked:     10,
+				AssetWithdrawn:  70,
+				BuyCount:        4,
+				BuyVolume:       43,
+				RuneChanges:     -20,
+				RuneDepth:       380,
+				RuneStaked:      0,
+				RuneWithdrawn:   130,
+				SellCount:       1,
+				SellVolume:      12,
+				Price:           0.342105263,
+				PoolROI:         0.089068826,
+				PoolVolume:      55,
+				PoolSwapAverage: 11,
+				UnitsChanges:    -20,
+				StakeCount:      1,
+				WithdrawCount:   3,
+				SwapCount:       5,
+			},
+		},
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	changes, err := uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
+	c.Assert(err, IsNil)
+	c.Assert(changes, DeepEquals, []models.PoolAggChanges{
+		{
+			Time:            now,
+			AssetChanges:    10,
+			AssetDepth:      100,
+			AssetStaked:     50,
+			AssetWithdrawn:  15,
+			AssetROI:        0.1111111111111111,
+			BuyCount:        2,
+			BuyVolume:       15,
+			RuneChanges:     20,
+			RuneDepth:       400,
+			RuneStaked:      200,
+			RuneWithdrawn:   40,
+			RuneROI:         0.05263157894736842,
+			SellCount:       3,
+			SellVolume:      70,
+			Price:           4,
+			PoolROI:         0.08187134502923976,
+			PoolVolume:      85,
+			PoolSwapAverage: 17,
+			UnitsChanges:    25,
+			StakeCount:      2,
+			WithdrawCount:   1,
+			SwapCount:       5,
+		},
+		{
+			Time:            now.Add(time.Hour * 24),
+			AssetChanges:    30,
+			AssetDepth:      130,
+			AssetStaked:     10,
+			AssetWithdrawn:  70,
+			AssetROI:        0.3,
+			BuyCount:        4,
+			BuyVolume:       43,
+			RuneChanges:     -20,
+			RuneDepth:       380,
+			RuneStaked:      0,
+			RuneWithdrawn:   130,
+			RuneROI:         -0.05,
+			SellCount:       1,
+			SellVolume:      12,
+			Price:           2.923076923076923,
+			PoolROI:         0.125,
+			PoolVolume:      55,
+			PoolSwapAverage: 11,
+			UnitsChanges:    -20,
+			StakeCount:      1,
+			WithdrawCount:   3,
+			SwapCount:       5,
+		},
+	})
+
+	_, err = uc.GetPoolAggChanges(common.BNBAsset, -1, now, now)
+	c.Assert(err, NotNil)
+
+	store = &TestGetPoolAggChangesStore{
+		err: errors.New("could not fetch requested data"),
+	}
+	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	_, err = uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
+	c.Assert(err, NotNil)
+}

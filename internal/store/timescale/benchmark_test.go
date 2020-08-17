@@ -2,7 +2,9 @@ package timescale
 
 import (
 	"math/rand"
+	"time"
 
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
 	. "gopkg.in/check.v1"
 )
@@ -57,5 +59,16 @@ func (s *BenchmarkSuite) BenchmarkGetPoolBasics(c *C) {
 		pool := s.generator.Pools[i%len(s.generator.Pools)]
 		_, err := s.Store.GetPoolBasics(pool)
 		c.Assert(err, IsNil)
+	}
+}
+
+func (s *BenchmarkSuite) BenchmarkGetPoolAggChanges(c *C) {
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	for i := 0; i < c.N; i++ {
+		pool := s.generator.Pools[i%len(s.generator.Pools)]
+		changes, err := s.Store.GetPoolAggChanges(pool, models.DailyInterval, today, today)
+		c.Assert(err, IsNil)
+		c.Assert(changes, HasLen, 1)
 	}
 }
