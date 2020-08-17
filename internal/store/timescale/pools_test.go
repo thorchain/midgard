@@ -135,6 +135,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		RuneStaked:     1000,
 		RuneWithdrawn:  100,
 		Units:          9000,
+		StakeCount:     1,
+		WithdrawCount:  1,
 		Status:         models.Bootstrap,
 	})
 
@@ -147,6 +149,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		RuneDepth:   2400,
 		RuneStaked:  2400,
 		Units:       1000,
+		StakeCount:  1,
 		Status:      models.Unknown,
 	})
 

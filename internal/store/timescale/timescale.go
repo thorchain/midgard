@@ -154,7 +154,9 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount),
 		SUM(rune_amount) FILTER (WHERE event_type = 'stake'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'unstake'),
-		SUM(units)
+		SUM(units),
+		COUNT(*) FILTER (WHERE units > 0),
+		COUNT(*) FILTER (WHERE units < 0)
 		FROM pools_history
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
@@ -173,9 +175,11 @@ func (s *Client) fetchAllPoolsBalances() error {
 			runeStaked     sql.NullInt64
 			runeWithdrawn  sql.NullInt64
 			units          sql.NullInt64
+			stakeCount     sql.NullInt64
+			withdrawCount  sql.NullInt64
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &units); err != nil {
+			&runeDepth, &runeStaked, &runeWithdrawn, &units, &stakeCount, &withdrawCount); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
@@ -188,6 +192,8 @@ func (s *Client) fetchAllPoolsBalances() error {
 			RuneStaked:     runeStaked.Int64,
 			RuneWithdrawn:  runeWithdrawn.Int64,
 			Units:          units.Int64,
+			StakeCount:     stakeCount.Int64,
+			WithdrawCount:  withdrawCount.Int64,
 		}
 	}
 	return nil
@@ -287,10 +293,15 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "stake":
 		p.AssetStaked += change.AssetAmount
 		p.RuneStaked += change.RuneAmount
+		p.StakeCount++
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
+		if change.Units < 0 {
+			p.WithdrawCount++
+		}
 	}
+
 	switch change.SwapType {
 	case models.SwapTypeBuy:
 		p.BuyVolume += change.RuneAmount

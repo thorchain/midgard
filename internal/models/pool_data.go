@@ -20,6 +20,8 @@ type PoolBasics struct {
 	SellSlipTotal  float64
 	SellFeeTotal   int64
 	SellCount      int64
+	StakeCount     int64
+	WithdrawCount  int64
 }
 
 type PoolSwapStats struct {
