@@ -380,7 +380,7 @@ type TestGetStatsStore struct {
 	totalVolume        uint64
 	totalStaked        uint64
 	totalDepth         uint64
-	totalEarned        uint64
+	totalEarned        int64
 	poolCount          uint64
 	totalAssetBuys     uint64
 	totalAssetSells    uint64
@@ -465,7 +465,7 @@ func (s *TestGetStatsStore) TotalWithdrawTx() (uint64, error) {
 	return s.totalWithdrawTx, s.err
 }
 
-func (s *TestGetStatsStore) TotalEarned() (uint64, error) {
+func (s *TestGetStatsStore) TotalEarned() (int64, error) {
 	return s.totalEarned, s.err
 }
 

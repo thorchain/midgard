@@ -406,29 +406,29 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	totalEarned, err := s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 
 	err = s.Store.CreateStakeRecord(&stakeBoltEvent5)
 	c.Assert(err, IsNil)
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(0))
+	c.Assert(totalEarned, Equals, int64(0))
 
 	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent2)
 	c.Assert(err, IsNil)
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(132422149))
+	c.Assert(totalEarned, Equals, int64(132422149))
 
 	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, uint64(132422246))
+	c.Assert(totalEarned, Equals, int64(132422246))
 }

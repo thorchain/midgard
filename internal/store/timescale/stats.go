@@ -186,7 +186,7 @@ func (s *Client) TotalWithdrawTx() (uint64, error) {
 	return uint64(totalStakeTx.Int64), nil
 }
 
-func (s *Client) TotalEarned() (uint64, error) {
+func (s *Client) TotalEarned() (int64, error) {
 	pools, err := s.GetPools()
 	if err != nil {
 		return 0, err
@@ -217,5 +217,5 @@ func (s *Client) TotalEarned() (uint64, error) {
 		}
 		totalEarned += int64(float64(runeEarned) + float64(assetEarned)*priceInRune)
 	}
-	return uint64(totalEarned), nil
+	return totalEarned, nil
 }
