@@ -138,6 +138,10 @@ func (s *Client) initPoolCache() error {
 	if err != nil {
 		return err
 	}
+	err = s.fetchAllPoolsSwap()
+	if err != nil {
+		return err
+	}
 	err = s.fetchAllPoolsStatus()
 	return err
 }
@@ -258,16 +262,14 @@ func (s *Client) fetchAllPoolsSwap() error {
 		if err != nil {
 			return err
 		}
-		s.pools[pool.String()] = &models.PoolBasics{
-			BuyVolume:      buyVolume,
-			SellVolume:     sellVolume,
-			SellSlipTotal:  uint64(sellSlipAverage * float64(swappingTxCount)),
-			BuySlipTotal:   uint64(buySlipAverage * float64(swappingTxCount)),
-			SellFeeTotal:   sellFeesTotal,
-			BuyFeeTotal:    buyFeesTotal,
-			SellAssetCount: sellAssetCount,
-			BuyAssetCount:  buyAssetCount,
-		}
+		s.pools[pool.String()].BuyVolume = buyVolume
+		s.pools[pool.String()].SellVolume = sellVolume
+		s.pools[pool.String()].SellSlipTotal = uint64(sellSlipAverage * float64(swappingTxCount))
+		s.pools[pool.String()].BuySlipTotal = uint64(buySlipAverage * float64(swappingTxCount))
+		s.pools[pool.String()].SellFeeTotal = sellFeesTotal
+		s.pools[pool.String()].BuyFeeTotal = buyFeesTotal
+		s.pools[pool.String()].SellAssetCount = sellAssetCount
+		s.pools[pool.String()].BuyAssetCount = buyAssetCount
 	}
 	return nil
 }
