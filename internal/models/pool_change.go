@@ -16,12 +16,12 @@ type PoolChange struct {
 	RuneAmount      int64
 	Units           int64
 	Status          PoolStatus
-	SellVolume      uint64
-	BuyVolume       uint64
-	SellSlipTotal   uint64
-	BuySlipTotal    uint64
-	SellFeeTotal   uint64
-	BuyFeeTotal    uint64
+	SellVolume      int64
+	BuyVolume       int64
+	SellSlipTotal   int64
+	BuySlipTotal    int64
+	SellFeeTotal    int64
+	BuyFeeTotal     int64
 	SellAssetCount  uint64
 	BuyAssetCount   uint64
 	SwappingTxCount uint64
