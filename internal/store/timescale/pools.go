@@ -341,7 +341,7 @@ func (s *Client) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, err
 	return models.PoolSwapStats{
 		PoolTxAverage:   txAverge.Float64,
 		PoolSlipAverage: slipAverage.Float64,
-		SwappingTxCount: uint64(count.Int64),
+		SwappingTxCount: count.Int64,
 	}, nil
 }
 

@@ -25,7 +25,7 @@ type PoolBasics struct {
 type PoolSwapStats struct {
 	PoolTxAverage   float64
 	PoolSlipAverage float64
-	SwappingTxCount uint64
+	SwappingTxCount int64
 }
 
 type PoolSimpleDetails struct {
