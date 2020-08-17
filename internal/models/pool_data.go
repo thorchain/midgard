@@ -12,14 +12,14 @@ type PoolBasics struct {
 	RuneWithdrawn  int64
 	Units          int64
 	Status         PoolStatus
-	SellVolume     uint64
-	BuyVolume      uint64
-	SellSlipTotal  uint64
-	BuySlipTotal   uint64
-	SellFeeTotal   uint64
-	BuyFeeTotal    uint64
-	SellAssetCount uint64
-	BuyAssetCount  uint64
+	BuyVolume      int64
+	BuySlipTotal   float64
+	BuyFeeTotal    int64
+	BuyCount       int64
+	SellVolume     int64
+	SellSlipTotal  float64
+	SellFeeTotal   int64
+	SellCount      int64
 }
 
 type PoolSwapStats struct {

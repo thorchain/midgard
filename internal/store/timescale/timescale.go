@@ -221,55 +221,47 @@ func (s *Client) fetchAllPoolsStatus() error {
 }
 
 func (s *Client) fetchAllPoolsSwap() error {
-	pools, err := s.GetPools()
+	q := `SELECT pool,
+		SUM(runeAmt) FILTER (WHERE runeAmt > 0),
+		SUM(trade_slip) FILTER (WHERE runeAmt > 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0),
+		COUNT(*) FILTER (WHERE runeAmt > 0),
+		SUM(runeAmt) FILTER (WHERE runeAmt < 0),
+		SUM(trade_slip) (WHERE runeAmt < 0),
+		SUM(liquidity_fee) (WHERE runeAmt < 0),
+		COUNT(*) FILTER (WHERE runeAmt < 0)
+		FROM swaps
+		GROUP BY pool`
+	rows, err := s.db.Queryx(q)
 	if err != nil {
 		return err
 	}
-	for _, pool := range pools {
-		buyVolume, err := s.buyVolume(pool)
-		if err != nil {
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			pool          string
+			buyVolume     sql.NullInt64
+			buySlipTotal  sql.NullFloat64
+			buyFeeTotal   sql.NullInt64
+			buyCount      sql.NullInt64
+			sellVolume    sql.NullInt64
+			sellSlipTotal sql.NullFloat64
+			sellFeeTotal  sql.NullInt64
+			sellCount     sql.NullInt64
+		)
+		if err := rows.Scan(&pool, &buyVolume, &buySlipTotal, &buyFeeTotal, &buyCount,
+			&sellVolume, &sellSlipTotal, &sellFeeTotal, &sellCount); err != nil {
 			return err
 		}
-		sellVolume, err := s.sellVolume(pool)
-		if err != nil {
-			return err
-		}
-		sellSlipAverage, err := s.sellSlipAverage(pool)
-		if err != nil {
-			return err
-		}
-		buySlipAverage, err := s.buySlipAverage(pool)
-		if err != nil {
-			return err
-		}
-		sellFeesTotal, err := s.sellFeesTotal(pool)
-		if err != nil {
-			return err
-		}
-		buyFeesTotal, err := s.buyFeesTotal(pool)
-		if err != nil {
-			return err
-		}
-		sellAssetCount, err := s.sellAssetCount(pool)
-		if err != nil {
-			return err
-		}
-		buyAssetCount, err := s.buyAssetCount(pool)
-		if err != nil {
-			return err
-		}
-		swappingTxCount, err := s.swappingTxCount(pool)
-		if err != nil {
-			return err
-		}
-		s.pools[pool.String()].BuyVolume = buyVolume
-		s.pools[pool.String()].SellVolume = sellVolume
-		s.pools[pool.String()].SellSlipTotal = uint64(sellSlipAverage * float64(swappingTxCount))
-		s.pools[pool.String()].BuySlipTotal = uint64(buySlipAverage * float64(swappingTxCount))
-		s.pools[pool.String()].SellFeeTotal = sellFeesTotal
-		s.pools[pool.String()].BuyFeeTotal = buyFeesTotal
-		s.pools[pool.String()].SellAssetCount = sellAssetCount
-		s.pools[pool.String()].BuyAssetCount = buyAssetCount
+		s.pools[pool].BuyVolume = buyVolume.Int64
+		s.pools[pool].BuySlipTotal = buySlipTotal.Float64
+		s.pools[pool].BuyFeeTotal = buyFeeTotal.Int64
+		s.pools[pool].BuyCount = buyCount.Int64
+		s.pools[pool].SellVolume = -sellVolume.Int64
+		s.pools[pool].SellSlipTotal = sellSlipTotal.Float64
+		s.pools[pool].SellFeeTotal = sellFeeTotal.Int64
+		s.pools[pool].SellCount = sellCount.Int64
 	}
 	return nil
 }
@@ -299,17 +291,21 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
 	case "swap":
-		if change.SwapType == "sell" {
-			p.SellVolume += uint64(change.RuneAmount)
-			p.SellSlipTotal += uint64(change.SwapSlip)
-			p.SellFeeTotal += uint64(change.LiquidityFee)
-			p.SellAssetCount++
-		} else if change.SwapType == "buy" {
-			price := float64(p.RuneDepth) / float64(p.AssetDepth)
-			p.BuyVolume += uint64(float64(change.AssetAmount) * price)
-			p.BuySlipTotal += uint64(change.SwapSlip)
-			p.BuyFeeTotal += uint64(float64(change.LiquidityFee) * price)
-			p.BuyAssetCount++
+		switch change.SwapType {
+		case models.SwapTypeBuy:
+			p.BuyVolume += change.RuneAmount
+			if change.TradeSlip != nil {
+				p.BuySlipTotal += *change.TradeSlip
+				p.BuyFeeTotal += *change.LiquidityFee
+				p.BuyCount++
+			}
+		case models.SwapTypeSell:
+			p.SellVolume += -change.RuneAmount
+			if change.TradeSlip != nil {
+				p.SellSlipTotal += *change.TradeSlip
+				p.SellFeeTotal += *change.LiquidityFee
+				p.SellCount++
+			}
 		}
 	}
 
