@@ -42,7 +42,7 @@ func (s *Client) GetPoolBasics(pool common.Asset) (models.PoolBasics, error) {
 	defer s.mu.RUnlock()
 
 	if p, ok := s.pools[pool.String()]; ok {
-		return p.PoolBasics, nil
+		return *p, nil
 	}
 	return models.PoolBasics{}, errors.New("pool doesn't exist")
 }

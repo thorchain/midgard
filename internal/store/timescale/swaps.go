@@ -74,27 +74,21 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 	}
 
 	change := &models.PoolChange{
-		Time:            record.Time,
-		EventID:         record.ID,
-		EventType:       record.Type,
-		Pool:            record.Pool,
-		AssetAmount:     assetAmt,
-		RuneAmount:      runeAmt,
-		SwappingTxCount: 1,
-		BuyAssetCount:   1,
-		SellAssetCount:  1,
-		BuyFeeTotal:     record.LiquidityFee,
-		SellFeeTotal:    record.LiquidityFee,
-		BuySlipTotal:    record.TradeSlip,
-		SellSlipTotal:   record.TradeSlip,
-		BuyVolume:       runeAmt,
-		SellVolume:      runeAmt,
+		Time:        record.Time,
+		EventID:     record.ID,
+		EventType:   record.Type,
+		Pool:        record.Pool,
+		AssetAmount: assetAmt,
+		RuneAmount:  runeAmt,
 	}
-	if runeAmt != 0 {
-		change.BuyAssetCount = 1
-		change.BuyFeeTotal = record.LiquidityFee
-		change.BuySlipTotal = record.TradeSlip
-		change.BuyVolume = runeAmt
+	if runeAmt > 0 {
+		change.SwapType = "buy"
+		change.LiquidityFee = record.LiquidityFee
+		change.SwapSlip = record.TradeSlip
+	} else {
+		change.SwapType = "sell"
+		change.LiquidityFee = record.LiquidityFee
+		change.SwapSlip = record.TradeSlip
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -140,13 +134,6 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
-	}
-	// ignore buy swaps and fee events
-	if runeAmt != 0 && len(record.OutTxs) > 0 {
-		change.SellAssetCount = 1
-		change.SellFeeTotal = record.LiquidityFee
-		change.SellSlipTotal = record.TradeSlip
-		change.SellVolume = runeAmt
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

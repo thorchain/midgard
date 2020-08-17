@@ -24,7 +24,7 @@ type Client struct {
 	logger        zerolog.Logger
 	migrationsDir string
 	mu            sync.RWMutex
-	pools         map[string]*models.PoolSimpleDetails
+	pools         map[string]*models.PoolBasics
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -133,7 +133,7 @@ func (s *Client) initPoolCache() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.pools = map[string]*models.PoolSimpleDetails{}
+	s.pools = map[string]*models.PoolBasics{}
 	err := s.fetchAllPoolsBalances()
 	if err != nil {
 		return err
@@ -175,17 +175,15 @@ func (s *Client) fetchAllPoolsBalances() error {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
-		s.pools[pool] = &models.PoolSimpleDetails{
-			PoolBasics: models.PoolBasics{
-				Asset:          asset,
-				AssetDepth:     assetDepth.Int64,
-				AssetStaked:    assetStaked.Int64,
-				AssetWithdrawn: assetWithdrawn.Int64,
-				RuneDepth:      runeDepth.Int64,
-				RuneStaked:     runeStaked.Int64,
-				RuneWithdrawn:  runeWithdrawn.Int64,
-				Units:          units.Int64,
-			},
+		s.pools[pool] = &models.PoolBasics{
+			Asset:          asset,
+			AssetDepth:     assetDepth.Int64,
+			AssetStaked:    assetStaked.Int64,
+			AssetWithdrawn: assetWithdrawn.Int64,
+			RuneDepth:      runeDepth.Int64,
+			RuneStaked:     runeStaked.Int64,
+			RuneWithdrawn:  runeWithdrawn.Int64,
+			Units:          units.Int64,
 		}
 	}
 	return nil
@@ -260,23 +258,15 @@ func (s *Client) fetchAllPoolsSwap() error {
 		if err != nil {
 			return err
 		}
-		poolSlipAverage, err := s.poolSlipAverage(pool)
-		if err != nil {
-			return err
-		}
-		s.pools[pool.String()] = &models.PoolSimpleDetails{
-			PoolSwapStats: models.PoolSwapStats{
-				BuyVolume:       buyVolume,
-				SellVolume:      sellVolume,
-				SellSlipTotal:   uint64(sellSlipAverage * float64(swappingTxCount)),
-				BuySlipTotal:    uint64(buySlipAverage * float64(swappingTxCount)),
-				SellFeeTotal:    sellFeesTotal,
-				BuyFeeTotal:     buyFeesTotal,
-				SellAssetCount:  sellAssetCount,
-				BuyAssetCount:   buyAssetCount,
-				SwappingTxCount: swappingTxCount,
-				PoolSlipAverage: poolSlipAverage,
-			},
+		s.pools[pool.String()] = &models.PoolBasics{
+			BuyVolume:      buyVolume,
+			SellVolume:     sellVolume,
+			SellSlipTotal:  uint64(sellSlipAverage * float64(swappingTxCount)),
+			BuySlipTotal:   uint64(buySlipAverage * float64(swappingTxCount)),
+			SellFeeTotal:   sellFeesTotal,
+			BuyFeeTotal:    buyFeesTotal,
+			SellAssetCount: sellAssetCount,
+			BuyAssetCount:  buyAssetCount,
 		}
 	}
 	return nil
@@ -290,10 +280,8 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	p, ok := s.pools[pool]
 	if !ok {
 		asset, _ := common.NewAsset(pool)
-		p = &models.PoolSimpleDetails{
-			PoolBasics: models.PoolBasics{
-				Asset: asset,
-			},
+		p = &models.PoolBasics{
+			Asset: asset,
 		}
 		s.pools[pool] = p
 	}
@@ -309,15 +297,18 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
 	case "swap":
-		p.SellVolume += uint64(change.SellVolume)
-		p.BuyVolume += uint64(change.BuyVolume)
-		p.SellSlipTotal += uint64(change.SellSlipTotal)
-		p.BuySlipTotal += uint64(change.BuySlipTotal)
-		p.SellFeeTotal += uint64(change.SellFeeTotal)
-		p.BuyFeeTotal += uint64(change.BuyFeeTotal)
-		p.SellAssetCount += change.SellAssetCount
-		p.BuyAssetCount += change.BuyAssetCount
-		p.SwappingTxCount += p.SwappingTxCount
+		if change.SwapType == "sell" {
+			p.SellVolume += uint64(change.RuneAmount)
+			p.SellSlipTotal += uint64(change.SwapSlip)
+			p.SellFeeTotal += uint64(change.LiquidityFee)
+			p.SellAssetCount++
+		} else if change.SwapType == "buy" {
+			price := float64(p.RuneDepth) / float64(p.AssetDepth)
+			p.BuyVolume += uint64(float64(change.AssetAmount) * price)
+			p.BuySlipTotal += uint64(change.SwapSlip)
+			p.BuyFeeTotal += uint64(float64(change.LiquidityFee) * price)
+			p.BuyAssetCount++
+		}
 	}
 
 	if change.Status > models.Unknown {
