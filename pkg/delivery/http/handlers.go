@@ -223,7 +223,7 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
 				PoolUnits:        Uint64ToString(uint64(details.Units)),
-				SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
+				SwappingTxCount:  Uint64ToString(uint64(details.SwappingTxCount)),
 				PoolVolume24hr:   Uint64ToString(uint64(details.PoolVolume24Hours)),
 				Price:            Float64ToString(details.Price),
 				Status:           pointy.String(details.Status.String()),
