@@ -156,7 +156,7 @@ func (s *StoreDummy) GetStakersAddressAndAssetDetails(address common.Address, as
 	return models.StakerAddressAndAssetDetails{}, ErrNotImplemented
 }
 
-func (s *StoreDummy) TotalEarned() (uint64, error) {
+func (s *StoreDummy) TotalEarned() (int64, error) {
 	return 0, ErrNotImplemented
 }
 
