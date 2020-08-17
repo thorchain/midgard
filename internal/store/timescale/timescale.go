@@ -240,7 +240,18 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
+	case "swap":
+		p.SellVolume += change.SellVolume
+		p.BuyVolume += change.BuyVolume
+		p.SellSlipTotal += change.SellSlipTotal
+		p.BuySlipTotal += change.BuySlipTotal
+		p.SellFeeTotal += change.SellFeeTotal
+		p.BuyFeeTotal += change.BuyFeeTotal
+		p.SellAssetCount += change.SellAssetCount
+		p.BuyAssetCount += change.BuyAssetCount
+		p.SwappingTxCount += p.SwappingTxCount
 	}
+
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
