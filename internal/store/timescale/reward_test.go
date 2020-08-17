@@ -8,11 +8,6 @@ import (
 func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	asset, _ := common.NewAsset("BNB.BNB")
 
-	// No rewards
-	runeRewarded, err := s.Store.runeRewarded(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeRewarded, Equals, int64(0))
-
 	// Zero pool depth
 	depth, err := s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
@@ -31,9 +26,6 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	err = s.Store.CreateRewardRecord(&rewardBNBEvent0)
 	c.Assert(err, IsNil)
 
-	runeRewarded, err = s.Store.runeRewarded(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeRewarded, Equals, int64(1000))
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(2000))
@@ -45,9 +37,6 @@ func (s *TimeScaleSuite) TestRuneRewarded(c *C) {
 	err = s.Store.CreateRewardRecord(&rewardBNBEvent1)
 	c.Assert(err, IsNil)
 
-	runeRewarded, err = s.Store.runeRewarded(asset)
-	c.Assert(err, IsNil)
-	c.Assert(runeRewarded, Equals, int64(3000))
 	depth, err = s.Store.poolDepth(asset)
 	c.Assert(err, IsNil)
 	c.Assert(depth, Equals, uint64(6000))

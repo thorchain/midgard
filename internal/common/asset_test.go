@@ -9,7 +9,7 @@ type AssetSuite struct{}
 var _ = Suite(&AssetSuite{})
 
 func (s AssetSuite) TestAsset(c *C) {
-	asset, err := NewAsset("bnb.rune-67c")
+	asset, err := NewAsset("bnb.RUNE-67C")
 	c.Assert(err, IsNil)
 	c.Check(asset.Equals(Rune67CAsset), Equals, true)
 	c.Check(IsRuneAsset(asset), Equals, true)
@@ -21,7 +21,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Ticker.Equals(Ticker("RUNE")), Equals, true)
 
 	// parse without chain
-	asset, err = NewAsset("rune-67c")
+	asset, err = NewAsset("RUNE-67C")
 	c.Assert(err, IsNil)
 	c.Check(asset.Equals(Rune67CAsset), Equals, true)
 

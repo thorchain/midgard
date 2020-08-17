@@ -78,16 +78,13 @@ func (s *Client) GetTotalDepth() (uint64, error) {
 
 func (s *Client) TotalRuneStaked() (int64, error) {
 	stmnt := `
-		SELECT SUM(runeAmt) FROM stakes 
-		WHERE from_address != $1
-		AND from_address != $2
-		AND from_address != $3
-		AND from_address != $4
-		AND from_address != $5	
-	`
+		SELECT SUM(rune_amount)
+		FROM pools_history
+		JOIN events ON pools_history.event_id = events.id
+		WHERE events.type in ('stake', 'unstake')`
 
 	var totalRuneStaked sql.NullInt64
-	row := s.db.QueryRow(stmnt, addEventAddress, rewardEventAddress, feeAddress, slashEventAddress, errataEventAddress)
+	row := s.db.QueryRow(stmnt)
 
 	if err := row.Scan(&totalRuneStaked); err != nil {
 		return 0, errors.Wrap(err, "totalRuneStaked failed")
@@ -114,9 +111,7 @@ func (s *Client) runeSwaps() (int64, error) {
 func (s *Client) PoolCount() (uint64, error) {
 	var poolCount uint64
 
-	stmnt := `
-		SELECT DISTINCT(pool) FROM stakes
-	`
+	stmnt := `SELECT DISTINCT(pool) FROM pools_history`
 
 	rows, err := s.db.Queryx(stmnt)
 	if err != nil {
@@ -167,9 +162,7 @@ func (s *Client) TotalAssetSells() (uint64, error) {
 }
 
 func (s *Client) TotalStakeTx() (uint64, error) {
-	stmnt := `
-		SELECT COUNT(event_id) FROM stakes WHERE units > 0
-	`
+	stmnt := `SELECT COUNT(id) FROM events WHERE type = 'stake'`
 
 	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
@@ -182,7 +175,7 @@ func (s *Client) TotalStakeTx() (uint64, error) {
 }
 
 func (s *Client) TotalWithdrawTx() (uint64, error) {
-	stmnt := `SELECT COUNT(event_id) FROM stakes WHERE units < 0`
+	stmnt := `SELECT COUNT(id) FROM events WHERE type = 'unstake'`
 	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
 
@@ -193,7 +186,7 @@ func (s *Client) TotalWithdrawTx() (uint64, error) {
 	return uint64(totalStakeTx.Int64), nil
 }
 
-func (s *Client) TotalEarned() (uint64, error) {
+func (s *Client) TotalEarned() (int64, error) {
 	pools, err := s.GetPools()
 	if err != nil {
 		return 0, err
@@ -224,5 +217,5 @@ func (s *Client) TotalEarned() (uint64, error) {
 		}
 		totalEarned += int64(float64(runeEarned) + float64(assetEarned)*priceInRune)
 	}
-	return uint64(totalEarned), nil
+	return totalEarned, nil
 }
