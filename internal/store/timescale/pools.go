@@ -1132,8 +1132,8 @@ func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	stmnt := `
 		SELECT SUM(rune_amount),
 		SUM(asset_amount),
-		SUM(rune_amount) FILTER (event_type in ('stake', 'unstake')),
-		SUM(asset_amount) FILTER (event_type in ('stake', 'unstake')),
+		SUM(rune_amount) FILTER (WHERE event_type in ('stake', 'unstake')),
+		SUM(asset_amount) FILTER (WHERE event_type in ('stake', 'unstake'))
 		FROM pools_history
 		WHERE pool = $1
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
