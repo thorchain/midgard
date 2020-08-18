@@ -103,25 +103,40 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	if runeStaked > 0 {
 		runeROI = float64(basics.RuneDepth-runeStaked) / float64(runeStaked)
 	}
-	buyFeeAverage := float64(basics.BuyFeeTotal) / float64(basics.BuyCount)
-	buySlipAverage := float64(basics.BuySlipTotal) / float64(basics.BuyCount)
-	buyTxAverage := float64(basics.BuyVolume) / float64(basics.BuyCount)
-	sellFeeAverage := float64(basics.SellFeeTotal) / float64(basics.SellCount)
-	sellSlipAverage := float64(basics.SellSlipTotal) / float64(basics.SellCount)
-	sellTxAverage := float64(basics.SellVolume) / float64(basics.SellCount)
+	buyFeeAverage := float64(0)
+	buySlipAverage := float64(0)
+	buyTxAverage := float64(0)
+	if basics.BuyCount > 0 {
+		buyFeeAverage = float64(basics.BuyFeeTotal) / float64(basics.BuyCount)
+		buySlipAverage = float64(basics.BuySlipTotal) / float64(basics.BuyCount)
+		buyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
+	}
+	sellFeeAverage := float64(0)
+	sellSlipAverage := float64(0)
+	sellTxAverage := float64(0)
+	if basics.SellCount > 0 {
+		sellFeeAverage = float64(basics.SellFeeTotal) / float64(basics.SellCount)
+		sellSlipAverage = float64(basics.SellSlipTotal) / float64(basics.SellCount)
+		sellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
+	}
+
 	swapCount := basics.BuyCount + basics.SellCount
 	poolFeesTotal := basics.BuyFeeTotal + basics.SellFeeTotal
-	poolFeeAverage := float64(poolFeesTotal) / float64(swapCount)
-	poolSlipAverage := float64(basics.BuySlipTotal+basics.SellSlipTotal) / float64(swapCount)
+	poolVolume := basics.BuyVolume + basics.SellVolume
+	poolFeeAverage := float64(0)
+	poolSlipAverage := float64(0)
+	poolTxAverage := float64(0)
+	if swapCount > 0 {
+		poolFeeAverage = float64(poolFeesTotal) / float64(swapCount)
+		poolSlipAverage = float64(basics.BuySlipTotal+basics.SellSlipTotal) / float64(swapCount)
+		poolTxAverage = float64(poolVolume) / float64(swapCount)
+	}
 	var price float64
 	if basics.AssetDepth > 0 {
 		price = float64(basics.RuneDepth) / float64(basics.AssetDepth)
 	}
 	poolStakedTotal := int64(float64(basics.AssetStaked)*price + float64(basics.RuneStaked))
-	poolVolume := basics.BuyVolume + basics.SellVolume
-	poolTxAverage := float64(poolVolume) / float64(swapCount)
 	poolROI := (assetROI + runeROI) / 2
-
 	now := time.Now()
 	pastDay := now.Add(-time.Hour * 24)
 	poolVolume24hr, err := s.GetPoolVolume(asset, pastDay, now)
