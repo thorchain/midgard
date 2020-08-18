@@ -1102,22 +1102,6 @@ func (s *Client) PoolROI(asset common.Asset) (float64, error) {
 	return roi, errors.Wrap(err, "PoolROI failed")
 }
 
-func (s *Client) poolROI12(asset common.Asset) (float64, error) {
-	assetROI12, err := s.assetROI12(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolROI12 failed")
-	}
-	runeROI12, err := s.runeROI12(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolROI12 failed")
-	}
-
-	var roi float64
-	roi = (assetROI12 + runeROI12) / 2
-
-	return roi, errors.Wrap(err, "poolROI12 failed")
-}
-
 // GetPoolStatus - latest pool status
 func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	s.mu.RLock()
