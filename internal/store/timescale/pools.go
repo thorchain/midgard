@@ -108,7 +108,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	buyTxAverage := float64(0)
 	if basics.BuyCount > 0 {
 		buyFeeAverage = float64(basics.BuyFeeTotal) / float64(basics.BuyCount)
-		buySlipAverage = float64(basics.BuySlipTotal) / float64(basics.BuyCount)
+		buySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
 		buyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
 	}
 	sellFeeAverage := float64(0)
@@ -116,7 +116,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	sellTxAverage := float64(0)
 	if basics.SellCount > 0 {
 		sellFeeAverage = float64(basics.SellFeeTotal) / float64(basics.SellCount)
-		sellSlipAverage = float64(basics.SellSlipTotal) / float64(basics.SellCount)
+		sellSlipAverage = basics.SellSlipTotal / float64(basics.SellCount)
 		sellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
 	}
 
@@ -128,7 +128,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	poolTxAverage := float64(0)
 	if swapCount > 0 {
 		poolFeeAverage = float64(poolFeesTotal) / float64(swapCount)
-		poolSlipAverage = float64(basics.BuySlipTotal+basics.SellSlipTotal) / float64(swapCount)
+		poolSlipAverage = basics.BuySlipTotal + basics.SellSlipTotal/float64(swapCount)
 		poolTxAverage = float64(poolVolume) / float64(swapCount)
 	}
 	var price float64
