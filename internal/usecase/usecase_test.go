@@ -641,15 +641,15 @@ type TestGetPoolDetailsStore struct {
 	StoreDummy
 	status           string
 	asset            common.Asset
-	assetDepth       uint64
+	assetDepth       int64
 	assetROI         float64
-	assetStakedTotal uint64
-	buyAssetCount    uint64
+	assetStakedTotal int64
+	buyAssetCount    int64
 	buyFeeAverage    float64
-	buyFeesTotal     uint64
+	buyFeesTotal     int64
 	buySlipAverage   float64
 	buyTxAverage     float64
-	buyVolume        uint64
+	buyVolume        int64
 	poolDepth        uint64
 	poolFeeAverage   float64
 	poolFeesTotal    uint64
@@ -658,68 +658,69 @@ type TestGetPoolDetailsStore struct {
 	poolSlipAverage  float64
 	poolStakedTotal  uint64
 	poolTxAverage    float64
-	poolUnits        uint64
+	poolUnits        int64
 	poolVolume       uint64
 	poolVolume24hr   uint64
 	price            float64
-	runeDepth        uint64
+	runeDepth        int64
 	runeROI          float64
-	runeStakedTotal  uint64
-	sellAssetCount   uint64
+	runeStakedTotal  int64
+	sellAssetCount   int64
 	sellFeeAverage   float64
-	sellFeesTotal    uint64
+	sellFeesTotal    int64
 	sellSlipAverage  float64
 	sellTxAverage    float64
-	sellVolume       uint64
-	stakeTxCount     uint64
+	sellVolume       int64
+	stakeTxCount     int64
 	stakersCount     uint64
-	stakingTxCount   uint64
+	stakingTxCount   int64
 	swappersCount    uint64
 	swappingTxCount  uint64
-	withdrawTxCount  uint64
+	withdrawTxCount  int64
 	err              error
 }
 
 func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	data := models.PoolDetails{
-		Status:           s.status,
-		Asset:            s.asset,
-		AssetDepth:       s.assetDepth,
-		AssetROI:         s.assetROI,
-		AssetStakedTotal: s.assetStakedTotal,
-		BuyAssetCount:    s.buyAssetCount,
-		BuyFeeAverage:    s.buyFeeAverage,
-		BuyFeesTotal:     s.buyFeesTotal,
-		BuySlipAverage:   s.buySlipAverage,
-		BuyTxAverage:     s.buyTxAverage,
-		BuyVolume:        s.buyVolume,
-		PoolDepth:        s.poolDepth,
-		PoolFeeAverage:   s.poolFeeAverage,
-		PoolFeesTotal:    s.poolFeesTotal,
-		PoolROI:          s.poolROI,
-		PoolROI12:        s.poolROI12,
-		PoolSlipAverage:  s.poolSlipAverage,
-		PoolStakedTotal:  s.poolStakedTotal,
-		PoolTxAverage:    s.poolTxAverage,
-		PoolUnits:        s.poolUnits,
-		PoolVolume:       s.poolVolume,
-		PoolVolume24hr:   s.poolVolume24hr,
-		Price:            s.price,
-		RuneDepth:        s.runeDepth,
-		RuneROI:          s.runeROI,
-		RuneStakedTotal:  s.runeStakedTotal,
-		SellAssetCount:   s.sellAssetCount,
-		SellFeeAverage:   s.sellFeeAverage,
-		SellFeesTotal:    s.sellFeesTotal,
-		SellSlipAverage:  s.sellSlipAverage,
-		SellTxAverage:    s.sellTxAverage,
-		SellVolume:       s.sellVolume,
-		StakeTxCount:     s.stakeTxCount,
-		StakersCount:     s.stakersCount,
-		StakingTxCount:   s.stakingTxCount,
-		SwappersCount:    s.swappersCount,
-		SwappingTxCount:  s.swappingTxCount,
-		WithdrawTxCount:  s.withdrawTxCount,
+		PoolBasics: models.PoolBasics{
+			Status:        models.PoolStatusStr[s.status],
+			Asset:         s.asset,
+			AssetDepth:    s.assetDepth,
+			AssetStaked:   s.assetStakedTotal,
+			BuyCount:      s.buyAssetCount,
+			BuyFeeTotal:   s.buyFeesTotal,
+			BuyVolume:     s.buyVolume,
+			Units:         s.poolUnits,
+			RuneDepth:     s.runeDepth,
+			RuneStaked:    s.runeStakedTotal,
+			SellCount:     s.sellAssetCount,
+			SellFeeTotal:  s.sellFeesTotal,
+			SellVolume:    s.sellVolume,
+			StakeCount:    s.stakeTxCount,
+			WithdrawCount: s.withdrawTxCount,
+		},
+		AssetROI:        s.assetROI,
+		BuyFeeAverage:   s.buyFeeAverage,
+		BuySlipAverage:  s.buySlipAverage,
+		BuyTxAverage:    s.buyTxAverage,
+		PoolDepth:       s.poolDepth,
+		PoolFeeAverage:  s.poolFeeAverage,
+		PoolFeesTotal:   s.poolFeesTotal,
+		PoolROI:         s.poolROI,
+		PoolROI12:       s.poolROI12,
+		PoolSlipAverage: s.poolSlipAverage,
+		PoolStakedTotal: s.poolStakedTotal,
+		PoolTxAverage:   s.poolTxAverage,
+		PoolVolume:      s.poolVolume,
+		PoolVolume24hr:  s.poolVolume24hr,
+		Price:           s.price,
+		RuneROI:         s.runeROI,
+		SellFeeAverage:  s.sellFeeAverage,
+		SellSlipAverage: s.sellSlipAverage,
+		SellTxAverage:   s.sellTxAverage,
+		StakersCount:    s.stakersCount,
+		SwappersCount:   s.swappersCount,
+		SwappingTxCount: s.swappingTxCount,
 	}
 	return data, s.err
 }
@@ -776,44 +777,45 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.PoolDetails{
-		Status:           store.status,
-		Asset:            store.asset,
-		AssetDepth:       store.assetDepth,
-		AssetROI:         store.assetROI,
-		AssetStakedTotal: store.assetStakedTotal,
-		BuyAssetCount:    store.buyAssetCount,
-		BuyFeeAverage:    store.buyFeeAverage,
-		BuyFeesTotal:     store.buyFeesTotal,
-		BuySlipAverage:   store.buySlipAverage,
-		BuyTxAverage:     store.buyTxAverage,
-		BuyVolume:        store.buyVolume,
-		PoolDepth:        store.poolDepth,
-		PoolFeeAverage:   store.poolFeeAverage,
-		PoolFeesTotal:    store.poolFeesTotal,
-		PoolROI:          store.poolROI,
-		PoolROI12:        store.poolROI12,
-		PoolSlipAverage:  store.poolSlipAverage,
-		PoolStakedTotal:  store.poolStakedTotal,
-		PoolTxAverage:    store.poolTxAverage,
-		PoolUnits:        store.poolUnits,
-		PoolVolume:       store.poolVolume,
-		PoolVolume24hr:   store.poolVolume24hr,
-		Price:            store.price,
-		RuneDepth:        store.runeDepth,
-		RuneROI:          store.runeROI,
-		RuneStakedTotal:  store.runeStakedTotal,
-		SellAssetCount:   store.sellAssetCount,
-		SellFeeAverage:   store.sellFeeAverage,
-		SellFeesTotal:    store.sellFeesTotal,
-		SellSlipAverage:  store.sellSlipAverage,
-		SellTxAverage:    store.sellTxAverage,
-		SellVolume:       store.sellVolume,
-		StakeTxCount:     store.stakeTxCount,
-		StakersCount:     store.stakersCount,
-		StakingTxCount:   store.stakingTxCount,
-		SwappersCount:    store.swappersCount,
-		SwappingTxCount:  store.swappingTxCount,
-		WithdrawTxCount:  store.withdrawTxCount,
+		PoolBasics: models.PoolBasics{
+			Status:        models.PoolStatusStr[store.status],
+			Asset:         store.asset,
+			AssetDepth:    store.assetDepth,
+			AssetStaked:   store.assetStakedTotal,
+			BuyCount:      store.buyAssetCount,
+			BuyFeeTotal:   store.buyFeesTotal,
+			BuyVolume:     store.buyVolume,
+			Units:         store.poolUnits,
+			RuneDepth:     store.runeDepth,
+			RuneStaked:    store.runeStakedTotal,
+			SellCount:     store.sellAssetCount,
+			SellFeeTotal:  store.sellFeesTotal,
+			SellVolume:    store.sellVolume,
+			StakeCount:    store.stakeTxCount,
+			WithdrawCount: store.withdrawTxCount,
+		},
+		AssetROI:        store.assetROI,
+		BuyFeeAverage:   store.buyFeeAverage,
+		BuySlipAverage:  store.buySlipAverage,
+		BuyTxAverage:    store.buyTxAverage,
+		PoolDepth:       store.poolDepth,
+		PoolFeeAverage:  store.poolFeeAverage,
+		PoolFeesTotal:   store.poolFeesTotal,
+		PoolROI:         store.poolROI,
+		PoolROI12:       store.poolROI12,
+		PoolSlipAverage: store.poolSlipAverage,
+		PoolStakedTotal: store.poolStakedTotal,
+		PoolTxAverage:   store.poolTxAverage,
+		PoolVolume:      store.poolVolume,
+		PoolVolume24hr:  store.poolVolume24hr,
+		Price:           store.price,
+		RuneROI:         store.runeROI,
+		SellFeeAverage:  store.sellFeeAverage,
+		SellSlipAverage: store.sellSlipAverage,
+		SellTxAverage:   store.sellTxAverage,
+		StakersCount:    store.stakersCount,
+		SwappersCount:   store.swappersCount,
+		SwappingTxCount: store.swappingTxCount,
 	})
 
 	store = &TestGetPoolDetailsStore{
