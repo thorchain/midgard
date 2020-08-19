@@ -93,27 +93,33 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		return models.PoolDetails{}, err
 	}
 
+	var (
+		assetROI        float64
+		runeROI         float64
+		buyFeeAverage   float64
+		buySlipAverage  float64
+		buyTxAverage    float64
+		sellFeeAverage  float64
+		sellSlipAverage float64
+		sellTxAverage   float64
+		poolFeeAverage  float64
+		poolSlipAverage float64
+		poolTxAverage   float64
+		price           float64
+	)
 	assetStaked := basics.AssetStaked - basics.AssetWithdrawn
-	var assetROI float64
 	if assetStaked > 0 {
 		assetROI = float64(basics.AssetDepth-assetStaked) / float64(assetStaked)
 	}
 	runeStaked := basics.RuneStaked - basics.RuneWithdrawn
-	var runeROI float64
 	if runeStaked > 0 {
 		runeROI = float64(basics.RuneDepth-runeStaked) / float64(runeStaked)
 	}
-	buyFeeAverage := float64(0)
-	buySlipAverage := float64(0)
-	buyTxAverage := float64(0)
 	if basics.BuyCount > 0 {
 		buyFeeAverage = float64(basics.BuyFeeTotal) / float64(basics.BuyCount)
 		buySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
 		buyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
 	}
-	sellFeeAverage := float64(0)
-	sellSlipAverage := float64(0)
-	sellTxAverage := float64(0)
 	if basics.SellCount > 0 {
 		sellFeeAverage = float64(basics.SellFeeTotal) / float64(basics.SellCount)
 		sellSlipAverage = basics.SellSlipTotal / float64(basics.SellCount)
@@ -123,15 +129,11 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	swapCount := basics.BuyCount + basics.SellCount
 	poolFeesTotal := basics.BuyFeeTotal + basics.SellFeeTotal
 	poolVolume := basics.BuyVolume + basics.SellVolume
-	poolFeeAverage := float64(0)
-	poolSlipAverage := float64(0)
-	poolTxAverage := float64(0)
 	if swapCount > 0 {
 		poolFeeAverage = float64(poolFeesTotal) / float64(swapCount)
 		poolSlipAverage = basics.BuySlipTotal + basics.SellSlipTotal/float64(swapCount)
 		poolTxAverage = float64(poolVolume) / float64(swapCount)
 	}
-	var price float64
 	if basics.AssetDepth > 0 {
 		price = float64(basics.RuneDepth) / float64(basics.AssetDepth)
 	}
