@@ -28,6 +28,50 @@ CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);
 CREATE INDEX pools_history_event_type_idx ON pools_history (event_type);
 CREATE INDEX pools_history_pool_idx ON pools_history (pool);
 
+CREATE TABLE pools (
+    time              TIMESTAMPTZ     NOT NULL,
+    pool              VARCHAR         NOT NULL,
+    asset_amount      BIGINT          NOT NULL,
+    asset_depth       BIGINT          NOT NULL,
+    asset_roi         DECIMAL         NOT NULL,
+    buy_asset_count   BIGINT          NOT NULL,
+    buy_fee_average   DECIMAL         NOT NULL,
+    buy_fees_total    BIGINT          NOT NULL,
+    buy_slip_average  DECIMAL         NOT NULL,
+    buy_tx_average    DECIMAL         NOT NULL,
+    buy_volume        BIGINT          NOT NULL,
+    pool_amount       BIGINT          NOT NULL,
+    pool_depth        BIGINT          NOT NULL,
+    pool_fee_average  DECIMAL         NOT NULL,
+    pool_fees_total   BIGINT          NOT NULL,
+    pool_roi          DECIMAL         NOT NULL,
+    pool_roi_12       DECIMAL         NOT NULL,
+    pool_slip_average DECIMAL         NOT NULL,
+    pool_tx_average   DECIMAL         NOT NULL,
+    pool_volume       BIGINT          NOT NULL,
+    pool_volume_24h   BIGINT          NOT NULL,
+    price             DECIMAL         NOT NULL,
+    rune_amount       BIGINT          NOT NULL,
+    rune_depth        BIGINT          NOT NULL,
+    rune_roi          DECIMAL         NOT NULL,
+    sell_asset_count  BIGINT          NOT NULL,
+    sell_fee_average  DECIMAL         NOT NULL,
+    sell_fees_total   BIGINT          NOT NULL,
+    sell_slip_average DECIMAL         NOT NULL,
+    sell_tx_average   DECIMAL         NOT NULL,
+    sell_volume       BIGINT          NOT NULL,
+    staker_count      BIGINT          NOT NULL,
+    status            VARCHAR         NOT NULL,
+    swapper_count     BIGINT          NOT NULL,
+    tx_stake_count    BIGINT          NOT NULL,
+    tx_swap_count     BIGINT          NOT NULL,
+    tx_unstake_count  BIGINT          NOT NULL,
+    units             BIGINT,
+    PRIMARY KEY (time, pool)
+);
+
+CREATE INDEX pools_idx ON pools (pool, time DESC);
+
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
     id SERIAL,
@@ -73,6 +117,7 @@ CREATE TABLE coins (
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
+SELECT create_hypertable('pools', 'time');
 SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
@@ -81,6 +126,7 @@ SELECT create_hypertable('coins', 'time');
 
 DROP TABLE events;
 DROP TABLE pools_history;
+DROP TABLE pools;
 DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
