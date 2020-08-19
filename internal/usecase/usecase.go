@@ -319,7 +319,7 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
 func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
-	data, err := uc.store.GetPoolData(asset)
+	data, err := uc.store.GetPoolDetails(asset)
 	if err != nil {
 		return nil, err
 	}

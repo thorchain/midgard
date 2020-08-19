@@ -86,11 +86,39 @@ func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 	eh.events = append(eh.events, begin...)
 	eh.events = append(eh.events, end...)
 	eh.processBlock()
+	err := eh.updatePools(blockTime)
+	if err != nil {
+		eh.logger.Err(err).Msg("Update pools failed")
+	}
 }
 
 // NewTx implements Callback.NewTx
 func (eh *eventHandler) NewTx(height int64, events []thorchain.Event) {
 	eh.events = append(eh.events, events...)
+}
+
+// updatePools insert pool state details into pools table
+func (eh *eventHandler) updatePools(blockTime time.Time) error {
+	eh.logger.Debug().Msg("Update pool details")
+	pools, err := eh.store.GetPools()
+	if err != nil {
+		return errors.Wrap(err, "failed to get pools")
+	}
+	for _, pool := range pools {
+		go func(pool common.Asset) error {
+			eh.logger.Debug().Str("Pool", pool.String()).Msg("Update pool details")
+			details, err := eh.store.GetPoolData(pool)
+			if err != nil {
+				return errors.Wrap(err, "failed to get pool details")
+			}
+			err = eh.store.CreatePoolDetailsRecord(&details, blockTime)
+			if err != nil {
+				return errors.Wrap(err, "failed to insert pool details")
+			}
+			return nil
+		}(pool)
+	}
+	return nil
 }
 
 func (eh *eventHandler) processBlock() {
