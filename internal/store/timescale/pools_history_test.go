@@ -11,47 +11,125 @@ import (
 func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	pool, err := common.NewAsset("BNB.BNB")
 	c.Assert(err, IsNil)
+	tradeSlip := 0.1
+	liquidityFee := int64(12)
 	change := &models.PoolChange{
-		Time:        time.Now(),
-		EventID:     1,
-		Pool:        pool,
-		AssetAmount: 1000,
-		RuneAmount:  -2000,
-		Status:      models.Enabled,
+		Time:         time.Now(),
+		EventID:      1,
+		EventType:    "swap",
+		Pool:         pool,
+		AssetAmount:  1000,
+		RuneAmount:   -2000,
+		SwapType:     "sell",
+		TradeSlip:    &tradeSlip,
+		LiquidityFee: &liquidityFee,
+		Status:       models.Enabled,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	assetDepth, err := s.Store.getAssetDepth(pool)
+	basics, err := s.Store.GetPoolBasics(pool)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Asset:         pool,
+		AssetDepth:    1000,
+		RuneDepth:     -2000,
+		Status:        models.Enabled,
+		SellVolume:    2000,
+		SellSlipTotal: 0.1,
+		SellFeeTotal:  12,
+		SellCount:     1,
+	})
+
+	tradeSlip = 0.3
+	liquidityFee = int64(8)
+	change = &models.PoolChange{
+		Time:         time.Now(),
+		EventID:      2,
+		EventType:    "swap",
+		Pool:         pool,
+		AssetAmount:  -100,
+		RuneAmount:   200,
+		SwapType:     "buy",
+		TradeSlip:    &tradeSlip,
+		LiquidityFee: &liquidityFee,
+		Status:       models.Suspended,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	c.Assert(assetDepth, Equals, int64(1000))
-	runeDepth, err := s.Store.getRuneDepth(pool)
-	c.Assert(err, IsNil)
-	c.Assert(runeDepth, Equals, int64(-2000))
-	status, err := s.Store.GetPoolStatus(pool)
-	c.Assert(err, IsNil)
-	c.Assert(status, Equals, models.Enabled)
+	basics, err = s.Store.GetPoolBasics(pool)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Asset:         pool,
+		AssetDepth:    900,
+		RuneDepth:     -1800,
+		Status:        models.Suspended,
+		BuyVolume:     200,
+		BuySlipTotal:  0.3,
+		BuyFeeTotal:   8,
+		BuyCount:      1,
+		SellVolume:    2000,
+		SellSlipTotal: 0.1,
+		SellFeeTotal:  12,
+		SellCount:     1,
+	})
 
 	pool, err = common.NewAsset("BNB.TOMOB-1E1")
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:        time.Now(),
-		EventID:     2,
+		EventID:     3,
+		EventType:   "stake",
 		Pool:        pool,
-		AssetAmount: -3000,
+		AssetAmount: 3000,
 		RuneAmount:  4000,
+		Units:       100,
 		Status:      models.Bootstrap,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	assetDepth, err = s.Store.getAssetDepth(pool)
+	basics, err = s.Store.GetPoolBasics(pool)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Asset:       pool,
+		AssetDepth:  3000,
+		AssetStaked: 3000,
+		RuneDepth:   4000,
+		RuneStaked:  4000,
+		Units:       100,
+		Status:      models.Bootstrap,
+		StakeCount:  1,
+	})
+
+	change = &models.PoolChange{
+		Time:        time.Now(),
+		EventID:     4,
+		EventType:   "unstake",
+		Pool:        pool,
+		AssetAmount: -300,
+		Units:       -10,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	c.Assert(assetDepth, Equals, int64(-3000))
-	runeDepth, err = s.Store.getRuneDepth(pool)
+	change = &models.PoolChange{
+		Time:       time.Now(),
+		EventID:    4,
+		EventType:  "unstake",
+		Pool:       pool,
+		RuneAmount: -400,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	c.Assert(runeDepth, Equals, int64(4000))
-	status, err = s.Store.GetPoolStatus(pool)
-	c.Assert(err, IsNil)
-	c.Assert(status, Equals, models.Bootstrap)
+	basics, err = s.Store.GetPoolBasics(pool)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Asset:          pool,
+		AssetDepth:     2700,
+		AssetStaked:    3000,
+		AssetWithdrawn: 300,
+		RuneDepth:      3600,
+		RuneStaked:     4000,
+		RuneWithdrawn:  400,
+		Units:          90,
+		Status:         models.Bootstrap,
+		StakeCount:     1,
+		WithdrawCount:  1,
+	})
 }
 
 func (s *TimeScaleSuite) TestGetEventPool(c *C) {
