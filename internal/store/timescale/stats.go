@@ -31,7 +31,7 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(DISTINCT(txs.event_id))").From("txs")
-
+	sb.Where("events.type != ''")
 	count, err := s.queryTimestampInt64(sb, from, to)
 	return uint64(count), err
 }
