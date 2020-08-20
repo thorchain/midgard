@@ -76,14 +76,14 @@ func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
 	to = time.Now()
 	count, err = s.Store.GetTxsCount(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(count, Equals, uint64(5))
+	c.Assert(count, Equals, uint64(3))
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 	to = time.Now()
 	count, err = s.Store.GetTxsCount(&from, &to)
 	c.Assert(err, IsNil)
-	c.Assert(count, Equals, uint64(6))
+	c.Assert(count, Equals, uint64(4))
 
 	from = time.Now().Add(-time.Hour * 2)
 	to = from.Add(time.Hour)
@@ -93,7 +93,7 @@ func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
 
 	count, err = s.Store.GetTxsCount(nil, nil)
 	c.Assert(err, IsNil)
-	c.Assert(count, Equals, uint64(6))
+	c.Assert(count, Equals, uint64(4))
 }
 
 func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
