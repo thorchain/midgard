@@ -30,10 +30,23 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 // GetTxsCount returns total number of transactions between "from" to "to".
 func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("COUNT(DISTINCT(txs.event_id))").From("txs")
+	sb.Select("COUNT(DISTINCT(txs.event_id))")
+	sb.From("txs")
+	sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
 	sb.Where("events.type != ''")
-	count, err := s.queryTimestampInt64(sb, from, to)
-	return uint64(count), err
+	if from != nil {
+		sb.Where(sb.GE("txs.time", *from))
+	}
+	if to != nil {
+		sb.Where(sb.LE("txs.time", *to))
+	}
+	query, args := sb.Build()
+
+	var value sql.NullInt64
+	row := s.db.QueryRow(query, args...)
+
+	err := row.Scan(&value)
+	return uint64(value.Int64), err
 }
 
 // GetTotalVolume returns total volume between "from" to "to".
