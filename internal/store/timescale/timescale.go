@@ -141,7 +141,8 @@ func (s *Client) initPoolCache() error {
 }
 
 func (s *Client) fetchAllPools() error {
-	q := `SELECT
+	q := `
+		SELECT
 		height, pool, asset_depth, asset_staked, asset_withdrawn, rune_depth, rune_staked, rune_withdrawn, units, status, 
 		buy_volume, buy_slip_total, buy_fee_total, buy_count, sell_volume, sell_slip_total, sell_fee_total, sell_count, 
 		stakers_count, swappers_count, stake_count, withdraw_count
@@ -151,6 +152,7 @@ func (s *Client) fetchAllPools() error {
 			FROM pools
 		) t 
 		WHERE row_num = 1`
+
 	rows, err := s.db.Queryx(q)
 	if err != nil {
 		return err
@@ -158,20 +160,11 @@ func (s *Client) fetchAllPools() error {
 	defer rows.Close()
 
 	for rows.Next() {
-		var (
-			pool   string
-			basics models.PoolBasics
-		)
-		if err := rows.Scan(&basics.LastModifiedHeight, &pool,
-			&basics.AssetDepth, &basics.AssetStaked, &basics.AssetWithdrawn, &basics.RuneDepth, &basics.RuneStaked, &basics.RuneWithdrawn,
-			&basics.Units, &basics.Status,
-			&basics.BuyVolume, &basics.BuySlipTotal, &basics.BuyFeeTotal, &basics.BuyCount,
-			&basics.SellVolume, &basics.SellSlipTotal, &basics.SellFeeTotal, &basics.SellCount,
-			&basics.StakersCount, &basics.SwappersCount, &basics.StakeCount, &basics.WithdrawCount); err != nil {
+		var basics models.PoolBasics
+		if err := rows.StructScan(&basics); err != nil {
 			return err
 		}
-		basics.Asset, _ = common.NewAsset(pool)
-		s.pools[pool] = &basics
+		s.pools[basics.Asset.String()] = &basics
 	}
 	return nil
 }

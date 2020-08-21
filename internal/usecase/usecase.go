@@ -237,7 +237,7 @@ func (uc *Usecase) GetStats() (*models.StatsData, error) {
 
 // GetPoolBasics returns the basics of pool like asset and rune depths, units and status.
 func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
-	basics, err := uc.store.GetPoolBasics(asset)
+	basics, err := uc.store.GetPoolBasics(asset, nil)
 	if basics.Status == models.Unknown {
 		basics.Status, err = uc.fetchPoolStatus(asset)
 		if err != nil {
@@ -249,7 +249,7 @@ func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) 
 
 // GetPoolSimpleDetails returns pool depths, status and swap stats of the given asset.
 func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleDetails, error) {
-	basics, err := uc.store.GetPoolBasics(asset)
+	basics, err := uc.store.GetPoolBasics(asset, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -319,18 +319,67 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
 func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
-	data, err := uc.store.GetPoolData(asset)
+	basics, err := uc.store.GetPoolBasics(asset, nil)
 	if err != nil {
 		return nil, err
 	}
-	if data.Status == models.Unknown {
+	if basics.Status == models.Unknown {
 		status, err := uc.fetchPoolStatus(asset)
 		if err != nil {
 			return nil, err
 		}
-		data.Status = status
+		basics.Status = status
 	}
-	return &data, nil
+
+	details := &models.PoolDetails{
+		PoolBasics:      basics,
+		AssetROI:        calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn),
+		RuneROI:         calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn),
+		Price:           calculatePrice(basics.RuneDepth, basics.AssetDepth),
+		PoolDepth:       uint64(basics.RuneDepth) * 2,
+		PoolVolume:      uint64(basics.BuyVolume + basics.SellVolume),
+		PoolFeesTotal:   uint64(basics.BuyFeeTotal + basics.SellFeeTotal),
+		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
+	}
+	if basics.BuyCount > 0 {
+		details.BuyFeeAverage = float64(basics.BuyFeeTotal) / float64(basics.BuyCount)
+		details.BuySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
+		details.BuyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
+	}
+	if basics.SellCount > 0 {
+		details.SellFeeAverage = float64(basics.SellFeeTotal) / float64(basics.SellCount)
+		details.SellSlipAverage = basics.SellSlipTotal / float64(basics.SellCount)
+		details.SellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
+	}
+
+	if details.SwappingTxCount > 0 {
+		details.PoolFeeAverage = float64(details.PoolFeesTotal) / float64(details.SwappingTxCount)
+		details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+		details.PoolTxAverage = float64(details.PoolVolume) / float64(details.SwappingTxCount)
+	}
+	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
+	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
+
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+	basics24Hours, err := uc.store.GetPoolBasics(asset, &pastDay)
+	if err != nil {
+		return nil, err
+	}
+	details.PoolVolume24hr = details.PoolVolume - uint64(basics24Hours.BuyVolume+basics24Hours.SellVolume)
+
+	past12month := now.Add(-time.Hour * 24 * 30 * 12)
+	basics12Month, err := uc.store.GetPoolBasics(asset, &past12month)
+	if err != nil {
+		return nil, err
+	}
+	assetStaked12Month := (basics.AssetStaked - basics.AssetWithdrawn) - (basics12Month.AssetStaked - basics12Month.AssetWithdrawn)
+	assetROI12Month := calculateROI(basics.AssetDepth-basics12Month.AssetDepth, assetStaked12Month)
+	runeStaked12Month := (basics.RuneStaked - basics.RuneWithdrawn) - (basics12Month.RuneStaked - basics12Month.RuneWithdrawn)
+	runeROI12Month := calculateROI(basics.RuneDepth-basics12Month.RuneDepth, runeStaked12Month)
+	details.PoolROI12 = (assetROI12Month + runeROI12Month) / 2
+
+	return details, nil
 }
 
 // GetStakers returns list of all active stakers in network.

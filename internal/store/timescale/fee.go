@@ -15,6 +15,7 @@ func (s *Client) CreateFeeRecord(event models.Event, pool common.Asset) error {
 
 	change := &models.PoolChange{
 		Time:        event.Time,
+		Height:      event.Height,
 		EventID:     event.ID,
 		EventType:   event.Type,
 		Pool:        pool,

@@ -124,7 +124,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 
-	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
+	basics, err := s.Store.GetPoolBasics(common.BNBAsset, nil)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
 		Asset:          common.BNBAsset,
@@ -140,7 +140,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		Status:         models.Bootstrap,
 	})
 
-	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
+	basics, err = s.Store.GetPoolBasics(common.BTCAsset, nil)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
 		Asset:       common.BTCAsset,
@@ -154,85 +154,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	})
 
 	ethAsset, _ := common.NewAsset("ETH.ETH")
-	_, err = s.Store.GetPoolBasics(ethAsset)
+	_, err = s.Store.GetPoolBasics(ethAsset, nil)
 	c.Assert(err, NotNil)
-}
-
-func (s *TimeScaleSuite) TestGetPoolData(c *C) {
-	c.Skip("This needs revision once all others are completed. ")
-
-	// Stakes
-	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeTcanEvent3)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeTcanEvent4)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeBoltEvent5)
-	c.Assert(err, IsNil)
-
-	// Swaps
-	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent1)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent2)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent3)
-	c.Assert(err, IsNil)
-
-	asset, _ := common.NewAsset("BNB.BNB")
-	poolData, err := s.Store.GetPoolData(asset)
-	c.Assert(err, IsNil)
-
-	c.Assert(poolData.Asset, Equals, asset)
-	c.Assert(poolData.AssetDepth, Equals, uint64(50000000010), Commentf("%v", poolData.AssetDepth))
-	c.Assert(poolData.AssetStaked, Equals, int64(50000000010), Commentf("%v", poolData.AssetStaked))
-	c.Assert(poolData.PoolDepth, Equals, uint64(100000200), Commentf("%v", poolData.PoolDepth))
-	c.Assert(poolData.PoolStakedTotal, Equals, uint64(100000200), Commentf("%v", poolData.PoolStakedTotal))
-	c.Assert(poolData.Units, Equals, int64(25025000100), Commentf("%v", poolData.Units))
-	c.Assert(poolData.Price, Equals, float64(0.0010000019997999997), Commentf("%v", poolData.Price))
-	c.Assert(poolData.RuneDepth, Equals, uint64(50000100), Commentf("%v", poolData.RuneDepth))
-	c.Assert(poolData.RuneStaked, Equals, int64(50000100), Commentf("%v", poolData.RuneStaked))
-	c.Assert(poolData.StakeCount, Equals, int64(2), Commentf("%v", poolData.StakeCount))
-	c.Assert(poolData.StakersCount, Equals, uint64(2), Commentf("%v", poolData.StakersCount))
-	c.Check(poolData.WithdrawCount, Equals, uint64(0), Commentf("%v", poolData.WithdrawCount))
-
-	asset, _ = common.NewAsset("BNB.BOLT-014")
-	poolData, err = s.Store.GetPoolData(asset)
-	c.Assert(err, IsNil)
-
-	c.Check(poolData.Asset, Equals, asset)
-	c.Check(poolData.AssetDepth, Equals, uint64(394850000), Commentf("%d", poolData.AssetDepth))
-	c.Check(poolData.AssetROI, Equals, 0.1791847095714499, Commentf("%v", poolData.AssetROI))
-	c.Check(poolData.AssetStaked, Equals, int64(334850000), Commentf("%d", poolData.AssetStaked))
-	c.Check(poolData.PoolDepth, Equals, uint64(4698999994), Commentf("%d", poolData.PoolDepth))
-	c.Check(poolData.PoolSlipAverage, Equals, 0.06151196360588074)
-	c.Check(poolData.PoolStakedTotal, Equals, uint64(4341978343), Commentf("%d", poolData.PoolStakedTotal))
-	c.Check(poolData.PoolTxAverage, Equals, uint64(59503608), Commentf("%d", poolData.PoolTxAverage))
-	c.Check(poolData.Units, Equals, int64(1342175000), Commentf("%d", poolData.Units))
-	c.Check(poolData.PoolVolume, Equals, uint64(357021653), Commentf("%d", poolData.PoolVolume))
-	c.Check(poolData.Price, Equals, float64(5.950360888945169), Commentf("%d", poolData.Price))
-	c.Check(poolData.RuneDepth, Equals, uint64(2349499997), Commentf("%d", poolData.RuneDepth))
-	c.Check(poolData.RuneStaked, Equals, int64(2349500000), Commentf("%d", poolData.RuneStaked))
-	c.Check(poolData.SellCount, Equals, int64(3))
-	c.Check(poolData.SellSlipAverage, Equals, 0.12302392721176147)
-	c.Check(poolData.SellTxAverage, Equals, uint64(119007217), Commentf("%d", poolData.SellTxAverage))
-	c.Check(poolData.SellVolume, Equals, uint64(357021653), Commentf("%v", poolData.SellVolume))
-	c.Check(poolData.StakeCount, Equals, int64(1), Commentf("%v", poolData.StakeCount))
-	c.Check(poolData.StakersCount, Equals, uint64(1), Commentf("%v", poolData.StakersCount))
-	c.Check(poolData.WithdrawCount, Equals, uint64(0), Commentf("%v", poolData.WithdrawCount))
-	c.Check(poolData.SwappersCount, Equals, uint64(3), Commentf("%v", poolData.SwappersCount))
-	c.Check(poolData.SwappingTxCount, Equals, uint64(3), Commentf("%v", poolData.SwappingTxCount))
 }
 
 func (s *TimeScaleSuite) TestGetPoolSwapStats(c *C) {

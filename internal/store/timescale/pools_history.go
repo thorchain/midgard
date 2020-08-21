@@ -12,7 +12,7 @@ import (
 
 func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 	pool := change.Pool.String()
-	basics, _ := s.GetPoolBasics(change.Pool)
+	basics, _ := s.GetPoolBasics(change.Pool, nil)
 	assetDepth := basics.AssetDepth + change.AssetAmount
 	runeDepth := basics.RuneDepth + change.RuneAmount
 	units := sql.NullInt64{

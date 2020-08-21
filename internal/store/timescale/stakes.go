@@ -29,6 +29,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 
 	change := &models.PoolChange{
 		Time:        record.Time,
+		Height:      record.Height,
 		EventID:     record.ID,
 		EventType:   record.Type,
 		Pool:        record.Pool,

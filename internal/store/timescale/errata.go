@@ -15,6 +15,7 @@ func (s *Client) CreateErrataRecord(record *models.EventErrata) error {
 	for _, pool := range record.Pools {
 		change := &models.PoolChange{
 			Time:        record.Time,
+			Height:      record.Height,
 			EventID:     record.ID,
 			Pool:        pool.Asset,
 			AssetAmount: pool.AssetAmt,
