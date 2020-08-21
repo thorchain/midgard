@@ -107,7 +107,8 @@ func (s *Client) GetPoolBasics(pool common.Asset, at *time.Time) (models.PoolBas
 
 	row := s.db.QueryRowx(q, pool.String(), *at)
 	var basics models.PoolBasics
-	if err := row.StructScan(&basics); err != nil {
+	err := row.StructScan(&basics)
+	if err != nil && err != sql.ErrNoRows {
 		return models.PoolBasics{}, errors.Wrap(err, "could not find any record at this time")
 	}
 	return basics, nil
