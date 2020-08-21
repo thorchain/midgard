@@ -7,29 +7,29 @@ import (
 )
 
 type PoolBasics struct {
-	Asset              common.Asset `db:"pool"`
-	AssetDepth         int64        `db:"asset_depth"`
-	AssetStaked        int64        `db:"asset_staked"`
-	AssetWithdrawn     int64        `db:"asset_withdrawn"`
-	RuneDepth          int64        `db:"rune_depth"`
-	RuneStaked         int64        `db:"rune_staked"`
-	RuneWithdrawn      int64        `db:"rune_withdrawn"`
-	Units              int64        `db:"units"`
-	Status             PoolStatus   `db:"status"`
-	BuyVolume          int64        `db:"buy_volume"`
-	BuySlipTotal       float64      `db:"buy_slip_total"`
-	BuyFeeTotal        int64        `db:"buy_fee_total"`
-	BuyCount           int64        `db:"buy_count"`
-	SellVolume         int64        `db:"sell_volume"`
-	SellSlipTotal      float64      `db:"sell_slip_total"`
-	SellFeeTotal       int64        `db:"sell_fee_total"`
-	SellCount          int64        `db:"sell_count"`
-	StakersCount       int64        `db:"stakers_count"`
-	SwappersCount      int64        `db:"swappers_count"`
-	StakeCount         int64        `db:"stake_count"`
-	WithdrawCount      int64        `db:"withdraw_count"`
-	LastModified       time.Time    `db:"time"`
-	LastModifiedHeight int64        `db:"height"`
+	Time           time.Time    `db:"time"`
+	Height         int64        `db:"height"`
+	Asset          common.Asset `db:"pool"`
+	AssetDepth     int64        `db:"asset_depth"`
+	AssetStaked    int64        `db:"asset_staked"`
+	AssetWithdrawn int64        `db:"asset_withdrawn"`
+	RuneDepth      int64        `db:"rune_depth"`
+	RuneStaked     int64        `db:"rune_staked"`
+	RuneWithdrawn  int64        `db:"rune_withdrawn"`
+	Units          int64        `db:"units"`
+	Status         PoolStatus   `db:"status"`
+	BuyVolume      int64        `db:"buy_volume"`
+	BuySlipTotal   float64      `db:"buy_slip_total"`
+	BuyFeeTotal    int64        `db:"buy_fee_total"`
+	BuyCount       int64        `db:"buy_count"`
+	SellVolume     int64        `db:"sell_volume"`
+	SellSlipTotal  float64      `db:"sell_slip_total"`
+	SellFeeTotal   int64        `db:"sell_fee_total"`
+	SellCount      int64        `db:"sell_count"`
+	StakersCount   int64        `db:"stakers_count"`
+	SwappersCount  int64        `db:"swappers_count"`
+	StakeCount     int64        `db:"stake_count"`
+	WithdrawCount  int64        `db:"withdraw_count"`
 }
 
 type PoolSwapStats struct {

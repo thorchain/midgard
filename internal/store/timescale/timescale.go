@@ -226,14 +226,14 @@ func (s *Client) updatePoolCache(change *models.PoolChange) error {
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
-	p.LastModified = change.Time
-	p.LastModifiedHeight = change.Height
+	p.Time = change.Time
+	p.Height = change.Height
 	return nil
 }
 
 func (s *Client) commitBlock() error {
 	for _, pool := range s.pools {
-		if pool.LastModifiedHeight == s.height {
+		if pool.Height == s.height {
 			stakersCount, err := s.stakersCount(pool.Asset)
 			if err != nil {
 				return errors.Wrapf(err, "could not count stakers of pool %s", pool.Asset)
@@ -263,8 +263,8 @@ func (s *Client) updatePoolBasics(basics *models.PoolBasics) error {
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`
 
 	_, err := s.db.Exec(q,
-		basics.LastModified,
-		basics.LastModifiedHeight,
+		basics.Time,
+		basics.Height,
 		basics.Asset.String(),
 		basics.AssetDepth,
 		basics.AssetStaked,
