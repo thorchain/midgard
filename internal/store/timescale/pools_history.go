@@ -37,8 +37,8 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		return err
 	}
 
-	s.updatePoolCache(change)
-	return nil
+	err = s.updatePoolCache(change)
+	return err
 }
 
 func (s *Client) GetEventPool(id int64) (common.Asset, error) {
