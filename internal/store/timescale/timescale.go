@@ -25,7 +25,6 @@ type Client struct {
 	migrationsDir string
 	mu            sync.RWMutex
 	height        int64
-	blockTime     time.Time
 	pools         map[string]*models.PoolBasics
 }
 
@@ -176,7 +175,6 @@ func (s *Client) updatePoolCache(change *models.PoolChange) error {
 			return errors.Wrapf(err, "could not commit the block changes at height %d", s.height)
 		}
 		s.height = change.Height
-		s.blockTime = change.Time
 	}
 
 	s.mu.Lock()
@@ -228,6 +226,7 @@ func (s *Client) updatePoolCache(change *models.PoolChange) error {
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
+	p.LastModified = change.Time
 	p.LastModifiedHeight = change.Height
 	return nil
 }
@@ -264,8 +263,8 @@ func (s *Client) updatePoolBasics(basics *models.PoolBasics) error {
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`
 
 	_, err := s.db.Exec(q,
-		s.blockTime,
-		s.height,
+		basics.LastModified,
+		basics.LastModifiedHeight,
 		basics.Asset.String(),
 		basics.AssetDepth,
 		basics.AssetStaked,

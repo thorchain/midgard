@@ -22,7 +22,7 @@ func Test(t *testing.T) {
 
 const (
 	port          = 5432
-	userName      = "midgard"
+	userName      = "postgres"
 	password      = "password"
 	database      = "midgard_test"
 	sslMode       = "disable"

@@ -1,6 +1,10 @@
 package models
 
-import "gitlab.com/thorchain/midgard/internal/common"
+import (
+	"time"
+
+	"gitlab.com/thorchain/midgard/internal/common"
+)
 
 type PoolBasics struct {
 	Asset              common.Asset `db:"pool"`
@@ -24,6 +28,7 @@ type PoolBasics struct {
 	SwappersCount      int64        `db:"swappers_count"`
 	StakeCount         int64        `db:"stake_count"`
 	WithdrawCount      int64        `db:"withdraw_count"`
+	LastModified       time.Time    `db:"time"`
 	LastModifiedHeight int64        `db:"height"`
 }
 
