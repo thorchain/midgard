@@ -214,14 +214,6 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "GetPoolVolume failed")
 	}
-	stakersCount, err := s.stakersCount(asset)
-	if err != nil {
-		return models.PoolDetails{}, errors.Wrap(err, "stakersCount failed")
-	}
-	swappersCount, err := s.swappersCount(asset)
-	if err != nil {
-		return models.PoolDetails{}, errors.Wrap(err, "swappersCount failed")
-	}
 	poolROI12, err := s.poolROI12(asset)
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "poolROI12 failed")
@@ -248,8 +240,6 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		SellFeeAverage:  sellFeeAverage,
 		SellSlipAverage: sellSlipAverage,
 		SellTxAverage:   sellTxAverage,
-		StakersCount:    stakersCount,
-		SwappersCount:   swappersCount,
 		SwappingTxCount: uint64(swapCount),
 	}, nil
 }

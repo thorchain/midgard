@@ -672,9 +672,9 @@ type TestGetPoolDetailsStore struct {
 	sellTxAverage    float64
 	sellVolume       int64
 	stakeTxCount     int64
-	stakersCount     uint64
+	stakersCount     int64
 	stakingTxCount   int64
-	swappersCount    uint64
+	swappersCount    int64
 	swappingTxCount  uint64
 	withdrawTxCount  int64
 	err              error
@@ -696,6 +696,8 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 			SellCount:     s.sellAssetCount,
 			SellFeeTotal:  s.sellFeesTotal,
 			SellVolume:    s.sellVolume,
+			StakersCount:  s.stakersCount,
+			SwappersCount: s.swappersCount,
 			StakeCount:    s.stakeTxCount,
 			WithdrawCount: s.withdrawTxCount,
 		},
@@ -718,8 +720,6 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 		SellFeeAverage:  s.sellFeeAverage,
 		SellSlipAverage: s.sellSlipAverage,
 		SellTxAverage:   s.sellTxAverage,
-		StakersCount:    s.stakersCount,
-		SwappersCount:   s.swappersCount,
 		SwappingTxCount: s.swappingTxCount,
 	}
 	return data, s.err
@@ -791,6 +791,8 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 			SellCount:     store.sellAssetCount,
 			SellFeeTotal:  store.sellFeesTotal,
 			SellVolume:    store.sellVolume,
+			StakersCount:  store.stakersCount,
+			SwappersCount: store.swappersCount,
 			StakeCount:    store.stakeTxCount,
 			WithdrawCount: store.withdrawTxCount,
 		},
@@ -813,8 +815,6 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		SellFeeAverage:  store.sellFeeAverage,
 		SellSlipAverage: store.sellSlipAverage,
 		SellTxAverage:   store.sellTxAverage,
-		StakersCount:    store.stakersCount,
-		SwappersCount:   store.swappersCount,
 		SwappingTxCount: store.swappingTxCount,
 	})
 

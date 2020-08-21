@@ -15,6 +15,7 @@ const (
 // PoolChange represents a change in pool state.
 type PoolChange struct {
 	Time         time.Time
+	Height       int64
 	EventID      int64
 	EventType    string
 	Pool         common.Asset
