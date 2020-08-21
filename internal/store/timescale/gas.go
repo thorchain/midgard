@@ -18,6 +18,7 @@ func (s *Client) CreateGasRecord(record *models.EventGas) error {
 	for _, pool := range record.Pools {
 		change := &models.PoolChange{
 			Time:        record.Time,
+			Height:      record.Height,
 			EventID:     record.ID,
 			EventType:   record.Type,
 			Pool:        pool.Asset,

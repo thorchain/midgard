@@ -15,6 +15,7 @@ func (s *Client) CreateRewardRecord(record *models.EventReward) error {
 	for _, reward := range record.PoolRewards {
 		change := &models.PoolChange{
 			Time:       record.Time,
+			Height:     record.Height,
 			EventID:    record.ID,
 			EventType:  record.Type,
 			Pool:       reward.Pool,

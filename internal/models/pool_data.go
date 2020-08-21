@@ -3,28 +3,28 @@ package models
 import "gitlab.com/thorchain/midgard/internal/common"
 
 type PoolBasics struct {
-	Asset              common.Asset
-	AssetDepth         int64
-	AssetStaked        int64
-	AssetWithdrawn     int64
-	RuneDepth          int64
-	RuneStaked         int64
-	RuneWithdrawn      int64
-	Units              int64
-	Status             PoolStatus
-	BuyVolume          int64
-	BuySlipTotal       float64
-	BuyFeeTotal        int64
-	BuyCount           int64
-	SellVolume         int64
-	SellSlipTotal      float64
-	SellFeeTotal       int64
-	SellCount          int64
-	StakersCount       int64
-	SwappersCount      int64
-	StakeCount         int64
-	WithdrawCount      int64
-	LastModifiedHeight int64
+	Asset              common.Asset `db:"pool"`
+	AssetDepth         int64        `db:"asset_depth"`
+	AssetStaked        int64        `db:"asset_staked"`
+	AssetWithdrawn     int64        `db:"asset_withdrawn"`
+	RuneDepth          int64        `db:"rune_depth"`
+	RuneStaked         int64        `db:"rune_staked"`
+	RuneWithdrawn      int64        `db:"rune_withdrawn"`
+	Units              int64        `db:"units"`
+	Status             PoolStatus   `db:"status"`
+	BuyVolume          int64        `db:"buy_volume"`
+	BuySlipTotal       float64      `db:"buy_slip_total"`
+	BuyFeeTotal        int64        `db:"buy_fee_total"`
+	BuyCount           int64        `db:"buy_count"`
+	SellVolume         int64        `db:"sell_volume"`
+	SellSlipTotal      float64      `db:"sell_slip_total"`
+	SellFeeTotal       int64        `db:"sell_fee_total"`
+	SellCount          int64        `db:"sell_count"`
+	StakersCount       int64        `db:"stakers_count"`
+	SwappersCount      int64        `db:"swappers_count"`
+	StakeCount         int64        `db:"stake_count"`
+	WithdrawCount      int64        `db:"withdraw_count"`
+	LastModifiedHeight int64        `db:"height"`
 }
 
 type PoolSwapStats struct {
