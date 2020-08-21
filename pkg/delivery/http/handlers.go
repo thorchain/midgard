@@ -271,9 +271,9 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				SellTxAverage:    Float64ToString(details.SellTxAverage),
 				SellVolume:       Int64ToString(details.SellVolume),
 				StakeTxCount:     Int64ToString(details.StakeCount),
-				StakersCount:     Uint64ToString(details.StakersCount),
+				StakersCount:     Uint64ToString(uint64(details.StakersCount)),
 				StakingTxCount:   Int64ToString(details.StakeCount + details.WithdrawCount),
-				SwappersCount:    Uint64ToString(details.SwappersCount),
+				SwappersCount:    Uint64ToString(uint64(details.SwappersCount)),
 				SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
 				WithdrawTxCount:  Int64ToString(details.WithdrawCount),
 			}

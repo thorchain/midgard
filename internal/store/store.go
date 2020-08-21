@@ -15,7 +15,6 @@ type Store interface {
 	CreateRewardRecord(record *models.EventReward) error
 	CreateAddRecord(record *models.EventAdd) error
 	CreatePoolRecord(record *models.EventPool) error
-	CreatePoolDetailsRecord(record *models.PoolDetails, blockTime time.Time) error
 	CreateGasRecord(record *models.EventGas) error
 	CreateRefundRecord(record *models.EventRefund) error
 	CreateSlashRecord(record *models.EventSlash) error
@@ -40,7 +39,6 @@ type Store interface {
 	TotalAssetSells() (uint64, error)
 	TotalStakeTx() (uint64, error)
 	TotalWithdrawTx() (uint64, error)
-	GetPoolDetails(asset common.Asset) (models.PoolDetails, error)
 	GetPoolData(asset common.Asset) (models.PoolDetails, error)
 	GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error)
 	GetStakerAddresses() ([]common.Address, error)

@@ -24,6 +24,8 @@ type Client struct {
 	logger        zerolog.Logger
 	migrationsDir string
 	mu            sync.RWMutex
+	height        int64
+	blockTime     time.Time
 	pools         map[string]*models.PoolBasics
 }
 
@@ -134,77 +136,19 @@ func (s *Client) initPoolCache() error {
 	defer s.mu.Unlock()
 
 	s.pools = map[string]*models.PoolBasics{}
-	err := s.fetchAllPoolsBalances()
-	if err != nil {
-		return err
-	}
-	err = s.fetchAllPoolsSwap()
-	if err != nil {
-		return err
-	}
-	err = s.fetchAllPoolsStatus()
+	err := s.fetchAllPools()
 	return err
 }
 
-func (s *Client) fetchAllPoolsBalances() error {
-	q := `SELECT pool,
-		SUM(asset_amount),
-		SUM(asset_amount) FILTER (WHERE event_type = 'stake'),
-		SUM(asset_amount) FILTER (WHERE event_type = 'unstake'),
-		SUM(rune_amount),
-		SUM(rune_amount) FILTER (WHERE event_type = 'stake'),
-		SUM(rune_amount) FILTER (WHERE event_type = 'unstake'),
-		SUM(units),
-		COUNT(*) FILTER (WHERE units > 0),
-		COUNT(*) FILTER (WHERE units < 0)
-		FROM pools_history
-		GROUP BY pool`
-	rows, err := s.db.Queryx(q)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			pool           string
-			assetDepth     sql.NullInt64
-			assetStaked    sql.NullInt64
-			assetWithdrawn sql.NullInt64
-			runeDepth      sql.NullInt64
-			runeStaked     sql.NullInt64
-			runeWithdrawn  sql.NullInt64
-			units          sql.NullInt64
-			stakeCount     sql.NullInt64
-			withdrawCount  sql.NullInt64
-		)
-		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &units, &stakeCount, &withdrawCount); err != nil {
-			return err
-		}
-		asset, _ := common.NewAsset(pool)
-		s.pools[pool] = &models.PoolBasics{
-			Asset:          asset,
-			AssetDepth:     assetDepth.Int64,
-			AssetStaked:    assetStaked.Int64,
-			AssetWithdrawn: assetWithdrawn.Int64,
-			RuneDepth:      runeDepth.Int64,
-			RuneStaked:     runeStaked.Int64,
-			RuneWithdrawn:  runeWithdrawn.Int64,
-			Units:          units.Int64,
-			StakeCount:     stakeCount.Int64,
-			WithdrawCount:  withdrawCount.Int64,
-		}
-	}
-	return nil
-}
-
-func (s *Client) fetchAllPoolsStatus() error {
-	q := `SELECT pool, status FROM
+func (s *Client) fetchAllPools() error {
+	q := `SELECT
+		height, pool, asset_depth, asset_staked, asset_withdrawn, rune_depth, rune_staked, rune_withdrawn, units, status, 
+		buy_volume, buy_slip_total, buy_fee_total, buy_count, sell_volume, sell_slip_total, sell_fee_total, sell_count, 
+		stakers_count, swappers_count, stake_count, withdraw_count
+		FROM
 		(
-			SELECT pool, status, ROW_NUMBER() OVER (PARTITION BY pool ORDER BY time DESC) as row_num
-			FROM pools_history
-			WHERE status > 0
+			SELECT *, ROW_NUMBER() OVER (PARTITION BY pool ORDER BY time DESC) as row_num
+			FROM pools
 		) t 
 		WHERE row_num = 1`
 	rows, err := s.db.Queryx(q)
@@ -216,63 +160,32 @@ func (s *Client) fetchAllPoolsStatus() error {
 	for rows.Next() {
 		var (
 			pool   string
-			status sql.NullInt64
+			basics models.PoolBasics
 		)
-		if err := rows.Scan(&pool, &status); err != nil {
+		if err := rows.Scan(&basics.LastModifiedHeight, &pool,
+			&basics.AssetDepth, &basics.AssetStaked, &basics.AssetWithdrawn, &basics.RuneDepth, &basics.RuneStaked, &basics.RuneWithdrawn,
+			&basics.Units, &basics.Status,
+			&basics.BuyVolume, &basics.BuySlipTotal, &basics.BuyFeeTotal, &basics.BuyCount,
+			&basics.SellVolume, &basics.SellSlipTotal, &basics.SellFeeTotal, &basics.SellCount,
+			&basics.StakersCount, &basics.SwappersCount, &basics.StakeCount, &basics.WithdrawCount); err != nil {
 			return err
 		}
-		s.pools[pool].Status = models.PoolStatus(status.Int64)
+		basics.Asset, _ = common.NewAsset(pool)
+		s.pools[pool] = &basics
 	}
 	return nil
 }
 
-func (s *Client) fetchAllPoolsSwap() error {
-	q := `SELECT pool,
-		SUM(runeAmt) FILTER (WHERE runeAmt > 0),
-		SUM(trade_slip) FILTER (WHERE runeAmt > 0),
-		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0),
-		COUNT(*) FILTER (WHERE runeAmt > 0),
-		SUM(runeAmt) FILTER (WHERE runeAmt < 0),
-		SUM(trade_slip) FILTER (WHERE runeAmt < 0),
-		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0),
-		COUNT(*) FILTER (WHERE runeAmt < 0)
-		FROM swaps
-		GROUP BY pool`
-	rows, err := s.db.Queryx(q)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var (
-			pool          string
-			buyVolume     sql.NullInt64
-			buySlipTotal  sql.NullFloat64
-			buyFeeTotal   sql.NullInt64
-			buyCount      sql.NullInt64
-			sellVolume    sql.NullInt64
-			sellSlipTotal sql.NullFloat64
-			sellFeeTotal  sql.NullInt64
-			sellCount     sql.NullInt64
-		)
-		if err := rows.Scan(&pool, &buyVolume, &buySlipTotal, &buyFeeTotal, &buyCount,
-			&sellVolume, &sellSlipTotal, &sellFeeTotal, &sellCount); err != nil {
-			return err
+func (s *Client) updatePoolCache(change *models.PoolChange) error {
+	if s.height < change.Height {
+		err := s.commitBlock()
+		if err != nil {
+			return errors.Wrapf(err, "could not commit the block changes at height %d", s.height)
 		}
-		s.pools[pool].BuyVolume = buyVolume.Int64
-		s.pools[pool].BuySlipTotal = buySlipTotal.Float64
-		s.pools[pool].BuyFeeTotal = buyFeeTotal.Int64
-		s.pools[pool].BuyCount = buyCount.Int64
-		s.pools[pool].SellVolume = -sellVolume.Int64
-		s.pools[pool].SellSlipTotal = sellSlipTotal.Float64
-		s.pools[pool].SellFeeTotal = sellFeeTotal.Int64
-		s.pools[pool].SellCount = sellCount.Int64
+		s.height = change.Height
+		s.blockTime = change.Time
 	}
-	return nil
-}
 
-func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -322,4 +235,68 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
+	p.LastModifiedHeight = change.Height
+	return nil
+}
+
+func (s *Client) commitBlock() error {
+	for _, pool := range s.pools {
+		if pool.LastModifiedHeight == s.height {
+			stakersCount, err := s.stakersCount(pool.Asset)
+			if err != nil {
+				return errors.Wrapf(err, "could not count stakers of pool %s", pool.Asset)
+			}
+			swappersCount, err := s.swappersCount(pool.Asset)
+			if err != nil {
+				return errors.Wrapf(err, "could not count swappers of pool %s", pool.Asset)
+			}
+			s.mu.Lock()
+			pool.StakersCount = int64(stakersCount)
+			pool.SwappersCount = int64(swappersCount)
+			s.mu.Unlock()
+
+			err = s.updatePoolBasics(pool)
+			if err != nil {
+				return errors.Wrapf(err, "could not insert pool basics")
+			}
+		}
+	}
+	return nil
+}
+
+func (s *Client) updatePoolBasics(basics *models.PoolBasics) error {
+	q := `INSERT INTO pools (time, height, pool, asset_depth, asset_staked, asset_withdrawn, rune_depth, rune_staked, rune_withdrawn, units, status, 
+		buy_volume, buy_slip_total, buy_fee_total, buy_count, sell_volume, sell_slip_total, sell_fee_total, sell_count, 
+		stakers_count, swappers_count, stake_count, withdraw_count)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`
+
+	_, err := s.db.Exec(q,
+		s.blockTime,
+		s.height,
+		basics.Asset.String(),
+		basics.AssetDepth,
+		basics.AssetStaked,
+		basics.AssetWithdrawn,
+		basics.RuneDepth,
+		basics.RuneStaked,
+		basics.RuneWithdrawn,
+		basics.Units,
+		basics.Status,
+		basics.BuyVolume,
+		basics.BuySlipTotal,
+		basics.BuyFeeTotal,
+		basics.BuyCount,
+		basics.SellVolume,
+		basics.SellSlipTotal,
+		basics.SellFeeTotal,
+		basics.SellCount,
+		basics.StakersCount,
+		basics.SwappersCount,
+		basics.StakeCount,
+		basics.WithdrawCount,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
