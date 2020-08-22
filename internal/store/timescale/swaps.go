@@ -136,7 +136,7 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 	}
-	if assetAmt < 0 || runeAmt > 0 {
+	if assetAmt > 0 || runeAmt < 0 {
 		change.SwapType = models.SwapTypeBuy
 	} else {
 		change.SwapType = models.SwapTypeSell
