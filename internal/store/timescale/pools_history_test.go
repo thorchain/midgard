@@ -15,6 +15,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	liquidityFee := int64(12)
 	change := &models.PoolChange{
 		Time:         time.Now(),
+		Height:       1,
 		EventID:      1,
 		EventType:    "swap",
 		Pool:         pool,
@@ -30,6 +31,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	basics, err := s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
 		Time:          basics.Time,
+		Height:        1,
 		Asset:         pool,
 		AssetDepth:    1000,
 		RuneDepth:     -2000,
@@ -44,6 +46,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	liquidityFee = int64(8)
 	change = &models.PoolChange{
 		Time:         time.Now(),
+		Height:       1,
 		EventID:      2,
 		EventType:    "swap",
 		Pool:         pool,
@@ -59,6 +62,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	basics, err = s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
 		Time:          basics.Time,
+		Height:        1,
 		Asset:         pool,
 		AssetDepth:    900,
 		RuneDepth:     -1800,
@@ -77,6 +81,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:        time.Now(),
+		Height:      1,
 		EventID:     3,
 		EventType:   "stake",
 		Pool:        pool,
@@ -90,6 +95,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	basics, err = s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
 		Time:        basics.Time,
+		Height:      1,
 		Asset:       pool,
 		AssetDepth:  3000,
 		AssetStaked: 3000,
@@ -102,6 +108,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 
 	change = &models.PoolChange{
 		Time:        time.Now(),
+		Height:      1,
 		EventID:     4,
 		EventType:   "unstake",
 		Pool:        pool,
@@ -112,6 +119,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       time.Now(),
+		Height:     1,
 		EventID:    4,
 		EventType:  "unstake",
 		Pool:       pool,
@@ -122,6 +130,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	basics, err = s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
 		Time:           basics.Time,
+		Height:         1,
 		Asset:          pool,
 		AssetDepth:     2700,
 		AssetStaked:    3000,
@@ -134,6 +143,63 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 		StakeCount:     1,
 		WithdrawCount:  1,
 	})
+
+	// Signal the new block height
+	change = &models.PoolChange{
+		Time:    time.Now().Add(time.Second * 5),
+		Height:  2,
+		EventID: 5,
+		Pool:    pool,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+
+	// After reseting the Store, pools latest state should remain.
+	pools, err := s.Store.fetchAllPools()
+	c.Assert(err, IsNil)
+	expected := map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Time:          basics.Time,
+			Height:        1,
+			Asset:         common.BNBAsset,
+			AssetDepth:    900,
+			RuneDepth:     -1800,
+			Status:        models.Suspended,
+			BuyVolume:     200,
+			BuySlipTotal:  0.3,
+			BuyFeeTotal:   8,
+			BuyCount:      1,
+			SellVolume:    2000,
+			SellSlipTotal: 0.1,
+			SellFeeTotal:  12,
+			SellCount:     1,
+		},
+		"BNB.TOMOB-1E1": {
+			Time:   basics.Time,
+			Height: 1,
+			Asset: common.Asset{
+				Chain:  "BNB",
+				Symbol: "TOMOB-1E1",
+				Ticker: "TOMOB",
+			},
+			AssetDepth:     2700,
+			AssetStaked:    3000,
+			AssetWithdrawn: 300,
+			RuneDepth:      3600,
+			RuneStaked:     4000,
+			RuneWithdrawn:  400,
+			Units:          90,
+			Status:         models.Bootstrap,
+			StakeCount:     1,
+			WithdrawCount:  1,
+		},
+	}
+	c.Assert(len(pools), Equals, len(expected))
+	for k, pool := range pools {
+		exp := expected[k]
+		exp.Time = pool.Time
+		c.Assert(pool, DeepEquals, exp)
+	}
 }
 
 func (s *TimeScaleSuite) TestGetEventPool(c *C) {

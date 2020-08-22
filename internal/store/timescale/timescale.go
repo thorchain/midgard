@@ -134,12 +134,12 @@ func (s *Client) initPoolCache() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.pools = map[string]*models.PoolBasics{}
-	err := s.fetchAllPools()
+	var err error
+	s.pools, err = s.fetchAllPools()
 	return err
 }
 
-func (s *Client) fetchAllPools() error {
+func (s *Client) fetchAllPools() (map[string]*models.PoolBasics, error) {
 	q := `
 		SELECT
 		height, pool, asset_depth, asset_staked, asset_withdrawn, rune_depth, rune_staked, rune_withdrawn, units, status, 
@@ -154,18 +154,19 @@ func (s *Client) fetchAllPools() error {
 
 	rows, err := s.db.Queryx(q)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 
+	pools := map[string]*models.PoolBasics{}
 	for rows.Next() {
 		var basics models.PoolBasics
 		if err := rows.StructScan(&basics); err != nil {
-			return err
+			return pools, err
 		}
-		s.pools[basics.Asset.String()] = &basics
+		pools[basics.Asset.String()] = &basics
 	}
-	return nil
+	return pools, nil
 }
 
 func (s *Client) updatePoolCache(change *models.PoolChange) error {
