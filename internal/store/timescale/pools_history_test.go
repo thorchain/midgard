@@ -29,6 +29,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	c.Assert(err, IsNil)
 	basics, err := s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:          basics.Time,
 		Asset:         pool,
 		AssetDepth:    1000,
 		RuneDepth:     -2000,
@@ -57,6 +58,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	c.Assert(err, IsNil)
 	basics, err = s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:          basics.Time,
 		Asset:         pool,
 		AssetDepth:    900,
 		RuneDepth:     -1800,
@@ -87,6 +89,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	c.Assert(err, IsNil)
 	basics, err = s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:        basics.Time,
 		Asset:       pool,
 		AssetDepth:  3000,
 		AssetStaked: 3000,
@@ -118,6 +121,7 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 	c.Assert(err, IsNil)
 	basics, err = s.Store.GetPoolBasics(pool, nil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:           basics.Time,
 		Asset:          pool,
 		AssetDepth:     2700,
 		AssetStaked:    3000,

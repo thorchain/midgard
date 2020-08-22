@@ -268,6 +268,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetPoolSwapStats(c *C) {
+	c.Skip("we no longer need this method")
 	err := s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent1)
 	c.Assert(err, IsNil)
 
