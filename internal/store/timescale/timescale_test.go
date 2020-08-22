@@ -14,7 +14,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-var tables = []string{"coins", "events", "pools_history", "swaps", "txs"}
+var tables = []string{"coins", "events", "pools_history", "swaps", "txs", "pools"}
 
 func Test(t *testing.T) {
 	TestingT(t)
@@ -2097,6 +2097,7 @@ func (s *TimeScaleSuite) SetUpTest(c *C) {
 	DbCleaner(c, s.Store)
 
 	// Reset the pools cache
+	s.Store.height = 0
 	s.Store.pools = map[string]*models.PoolBasics{}
 }
 

@@ -73,6 +73,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 
 	change := &models.PoolChange{
 		Time:        today,
+		Height:      1,
 		EventID:     1,
 		EventType:   "stake",
 		Pool:        common.BNBAsset,
@@ -82,18 +83,50 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	tradeSlip := 100.5
+	liquidityFee := int64(1000000)
 	change = &models.PoolChange{
-		Time:        today,
-		EventID:     2,
-		EventType:   "swap",
-		Pool:        common.BNBAsset,
-		AssetAmount: -50,
-		RuneAmount:  100,
+		Time:         today,
+		Height:       1,
+		EventID:      2,
+		EventType:    "swap",
+		Pool:         common.BNBAsset,
+		AssetAmount:  -50,
+		RuneAmount:   100,
+		SwapType:     models.SwapTypeBuy,
+		TradeSlip:    &tradeSlip,
+		LiquidityFee: &liquidityFee,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+
+	// Check the cache value
+	basics, err := s.Store.GetPoolBasics(common.BNBAsset, nil)
+	c.Assert(err, IsNil)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:         basics.Time,
+		Height:       1,
+		Asset:        common.BNBAsset,
+		AssetDepth:   450,
+		AssetStaked:  500,
+		RuneDepth:    1100,
+		RuneStaked:   1000,
+		Units:        10000,
+		BuyVolume:    100,
+		BuySlipTotal: 100.5,
+		BuyFeeTotal:  1000000,
+		BuyCount:     1,
+		StakeCount:   1,
+	})
+	// Check the database history
+	// It should be empty because we're at height 1 and not going forward.
+	basics, err = s.Store.GetPoolBasics(common.BNBAsset, &today)
+	c.Assert(err, IsNil)
+	c.Assert(basics, DeepEquals, models.PoolBasics{})
+
 	change = &models.PoolChange{
 		Time:      tomorrow,
+		Height:    2,
 		EventID:   3,
 		EventType: "pool",
 		Pool:      common.BNBAsset,
@@ -101,8 +134,29 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+
+	// Now that we passed height 1 the cache data should be commited to database.
+	basics, err = s.Store.GetPoolBasics(common.BNBAsset, &today)
+	c.Assert(err, IsNil)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:         basics.Time,
+		Height:       1,
+		Asset:        common.BNBAsset,
+		AssetDepth:   450,
+		AssetStaked:  500,
+		RuneDepth:    1100,
+		RuneStaked:   1000,
+		Units:        10000,
+		BuyVolume:    100,
+		BuySlipTotal: 100.5,
+		BuyFeeTotal:  1000000,
+		BuyCount:     1,
+		StakeCount:   1,
+	})
+
 	change = &models.PoolChange{
 		Time:        tomorrow,
+		Height:      2,
 		EventID:     4,
 		EventType:   "unstake",
 		Pool:        common.BNBAsset,
@@ -112,10 +166,27 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	tradeSlip = 21.3
+	liquidityFee = 2000000
+	change = &models.PoolChange{
+		Time:         tomorrow,
+		Height:       2,
+		EventID:      5,
+		EventType:    "swap",
+		Pool:         common.BNBAsset,
+		AssetAmount:  75,
+		RuneAmount:   -120,
+		SwapType:     models.SwapTypeSell,
+		TradeSlip:    &tradeSlip,
+		LiquidityFee: &liquidityFee,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:        tomorrow,
+		Height:      3,
 		EventType:   "stake",
-		EventID:     5,
+		EventID:     6,
 		Pool:        common.BTCAsset,
 		AssetAmount: 20,
 		RuneAmount:  2400,
@@ -124,17 +195,53 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 
-	basics, err := s.Store.GetPoolBasics(common.BNBAsset, nil)
+	// At this point both cache and database should return the same Basics.
+	basics, err = s.Store.GetPoolBasics(common.BNBAsset, nil)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:           basics.Time,
+		Height:         2,
 		Asset:          common.BNBAsset,
-		AssetDepth:     400,
+		AssetDepth:     475,
 		AssetStaked:    500,
 		AssetWithdrawn: 50,
-		RuneDepth:      1000,
+		RuneDepth:      880,
 		RuneStaked:     1000,
 		RuneWithdrawn:  100,
 		Units:          9000,
+		BuyVolume:      100,
+		BuySlipTotal:   100.5,
+		BuyFeeTotal:    1000000,
+		BuyCount:       1,
+		SellVolume:     120,
+		SellSlipTotal:  21.3,
+		SellFeeTotal:   2000000,
+		SellCount:      1,
+		StakeCount:     1,
+		WithdrawCount:  1,
+		Status:         models.Bootstrap,
+	})
+	basics, err = s.Store.GetPoolBasics(common.BNBAsset, &tomorrow)
+	c.Assert(err, IsNil)
+	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:           basics.Time,
+		Height:         2,
+		Asset:          common.BNBAsset,
+		AssetDepth:     475,
+		AssetStaked:    500,
+		AssetWithdrawn: 50,
+		RuneDepth:      880,
+		RuneStaked:     1000,
+		RuneWithdrawn:  100,
+		Units:          9000,
+		BuyVolume:      100,
+		BuySlipTotal:   100.5,
+		BuyFeeTotal:    1000000,
+		BuyCount:       1,
+		SellVolume:     120,
+		SellSlipTotal:  21.3,
+		SellFeeTotal:   2000000,
+		SellCount:      1,
 		StakeCount:     1,
 		WithdrawCount:  1,
 		Status:         models.Bootstrap,
@@ -143,6 +250,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	basics, err = s.Store.GetPoolBasics(common.BTCAsset, nil)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
+		Time:        basics.Time,
+		Height:      3,
 		Asset:       common.BTCAsset,
 		AssetDepth:  20,
 		AssetStaked: 20,
