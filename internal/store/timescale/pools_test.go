@@ -1718,7 +1718,7 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 
 	stakersCount, err = s.Store.stakersCount(asset)
 	c.Assert(err, IsNil)
-	c.Assert(stakersCount, Equals, uint64(1))
+	c.Assert(stakersCount, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestAssetROI(c *C) {
