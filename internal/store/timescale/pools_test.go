@@ -1712,6 +1712,13 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(1))
+
 	// Additional stake
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
@@ -1719,6 +1726,19 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	stakersCount, err = s.Store.stakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(2))
+
+	// Stake in another pool
+	err = s.Store.CreateStakeRecord(&stakeTcanEvent3)
+	c.Assert(err, IsNil)
+
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(2))
+
+	asset, _ = common.NewAsset("BNB.TCAN-014")
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestAssetROI(c *C) {
