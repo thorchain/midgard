@@ -1134,14 +1134,16 @@ func (s *Client) stakingTxCount(asset common.Asset) (uint64, error) {
 // stakersCount - number of addresses staking on a given pool
 func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-			SELECT Count(*) AS cnt 
-			FROM   (SELECT txs.from_address 
-					FROM   pools_history 
-						   JOIN txs 
-							 ON pools_history.event_id = txs.event_id 
-					WHERE  pool = $1 
-					GROUP  BY from_address 
-					HAVING Sum(units) > 0)Stakers`
+		SELECT COUNT(from_address)
+		FROM (
+			SELECT from_address
+			FROM pools_history
+			JOIN txs ON pools_history.event_id = txs.event_id
+			WHERE pool = $1
+			AND event_type in ('stake', 'unstake')
+			GROUP BY from_address
+			HAVING SUM(units) > 0
+			) t`
 
 	var stakersCount sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
