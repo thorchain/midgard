@@ -1134,7 +1134,7 @@ func (s *Client) stakingTxCount(asset common.Asset) (uint64, error) {
 // stakersCount - number of addresses staking on a given pool
 func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-			SELECT COUNT(txs.from_address)
+			SELECT COUNT(DISTINCT(txs.from_address)) 
 			FROM pools_history
 			JOIN txs ON pools_history.event_id = txs.event_id
 			WHERE pool = $1
