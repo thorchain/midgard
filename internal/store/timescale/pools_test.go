@@ -1713,7 +1713,7 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	c.Assert(stakersCount, Equals, uint64(1))
 
 	// Additional stake
-	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
 	stakersCount, err = s.Store.stakersCount(asset)

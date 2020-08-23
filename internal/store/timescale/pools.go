@@ -1138,7 +1138,6 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 			FROM pools_history
 			JOIN txs ON pools_history.event_id = txs.event_id
 			WHERE pool = $1
-			GROUP BY from_address
 			HAVING SUM(units) > 0`
 
 	var stakersCount sql.NullInt64
