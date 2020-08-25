@@ -91,9 +91,15 @@ func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(0))
 
+	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent2)
+	c.Assert(err, IsNil)
+	err = s.Store.CreateAddRecord(&addBnbEvent0)
+	c.Assert(err, IsNil)
+	err = s.Store.CreateRefundRecord(&refundBOLTEvent0)
+	c.Assert(err, IsNil)
 	count, err = s.Store.GetTxsCount(nil, nil)
 	c.Assert(err, IsNil)
-	c.Assert(count, Equals, uint64(4))
+	c.Assert(count, Equals, uint64(7))
 }
 
 func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
