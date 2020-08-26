@@ -3,10 +3,11 @@ package common
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -105,7 +106,7 @@ func (a *Asset) Scan(v interface{}) error {
 		*a, err = NewAsset(str)
 		return err
 	}
-	return errors.New("could not scan type %T as common.Asset")
+	return errors.Errorf("could not scan type %T as common.Asset", v)
 }
 
 func (a Asset) Value() (driver.Value, error) {
