@@ -31,7 +31,8 @@ echo "{
     \"proxied_whitelisted_endpoints\": [
       \"pool_addresses\",
       \"constants\",
-      \"lastblock\"
+      \"lastblock\",
+      \"mimir\"
     ]
   },
   \"timescale\": {
