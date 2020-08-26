@@ -43,6 +43,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			}
 		}
 	}
+	tradeSlip := float64(record.TradeSlip) / slipBasisPoints
 
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
@@ -64,7 +65,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		record.Event.InTx.ToAddress,
 		record.Pool.String(),
 		record.PriceTarget,
-		float64(record.TradeSlip)/slipBasisPoints,
+		tradeSlip,
 		record.LiquidityFee,
 		runeAmt,
 		assetAmt,
@@ -74,12 +75,19 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 	}
 
 	change := &models.PoolChange{
-		Time:        record.Time,
-		EventID:     record.ID,
-		EventType:   record.Type,
-		Pool:        record.Pool,
-		AssetAmount: assetAmt,
-		RuneAmount:  runeAmt,
+		Time:         record.Time,
+		EventID:      record.ID,
+		EventType:    record.Type,
+		Pool:         record.Pool,
+		AssetAmount:  assetAmt,
+		RuneAmount:   runeAmt,
+		TradeSlip:    &tradeSlip,
+		LiquidityFee: &record.LiquidityFee,
+	}
+	if assetAmt < 0 || runeAmt > 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -125,6 +133,11 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
+	}
+	if assetAmt < 0 || runeAmt > 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

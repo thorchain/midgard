@@ -238,17 +238,17 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 			}
 
 			response[i] = PoolDetail{
-				Status:           pointy.String(details.Status),
+				Status:           pointy.String(details.Status.String()),
 				Asset:            ConvertAssetForAPI(asset),
-				AssetDepth:       Uint64ToString(details.AssetDepth),
+				AssetDepth:       Int64ToString(details.AssetDepth),
 				AssetROI:         Float64ToString(details.AssetROI),
-				AssetStakedTotal: Uint64ToString(details.AssetStakedTotal),
-				BuyAssetCount:    Uint64ToString(details.BuyAssetCount),
+				AssetStakedTotal: Int64ToString(details.AssetStaked),
+				BuyAssetCount:    Int64ToString(details.BuyCount),
 				BuyFeeAverage:    Float64ToString(details.BuyFeeAverage),
-				BuyFeesTotal:     Uint64ToString(details.BuyFeesTotal),
+				BuyFeesTotal:     Int64ToString(details.BuyFeeTotal),
 				BuySlipAverage:   Float64ToString(details.BuySlipAverage),
 				BuyTxAverage:     Float64ToString(details.BuyTxAverage),
-				BuyVolume:        Uint64ToString(details.BuyVolume),
+				BuyVolume:        Int64ToString(details.BuyVolume),
 				PoolDepth:        Uint64ToString(details.PoolDepth),
 				PoolFeeAverage:   Float64ToString(details.PoolFeeAverage),
 				PoolFeesTotal:    Uint64ToString(details.PoolFeesTotal),
@@ -257,25 +257,25 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
 				PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
-				PoolUnits:        Uint64ToString(details.PoolUnits),
+				PoolUnits:        Int64ToString(details.Units),
 				PoolVolume:       Uint64ToString(details.PoolVolume),
 				PoolVolume24hr:   Uint64ToString(details.PoolVolume24hr),
 				Price:            Float64ToString(details.Price),
-				RuneDepth:        Uint64ToString(details.RuneDepth),
+				RuneDepth:        Int64ToString(details.RuneDepth),
 				RuneROI:          Float64ToString(details.RuneROI),
-				RuneStakedTotal:  Uint64ToString(details.RuneStakedTotal),
-				SellAssetCount:   Uint64ToString(details.SellAssetCount),
+				RuneStakedTotal:  Int64ToString(details.RuneStaked),
+				SellAssetCount:   Int64ToString(details.SellCount),
 				SellFeeAverage:   Float64ToString(details.SellFeeAverage),
-				SellFeesTotal:    Uint64ToString(details.SellFeesTotal),
+				SellFeesTotal:    Int64ToString(details.SellFeeTotal),
 				SellSlipAverage:  Float64ToString(details.SellSlipAverage),
 				SellTxAverage:    Float64ToString(details.SellTxAverage),
-				SellVolume:       Uint64ToString(details.SellVolume),
-				StakeTxCount:     Uint64ToString(details.StakeTxCount),
+				SellVolume:       Int64ToString(details.SellVolume),
+				StakeTxCount:     Int64ToString(details.StakeCount),
 				StakersCount:     Uint64ToString(details.StakersCount),
-				StakingTxCount:   Uint64ToString(details.StakingTxCount),
+				StakingTxCount:   Int64ToString(details.StakeCount + details.WithdrawCount),
 				SwappersCount:    Uint64ToString(details.SwappersCount),
 				SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
-				WithdrawTxCount:  Uint64ToString(details.WithdrawTxCount),
+				WithdrawTxCount:  Int64ToString(details.WithdrawCount),
 			}
 		}
 	default:
@@ -433,6 +433,54 @@ func (h *Handlers) GetTotalVolChanges(ctx echo.Context, params GetTotalVolChange
 			BuyVolume:   Int64ToString(ch.BuyVolume),
 			SellVolume:  Int64ToString(ch.SellVolume),
 			TotalVolume: Int64ToString(ch.TotalVolume),
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// (GET /v1/history/pools)
+func (h *Handlers) GetPoolAggChanges(ctx echo.Context, params GetPoolAggChangesParams) error {
+	inv := models.GetIntervalFromString(params.Interval)
+	from := time.Unix(params.From, 0)
+	to := time.Unix(params.To, 0)
+	pool, err := common.NewAsset(params.Pool)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
+	}
+
+	changes, err := h.uc.GetPoolAggChanges(pool, inv, from, to)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
+
+	response := make([]PoolAggChanges, len(changes))
+	for i, ch := range changes {
+		time := ch.Time.Unix()
+		response[i] = PoolAggChanges{
+			Time:            &(time),
+			AssetChanges:    Int64ToString(ch.AssetChanges),
+			AssetDepth:      Int64ToString(ch.AssetDepth),
+			AssetStaked:     Int64ToString(ch.AssetStaked),
+			AssetWithdrawn:  Int64ToString(ch.AssetWithdrawn),
+			AssetROI:        Float64ToString(ch.AssetROI),
+			BuyCount:        &ch.BuyCount,
+			BuyVolume:       Int64ToString(ch.BuyVolume),
+			RuneChanges:     Int64ToString(ch.RuneChanges),
+			RuneDepth:       Int64ToString(ch.RuneDepth),
+			RuneStaked:      Int64ToString(ch.RuneStaked),
+			RuneWithdrawn:   Int64ToString(ch.RuneWithdrawn),
+			RuneROI:         Float64ToString(ch.RuneROI),
+			SellCount:       &ch.SellCount,
+			SellVolume:      Int64ToString(ch.SellVolume),
+			UnitsChanges:    Int64ToString(ch.UnitsChanges),
+			Price:           Float64ToString(ch.Price),
+			PoolVolume:      Int64ToString(ch.PoolVolume),
+			PoolROI:         Float64ToString(ch.PoolROI),
+			PoolSwapAverage: Float64ToString(ch.PoolSwapAverage),
+			StakeCount:      &ch.StakeCount,
+			WithdrawCount:   &ch.WithdrawCount,
+			SwapCount:       &ch.SwapCount,
 		}
 	}
 
