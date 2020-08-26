@@ -30,8 +30,9 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 // GetTxsCount returns total number of transactions between "from" to "to".
 func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("COUNT(tx_hash)").From("txs")
-
+	sb.Select("COUNT(DISTINCT(id))")
+	sb.From("events")
+	sb.Where("type in ('stake', 'unstake', 'swap', 'doubleSwap', 'add', 'refund')")
 	count, err := s.queryTimestampInt64(sb, from, to)
 	return uint64(count), err
 }
