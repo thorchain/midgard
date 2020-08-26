@@ -52,9 +52,8 @@ CREATE TABLE pools (
     swappers_count    BIGINT                   NOT NULL,
     stake_count       BIGINT                   NOT NULL,
     withdraw_count    BIGINT                   NOT NULL,
-    PRIMARY KEY (time, pool)
+    PRIMARY KEY (pool, time)
 );
-CREATE INDEX pools_pool_time_desc_idx ON pools (pool, time DESC);
 
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
