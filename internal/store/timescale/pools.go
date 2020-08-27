@@ -1159,7 +1159,6 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 	return uint64(stakersCount.Int64), nil
 }
 
-
 func (s *Client) assetROI(asset common.Asset) (float64, error) {
 	assetDepth, err := s.GetAssetDepth(asset)
 	if err != nil {
