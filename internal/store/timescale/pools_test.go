@@ -1712,10 +1712,40 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 
-	// Additional stake
-	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(1))
+
+	// Additional stake
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(2))
+
+	// Unstake
+	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(1))
+
+	// Stake in another pool
+	err = s.Store.CreateStakeRecord(&stakeTcanEvent3)
+	c.Assert(err, IsNil)
+
+	stakersCount, err = s.Store.stakersCount(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stakersCount, Equals, uint64(1))
+
+	asset, _ = common.NewAsset("BNB.TCAN-014")
 	stakersCount, err = s.Store.stakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
