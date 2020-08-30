@@ -206,7 +206,8 @@ func (s *Client) TotalEarned() (int64, error) {
 			return 0, err
 		}
 		totalLiquidityFee := int64(buyFee + sellFee)
-		totalEarned += poolBasic.Gas + poolBasic.Reward + totalLiquidityFee
+		price := float64(poolBasic.RuneDepth) / float64(poolBasic.AssetDepth)
+		totalEarned += int64(float64(poolBasic.Gas)*price) + poolBasic.Reward + totalLiquidityFee
 	}
 	return totalEarned, nil
 }
