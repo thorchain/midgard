@@ -241,17 +241,21 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 			return 0, errors.Wrap(err, "assetEarned failed")
 		}
 
-		assetDepth, err := s.GetAssetDepth(asset)
+		poolBasic, err := s.GetPoolBasics(asset)
 		if err != nil {
-			return 0, errors.Wrap(err, "assetEarned failed")
+			return 0, err
 		}
-
-		assetStaked, err := s.assetStakedForAddress(address, asset)
+		buyFee, err := s.buyFeesTotal(asset)
 		if err != nil {
-			return 0, errors.Wrap(err, "assetEarned failed")
+			return 0, err
 		}
+		sellFee, err := s.sellFeesTotal(asset)
+		if err != nil {
+			return 0, err
+		}
+		totalAssetEarned := poolBasic.Gas + poolBasic.Reward + int64(buyFee) + int64(sellFee)
 
-		return int64(float64(stakeUnits)/float64(poolUnits)*float64(assetDepth)) - assetStaked, nil
+		return int64(float64(stakeUnits) / float64(poolUnits) * float64(totalAssetEarned)), nil
 	}
 
 	return 0, nil
