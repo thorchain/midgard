@@ -193,29 +193,20 @@ func (s *Client) TotalEarned() (int64, error) {
 	}
 	var totalEarned int64
 	for _, pool := range pools {
-		runeDepth, err := s.GetRuneDepth(pool)
+		poolBasic,err:=s.GetPoolBasics(pool)
 		if err != nil {
-			return 0, errors.Wrap(err, "TotalEarned failed")
+			return 0, err
 		}
-		runeStaked, err := s.runeStaked(pool)
+		buyFee,err:=s.buyFeesTotal(pool)
 		if err != nil {
-			return 0, errors.Wrap(err, "TotalEarned failed")
+			return 0, err
 		}
-		runeEarned := int64(runeDepth) - runeStaked
-		assetDepth, err := s.GetAssetDepth(pool)
+		sellFee,err:=s.sellFeesTotal(pool)
 		if err != nil {
-			return 0, errors.Wrap(err, "TotalEarned failed")
+			return 0, err
 		}
-		assetStaked, err := s.assetStaked(pool)
-		if err != nil {
-			return 0, errors.Wrap(err, "TotalEarned failed")
-		}
-		assetEarned := int64(assetDepth) - assetStaked
-		priceInRune, err := s.getPriceInRune(pool)
-		if err != nil {
-			return 0, errors.Wrap(err, "TotalEarned failed")
-		}
-		totalEarned += int64(float64(runeEarned) + float64(assetEarned)*priceInRune)
+		totalLiquidityFee:=int64(buyFee+sellFee)
+		totalEarned += poolBasic.Gas + poolBasic.Reward + totalLiquidityFee
 	}
 	return totalEarned, nil
 }
