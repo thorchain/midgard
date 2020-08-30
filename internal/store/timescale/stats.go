@@ -193,19 +193,19 @@ func (s *Client) TotalEarned() (int64, error) {
 	}
 	var totalEarned int64
 	for _, pool := range pools {
-		poolBasic,err:=s.GetPoolBasics(pool)
+		poolBasic, err := s.GetPoolBasics(pool)
 		if err != nil {
 			return 0, err
 		}
-		buyFee,err:=s.buyFeesTotal(pool)
+		buyFee, err := s.buyFeesTotal(pool)
 		if err != nil {
 			return 0, err
 		}
-		sellFee,err:=s.sellFeesTotal(pool)
+		sellFee, err := s.sellFeesTotal(pool)
 		if err != nil {
 			return 0, err
 		}
-		totalLiquidityFee:=int64(buyFee+sellFee)
+		totalLiquidityFee := int64(buyFee + sellFee)
 		totalEarned += poolBasic.Gas + poolBasic.Reward + totalLiquidityFee
 	}
 	return totalEarned, nil
