@@ -201,28 +201,29 @@ func (s *Client) poolStaked(address common.Address, asset common.Asset) (int64, 
 func (s *Client) runeEarned(address common.Address, asset common.Asset) (int64, error) {
 	poolUnits, err := s.poolUnits(asset)
 	if err != nil {
-		return 0, errors.Wrap(err, "runeEarned failed")
+		return 0, errors.Wrap(err, "assetEarned failed")
 	}
-	if poolUnits > 0 {
-		stakeUnits, err := s.stakeUnits(address, asset)
-		if err != nil {
-			return 0, errors.Wrap(err, "runeEarned failed")
-		}
-
-		runeDepth, err := s.GetRuneDepth(asset)
-		if err != nil {
-			return 0, errors.Wrap(err, "runeEarned failed")
-		}
-
-		runeStaked, err := s.runeStakedForAddress(address, asset)
-		if err != nil {
-			return 0, errors.Wrap(err, "runeEarned failed")
-		}
-
-		return int64(float64(stakeUnits)/float64(poolUnits)*float64(runeDepth)) - runeStaked, nil
+	if poolUnits == 0 {
+		return 0, nil
 	}
+	stakeUnits, err := s.stakeUnits(address, asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "assetEarned failed")
+	}
+	if stakeUnits == 0 {
+		return 0, nil
+	}
+	poolBasic, err := s.GetPoolBasics(asset)
+	if err != nil {
+		return 0, err
+	}
+	sellFee, err := s.sellFeesTotal(asset)
+	if err != nil {
+		return 0, err
+	}
+	totalRuneEarned := poolBasic.Reward + int64(sellFee)
 
-	return 0, nil
+	return int64(float64(stakeUnits) / float64(poolUnits) * float64(totalRuneEarned)), nil
 }
 
 func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64, error) {
@@ -230,35 +231,27 @@ func (s *Client) assetEarned(address common.Address, asset common.Asset) (int64,
 	if err != nil {
 		return 0, errors.Wrap(err, "assetEarned failed")
 	}
-	if poolUnits > 0 {
-		stakeUnits, err := s.stakeUnits(address, asset)
-		if err != nil {
-			return 0, errors.Wrap(err, "assetEarned failed")
-		}
-
-		poolUnits, err := s.poolUnits(asset)
-		if err != nil {
-			return 0, errors.Wrap(err, "assetEarned failed")
-		}
-
-		poolBasic, err := s.GetPoolBasics(asset)
-		if err != nil {
-			return 0, err
-		}
-		buyFee, err := s.buyFeesTotal(asset)
-		if err != nil {
-			return 0, err
-		}
-		sellFee, err := s.sellFeesTotal(asset)
-		if err != nil {
-			return 0, err
-		}
-		totalAssetEarned := poolBasic.Gas + poolBasic.Reward + int64(buyFee) + int64(sellFee)
-
-		return int64(float64(stakeUnits) / float64(poolUnits) * float64(totalAssetEarned)), nil
+	if poolUnits == 0 {
+		return 0, nil
 	}
+	stakeUnits, err := s.stakeUnits(address, asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "assetEarned failed")
+	}
+	if stakeUnits == 0 {
+		return 0, nil
+	}
+	poolBasic, err := s.GetPoolBasics(asset)
+	if err != nil {
+		return 0, err
+	}
+	buyFee, err := s.assetFeesTotal(asset)
+	if err != nil {
+		return 0, err
+	}
+	totalAssetEarned := poolBasic.Gas + int64(buyFee)
 
-	return 0, nil
+	return int64(float64(stakeUnits) / float64(poolUnits) * float64(totalAssetEarned)), nil
 }
 
 func (s *Client) poolEarned(address common.Address, asset common.Asset) (int64, error) {

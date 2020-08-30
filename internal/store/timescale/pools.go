@@ -991,6 +991,24 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(float64(buyFeesTotal.Int64) * priceInRune), nil
 }
 
+func (s *Client) assetFeesTotal(asset common.Asset) (uint64, error) {
+	stmnt := `
+		SELECT SUM(liquidity_fee)
+		FROM swaps
+		WHERE pool = $1
+		AND runeAmt > 0
+	`
+
+	var buyFeesTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&buyFeesTotal); err != nil {
+		return 0, errors.Wrap(err, "buyFeesTotal failed")
+	}
+
+	return uint64(buyFeesTotal.Int64), nil
+}
+
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
 	buyFeesTotal, err := s.buyFeesTotal(asset)
 	if err != nil {
