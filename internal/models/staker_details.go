@@ -14,4 +14,10 @@ type StakerAddressAndAssetDetails struct {
 	StakeUnits       uint64
 	DateFirstStaked  uint64
 	HeightLastStaked uint64
+	RuneEarned       int64
+	AssetEarned      int64
+	PoolEarned       int64
+	RuneROI          float64
+	AssetROI         float64
+	PoolROI          float64
 }

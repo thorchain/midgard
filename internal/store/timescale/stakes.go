@@ -113,11 +113,47 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
 
+	runeEarned, err := s.runeEarned(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
+	assetEarned, err := s.assetEarned(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
+	poolEarned, err := s.poolEarned(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
+	stakersRuneROI, err := s.stakersRuneROI(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
+	stakersAssetROI, err := s.stakersAssetROI(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
+	stakersPoolROI, err := s.stakersPoolROI(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
 	details := models.StakerAddressAndAssetDetails{
 		Asset:            asset,
 		StakeUnits:       stakeUnits,
 		DateFirstStaked:  dateFirstStaked,
 		HeightLastStaked: heightLastStaked,
+		RuneEarned:       runeEarned,
+		AssetEarned:      assetEarned,
+		PoolEarned:       poolEarned,
+		RuneROI:          stakersRuneROI,
+		AssetROI:         stakersAssetROI,
+		PoolROI:          stakersPoolROI,
 	}
 	return details, nil
 }
@@ -292,6 +328,42 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 	}
 
 	return 0, nil
+}
+
+func (s *Client) stakersAssetROI(address common.Address, asset common.Asset) (float64, error) {
+	assetStaked, err := s.assetStakedForAddress(address, asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "stakersAssetROI failed")
+	}
+	if assetStaked > 0 {
+		assetEarned, err := s.assetEarned(address, asset)
+		if err != nil {
+			return 0, errors.Wrap(err, "stakersAssetROI failed")
+		}
+
+		assetStaked, err := s.assetStakedForAddress(address, asset)
+		if err != nil {
+			return 0, errors.Wrap(err, "stakersAssetROI failed")
+		}
+
+		return float64(assetEarned) / float64(assetStaked), nil
+	}
+
+	return 0, errors.Wrap(err, "stakersAssetROI failed")
+}
+
+func (s *Client) stakersPoolROI(address common.Address, asset common.Asset) (float64, error) {
+	stakersAssetROI, err := s.stakersAssetROI(address, asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "stakersPoolROI failed")
+	}
+
+	runeAssetROI, err := s.stakersRuneROI(address, asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "stakersPoolROI failed")
+	}
+
+	return (stakersAssetROI + runeAssetROI) / 2, nil
 }
 
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (uint64, error) {
