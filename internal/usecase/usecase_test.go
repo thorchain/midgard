@@ -637,6 +637,16 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	c.Assert(err, NotNil)
 }
 
+type TestGetPoolDetailsThorchain struct {
+	ThorchainDummy
+	status models.PoolStatus
+	err    error
+}
+
+func (t *TestGetPoolDetailsThorchain) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
+	return t.status, t.err
+}
+
 type TestGetPoolDetailsStore struct {
 	StoreDummy
 	status           string
@@ -677,7 +687,13 @@ type TestGetPoolDetailsStore struct {
 	swappersCount    uint64
 	swappingTxCount  uint64
 	withdrawTxCount  uint64
+	poolEvent        *models.EventPool
 	err              error
+}
+
+func (s *TestGetPoolDetailsStore) CreatePoolRecord(e *models.EventPool) error {
+	s.poolEvent = e
+	return s.err
 }
 
 func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
@@ -725,8 +741,12 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 }
 
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
+	client := &TestGetPoolDetailsThorchain{
+		status: models.Bootstrap,
+	}
+
 	store := &TestGetPoolDetailsStore{
-		status: models.Enabled.String(),
+		status: models.Unknown.String(),
 		asset: common.Asset{
 			Chain:  "BNB",
 			Symbol: "TOML-4BC",
@@ -769,14 +789,14 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		swappingTxCount:  3,
 		withdrawTxCount:  1,
 	}
-	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.PoolDetails{
-		Status:           store.status,
+		Status:           models.Bootstrap.String(),
 		Asset:            store.asset,
 		AssetDepth:       store.assetDepth,
 		AssetROI:         store.assetROI,
