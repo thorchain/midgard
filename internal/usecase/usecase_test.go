@@ -742,7 +742,7 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	client := &TestGetPoolDetailsThorchain{
-		status: models.Bootstrap,
+		status: models.Enabled,
 	}
 
 	store := &TestGetPoolDetailsStore{
@@ -796,7 +796,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.PoolDetails{
-		Status:           models.Bootstrap.String(),
+		Status:           models.Enabled.String(),
 		Asset:            store.asset,
 		AssetDepth:       store.assetDepth,
 		AssetROI:         store.assetROI,
@@ -835,6 +835,11 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		SwappingTxCount:  store.swappingTxCount,
 		WithdrawTxCount:  store.withdrawTxCount,
 	})
+
+	client.status = models.Bootstrap
+	stats, err = uc.GetPoolDetails(asset)
+	c.Assert(err, IsNil)
+	c.Assert(stats.Status, Equals, models.Bootstrap.String())
 
 	store = &TestGetPoolDetailsStore{
 		err: errors.New("could not fetch requested data"),
