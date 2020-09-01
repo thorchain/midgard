@@ -89,7 +89,7 @@ func (s *Client) UpdatePoolUnits(record models.EventUnstake) error {
 		EventID:      record.ID,
 		EventType:    record.Type,
 		Pool:         pool,
-		Units:        -record.StakeUnits,
+		Units:        record.StakeUnits,
 		ChangeStatus: models.SuccessTx,
 	}
 	// Update pool units for successful unstake event

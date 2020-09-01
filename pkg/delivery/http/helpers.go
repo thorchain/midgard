@@ -21,7 +21,7 @@ func ConvertEventDataForAPI(events models.Events) *Event {
 	return &Event{
 		Fee:        Uint64ToString(events.Fee),
 		Slip:       Float64ToString(events.Slip),
-		StakeUnits: Uint64ToString(events.StakeUnits),
+		StakeUnits: Int64ToString(events.StakeUnits),
 	}
 }
 
