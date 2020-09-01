@@ -246,7 +246,12 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
+	case "gas":
+		p.Gas += change.AssetAmount
+	case "reward":
+		p.Reward += change.RuneAmount
 	}
+
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
