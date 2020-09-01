@@ -150,8 +150,10 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount),
 		SUM(rune_amount) FILTER (WHERE event_type = 'stake'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'unstake'),
-		SUM(units) FILTER (WHERE event_type = 'stake' OR (event_type = 'unstake' AND asset_amount=0 AND rune_amount=0))
+		SUM(units) FILTER (WHERE events.status = 'Success')
 		FROM pools_history
+		INNER JOIN events
+		ON events.id=pools_history.event_id
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
 	if err != nil {
