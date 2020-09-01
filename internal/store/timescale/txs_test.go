@@ -333,7 +333,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 			TxID:    stakeBnbEvent0.InTx.ID.String(),
 		},
 		Events: models.Events{
-			StakeUnits: uint64(stakeBnbEvent0.StakeUnits),
+			StakeUnits: stakeBnbEvent0.StakeUnits,
 		},
 		Date: uint64(stakeBnbEvent0.Time.Unix()),
 		Out:  make([]models.TxData, 0),
@@ -372,7 +372,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 			TxID:    stakeTomlEvent1.InTx.ID.String(),
 		},
 		Events: models.Events{
-			StakeUnits: uint64(stakeTomlEvent1.StakeUnits),
+			StakeUnits: stakeTomlEvent1.StakeUnits,
 		},
 		Date: uint64(stakeTomlEvent1.Time.Unix()),
 		Out:  make([]models.TxData, 0),
