@@ -740,12 +740,14 @@ func (s *TimeScaleSuite) TestPoolUnits(c *C) {
 	// Withdrawal
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
 	c.Assert(err, IsNil)
-	err = s.Store.UpdatePoolUnits(unstakeBnbEvent1)
+	evt := unstakeBnbEvent1
+	evt.StakeUnits = -100
+	err = s.Store.UpdatePoolUnits(evt)
 	c.Assert(err, IsNil)
 
 	poolUnits, err = s.Store.poolUnits(asset)
 	c.Assert(err, IsNil)
-	c.Assert(poolUnits, Equals, int64(100))
+	c.Assert(poolUnits, Equals, uint64(100))
 
 	// Sell swap
 	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
