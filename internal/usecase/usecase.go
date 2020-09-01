@@ -323,7 +323,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	if err != nil {
 		return nil, err
 	}
-	if data.Status == "" {
+	if data.Status == "unknown" {
 		status, err := uc.fetchPoolStatus(asset)
 		if err != nil {
 			return nil, err
