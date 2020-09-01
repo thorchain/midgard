@@ -34,13 +34,14 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 	}
 
 	change := &models.PoolChange{
-		Time:        record.Time,
-		EventID:     record.ID,
-		EventType:   record.Type,
-		Pool:        record.Pool,
-		AssetAmount: -assetAmt,
-		RuneAmount:  -runeAmt,
-		Units:       -record.StakeUnits,
+		Time:         record.Time,
+		EventID:      record.ID,
+		EventType:    record.Type,
+		Pool:         record.Pool,
+		AssetAmount:  -assetAmt,
+		RuneAmount:   -runeAmt,
+		Units:        -record.StakeUnits,
+		ChangeStatus: models.PendingTx,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -76,4 +77,22 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
+}
+
+func (s *Client) UpdatePoolUnits(record models.EventUnstake) error {
+	pool, err := s.GetEventPool(record.ID)
+	if err != nil {
+		return err
+	}
+	change := &models.PoolChange{
+		Time:         record.Time,
+		EventID:      record.ID,
+		EventType:    record.Type,
+		Pool:         pool,
+		Units:        -record.StakeUnits,
+		ChangeStatus: models.SuccessTx,
+	}
+	// Update pool units for successful unstake event
+	s.updatePoolCache(change)
+	return nil
 }

@@ -50,6 +50,7 @@ type Store interface {
 	CreateFeeRecord(event models.Event, pool common.Asset) error
 	UpdateUnStakesRecord(record models.EventUnstake) error
 	UpdateSwapRecord(record models.EventSwap) error
+	UpdatePoolUnits(record models.EventUnstake) error
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
 	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)

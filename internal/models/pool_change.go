@@ -6,16 +6,24 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
+type TxStatus int
+
+const (
+	SuccessTx TxStatus = iota
+	PendingTx
+)
+
 // PoolChange represents a change in pool state.
 type PoolChange struct {
-	Time        time.Time
-	EventID     int64
-	EventType   string
-	Pool        common.Asset
-	AssetAmount int64
-	RuneAmount  int64
-	Units       int64
-	Status      PoolStatus
+	Time         time.Time
+	EventID      int64
+	EventType    string
+	Pool         common.Asset
+	AssetAmount  int64
+	RuneAmount   int64
+	Units        int64
+	Status       PoolStatus
+	ChangeStatus TxStatus
 }
 
 // PoolAggChanges contains aggregated changes of a specific pool or event
