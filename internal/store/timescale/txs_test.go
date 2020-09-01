@@ -40,7 +40,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 
@@ -76,7 +76,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddress(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 }
@@ -117,7 +117,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 
@@ -155,7 +155,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 }
@@ -195,7 +195,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 
@@ -232,7 +232,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressTxID(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 }
@@ -271,7 +271,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 
@@ -308,7 +308,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	c.Assert(events[0].Options.WithdrawBasisPoints, Equals, float64(0))
 	c.Assert(events[0].Options.PriceTarget, Equals, uint64(0))
 	c.Assert(events[0].Options.Asymmetry, Equals, float64(0))
-	c.Assert(events[0].Events.StakeUnits, Equals, uint64(100))
+	c.Assert(events[0].Events.StakeUnits, Equals, int64(100))
 	c.Assert(events[0].Events.Slip, Equals, float64(0))
 	c.Assert(events[0].Events.Fee, Equals, uint64(0))
 }
@@ -762,7 +762,7 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 	eventId := uint64(stakeBnbEvent0.ID)
 	events := s.Store.events(eventId, "stake")
 
-	c.Assert(events.StakeUnits, Equals, uint64(100))
+	c.Assert(events.StakeUnits, Equals, int64(100))
 	c.Assert(events.Slip, Equals, float64(0))
 	c.Assert(events.Fee, Equals, uint64(0))
 
@@ -773,7 +773,7 @@ func (s *TimeScaleSuite) TestEvents(c *C) {
 	eventId = uint64(stakeTomlEvent1.ID)
 	events = s.Store.events(eventId, "stake")
 
-	c.Assert(events.StakeUnits, Equals, uint64(100))
+	c.Assert(events.StakeUnits, Equals, int64(100))
 	c.Assert(events.Slip, Equals, float64(0))
 	c.Assert(events.Fee, Equals, uint64(0))
 }
