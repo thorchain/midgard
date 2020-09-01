@@ -34,5 +34,5 @@ func (status PoolStatus) String() string {
 	case Suspended:
 		return "disabled"
 	}
-	return ""
+	return "unknown"
 }
