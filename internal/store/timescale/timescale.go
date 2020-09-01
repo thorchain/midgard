@@ -177,7 +177,7 @@ func (s *Client) fetchAllPoolsBalances() error {
 			units          sql.NullInt64
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gas, &units); err != nil {
+			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &units); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
