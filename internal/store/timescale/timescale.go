@@ -50,6 +50,10 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		return nil, errors.Wrap(err, "failed to run migrations up")
 	}
 
+	if err := cli.deleteLatestBlock(); err != nil {
+		return nil, errors.Wrap(err, "failed to purge latest block records")
+	}
+
 	err = cli.initPoolCache()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
@@ -244,4 +248,62 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
+}
+
+func (s *Client) deleteLatestBlock() error {
+	height, err := s.GetLastHeight()
+	if err != nil {
+		return errors.Wrap(err, "could not get the latest height from database")
+	}
+	if height < 1 {
+		return nil
+	}
+
+	if err = s.deleteCoinsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete coins at height %d", height)
+	}
+	if err = s.deleteTxsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete txs at height %d", height)
+	}
+	if err = s.deleteSwapsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete swaps at height %d", height)
+	}
+	if err = s.deletePoolsHistoryAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete pools history at height %d", height)
+	}
+	if err = s.deleteEventsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete events at height %d", height)
+	}
+	s.logger.Info().Int64("height", height).Msg("latest block records have been deleted successfully")
+	return nil
+}
+
+func (s *Client) deleteCoinsAtHeight(height int64) error {
+	q := `DELETE FROM coins USING events WHERE coins.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteTxsAtHeight(height int64) error {
+	q := `DELETE FROM txs USING events WHERE txs.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteSwapsAtHeight(height int64) error {
+	q := `DELETE FROM swaps USING events WHERE swaps.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deletePoolsHistoryAtHeight(height int64) error {
+	q := `DELETE FROM pools_history USING events WHERE pools_history.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteEventsAtHeight(height int64) error {
+	q := `DELETE FROM events WHERE height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
 }
