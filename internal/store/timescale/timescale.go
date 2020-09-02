@@ -50,6 +50,10 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		return nil, errors.Wrap(err, "failed to run migrations up")
 	}
 
+	if err := cli.deleteLatestBlock(); err != nil {
+		return nil, errors.Wrap(err, "failed to purge latest block records")
+	}
+
 	err = cli.initPoolCache()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
@@ -150,6 +154,9 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount),
 		SUM(rune_amount) FILTER (WHERE event_type = 'stake'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'unstake'),
+		SUM(rune_amount) FILTER (WHERE event_type = 'rewards'),
+		SUM(asset_amount) FILTER (WHERE event_type = 'gas'),
+		SUM(rune_amount) FILTER (WHERE event_type = 'gas'),
 		SUM(units) FILTER (WHERE events.status = 'Success')
 		FROM pools_history
 		INNER JOIN events
@@ -170,10 +177,13 @@ func (s *Client) fetchAllPoolsBalances() error {
 			runeDepth      sql.NullInt64
 			runeStaked     sql.NullInt64
 			runeWithdrawn  sql.NullInt64
+			reward         sql.NullInt64
+			gasUsed        sql.NullInt64
+			gasReplenished sql.NullInt64
 			units          sql.NullInt64
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &units); err != nil {
+			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &units); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
@@ -185,6 +195,9 @@ func (s *Client) fetchAllPoolsBalances() error {
 			RuneDepth:      runeDepth.Int64,
 			RuneStaked:     runeStaked.Int64,
 			RuneWithdrawn:  runeWithdrawn.Int64,
+			Reward:         reward.Int64,
+			GasUsed:        gasUsed.Int64,
+			GasReplenished: gasReplenished.Int64,
 			Units:          units.Int64,
 		}
 	}
@@ -242,8 +255,72 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
+	case "gas":
+		p.GasUsed += change.AssetAmount
+		p.GasReplenished += change.RuneAmount
+	case "rewards":
+		p.Reward += change.RuneAmount
 	}
+
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
+}
+
+func (s *Client) deleteLatestBlock() error {
+	height, err := s.GetLastHeight()
+	if err != nil {
+		return errors.Wrap(err, "could not get the latest height from database")
+	}
+	if height < 1 {
+		return nil
+	}
+
+	if err = s.deleteCoinsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete coins at height %d", height)
+	}
+	if err = s.deleteTxsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete txs at height %d", height)
+	}
+	if err = s.deleteSwapsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete swaps at height %d", height)
+	}
+	if err = s.deletePoolsHistoryAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete pools history at height %d", height)
+	}
+	if err = s.deleteEventsAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete events at height %d", height)
+	}
+	s.logger.Info().Int64("height", height).Msg("latest block records have been deleted successfully")
+	return nil
+}
+
+func (s *Client) deleteCoinsAtHeight(height int64) error {
+	q := `DELETE FROM coins USING events WHERE coins.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteTxsAtHeight(height int64) error {
+	q := `DELETE FROM txs USING events WHERE txs.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteSwapsAtHeight(height int64) error {
+	q := `DELETE FROM swaps USING events WHERE swaps.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deletePoolsHistoryAtHeight(height int64) error {
+	q := `DELETE FROM pools_history USING events WHERE pools_history.event_id = events.id AND events.height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteEventsAtHeight(height int64) error {
+	q := `DELETE FROM events WHERE height = $1`
+	_, err := s.db.Exec(q, height)
+	return err
 }

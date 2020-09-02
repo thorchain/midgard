@@ -27,11 +27,12 @@ type EventPool struct {
 
 func (status PoolStatus) String() string {
 	switch status {
-	case Suspended:
-		return "disabled"
+	case Enabled:
+		return "enabled"
 	case Bootstrap:
 		return "bootstrapped"
-	default:
-		return "enabled"
+	case Suspended:
+		return "disabled"
 	}
+	return "unknown"
 }
