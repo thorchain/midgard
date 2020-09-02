@@ -446,6 +446,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			return err
 		}
 		if len(unstakeEvt) > 0 && len(unstakeEvt[0].Out) == 2 {
+			eh.store.UpdatePoolUnits(unstakeEvt[0].Pool, unstakeEvt[0].Events.StakeUnits)
 			err = eh.store.UpdateEventStatus(evt.ID, successEvent)
 			if err != nil {
 				return err

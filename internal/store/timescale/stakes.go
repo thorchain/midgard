@@ -36,6 +36,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		RuneAmount:  runeAmt,
 		Units:       record.StakeUnits,
 	}
+	s.UpdatePoolUnits(record.Pool, record.StakeUnits)
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
 }

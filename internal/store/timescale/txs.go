@@ -351,7 +351,8 @@ func (s *Client) stakeEvents(eventId uint64) models.Events {
 	stmnt := `
 		SELECT units
 		FROM pools_history
-		WHERE event_id = $1`
+		WHERE event_id = $1 
+		ORDER BY units`
 
 	var events models.Events
 	row := s.db.QueryRow(stmnt, eventId)
