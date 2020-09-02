@@ -430,11 +430,11 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, int64(132422149))
+	c.Assert(totalEarned, Equals, int64(7463556))
 
 	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
-	c.Assert(totalEarned, Equals, int64(132422246))
+	c.Assert(totalEarned, Equals, int64(14927112))
 }

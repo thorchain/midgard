@@ -2130,3 +2130,29 @@ func DbCleaner(c *C, store *Client) {
 		}
 	}
 }
+
+func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent2)
+	c.Assert(err, IsNil)
+
+	height, err := s.Store.GetLastHeight()
+	c.Assert(err, IsNil)
+	c.Assert(height, Equals, int64(7))
+	txsCount, err := s.Store.GetTxsCount(nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(txsCount, Equals, uint64(3))
+
+	err = s.Store.deleteLatestBlock()
+	c.Assert(err, IsNil)
+
+	height, err = s.Store.GetLastHeight()
+	c.Assert(err, IsNil)
+	c.Assert(height, Equals, int64(3))
+	txsCount, err = s.Store.GetTxsCount(nil, nil)
+	c.Assert(err, IsNil)
+	c.Assert(txsCount, Equals, uint64(2))
+}
