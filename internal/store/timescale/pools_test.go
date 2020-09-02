@@ -45,6 +45,7 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	// Test with an unstake
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(unstakeTomlEvent0.Pool, -unstakeTomlEvent0.StakeUnits)
 
 	pools, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
