@@ -125,7 +125,6 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 			Status:  status,
 			In:      inTx,
 			Out:     outTx,
-			Gas:     s.gas(eventId),
 			Options: s.options(eventId, eventType),
 			Events:  event1,
 			Date:    uint64(eventDate.Unix()),
