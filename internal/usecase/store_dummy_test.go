@@ -192,6 +192,5 @@ func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time)
 	return nil, ErrNotImplemented
 }
 
-func (s *StoreDummy) UpdatePoolUnits(record models.EventUnstake) error {
-	return nil
+func (s *StoreDummy) UpdatePoolUnits(pool common.Asset, units int64) {
 }

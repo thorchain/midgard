@@ -234,14 +234,6 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 
 	p.AssetDepth += change.AssetAmount
 	p.RuneDepth += change.RuneAmount
-	if change.Units < 0 {
-		// Ignore pending unstake events
-		if change.ChangeStatus == models.SuccessTx {
-			p.Units += change.Units
-		}
-	} else {
-		p.Units += change.Units
-	}
 
 	switch change.EventType {
 	case "stake":

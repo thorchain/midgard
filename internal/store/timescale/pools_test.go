@@ -82,6 +82,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(common.BNBAsset,10000)
+
 	change = &models.PoolChange{
 		Time:        today,
 		EventID:     2,
@@ -112,6 +114,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(common.BNBAsset,-1000)
+
 	change = &models.PoolChange{
 		Time:        tomorrow,
 		EventType:   "stake",
@@ -123,6 +127,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(common.BTCAsset,1000)
 
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
@@ -742,8 +747,7 @@ func (s *TimeScaleSuite) TestPoolUnits(c *C) {
 	c.Assert(err, IsNil)
 	evt := unstakeBnbEvent1
 	evt.StakeUnits = -100
-	err = s.Store.UpdatePoolUnits(evt)
-	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(evt.Pool, evt.StakeUnits)
 
 	poolUnits, err = s.Store.poolUnits(asset)
 	c.Assert(err, IsNil)
