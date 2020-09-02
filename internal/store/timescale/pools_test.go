@@ -82,7 +82,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	s.Store.UpdatePoolUnits(common.BNBAsset,10000)
+	s.Store.UpdatePoolUnits(common.BNBAsset, 10000)
 
 	change = &models.PoolChange{
 		Time:        today,
@@ -114,7 +114,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	s.Store.UpdatePoolUnits(common.BNBAsset,-1000)
+	s.Store.UpdatePoolUnits(common.BNBAsset, -1000)
 
 	change = &models.PoolChange{
 		Time:        tomorrow,
@@ -127,7 +127,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
-	s.Store.UpdatePoolUnits(common.BTCAsset,1000)
+	s.Store.UpdatePoolUnits(common.BTCAsset, 1000)
 
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
