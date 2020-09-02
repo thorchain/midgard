@@ -73,7 +73,6 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
-		Units:       -record.StakeUnits,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
