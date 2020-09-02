@@ -150,6 +150,9 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount),
 		SUM(rune_amount) FILTER (WHERE event_type = 'stake'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'unstake'),
+		SUM(rune_amount) FILTER (WHERE event_type = 'rewards'),
+		SUM(asset_amount) FILTER (WHERE event_type = 'gas'),
+		SUM(rune_amount) FILTER (WHERE event_type = 'gas'),
 		SUM(units)
 		FROM pools_history
 		GROUP BY pool`
@@ -168,10 +171,13 @@ func (s *Client) fetchAllPoolsBalances() error {
 			runeDepth      sql.NullInt64
 			runeStaked     sql.NullInt64
 			runeWithdrawn  sql.NullInt64
+			reward         sql.NullInt64
+			gasUsed        sql.NullInt64
+			gasReplenished sql.NullInt64
 			units          sql.NullInt64
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &units); err != nil {
+			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &units); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
@@ -183,6 +189,9 @@ func (s *Client) fetchAllPoolsBalances() error {
 			RuneDepth:      runeDepth.Int64,
 			RuneStaked:     runeStaked.Int64,
 			RuneWithdrawn:  runeWithdrawn.Int64,
+			Reward:         reward.Int64,
+			GasUsed:        gasUsed.Int64,
+			GasReplenished: gasReplenished.Int64,
 			Units:          units.Int64,
 		}
 	}
@@ -240,7 +249,13 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
+	case "gas":
+		p.GasUsed += change.AssetAmount
+		p.GasReplenished += change.RuneAmount
+	case "rewards":
+		p.Reward += change.RuneAmount
 	}
+
 	if change.Status > models.Unknown {
 		p.Status = change.Status
 	}
