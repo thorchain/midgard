@@ -252,7 +252,7 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "gas":
 		p.GasUsed += change.AssetAmount
 		p.GasReplenished += change.RuneAmount
-	case "reward":
+	case "rewards":
 		p.Reward += change.RuneAmount
 	}
 
