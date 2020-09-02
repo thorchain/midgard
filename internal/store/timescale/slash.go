@@ -24,6 +24,7 @@ func (s *Client) CreateSlashRecord(record *models.EventSlash) error {
 
 		change := &models.PoolChange{
 			Time:        record.Time,
+			Height:      record.Height,
 			EventID:     record.ID,
 			EventType:   record.Type,
 			Pool:        record.Pool,

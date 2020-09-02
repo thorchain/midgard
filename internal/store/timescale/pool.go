@@ -13,6 +13,7 @@ func (s *Client) CreatePoolRecord(record *models.EventPool) error {
 
 	change := &models.PoolChange{
 		Time:      record.Time,
+		Height:    record.Height,
 		EventID:   record.ID,
 		EventType: record.Type,
 		Pool:      record.Pool,

@@ -10,6 +10,56 @@ import (
 	"gitlab.com/thorchain/midgard/internal/store"
 )
 
+func (s *Client) CreatePoolDetailsRecord(details *models.PoolDetails, blockTime time.Time) error {
+	q := `INSERT INTO pools (time, pool, asset_amount, asset_depth, asset_roi, buy_asset_count, buy_fee_average, buy_fees_total, buy_slip_average, buy_tx_average, buy_volume, pool_amount, pool_depth, pool_fee_average, pool_fees_total, pool_roi, pool_roi_12, pool_slip_average, pool_tx_average, pool_volume, pool_volume_24h, price, rune_amount, rune_depth, rune_roi, sell_asset_count, sell_fee_average, sell_fees_total, sell_slip_average, sell_tx_average, sell_volume, staker_count, status, swapper_count, tx_stake_count, tx_swap_count, tx_unstake_count, units)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38)`
+
+	_, err := s.db.Exec(q,
+		blockTime,
+		details.Asset.String(),
+		details.PoolBasics.AssetStaked,
+		details.PoolBasics.AssetDepth,
+		details.AssetROI,
+		details.PoolBasics.BuyCount,
+		details.BuyFeeAverage,
+		details.PoolBasics.BuyFeeTotal,
+		details.BuySlipAverage,
+		details.BuyTxAverage,
+		details.BuyVolume,
+		details.PoolStakedTotal,
+		details.PoolDepth,
+		details.PoolFeeAverage,
+		details.PoolFeesTotal,
+		details.PoolROI,
+		details.PoolROI12,
+		details.PoolSlipAverage,
+		details.PoolTxAverage,
+		int64(details.PoolVolume),
+		details.PoolVolume24hr,
+		details.Price,
+		details.PoolBasics.RuneStaked,
+		details.RuneDepth,
+		details.RuneROI,
+		details.PoolBasics.SellCount,
+		details.SellFeeAverage,
+		details.PoolBasics.SellFeeTotal,
+		details.SellSlipAverage,
+		details.SellTxAverage,
+		details.SellVolume,
+		details.StakersCount,
+		details.Status,
+		details.SwappersCount,
+		details.PoolBasics.StakeCount,
+		details.SwappingTxCount,
+		details.PoolBasics.WithdrawCount,
+		details.PoolBasics.Units,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	query := `
 		SELECT sub.pool
@@ -37,14 +87,31 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 }
 
 // GetPoolBasics returns the basics of pool like asset and rune depths, units and status.
-func (s *Client) GetPoolBasics(pool common.Asset) (models.PoolBasics, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+func (s *Client) GetPoolBasics(pool common.Asset, at *time.Time) (models.PoolBasics, error) {
+	if at == nil {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
 
-	if p, ok := s.pools[pool.String()]; ok {
-		return *p, nil
+		if p, ok := s.pools[pool.String()]; ok {
+			return *p, nil
+		}
+		return models.PoolBasics{}, errors.New("pool doesn't exist")
 	}
-	return models.PoolBasics{}, errors.New("pool doesn't exist")
+
+	q := `
+		SELECT *
+		FROM pools
+		WHERE pool = $1 AND time <= $2
+		ORDER BY time DESC
+		LIMIT 1`
+
+	row := s.db.QueryRowx(q, pool.String(), *at)
+	var basics models.PoolBasics
+	err := row.StructScan(&basics)
+	if err != nil && err != sql.ErrNoRows {
+		return models.PoolBasics{}, errors.Wrap(err, "could not find any record at this time")
+	}
+	return basics, nil
 }
 
 func (s *Client) GetPools() ([]common.Asset, error) {
@@ -85,104 +152,6 @@ func (s *Client) GetPools() ([]common.Asset, error) {
 	}
 
 	return pools, nil
-}
-
-func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
-	basics, err := s.GetPoolBasics(asset)
-	if err != nil {
-		return models.PoolDetails{}, err
-	}
-
-	var (
-		assetROI        float64
-		runeROI         float64
-		buyFeeAverage   float64
-		buySlipAverage  float64
-		buyTxAverage    float64
-		sellFeeAverage  float64
-		sellSlipAverage float64
-		sellTxAverage   float64
-		poolFeeAverage  float64
-		poolSlipAverage float64
-		poolTxAverage   float64
-		price           float64
-	)
-	assetStaked := basics.AssetStaked - basics.AssetWithdrawn
-	if assetStaked > 0 {
-		assetROI = float64(basics.AssetDepth-assetStaked) / float64(assetStaked)
-	}
-	runeStaked := basics.RuneStaked - basics.RuneWithdrawn
-	if runeStaked > 0 {
-		runeROI = float64(basics.RuneDepth-runeStaked) / float64(runeStaked)
-	}
-	if basics.BuyCount > 0 {
-		buyFeeAverage = float64(basics.BuyFeeTotal) / float64(basics.BuyCount)
-		buySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
-		buyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
-	}
-	if basics.SellCount > 0 {
-		sellFeeAverage = float64(basics.SellFeeTotal) / float64(basics.SellCount)
-		sellSlipAverage = basics.SellSlipTotal / float64(basics.SellCount)
-		sellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
-	}
-
-	swapCount := basics.BuyCount + basics.SellCount
-	poolFeesTotal := basics.BuyFeeTotal + basics.SellFeeTotal
-	poolVolume := basics.BuyVolume + basics.SellVolume
-	if swapCount > 0 {
-		poolFeeAverage = float64(poolFeesTotal) / float64(swapCount)
-		poolSlipAverage = basics.BuySlipTotal + basics.SellSlipTotal/float64(swapCount)
-		poolTxAverage = float64(poolVolume) / float64(swapCount)
-	}
-	if basics.AssetDepth > 0 {
-		price = float64(basics.RuneDepth) / float64(basics.AssetDepth)
-	}
-	poolStakedTotal := int64(float64(basics.AssetStaked)*price + float64(basics.RuneStaked))
-	poolROI := (assetROI + runeROI) / 2
-	now := time.Now()
-	pastDay := now.Add(-time.Hour * 24)
-	poolVolume24hr, err := s.GetPoolVolume(asset, pastDay, now)
-	if err != nil {
-		return models.PoolDetails{}, errors.Wrap(err, "GetPoolVolume failed")
-	}
-	stakersCount, err := s.stakersCount(asset)
-	if err != nil {
-		return models.PoolDetails{}, errors.Wrap(err, "stakersCount failed")
-	}
-	swappersCount, err := s.swappersCount(asset)
-	if err != nil {
-		return models.PoolDetails{}, errors.Wrap(err, "swappersCount failed")
-	}
-	poolROI12, err := s.poolROI12(asset)
-	if err != nil {
-		return models.PoolDetails{}, errors.Wrap(err, "poolROI12 failed")
-	}
-
-	return models.PoolDetails{
-		PoolBasics:      basics,
-		AssetROI:        assetROI,
-		BuyFeeAverage:   buyFeeAverage,
-		BuySlipAverage:  buySlipAverage,
-		BuyTxAverage:    buyTxAverage,
-		PoolDepth:       uint64(basics.RuneDepth) * 2,
-		PoolFeeAverage:  poolFeeAverage,
-		PoolFeesTotal:   uint64(poolFeesTotal),
-		PoolROI:         poolROI,
-		PoolROI12:       poolROI12,
-		PoolSlipAverage: poolSlipAverage,
-		PoolStakedTotal: uint64(poolStakedTotal),
-		PoolTxAverage:   poolTxAverage,
-		PoolVolume:      uint64(poolVolume),
-		PoolVolume24hr:  uint64(poolVolume24hr),
-		Price:           price,
-		RuneROI:         runeROI,
-		SellFeeAverage:  sellFeeAverage,
-		SellSlipAverage: sellSlipAverage,
-		SellTxAverage:   sellTxAverage,
-		StakersCount:    stakersCount,
-		SwappersCount:   swappersCount,
-		SwappingTxCount: uint64(swapCount),
-	}, nil
 }
 
 func (s *Client) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
@@ -382,7 +351,7 @@ func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) assetDepth12m(asset common.Asset) (uint64, error) {
-	stmnt := `SELECT SUM(asset_amount) FROM pools_history WHERE pool = $1 
+	stmnt := `SELECT SUM(asset_amount) FROM pools_history WHERE pool = $1
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var depth sql.NullInt64
@@ -411,7 +380,7 @@ func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
 }
 
 func (s *Client) runeDepth12m(asset common.Asset) (uint64, error) {
-	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1 
+	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var depth sql.NullInt64

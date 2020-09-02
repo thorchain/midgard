@@ -528,7 +528,7 @@ type TestGetPoolBasicsStore struct {
 	err    error
 }
 
-func (s *TestGetPoolBasicsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+func (s *TestGetPoolBasicsStore) GetPoolBasics(asset common.Asset, at *time.Time) (models.PoolBasics, error) {
 	return s.basics, s.err
 }
 
@@ -573,7 +573,7 @@ type TestGetPoolSimpleDetailsStore struct {
 	err               error
 }
 
-func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset, at *time.Time) (models.PoolBasics, error) {
 	return s.basics, s.err
 }
 
@@ -639,136 +639,66 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 
 type TestGetPoolDetailsStore struct {
 	StoreDummy
-	status           string
-	asset            common.Asset
-	assetDepth       int64
-	assetROI         float64
-	assetStakedTotal int64
-	buyAssetCount    int64
-	buyFeeAverage    float64
-	buyFeesTotal     int64
-	buySlipAverage   float64
-	buyTxAverage     float64
-	buyVolume        int64
-	poolDepth        uint64
-	poolFeeAverage   float64
-	poolFeesTotal    uint64
-	poolROI          float64
-	poolROI12        float64
-	poolSlipAverage  float64
-	poolStakedTotal  uint64
-	poolTxAverage    float64
-	poolUnits        int64
-	poolVolume       uint64
-	poolVolume24hr   uint64
-	price            float64
-	runeDepth        int64
-	runeROI          float64
-	runeStakedTotal  int64
-	sellAssetCount   int64
-	sellFeeAverage   float64
-	sellFeesTotal    int64
-	sellSlipAverage  float64
-	sellTxAverage    float64
-	sellVolume       int64
-	stakeTxCount     int64
-	stakersCount     uint64
-	stakingTxCount   int64
-	swappersCount    uint64
-	swappingTxCount  uint64
-	withdrawTxCount  int64
-	err              error
+	from          time.Time
+	to            time.Time
+	basics        models.PoolBasics
+	basics24Hours models.PoolBasics
+	basics12Month models.PoolBasics
+	err           error
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
-	data := models.PoolDetails{
-		PoolBasics: models.PoolBasics{
-			Status:        models.PoolStatusStr[s.status],
-			Asset:         s.asset,
-			AssetDepth:    s.assetDepth,
-			AssetStaked:   s.assetStakedTotal,
-			BuyCount:      s.buyAssetCount,
-			BuyFeeTotal:   s.buyFeesTotal,
-			BuyVolume:     s.buyVolume,
-			Units:         s.poolUnits,
-			RuneDepth:     s.runeDepth,
-			RuneStaked:    s.runeStakedTotal,
-			SellCount:     s.sellAssetCount,
-			SellFeeTotal:  s.sellFeesTotal,
-			SellVolume:    s.sellVolume,
-			StakeCount:    s.stakeTxCount,
-			WithdrawCount: s.withdrawTxCount,
-		},
-		AssetROI:        s.assetROI,
-		BuyFeeAverage:   s.buyFeeAverage,
-		BuySlipAverage:  s.buySlipAverage,
-		BuyTxAverage:    s.buyTxAverage,
-		PoolDepth:       s.poolDepth,
-		PoolFeeAverage:  s.poolFeeAverage,
-		PoolFeesTotal:   s.poolFeesTotal,
-		PoolROI:         s.poolROI,
-		PoolROI12:       s.poolROI12,
-		PoolSlipAverage: s.poolSlipAverage,
-		PoolStakedTotal: s.poolStakedTotal,
-		PoolTxAverage:   s.poolTxAverage,
-		PoolVolume:      s.poolVolume,
-		PoolVolume24hr:  s.poolVolume24hr,
-		Price:           s.price,
-		RuneROI:         s.runeROI,
-		SellFeeAverage:  s.sellFeeAverage,
-		SellSlipAverage: s.sellSlipAverage,
-		SellTxAverage:   s.sellTxAverage,
-		StakersCount:    s.stakersCount,
-		SwappersCount:   s.swappersCount,
-		SwappingTxCount: s.swappingTxCount,
+func (s *TestGetPoolDetailsStore) GetPoolBasics(asset common.Asset, at *time.Time) (models.PoolBasics, error) {
+	if at == nil {
+		return s.basics, s.err
 	}
-	return data, s.err
+	if time.Now().Add(-time.Hour * 24 * 30 * 12).After(*at) {
+		return s.basics12Month, s.err
+	}
+	if time.Now().Add(-time.Hour * 24).After(*at) {
+		return s.basics24Hours, s.err
+	}
+	return models.PoolBasics{}, errors.New("could not fetch this data")
 }
 
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	store := &TestGetPoolDetailsStore{
-		status: models.Enabled.String(),
-		asset: common.Asset{
-			Chain:  "BNB",
-			Symbol: "TOML-4BC",
-			Ticker: "TOML",
+		basics: models.PoolBasics{
+			Status: models.Enabled,
+			Asset: common.Asset{
+				Chain:  "BNB",
+				Symbol: "TOML-4BC",
+				Ticker: "TOML",
+			},
+			AssetDepth:    50000000010,
+			AssetStaked:   100000,
+			BuyVolume:     140331491,
+			BuySlipTotal:  0.246000007,
+			BuyFeeTotal:   7461,
+			BuyCount:      2,
+			RuneDepth:     2349499997,
+			RuneStaked:    458000,
+			SellVolume:    357021653,
+			SellSlipTotal: 0.246047854,
+			SellFeeTotal:  14927112,
+			SellCount:     3,
+			Units:         25025000100,
+			StakersCount:  1,
+			SwappersCount: 3,
+			StakeCount:    1,
+			WithdrawCount: 1,
 		},
-		assetDepth:       50000000010,
-		assetROI:         0.1791847095714499,
-		assetStakedTotal: 50000000010,
-		buyAssetCount:    2,
-		buyFeeAverage:    3730.5,
-		buyFeesTotal:     7461,
-		buySlipAverage:   0.12300000339746475,
-		buyTxAverage:     0.0000149245672606,
-		buyVolume:        140331491,
-		poolDepth:        4698999994,
-		poolFeeAverage:   0.0000000003961796,
-		poolFeesTotal:    14939056,
-		poolROI:          1.89970001,
-		poolROI12:        1.89970001,
-		poolSlipAverage:  0.06151196360588074,
-		poolStakedTotal:  4341978343,
-		poolTxAverage:    59503608,
-		poolUnits:        25025000100,
-		poolVolume:       357021653,
-		poolVolume24hr:   140331492,
-		price:            0.0010000019997999997,
-		runeDepth:        2349499997,
-		runeROI:          3.80000002,
-		runeStakedTotal:  2349500000,
-		sellAssetCount:   3,
-		sellFeeAverage:   7463556,
-		sellFeesTotal:    14927112,
-		sellSlipAverage:  0.12302392721176147,
-		sellTxAverage:    119007217,
-		sellVolume:       357021653,
-		stakeTxCount:     1,
-		stakersCount:     1,
-		stakingTxCount:   1,
-		swappersCount:    3,
-		swappingTxCount:  3,
-		withdrawTxCount:  1,
+		basics24Hours: models.PoolBasics{
+			BuyVolume:  238014435,
+			SellVolume: 119007217,
+		},
+		basics12Month: models.PoolBasics{
+			AssetDepth:     10000,
+			AssetStaked:    500,
+			AssetWithdrawn: 0,
+			RuneDepth:      9700,
+			RuneStaked:     540,
+			RuneWithdrawn:  100,
+		},
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
@@ -777,45 +707,27 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.PoolDetails{
-		PoolBasics: models.PoolBasics{
-			Status:        models.PoolStatusStr[store.status],
-			Asset:         store.asset,
-			AssetDepth:    store.assetDepth,
-			AssetStaked:   store.assetStakedTotal,
-			BuyCount:      store.buyAssetCount,
-			BuyFeeTotal:   store.buyFeesTotal,
-			BuyVolume:     store.buyVolume,
-			Units:         store.poolUnits,
-			RuneDepth:     store.runeDepth,
-			RuneStaked:    store.runeStakedTotal,
-			SellCount:     store.sellAssetCount,
-			SellFeeTotal:  store.sellFeesTotal,
-			SellVolume:    store.sellVolume,
-			StakeCount:    store.stakeTxCount,
-			WithdrawCount: store.withdrawTxCount,
-		},
-		AssetROI:        store.assetROI,
-		BuyFeeAverage:   store.buyFeeAverage,
-		BuySlipAverage:  store.buySlipAverage,
-		BuyTxAverage:    store.buyTxAverage,
-		PoolDepth:       store.poolDepth,
-		PoolFeeAverage:  store.poolFeeAverage,
-		PoolFeesTotal:   store.poolFeesTotal,
-		PoolROI:         store.poolROI,
-		PoolROI12:       store.poolROI12,
-		PoolSlipAverage: store.poolSlipAverage,
-		PoolStakedTotal: store.poolStakedTotal,
-		PoolTxAverage:   store.poolTxAverage,
-		PoolVolume:      store.poolVolume,
-		PoolVolume24hr:  store.poolVolume24hr,
-		Price:           store.price,
-		RuneROI:         store.runeROI,
-		SellFeeAverage:  store.sellFeeAverage,
-		SellSlipAverage: store.sellSlipAverage,
-		SellTxAverage:   store.sellTxAverage,
-		StakersCount:    store.stakersCount,
-		SwappersCount:   store.swappersCount,
-		SwappingTxCount: store.swappingTxCount,
+		PoolBasics:      store.basics,
+		AssetROI:        499999.0001,
+		BuyFeeAverage:   3730.5,
+		BuySlipAverage:  0.1230000035,
+		BuyTxAverage:    7.01657455e+07,
+		PoolDepth:       4698999994,
+		PoolFeeAverage:  2.9869146e+06,
+		PoolFeesTotal:   14934573,
+		PoolROI:         252563.95637860263,
+		PoolROI12:       253822.64345469698,
+		PoolSlipAverage: 0.09840957219999999,
+		PoolStakedTotal: 2586112,
+		PoolTxAverage:   9.94706288e+07,
+		PoolVolume:      497353144,
+		PoolVolume24hr:  140331492,
+		Price:           21.281123674757765,
+		RuneROI:         5128.91265720524,
+		SellFeeAverage:  4.975704e+06,
+		SellSlipAverage: 0.08201595133333334,
+		SellTxAverage:   1.1900721766666667e+08,
+		SwappingTxCount: 5,
 	})
 
 	store = &TestGetPoolDetailsStore{

@@ -76,6 +76,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 
 	change := &models.PoolChange{
 		Time:         record.Time,
+		Height:       record.Height,
 		EventID:      record.ID,
 		EventType:    record.Type,
 		Pool:         record.Pool,
@@ -128,6 +129,7 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 	}
 	change := &models.PoolChange{
 		Time:        record.Time,
+		Height:      record.Height,
 		EventID:     record.ID,
 		EventType:   record.Type,
 		Pool:        pool,

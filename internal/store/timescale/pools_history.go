@@ -12,7 +12,7 @@ import (
 
 func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 	pool := change.Pool.String()
-	basics, _ := s.GetPoolBasics(change.Pool)
+	basics, _ := s.GetPoolBasics(change.Pool, nil)
 	assetDepth := basics.AssetDepth + change.AssetAmount
 	runeDepth := basics.RuneDepth + change.RuneAmount
 	units := sql.NullInt64{
@@ -37,8 +37,8 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		return err
 	}
 
-	s.updatePoolCache(change)
-	return nil
+	err = s.updatePoolCache(change)
+	return err
 }
 
 func (s *Client) GetEventPool(id int64) (common.Asset, error) {
