@@ -61,22 +61,6 @@ CREATE TABLE pools (
     PRIMARY KEY (pool, time)
 );
 
-CREATE TABLE swaps (
-    time        TIMESTAMPTZ       NOT NULL,
-    id SERIAL,
-    event_id bigint not null,
-    from_address varchar not null,
-    to_address varchar not null,
-    pool varchar not null,
-    price_target bigint,
-    trade_slip real,
-    liquidity_fee bigint,
-    runeAmt bigint,
-    assetAmt bigint,
-    primary key (id, time)
-);
-CREATE INDEX idx_swaps ON swaps (from_address, pool);
-
 CREATE TYPE tx_direction as enum('in', 'out');
 CREATE TABLE txs (
     time        TIMESTAMPTZ       NOT NULL,

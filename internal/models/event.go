@@ -12,7 +12,6 @@ const (
 	ModelTxsTable    = "txs"
 	ModelCoinsTable  = "coins"
 	ModelStakesTable = "stakes"
-	ModelSwapsTable  = "swaps"
 	ModelPoolsTable  = "pools"
 )
 
