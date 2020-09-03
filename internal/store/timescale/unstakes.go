@@ -72,8 +72,22 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
-		Units:       -record.StakeUnits,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
+}
+
+func (s *Client) UpdatePoolUnits(pool common.Asset, units int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	p, ok := s.pools[pool.String()]
+	if !ok {
+		asset, _ := common.NewAsset(pool.String())
+		p = &models.PoolBasics{
+			Asset: asset,
+		}
+		s.pools[pool.String()] = p
+	}
+	p.Units += units
 }

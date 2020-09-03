@@ -7,7 +7,7 @@ import (
 type Events struct {
 	Fee        uint64
 	Slip       float64
-	StakeUnits uint64
+	StakeUnits int64
 }
 
 type Options struct {

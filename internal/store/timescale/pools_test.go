@@ -45,6 +45,7 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	// Test with an unstake
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(unstakeTomlEvent0.Pool, -unstakeTomlEvent0.StakeUnits)
 
 	pools, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
@@ -82,6 +83,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(common.BNBAsset, 10000)
+
 	change = &models.PoolChange{
 		Time:        today,
 		EventID:     2,
@@ -112,6 +115,8 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(common.BNBAsset, -1000)
+
 	change = &models.PoolChange{
 		Time:        tomorrow,
 		EventType:   "stake",
@@ -123,6 +128,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	s.Store.UpdatePoolUnits(common.BTCAsset, 1000)
 
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
@@ -740,6 +746,9 @@ func (s *TimeScaleSuite) TestPoolUnits(c *C) {
 	// Withdrawal
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
 	c.Assert(err, IsNil)
+	evt := unstakeBnbEvent1
+	evt.StakeUnits = -100
+	s.Store.UpdatePoolUnits(evt.Pool, evt.StakeUnits)
 
 	poolUnits, err = s.Store.poolUnits(asset)
 	c.Assert(err, IsNil)

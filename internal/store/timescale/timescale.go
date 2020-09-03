@@ -157,8 +157,10 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount) FILTER (WHERE event_type = 'rewards'),
 		SUM(asset_amount) FILTER (WHERE event_type = 'gas'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'gas'),
-		SUM(units)
+		SUM(units) FILTER (WHERE events.status = 'Success')
 		FROM pools_history
+		INNER JOIN events
+		ON events.id=pools_history.event_id
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
 	if err != nil {
@@ -245,7 +247,7 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 
 	p.AssetDepth += change.AssetAmount
 	p.RuneDepth += change.RuneAmount
-	p.Units += change.Units
+
 	switch change.EventType {
 	case "stake":
 		p.AssetStaked += change.AssetAmount

@@ -49,39 +49,10 @@ func (s *Client) GetPoolBasics(pool common.Asset) (models.PoolBasics, error) {
 
 func (s *Client) GetPools() ([]common.Asset, error) {
 	var pools []common.Asset
-
-	query := `
-		SELECT sub.pool
-		FROM (
-			SELECT pool, SUM(units) AS total_units
-			FROM pools_history
-			GROUP BY pool
-		) AS sub
-		WHERE sub.total_units > 0
-	`
-
-	rows, err := s.db.Queryx(query)
-	if err != nil {
-		return nil, errors.Wrap(err, "getPools failed")
-	}
-
-	type results struct {
-		Pool string
-	}
-
-	for rows.Next() {
-		var result results
-		if err := rows.StructScan(&result); err != nil {
-			return nil, errors.Wrap(err, "getPools failed")
+	for _, pool := range s.pools {
+		if pool.Units > 0 && !pool.Asset.Symbol.IsMiniToken() {
+			pools = append(pools, pool.Asset)
 		}
-		pool, err := common.NewAsset(result.Pool)
-		if err != nil {
-			return nil, errors.Wrap(err, "getPools failed")
-		}
-		if pool.Symbol.IsMiniToken() {
-			continue
-		}
-		pools = append(pools, pool)
 	}
 
 	return pools, nil
