@@ -137,12 +137,12 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 
 func (s *Client) eventPool(eventId uint64) common.Asset {
 	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.ticker
-			FROM coins
+		SELECT pool
+			FROM pools_history
 		WHERE event_id = $1
-		AND ticker != 'RUNE'`
+		AND pool != $2`
 
-	rows, err := s.db.Queryx(stmnt, eventId)
+	rows, err := s.db.Queryx(stmnt, eventId, common.RuneAsset().String())
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
 		return common.Asset{}
