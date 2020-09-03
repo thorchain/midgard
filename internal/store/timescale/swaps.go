@@ -10,7 +10,6 @@ import (
 const slipBasisPoints float64 = 10000
 
 func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
-	record.Event.SwapPriceTarget = &record.PriceTarget
 	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
@@ -54,6 +53,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		RuneAmount:   runeAmt,
 		TradeSlip:    &tradeSlip,
 		LiquidityFee: &record.LiquidityFee,
+		PriceTarget:  &record.PriceTarget,
 	}
 	if assetAmt < 0 || runeAmt > 0 {
 		change.SwapType = models.SwapTypeBuy

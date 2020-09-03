@@ -16,13 +16,12 @@ const (
 )
 
 type Event struct {
-	Time            time.Time `json:"time" db:"time"`
-	ID              int64     `json:"id" db:"id"`
-	Status          string    `json:"status" db:"status"`
-	Height          int64     `json:"height" db:"height"`
-	Type            string    `json:"type" db:"type"`
-	InTx            common.Tx
-	OutTxs          common.Txs
-	Fee             common.Fee `json:"fee"`
-	SwapPriceTarget *int64     `json:"swap_price_target" db:"swap_price_target"`
+	Time   time.Time `json:"time" db:"time"`
+	ID     int64     `json:"id" db:"id"`
+	Status string    `json:"status" db:"status"`
+	Height int64     `json:"height" db:"height"`
+	Type   string    `json:"type" db:"type"`
+	InTx   common.Tx
+	OutTxs common.Txs
+	Fee    common.Fee `json:"fee"`
 }

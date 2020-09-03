@@ -154,14 +154,12 @@ func (s *Client) createEventRecord(record *models.Event) error {
 				time,
 				height,
 				status,
-				type,
-				swap_price_target
+				type
 			) VALUES (
 				:time,
 				:height,
 				:status,
-				:type,
-				:swap_price_target
+				:type
 			) RETURNING id`, models.ModelEventsTable)
 
 	stmt, err := s.db.PrepareNamed(query)
