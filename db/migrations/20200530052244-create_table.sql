@@ -32,7 +32,7 @@ CREATE TABLE pools_history (
 CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);
 CREATE INDEX pools_history_event_type_idx ON pools_history (event_type);
 CREATE INDEX pools_history_pool_idx ON pools_history (pool);
-CREATE INDEX pools_history_swap_type ON pools_history (swap_type);
+CREATE INDEX pools_history_swap_type ON pools_history USING hash (swap_type) WHERE swap_type IS NOT NULL;
 
 CREATE TABLE pools (
     time              TIMESTAMPTZ              NOT NULL,
