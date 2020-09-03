@@ -46,6 +46,7 @@ func (s *TimeScaleSuite) TestUpdateSwap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeSwapped, Equals, int64(0))
 
+	// Sell
 	swapEvent := swapSellBnb2RuneEvent4
 	swapEvent.Fee = common.Fee{}
 	swapEvent.OutTxs = nil
@@ -57,6 +58,10 @@ func (s *TimeScaleSuite) TestUpdateSwap(c *C) {
 	runeSwapped, err = s.Store.runeSwapped(asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeSwapped, Equals, int64(0))
+	basics, err := s.Store.GetPoolBasics(asset, nil)
+	c.Assert(err, IsNil)
+	c.Assert(basics.SellVolume, Equals, int64(0))
+	c.Assert(basics.BuyVolume, Equals, int64(0))
 
 	swapEvent.OutTxs = swapSellBnb2RuneEvent4.OutTxs
 	err = s.Store.UpdateSwapRecord(swapEvent)
@@ -67,6 +72,24 @@ func (s *TimeScaleSuite) TestUpdateSwap(c *C) {
 	runeSwapped, err = s.Store.runeSwapped(asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeSwapped, Equals, int64(-1))
+	basics, err = s.Store.GetPoolBasics(asset, nil)
+	c.Assert(err, IsNil)
+	c.Assert(basics.SellVolume, Equals, int64(1))
+	c.Assert(basics.BuyVolume, Equals, int64(0))
+
+	// Buy
+	swapEvent = swapBuyRune2BnbEvent2
+	swapEvent.Fee = common.Fee{}
+	swapEvent.OutTxs = nil
+	err = s.Store.CreateSwapRecord(&swapEvent)
+	c.Assert(err, IsNil)
+	swapEvent.OutTxs = swapBuyRune2BnbEvent2.OutTxs
+	err = s.Store.UpdateSwapRecord(swapEvent)
+	c.Assert(err, IsNil)
+	basics, err = s.Store.GetPoolBasics(asset, nil)
+	c.Assert(err, IsNil)
+	c.Assert(basics.SellVolume, Equals, int64(1))
+	c.Assert(basics.BuyVolume, Equals, int64(1))
 }
 
 func (s *TimeScaleSuite) TestSwapFee(c *C) {

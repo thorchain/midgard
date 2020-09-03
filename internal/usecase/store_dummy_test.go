@@ -96,7 +96,7 @@ func (s *StoreDummy) GetRuneDepth(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+func (s *StoreDummy) GetPoolBasics(asset common.Asset, at *time.Time) (models.PoolBasics, error) {
 	return models.PoolBasics{}, ErrNotImplemented
 }
 
@@ -152,10 +152,6 @@ func (s *StoreDummy) TotalWithdrawTx() (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
-	return models.PoolDetails{}, ErrNotImplemented
-}
-
 func (s *StoreDummy) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
 	return models.PoolSwapStats{}, ErrNotImplemented
 }
@@ -172,7 +168,7 @@ func (s *StoreDummy) GetStakersAddressAndAssetDetails(address common.Address, as
 	return models.StakerAddressAndAssetDetails{}, ErrNotImplemented
 }
 
-func (s *StoreDummy) TotalEarned() (uint64, error) {
+func (s *StoreDummy) TotalEarned() (int64, error) {
 	return 0, ErrNotImplemented
 }
 
@@ -189,5 +185,9 @@ func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
 }
 
 func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
+	return nil, ErrNotImplemented
+}
+
+func (s *StoreDummy) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
 	return nil, ErrNotImplemented
 }

@@ -25,7 +25,7 @@ type Store interface {
 	GetPool(asset common.Asset) (common.Asset, error)
 	GetAssetDepth(asset common.Asset) (uint64, error)
 	GetRuneDepth(asset common.Asset) (uint64, error)
-	GetPoolBasics(asset common.Asset) (models.PoolBasics, error)
+	GetPoolBasics(asset common.Asset, at *time.Time) (models.PoolBasics, error)
 	GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error)
 	GetPoolStatus(asset common.Asset) (models.PoolStatus, error)
 	GetDateCreated(asset common.Asset) (uint64, error)
@@ -39,12 +39,11 @@ type Store interface {
 	TotalAssetSells() (uint64, error)
 	TotalStakeTx() (uint64, error)
 	TotalWithdrawTx() (uint64, error)
-	GetPoolData(asset common.Asset) (models.PoolDetails, error)
 	GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error)
 	GetStakerAddresses() ([]common.Address, error)
 	GetStakerAddressDetails(address common.Address) (models.StakerAddressDetails, error)
 	GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (models.StakerAddressAndAssetDetails, error)
-	TotalEarned() (uint64, error)
+	TotalEarned() (int64, error)
 	GetEventsByTxID(txID common.TxID) ([]models.Event, error)
 	ProcessTxRecord(direction string, parent models.Event, record common.Tx) error
 	CreateFeeRecord(event models.Event, pool common.Asset) error
@@ -53,4 +52,5 @@ type Store interface {
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
 	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)
+	GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error)
 }

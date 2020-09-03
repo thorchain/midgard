@@ -1,6 +1,8 @@
 package timescale
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -42,22 +44,52 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			}
 		}
 	}
-	direction := "sell"
-	if assetAmt < 0 || runeAmt > 0 {
-		direction = "buy"
-	}
 	tradeSlip := float64(record.TradeSlip) / slipBasisPoints
+
+	query := fmt.Sprintf(`
+		INSERT INTO %v (
+			time,
+			event_id,
+			from_address,
+			to_address,
+			pool,
+			price_target,
+			trade_slip,
+			liquidity_fee,
+			runeAmt,
+			assetAmt
+		)  VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 ) RETURNING event_id`, models.ModelSwapsTable)
+	_, err = s.db.Exec(query,
+		record.Event.Time,
+		record.Event.ID,
+		record.Event.InTx.FromAddress,
+		record.Event.InTx.ToAddress,
+		record.Pool.String(),
+		record.PriceTarget,
+		tradeSlip,
+		record.LiquidityFee,
+		runeAmt,
+		assetAmt,
+	)
+	if err != nil {
+		return errors.Wrap(err, "Failed to prepareNamed query for SwapRecord")
+	}
 
 	change := &models.PoolChange{
 		Time:         record.Time,
+		Height:       record.Height,
 		EventID:      record.ID,
 		EventType:    record.Type,
 		Pool:         record.Pool,
 		AssetAmount:  assetAmt,
 		RuneAmount:   runeAmt,
-		SwapType:     direction,
 		TradeSlip:    &tradeSlip,
 		LiquidityFee: &record.LiquidityFee,
+	}
+	if assetAmt < 0 || runeAmt > 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -88,12 +120,18 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 	}
 	change := &models.PoolChange{
 		Time:        record.Time,
+		Height:      record.Height,
 		EventID:     record.ID,
 		EventType:   "swap",
 		Pool:        pool,
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		SwapType:    direction,
+	}
+	if assetAmt > 0 || runeAmt < 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

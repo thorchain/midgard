@@ -35,6 +35,7 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 
 	change := &models.PoolChange{
 		Time:        record.Time,
+		Height:      record.Height,
 		EventID:     record.ID,
 		EventType:   record.Type,
 		Pool:        record.Pool,
@@ -67,6 +68,7 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 	}
 	change := &models.PoolChange{
 		Time:        record.Time,
+		Height:      record.Height,
 		EventID:     record.ID,
 		EventType:   record.Type,
 		Pool:        pool,

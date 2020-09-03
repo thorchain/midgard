@@ -30,8 +30,9 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 // GetTxsCount returns total number of transactions between "from" to "to".
 func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	sb.Select("COUNT(tx_hash)").From("txs")
-
+	sb.Select("COUNT(DISTINCT(id))")
+	sb.From("events")
+	sb.Where("type in ('stake', 'unstake', 'swap', 'doubleSwap', 'add', 'refund')")
 	count, err := s.queryTimestampInt64(sb, "time", from, to)
 	return uint64(count), err
 }
@@ -188,7 +189,7 @@ func (s *Client) TotalWithdrawTx() (uint64, error) {
 	return uint64(totalStakeTx.Int64), nil
 }
 
-func (s *Client) TotalEarned() (uint64, error) {
+func (s *Client) TotalEarned() (int64, error) {
 	pools, err := s.GetPools()
 	if err != nil {
 		return 0, err
@@ -219,5 +220,5 @@ func (s *Client) TotalEarned() (uint64, error) {
 		}
 		totalEarned += int64(float64(runeEarned) + float64(assetEarned)*priceInRune)
 	}
-	return uint64(totalEarned), nil
+	return totalEarned, nil
 }

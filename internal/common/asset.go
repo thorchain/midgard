@@ -1,10 +1,13 @@
 package common
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -95,4 +98,17 @@ func (a *Asset) UnmarshalJSON(data []byte) error {
 	}
 	*a, err = NewAsset(assetStr)
 	return err
+}
+
+func (a *Asset) Scan(v interface{}) error {
+	if str, ok := v.(string); ok {
+		var err error
+		*a, err = NewAsset(str)
+		return err
+	}
+	return errors.Errorf("could not scan type %T as common.Asset", v)
+}
+
+func (a Asset) Value() (driver.Value, error) {
+	return a.String(), nil
 }

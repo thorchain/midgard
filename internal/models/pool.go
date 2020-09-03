@@ -17,6 +17,9 @@ var PoolStatusStr = map[string]PoolStatus{
 	"Enabled":   Enabled,
 	"Bootstrap": Bootstrap,
 	"Suspended": Suspended,
+	"enabled":   Enabled,
+	"bootstrap": Bootstrap,
+	"suspended": Suspended,
 }
 
 type EventPool struct {

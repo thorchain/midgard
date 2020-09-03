@@ -1,17 +1,35 @@
 package models
 
-import "gitlab.com/thorchain/midgard/internal/common"
+import (
+	"time"
+
+	"gitlab.com/thorchain/midgard/internal/common"
+)
 
 type PoolBasics struct {
-	Asset          common.Asset
-	AssetDepth     int64
-	AssetStaked    int64
-	AssetWithdrawn int64
-	RuneDepth      int64
-	RuneStaked     int64
-	RuneWithdrawn  int64
-	Units          int64
-	Status         PoolStatus
+	Time           time.Time    `db:"time"`
+	Height         int64        `db:"height"`
+	Asset          common.Asset `db:"pool"`
+	AssetDepth     int64        `db:"asset_depth"`
+	AssetStaked    int64        `db:"asset_staked"`
+	AssetWithdrawn int64        `db:"asset_withdrawn"`
+	RuneDepth      int64        `db:"rune_depth"`
+	RuneStaked     int64        `db:"rune_staked"`
+	RuneWithdrawn  int64        `db:"rune_withdrawn"`
+	Units          int64        `db:"units"`
+	Status         PoolStatus   `db:"status"`
+	BuyVolume      int64        `db:"buy_volume"`
+	BuySlipTotal   float64      `db:"buy_slip_total"`
+	BuyFeeTotal    int64        `db:"buy_fee_total"`
+	BuyCount       int64        `db:"buy_count"`
+	SellVolume     int64        `db:"sell_volume"`
+	SellSlipTotal  float64      `db:"sell_slip_total"`
+	SellFeeTotal   int64        `db:"sell_fee_total"`
+	SellCount      int64        `db:"sell_count"`
+	StakersCount   int64        `db:"stakers_count"`
+	SwappersCount  int64        `db:"swappers_count"`
+	StakeCount     int64        `db:"stake_count"`
+	WithdrawCount  int64        `db:"withdraw_count"`
 }
 
 type PoolSwapStats struct {
@@ -31,42 +49,25 @@ type PoolSimpleDetails struct {
 }
 
 type PoolDetails struct {
-	Status           string
-	Asset            common.Asset
-	AssetDepth       uint64
-	AssetROI         float64
-	AssetStakedTotal uint64
-	BuyAssetCount    uint64
-	BuyFeeAverage    float64
-	BuyFeesTotal     uint64
-	BuySlipAverage   float64
-	BuyTxAverage     float64
-	BuyVolume        uint64
-	PoolDepth        uint64
-	PoolFeeAverage   float64
-	PoolFeesTotal    uint64
-	PoolROI          float64
-	PoolROI12        float64
-	PoolSlipAverage  float64
-	PoolStakedTotal  uint64
-	PoolTxAverage    float64
-	PoolUnits        uint64
-	PoolVolume       uint64
-	PoolVolume24hr   uint64
-	Price            float64
-	RuneDepth        uint64
-	RuneROI          float64
-	RuneStakedTotal  uint64
-	SellAssetCount   uint64
-	SellFeeAverage   float64
-	SellFeesTotal    uint64
-	SellSlipAverage  float64
-	SellTxAverage    float64
-	SellVolume       uint64
-	StakeTxCount     uint64
-	StakersCount     uint64
-	StakingTxCount   uint64
-	SwappersCount    uint64
-	SwappingTxCount  uint64
-	WithdrawTxCount  uint64
+	PoolBasics
+	AssetROI        float64
+	BuyFeeAverage   float64
+	BuySlipAverage  float64
+	BuyTxAverage    float64
+	PoolDepth       uint64
+	PoolFeeAverage  float64
+	PoolFeesTotal   uint64
+	PoolROI         float64
+	PoolROI12       float64
+	PoolSlipAverage float64
+	PoolStakedTotal uint64
+	PoolTxAverage   float64
+	PoolVolume      uint64
+	PoolVolume24hr  uint64
+	Price           float64
+	RuneROI         float64
+	SellFeeAverage  float64
+	SellSlipAverage float64
+	SellTxAverage   float64
+	SwappingTxCount uint64
 }
