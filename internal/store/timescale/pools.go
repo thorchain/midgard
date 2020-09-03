@@ -900,6 +900,7 @@ func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
+		AND event_type = 'swap'
 		AND txs.direction = 'in'
 	`
 
