@@ -139,10 +139,9 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 	stmnt := `
 		SELECT pool
 			FROM pools_history
-		WHERE event_id = $1
-		AND pool != $2`
+		WHERE event_id = $1`
 
-	rows, err := s.db.Queryx(stmnt, eventId, common.RuneAsset().String())
+	rows, err := s.db.Queryx(stmnt, eventId)
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
 		return common.Asset{}
