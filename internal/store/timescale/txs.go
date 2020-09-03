@@ -157,18 +157,8 @@ func (s *Client) eventPool(eventId uint64) common.Asset {
 			continue
 		}
 
-		c, _ := results["chain"].(string)
-		chain, _ := common.NewChain(c)
-
-		sy, _ := results["symbol"].(string)
-		symbol, _ := common.NewSymbol(sy)
-
-		t, _ := results["ticker"].(string)
-		ticker, _ := common.NewTicker(t)
-
-		asset.Chain = chain
-		asset.Symbol = symbol
-		asset.Ticker = ticker
+		pool, _ := results["pool"].(string)
+		asset, _ = common.NewAsset(pool)
 	}
 
 	return asset
