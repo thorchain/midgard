@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"time"
 
+	"gitlab.com/thorchain/midgard/internal/store"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -14,7 +16,7 @@ func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
 	if ok && pool.Units > 0 {
 		return pool.Asset, nil
 	}
-	return common.Asset{}, errors.New("pool doesn't exist")
+	return common.Asset{}, store.ErrPoolNotFound
 }
 
 // GetPoolBasics returns the basics of pool like asset and rune depths, units and status.

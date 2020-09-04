@@ -80,7 +80,7 @@ func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
 	pools, err = s.Store.GetPools()
 	c.Assert(err, IsNil)
 	c.Check(len(pools), Equals, 1)
-	c.Assert(pools, DeepEquals, common.BNBAsset)
+	c.Assert(pools[0], DeepEquals, common.BNBAsset)
 
 	// Create pending unstake event
 	unstakeEvt := unstakeBnbEvent1
@@ -90,7 +90,7 @@ func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
 
 	pools, err = s.Store.GetPools()
 	c.Check(len(pools), Equals, 1)
-	c.Assert(pools, DeepEquals, common.BNBAsset)
+	c.Assert(pools[0], DeepEquals, common.BNBAsset)
 }
 
 func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
