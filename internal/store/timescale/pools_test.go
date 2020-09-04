@@ -68,6 +68,31 @@ func (s *TimeScaleSuite) TestGetPool(c *C) {
 	c.Assert(err, Equals, store.ErrPoolNotFound)
 }
 
+func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
+	pools, err := s.Store.GetPools()
+	c.Assert(err, IsNil)
+	// Test No pools
+	c.Check(len(pools), Equals, 0)
+
+	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+
+	pools, err = s.Store.GetPools()
+	c.Assert(err, IsNil)
+	c.Check(len(pools), Equals, 1)
+	c.Assert(pools, DeepEquals, common.BNBAsset)
+
+	// Create pending unstake event
+	unstakeEvt := unstakeBnbEvent1
+	unstakeEvt.OutTxs = nil
+	err = s.Store.CreateUnStakesRecord(&unstakeEvt)
+	c.Assert(err, IsNil)
+
+	pools, err = s.Store.GetPools()
+	c.Check(len(pools), Equals, 1)
+	c.Assert(pools, DeepEquals, common.BNBAsset)
+}
+
 func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
 	tomorrow := today.Add(time.Hour * 24)
