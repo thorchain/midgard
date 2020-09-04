@@ -193,15 +193,13 @@ func (s *Client) getPriceInRune(asset common.Asset) (float64, error) {
 
 func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT MIN(events.time)
-			FROM events
-		WHERE events.id = (
-		    SELECT MIN(event_id)
-		    	FROM coins
-		    WHERE coins.ticker = $1)`
+		SELECT MIN(time)
+		FROM events
+		WHERE pool = $1
+		`
 
 	var blockTime time.Time
-	row := s.db.QueryRow(stmnt, asset.Ticker.String())
+	row := s.db.QueryRow(stmnt, asset.String())
 
 	if err := row.Scan(&blockTime); err != nil {
 		return 0, errors.Wrap(err, "GetDateCreated failed")
@@ -896,12 +894,11 @@ func (s *Client) swappingTxCount(asset common.Asset) (uint64, error) {
 // swappersCount - number of unique swappers on the network
 func (s *Client) swappersCount(asset common.Asset) (uint64, error) {
 	stmnt := `
-		SELECT COUNT(DISTINCT(txs.from_address))
+		SELECT COUNT(DISTINCT(from_address))
 		FROM pools_history
-		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
-		AND event_type = 'swap'
-		AND txs.direction = 'in'
+		AND swap_type IS NOT NULL
+		AND tx_direction = 'in'
 	`
 
 	var swappersCount sql.NullInt64
@@ -976,7 +973,6 @@ func (s *Client) stakersCount(asset common.Asset) (uint64, error) {
 		FROM (
 			SELECT from_address
 			FROM pools_history
-			JOIN txs ON pools_history.event_id = txs.event_id
 			WHERE pool = $1
 			AND event_type in ('stake', 'unstake')
 			GROUP BY from_address

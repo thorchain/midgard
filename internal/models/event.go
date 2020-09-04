@@ -9,9 +9,6 @@ import (
 const (
 	// Table / Measurement name
 	ModelEventsTable = "events"
-	ModelTxsTable    = "txs"
-	ModelCoinsTable  = "coins"
-	ModelStakesTable = "stakes"
 	ModelPoolsTable  = "pools"
 )
 

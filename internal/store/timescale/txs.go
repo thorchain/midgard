@@ -64,25 +64,24 @@ func (s *Client) getTxsCount(address common.Address, txID common.TxID, asset com
 func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []string, isCount bool, limit, offset int64) (string, []interface{}) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	if isCount {
-		sb.Select("COUNT(DISTINCT(txs.event_id))")
+		sb.Select("COUNT(DISTINCT(event_id))")
 	} else {
-		sb.Select("DISTINCT(txs.event_id), events.height")
+		sb.Select("DISTINCT(event_id), events.height")
 		sb.OrderBy("events.height")
 		sb.Desc()
 		sb.Limit(int(limit))
 		sb.Offset(int(offset))
 	}
-	sb.From("txs")
-	sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
+	sb.From("pools_history")
+	sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "event_id = events.id")
 	if address != "" {
-		sb.Where(sb.Or(sb.Equal("txs.from_address", address), sb.Equal("txs.to_address", address)))
+		sb.Where(sb.Or(sb.Equal("from_address", address), sb.Equal("to_address", address)))
 	}
 	if txID != "" {
-		sb.Where(sb.Equal("txs.tx_hash", txID))
+		sb.Where(sb.Equal("tx_hash", txID))
 	}
 	if asset != "" {
-		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
-		sb.Where(sb.Equal("coins.ticker", asset))
+		sb.Where(sb.Equal("pool", asset))
 	}
 	if len(eventTypes) > 0 {
 		var types []interface{}
@@ -107,7 +106,7 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 		inTx := s.inTx(eventId)
 		outTx := s.outTxs(eventId)
 		var event1 models.Events
-		if eventType == "doubleSwap" {
+		if eventType == "double_swap" {
 			event1 = s.events(eventId, "swap")
 			outTx = s.outTxs(eventId + 1)
 			event2 := s.events(eventId+1, "swap")
@@ -137,47 +136,19 @@ func (s *Client) processEvents(events []uint64) ([]models.TxDetails, error) {
 }
 
 func (s *Client) eventPool(eventId uint64) common.Asset {
-	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.ticker
-			FROM coins
-		WHERE event_id = $1
-		AND ticker != 'RUNE'`
-
-	rows, err := s.db.Queryx(stmnt, eventId)
-	if err != nil {
-		s.logger.Err(err).Msg("Failed")
-		return common.Asset{}
-	}
+	stmnt := `SELECT pool FROM pools_history WHERE event_id = $1 LIMIT 1`
 
 	var asset common.Asset
-	for rows.Next() {
-		results := make(map[string]interface{})
-		err := rows.MapScan(results)
-		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
-		}
-
-		c, _ := results["chain"].(string)
-		chain, _ := common.NewChain(c)
-
-		sy, _ := results["symbol"].(string)
-		symbol, _ := common.NewSymbol(sy)
-
-		t, _ := results["ticker"].(string)
-		ticker, _ := common.NewTicker(t)
-
-		asset.Chain = chain
-		asset.Symbol = symbol
-		asset.Ticker = ticker
+	err := s.db.QueryRowx(stmnt, eventId).Scan(&asset)
+	if err != nil {
+		s.logger.Err(err).Msg("Failed")
 	}
-
 	return asset
 }
 
 func (s *Client) inTx(eventId uint64) models.TxData {
 	tx := s.txForDirection(eventId, "in")
-	tx.Coin = s.coinsForTxHash(tx.TxID, eventId)
+	tx.Coin = s.coinsForTxHash(tx.TxID)
 
 	return tx
 }
@@ -185,18 +156,14 @@ func (s *Client) inTx(eventId uint64) models.TxData {
 func (s *Client) outTxs(eventId uint64) []models.TxData {
 	txs := s.txsForDirection(eventId, "out")
 	for i, tx := range txs {
-		txs[i].Coin = s.coinsForTxHash(tx.TxID, eventId)
+		txs[i].Coin = s.coinsForTxHash(tx.TxID)
 	}
 
 	return txs
 }
 
 func (s *Client) txForDirection(eventId uint64, direction string) models.TxData {
-	stmnt := `
-		SELECT txs.tx_hash AS tx_id, txs.memo, txs.from_address AS address
-			FROM txs
-		WHERE txs.event_id = $1
-		AND txs.direction = $2`
+	stmnt := `SELECT tx_hash, tx_memo, from_address FROM pools_history WHERE event_id = $1 AND tx_direction = $2`
 
 	tx := models.TxData{}
 	row := s.db.QueryRow(stmnt, eventId, direction)
@@ -212,11 +179,7 @@ func (s *Client) txForDirection(eventId uint64, direction string) models.TxData 
 }
 
 func (s *Client) txsForDirection(eventId uint64, direction string) []models.TxData {
-	stmnt := `
-		SELECT txs.tx_hash AS tx_id, txs.memo, txs.from_address AS address
-			FROM txs
-		WHERE txs.event_id = $1
-		AND txs.direction = $2`
+	stmnt := `SELECT tx_hash, tx_memo, from_address FROM pools_history WHERE event_id = $1 AND tx_direction = $2`
 
 	rows, err := s.db.Queryx(stmnt, eventId, direction)
 	if err != nil {
@@ -243,47 +206,26 @@ func (s *Client) txsForDirection(eventId uint64, direction string) []models.TxDa
 	return txs
 }
 
-func (s *Client) coinsForTxHash(txHash string, eventID uint64) common.Coins {
-	stmnt := `
-		SELECT coins.chain, coins.symbol, coins.ticker, coins.amount
-			FROM coins
-		WHERE coins.tx_hash = $1
-		AND   coins.event_Id= $2`
+func (s *Client) coinsForTxHash(txHash string) common.Coins {
+	stmnt := `SELECT pool, ABS(asset_amount), ABS(rune_amount) FROM pools_history WHERE tx_hash = $1 LIMIT 1`
 
-	rows, err := s.db.Queryx(stmnt, txHash, eventID)
+	var (
+		asset       common.Asset
+		assetAmount int64
+		runeAmount  int64
+	)
+	err := s.db.QueryRowx(stmnt, txHash).Scan(&asset, &assetAmount, &runeAmount)
 	if err != nil {
 		s.logger.Err(err).Msg("Failed")
-		return nil
 	}
 
-	var coins common.Coins
-	for rows.Next() {
-		results := make(map[string]interface{})
-		err = rows.MapScan(results)
-		if err != nil {
-			s.logger.Err(err).Msg("MapScan error")
-			continue
-		}
-
-		ch, _ := results["chain"].(string)
-		chain, _ := common.NewChain(ch)
-
-		sym, _ := results["symbol"].(string)
-		symbol, _ := common.NewSymbol(sym)
-
-		t, _ := results["ticker"].(string)
-		ticker, _ := common.NewTicker(t)
-
-		coins = append(coins, common.Coin{
-			Asset: common.Asset{
-				Chain:  chain,
-				Symbol: symbol,
-				Ticker: ticker,
-			},
-			Amount: results["amount"].(int64),
-		})
+	coins := make(common.Coins, 0, 2)
+	if assetAmount > 0 {
+		coins = append(coins, common.Coin{Asset: asset, Amount: assetAmount})
 	}
-
+	if runeAmount > 0 {
+		coins = append(coins, common.Coin{Asset: common.RuneAsset(), Amount: runeAmount})
+	}
 	return coins
 }
 

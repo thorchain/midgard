@@ -67,7 +67,7 @@ paths:
           required: false
           schema:
             type: string
-          example: [swap, stake, unstake, add, refund, doubleSwap]
+          example: [swap, stake, unstake, add, refund, double_swap]
         - in: query
           name: offset
           description: pagination offset
@@ -467,7 +467,7 @@ components:
           $ref: '#/components/schemas/asset'
         type:
           type: string
-          enum: [swap, stake, unstake, rewards, add, pool, gas, refund, doubleSwap]
+          enum: [swap, stake, unstake, rewards, add, pool, gas, refund, double_swap]
         status:
           type: string
           enum: [success, refund] 

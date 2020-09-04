@@ -24,10 +24,6 @@ func (s *StoreDummy) GetLastHeight() (int64, error) {
 	return 0, nil
 }
 
-func (s *StoreDummy) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
-	return ErrNotImplemented
-}
-
 func (s *StoreDummy) CreateFeeRecord(event models.Event, pool common.Asset) error {
 	return ErrNotImplemented
 }

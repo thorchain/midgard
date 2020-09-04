@@ -19,7 +19,7 @@ import (
 const (
 	swapEventType       = `swap`
 	stakeEventType      = `stake`
-	doubleswapEventType = `doubleSwap`
+	doubleswapEventType = `double_swap`
 	unstakeEventType    = `unstake`
 	addEventType        = `add`
 	poolEventType       = `pool`

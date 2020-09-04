@@ -16,6 +16,7 @@ const (
 type PoolChange struct {
 	Time         time.Time
 	Height       int64
+	Type         string
 	EventID      int64
 	EventType    string
 	Pool         common.Asset
@@ -26,6 +27,11 @@ type PoolChange struct {
 	TradeSlip    *float64
 	LiquidityFee *int64
 	PriceTarget  *int64
+	FromAddress  string
+	ToAddress    string
+	TxHash       string
+	TxMemo       string
+	TxDirection  string
 	Status       PoolStatus
 }
 

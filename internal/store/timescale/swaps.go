@@ -54,6 +54,11 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		TradeSlip:    &tradeSlip,
 		LiquidityFee: &record.LiquidityFee,
 		PriceTarget:  &record.PriceTarget,
+		FromAddress:  record.InTx.FromAddress.String(),
+		ToAddress:    record.InTx.ToAddress.String(),
+		TxHash:       record.InTx.ID.String(),
+		TxMemo:       string(record.InTx.Memo),
+		TxDirection:  "in",
 	}
 	if assetAmt < 0 || runeAmt > 0 {
 		change.SwapType = models.SwapTypeBuy
@@ -96,6 +101,11 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		SwapType:    direction,
+		FromAddress: record.OutTxs[0].FromAddress.String(),
+		ToAddress:   record.OutTxs[0].ToAddress.String(),
+		TxHash:      record.OutTxs[0].ID.String(),
+		TxMemo:      string(record.OutTxs[0].Memo),
+		TxDirection: "out",
 	}
 	if assetAmt > 0 || runeAmt < 0 {
 		change.SwapType = models.SwapTypeBuy

@@ -36,6 +36,11 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		AssetAmount: assetAmt,
 		RuneAmount:  runeAmt,
 		Units:       record.StakeUnits,
+		FromAddress: record.InTx.FromAddress.String(),
+		ToAddress:   record.InTx.ToAddress.String(),
+		TxHash:      record.InTx.ID.String(),
+		TxMemo:      string(record.InTx.Memo),
+		TxDirection: "in",
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -44,10 +49,12 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 // GetStakerAddresses returns an array of all the staker addresses seen by the api
 func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 	query := `
-		SELECT DISTINCT from_address
-		FROM txs
-		JOIN pools_history ON txs.event_id = pools_history.event_id
-		WHERE pools_history.units > 0`
+		SELECT from_address
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type in ('stake', 'unstake')
+		GROUP BY from_address
+		HAVING SUM(units) > 0`
 
 	rows, err := s.db.Queryx(query)
 	if err != nil {
@@ -129,8 +136,7 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 	query := `
 		SELECT SUM(units)
 		FROM pools_history
-		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $1 AND txs.from_address = $2`
+		WHERE pool = $1 AND from_address = $2`
 
 	var stakeUnits sql.NullInt64
 	err := s.db.Get(&stakeUnits, query, asset.String(), address)
@@ -146,11 +152,9 @@ func (s *Client) runeStakedForAddress(address common.Address, asset common.Asset
 	query := `
 		SELECT SUM(rune_amount)
 		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
-		AND events.type in ('stake', 'unstake')
-		AND txs.from_address = $2`
+		AND event_type in ('stake', 'unstake')
+		AND from_address = $2`
 
 	var runeStaked sql.NullInt64
 	err := s.db.Get(&runeStaked, query, asset.String(), address)
@@ -166,11 +170,9 @@ func (s *Client) assetStakedForAddress(address common.Address, asset common.Asse
 	query := `
 		SELECT SUM(asset_amount)
 		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
-		AND events.type in ('stake', 'unstake')
-		AND txs.from_address = $2`
+		AND event_type in ('stake', 'unstake')
+		AND from_address = $2`
 
 	var assetStaked sql.NullInt64
 	err := s.db.Get(&assetStaked, query, asset.String(), address)
@@ -300,12 +302,11 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT MIN(pools_history.time)
+		SELECT MIN(time)
 		FROM pools_history
-		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
-		AND units > 0 AND
-		txs.from_address = $2`
+		AND event_type = 'stake'
+		AND from_address = $2`
 
 	firstStaked := sql.NullTime{}
 	err := s.db.Get(&firstStaked, query, asset.String(), address.String())
@@ -324,11 +325,10 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 	query := `
 		SELECT MAX(height) 
 		FROM events 
-		JOIN pools_history ON events.id = pools_history.event_id 
-		JOIN txs ON events.id = txs.event_id 
+		JOIN pools_history ON events.id = pools_history.event_id
 		WHERE type = 'stake'
-		AND pools_history.pool = $1
-		AND txs.from_address = $2`
+		AND pool = $1
+		AND from_address = $2`
 
 	lastStaked := sql.NullInt64{}
 	err := s.db.Get(&lastStaked, query, asset.String(), address.String())
@@ -347,8 +347,8 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 	query := `
 		SELECT pool
 		FROM pools_history
-		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE units != 0 AND txs.from_address = $1
+		WHERE event_type in ('stake', 'unstake')
+		AND from_address = $1
 		GROUP BY pool
 		HAVING SUM(units) > 0`
 

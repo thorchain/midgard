@@ -19,6 +19,10 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		Int64: change.Units,
 		Valid: change.Units != 0,
 	}
+	typ := sql.NullString{
+		String: change.Type,
+		Valid:  change.Type != "",
+	}
 	swapType := sql.NullString{
 		String: change.SwapType,
 		Valid:  change.SwapType != "",
@@ -44,11 +48,39 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 			Valid: true,
 		}
 	}
+	var from, to, txHash, txMemo, txDir sql.NullString
+	if change.TxHash != "" {
+		from = sql.NullString{
+			String: change.FromAddress,
+			Valid:  true,
+		}
+		to = sql.NullString{
+			String: change.ToAddress,
+			Valid:  true,
+		}
+		txHash = sql.NullString{
+			String: change.TxHash,
+			Valid:  true,
+		}
+		txMemo = sql.NullString{
+			String: change.TxMemo,
+			Valid:  true,
+		}
+		txDir = sql.NullString{
+			String: change.TxDirection,
+			Valid:  true,
+		}
+	}
 
-	q := `INSERT INTO pools_history (time, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, swap_type, trade_slip, liquidity_fee, price_target, status) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`
+	q := `INSERT INTO pools_history (time, type, event_id, event_type, pool,
+			asset_amount, asset_depth, rune_amount, rune_depth, units,
+			swap_type, trade_slip, liquidity_fee, price_target,
+			from_address, to_address, tx_hash, tx_memo, tx_direction,
+			status) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`
 	_, err := s.db.Exec(q,
 		change.Time,
+		typ,
 		change.EventID,
 		change.EventType,
 		pool,
@@ -61,6 +93,11 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		tradeSlip,
 		liquidityFee,
 		priceTarget,
+		from,
+		to,
+		txHash,
+		txMemo,
+		txDir,
 		change.Status)
 	if err != nil {
 		return err

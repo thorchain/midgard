@@ -42,6 +42,11 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		Units:       -record.StakeUnits,
+		FromAddress: record.InTx.FromAddress.String(),
+		ToAddress:   record.InTx.ToAddress.String(),
+		TxHash:      record.InTx.ID.String(),
+		TxMemo:      string(record.InTx.Memo),
+		TxDirection: "in",
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -75,6 +80,11 @@ func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		Units:       -record.StakeUnits,
+		FromAddress: record.OutTxs[0].FromAddress.String(),
+		ToAddress:   record.OutTxs[0].ToAddress.String(),
+		TxHash:      record.OutTxs[0].ID.String(),
+		TxMemo:      string(record.OutTxs[0].Memo),
+		TxDirection: "out",
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

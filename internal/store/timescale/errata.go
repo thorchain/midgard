@@ -17,6 +17,7 @@ func (s *Client) CreateErrataRecord(record *models.EventErrata) error {
 			Time:        record.Time,
 			Height:      record.Height,
 			EventID:     record.ID,
+			EventType:   record.Type,
 			Pool:        pool.Asset,
 			AssetAmount: pool.AssetAmt,
 			RuneAmount:  pool.RuneAmt,

@@ -450,7 +450,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 	c.Assert(count, Equals, int64(0))
 
 	swapEvnt := swapBNB2Tusdb0
-	swapEvnt.Type = "doubleSwap"
+	swapEvnt.Type = "double_swap"
 	err = s.Store.CreateSwapRecord(&swapEvnt)
 	c.Assert(err, IsNil)
 	swapEvnt = swapBNB2Tusdb1
@@ -460,7 +460,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 
 	txDetail := models.TxDetails{
 		Status: swapBNB2Tusdb0.Status,
-		Type:   "doubleSwap",
+		Type:   "double_swap",
 		Height: uint64(swapBNB2Tusdb0.Height),
 		Pool:   swapBNB2Tusdb0.Pool,
 		In: models.TxData{
@@ -494,21 +494,21 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
 
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap"}, 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"double_swap"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap", "stake"}, 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"double_swap", "stake"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
 	c.Assert(events[0], DeepEquals, evts[0])
 
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap"}, 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"double_swap"}, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
 	c.Assert(events[0], DeepEquals, evts[0])
@@ -701,7 +701,7 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(err, IsNil)
 
 	txid := "2F624637DE179665BA3322B864DB9F30001FD37B4E0D22A0B6ECE6A5B078DAB4"
-	coinsForTxHash := s.Store.coinsForTxHash(txid, uint64(stakeBnbEvent0.ID))
+	coinsForTxHash := s.Store.coinsForTxHash(txid)
 
 	c.Assert(coinsForTxHash[0].Asset.Chain.String(), Equals, "BNB")
 	c.Assert(coinsForTxHash[0].Asset.Symbol.String(), Equals, "RUNE-B1A")
@@ -712,7 +712,7 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(err, IsNil)
 
 	txid = "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
-	coinsForTxHash = s.Store.coinsForTxHash(txid, uint64(stakeTomlEvent1.ID))
+	coinsForTxHash = s.Store.coinsForTxHash(txid)
 
 	c.Assert(coinsForTxHash[1].Asset.Chain.String(), Equals, "BNB")
 	c.Assert(coinsForTxHash[1].Asset.Symbol.String(), Equals, "TOML-4BC")
@@ -723,7 +723,7 @@ func (s *TimeScaleSuite) TestCoinsForTxHash(c *C) {
 	c.Assert(err, IsNil)
 
 	txid = "67C9MZZS1WOMM05S0RBTTDIFFLV3RQAZPJFD9V82EBPMG3P3HFUU3PBT3C18DV1E"
-	coinsForTxHash = s.Store.coinsForTxHash(txid, uint64(stakeBnbEvent2.ID))
+	coinsForTxHash = s.Store.coinsForTxHash(txid)
 
 	c.Assert(coinsForTxHash[1].Asset.Chain.String(), Equals, "BNB")
 	c.Assert(coinsForTxHash[1].Asset.Symbol.String(), Equals, "BNB")

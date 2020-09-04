@@ -14,13 +14,13 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(DISTINCT(subject_address))")
 	sb.From(`(
-		SELECT time, txs.from_address subject_address 
-		FROM txs
-		WHERE txs.direction = 'in'
+		SELECT time, from_address subject_address 
+		FROM pools_history
+		WHERE tx_direction = 'in'
 		UNION
-		SELECT time, txs.to_address subject_address 
-		FROM txs
-		WHERE txs.direction = 'out'
+		SELECT time, to_address subject_address 
+		FROM pools_history
+		WHERE tx_direction = 'out'
 		) txs_addresses`)
 
 	count, err := s.queryTimestampInt64(sb, "time", from, to)
@@ -32,7 +32,7 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(DISTINCT(id))")
 	sb.From("events")
-	sb.Where("type in ('stake', 'unstake', 'swap', 'doubleSwap', 'add', 'refund')")
+	sb.Where("type in ('stake', 'unstake', 'swap', 'double_swap', 'add', 'refund')")
 	count, err := s.queryTimestampInt64(sb, "time", from, to)
 	return uint64(count), err
 }
