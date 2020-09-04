@@ -11,29 +11,11 @@ import (
 )
 
 func (s *Client) GetPool(asset common.Asset) (common.Asset, error) {
-	query := `
-		SELECT sub.pool
-		FROM (
-			SELECT pool, SUM(units) AS total_units
-			FROM pools_history
-			WHERE pool = $1
-			GROUP BY pool
-		) as sub
-		WHERE sub.total_units > 0
-	`
-
-	row := s.db.QueryRowx(query, asset.String())
-
-	var a string
-
-	if err := row.Scan(&a); err != nil {
-		if err == sql.ErrNoRows {
-			return common.Asset{}, store.ErrPoolNotFound
-		}
-		return common.Asset{}, errors.Wrap(err, "getPool failed")
+	pool, ok := s.pools[asset.String()]
+	if ok && pool.Units > 0 {
+		return pool.Asset, nil
 	}
-
-	return common.NewAsset(a)
+	return common.Asset{}, errors.New("pool doesn't exist")
 }
 
 // GetPoolBasics returns the basics of pool like asset and rune depths, units and status.
