@@ -23,7 +23,6 @@ CREATE TYPE event_type AS enum(
     'fee',
     'slash',
     'errata',
-    'fee',
     'outbound');
 CREATE TYPE swap_type AS enum('buy', 'sell');
 CREATE TYPE tx_direction AS enum('in', 'out');
@@ -96,4 +95,6 @@ DROP TABLE events;
 DROP TABLE pools_history;
 DROP TABLE pools;
 
+DROP TYPE event_type;
 DROP TYPE swap_type;
+DROP TYPE tx_direction;
