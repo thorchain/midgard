@@ -637,9 +637,9 @@ domain-browser@^1.1.1:
   integrity sha512-jnjyiM6eRyZl2H+W8Q/zLMA481hzi0eszAaBUzIVnmYVDBbnLxVNnfu1HgEBvCbL+71FrxMl3E6lpKH7Ge3OXA==
 
 dompurify@^2.0.3:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.0.5.tgz#8b1ea58ceb2e5d850f3f81b6ee2cb78abbfdc0a2"
-  integrity sha512-DErslJjzL8PoJOkPm3mfQsBPH9Kn05WdGyV7yxX/KpSf9r54TfnUf12HfBYL55KBlM/DUin2y9FkuPlI5OxRlQ==
+  version "2.0.15"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.0.15.tgz#80e300fc3e89547bd0af1aff2eba88ce17fc9dea"
+  integrity sha512-8AnYW8iXOC7xC7K3FBvQ7+GdmtOsgDGZC5dDXaewCC674qcId7G5mhz5VIEnVShJVjQdlcaPjxpaOzaV9JC3Tg==
 
 ecstatic@^3.0.0:
   version "3.3.2"
