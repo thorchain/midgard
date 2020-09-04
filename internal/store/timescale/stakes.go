@@ -49,11 +49,9 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 // GetStakerAddresses returns an array of all the staker addresses seen by the api
 func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 	query := `
-		SELECT from_address
+		SELECT DISTINCT(from_address)
 		FROM pools_history
-		WHERE event_type in ('stake', 'unstake')
-		GROUP BY from_address
-		HAVING SUM(units) > 0`
+		WHERE event_type = 'stake'`
 
 	rows, err := s.db.Queryx(query)
 	if err != nil {
