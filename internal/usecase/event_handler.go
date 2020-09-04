@@ -158,14 +158,10 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 			return errors.Wrap(err, "failed to get InTx")
 		}
 		ev.Status = successEvent
+		ev.InTx = tx
 		err = eh.store.CreateStakeRecord(&ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
-		}
-		stake.Event.ID = ev.ID
-		err = eh.store.ProcessTxRecord("in", stake.Event, tx)
-		if err != nil {
-			return errors.Wrap(err, "failed to save InTx")
 		}
 	}
 	return nil
@@ -435,10 +431,6 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	var evt models.Event
 	if evts[0].Type == unstakeEventType {
 		evt = evts[0]
-		err = eh.store.ProcessTxRecord("out", evt, outTx)
-		if err != nil {
-			return err
-		}
 		evt.OutTxs = common.Txs{outTx}
 		var unstake models.EventUnstake
 		unstake.Event = evt
@@ -468,10 +460,6 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			}
 		}
 		evt.OutTxs = common.Txs{outTx}
-		err = eh.store.ProcessTxRecord("out", evt, outTx)
-		if err != nil {
-			return err
-		}
 		var swap models.EventSwap
 		swap.Event = evt
 		err = eh.store.UpdateSwapRecord(swap)
@@ -488,10 +476,6 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		}
 		evt = evts[0]
 		evt.OutTxs = common.Txs{outTx}
-		err = eh.store.ProcessTxRecord("out", evt, outTx)
-		if err != nil {
-			return err
-		}
 	}
 	return err
 }
