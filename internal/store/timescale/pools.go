@@ -194,7 +194,7 @@ func (s *Client) getPriceInRune(asset common.Asset) (float64, error) {
 func (s *Client) GetDateCreated(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT MIN(time)
-		FROM events
+		FROM pools_history
 		WHERE pool = $1
 		`
 

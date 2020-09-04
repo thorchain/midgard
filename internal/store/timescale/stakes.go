@@ -51,8 +51,7 @@ func (s *Client) GetStakerAddresses() ([]common.Address, error) {
 	query := `
 		SELECT from_address
 		FROM pools_history
-		WHERE pool = $1
-		AND event_type in ('stake', 'unstake')
+		WHERE event_type in ('stake', 'unstake')
 		GROUP BY from_address
 		HAVING SUM(units) > 0`
 
@@ -326,7 +325,7 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 		SELECT MAX(height) 
 		FROM events 
 		JOIN pools_history ON events.id = pools_history.event_id
-		WHERE type = 'stake'
+		WHERE event_type = 'stake'
 		AND pool = $1
 		AND from_address = $2`
 

@@ -87,7 +87,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAddressAsset(c *C) {
 	c.Assert(err, IsNil)
 
 	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	asset, _ := common.NewAsset("BNB")
+	asset, _ := common.NewAsset("BNB.BNB")
 	events, count, err := s.Store.GetTxDetails(address, common.EmptyTxID, asset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
@@ -242,7 +242,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByAsset(c *C) {
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	asset, _ := common.NewAsset("BNB")
+	asset, _ := common.NewAsset("BNB.BNB")
 	events, count, err := s.Store.GetTxDetails(common.NoAddress, common.EmptyTxID, asset, nil, 0, 1)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(1))
@@ -454,7 +454,7 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 	err = s.Store.CreateSwapRecord(&swapEvnt)
 	c.Assert(err, IsNil)
 	swapEvnt = swapBNB2Tusdb1
-	swapEvnt.Type = ""
+	swapEvnt.Type = "swap"
 	err = s.Store.CreateSwapRecord(&swapEvnt)
 	c.Assert(err, IsNil)
 

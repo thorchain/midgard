@@ -101,16 +101,18 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		SwapType:    direction,
-		FromAddress: record.OutTxs[0].FromAddress.String(),
-		ToAddress:   record.OutTxs[0].ToAddress.String(),
-		TxHash:      record.OutTxs[0].ID.String(),
-		TxMemo:      string(record.OutTxs[0].Memo),
-		TxDirection: "out",
 	}
 	if assetAmt > 0 || runeAmt < 0 {
 		change.SwapType = models.SwapTypeBuy
 	} else {
 		change.SwapType = models.SwapTypeSell
+	}
+	if len(record.Event.OutTxs) > 0 {
+		change.FromAddress = record.OutTxs[0].FromAddress.String()
+		change.ToAddress = record.OutTxs[0].ToAddress.String()
+		change.TxHash = record.OutTxs[0].ID.String()
+		change.TxMemo = string(record.OutTxs[0].Memo)
+		change.TxDirection = "out"
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

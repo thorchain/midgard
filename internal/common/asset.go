@@ -65,7 +65,10 @@ func (a Asset) IsEmpty() bool {
 }
 
 func (a Asset) String() string {
-	return fmt.Sprintf("%s.%s", a.Chain.String(), a.Symbol.String())
+	if a.Chain.String() != "" || a.Symbol.String() != "" {
+		return fmt.Sprintf("%s.%s", a.Chain.String(), a.Symbol.String())
+	}
+	return ""
 }
 
 func RuneAsset() Asset {

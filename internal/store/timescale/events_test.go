@@ -5,7 +5,7 @@ import (
 )
 
 func (s *TimeScaleSuite) TestGetEventsByTxID(c *C) {
-	err := s.Store.CreateEventRecord(&stakeBnbEvent0.Event)
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 	event, err := s.Store.GetEventsByTxID(stakeBnbEvent0.InTx.ID)
 	c.Assert(err, IsNil)

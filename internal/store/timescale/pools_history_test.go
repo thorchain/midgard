@@ -146,10 +146,12 @@ func (s *TimeScaleSuite) TestUpdatePoolsHistory(c *C) {
 
 	// Signal the new block height
 	change = &models.PoolChange{
-		Time:    time.Now().Add(time.Second * 5),
-		Height:  2,
-		EventID: 5,
-		Pool:    pool,
+		Time:      time.Now().Add(time.Second * 5),
+		Height:    2,
+		EventID:   5,
+		EventType: "pool",
+		Pool:      pool,
+		Status:    models.Suspended,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -206,9 +208,10 @@ func (s *TimeScaleSuite) TestGetEventPool(c *C) {
 	bnbPool, err := common.NewAsset("BNB.BNB")
 	c.Assert(err, IsNil)
 	change := &models.PoolChange{
-		Time:    time.Now(),
-		EventID: 1,
-		Pool:    bnbPool,
+		Time:      time.Now(),
+		EventID:   1,
+		EventType: "stake",
+		Pool:      bnbPool,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -216,9 +219,10 @@ func (s *TimeScaleSuite) TestGetEventPool(c *C) {
 	tomobPool, err := common.NewAsset("BNB.TOMOB-1E1")
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
-		Time:    time.Now(),
-		EventID: 2,
-		Pool:    tomobPool,
+		Time:      time.Now(),
+		EventID:   2,
+		EventType: "stake",
+		Pool:      tomobPool,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
