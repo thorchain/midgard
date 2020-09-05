@@ -456,7 +456,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	AddEvt := addTomlEvent1
 	asset, _ := common.NewAsset("TOML-4BC")
 	AddEvt.InTx.Coins = common.Coins{common.NewCoin(asset, 10), common.NewCoin(common.RuneAsset(), 100)}
-	err = s.Store.CreateAddRecord(&addTomlEvent1)
+	err = s.Store.CreateAddRecord(&AddEvt)
 	c.Assert(err, IsNil)
 
 	totalStaked, err = s.Store.TotalStaked()
