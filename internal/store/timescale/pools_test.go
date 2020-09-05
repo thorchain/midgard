@@ -113,7 +113,6 @@ func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 		RuneDepth:  1000,
 		AssetAdded: 500,
 		RuneAdded:  1000,
-		Status:     models.Bootstrap,
 	})
 
 	change = &models.PoolChange{
@@ -135,7 +134,6 @@ func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 		RuneDepth:  300,
 		AssetAdded: 250,
 		RuneAdded:  300,
-		Status:     models.Bootstrap,
 	})
 
 	basics, err = s.Store.GetPoolBasics(common.BNBAsset)
@@ -146,7 +144,6 @@ func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 		RuneDepth:  1000,
 		AssetAdded: 500,
 		RuneAdded:  1000,
-		Status:     models.Bootstrap,
 	})
 }
 

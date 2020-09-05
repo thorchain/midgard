@@ -3,6 +3,8 @@ package timescale
 import (
 	"time"
 
+	"gitlab.com/thorchain/midgard/internal/common"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -437,4 +439,27 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(14927112))
+}
+
+func (s *TimeScaleSuite) TestTotalStaked(c *C) {
+	totalStaked, err := s.Store.TotalStaked()
+	c.Assert(err, IsNil)
+	c.Assert(totalStaked, Equals, uint64(0))
+
+	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
+	c.Assert(err, IsNil)
+
+	totalStaked, err = s.Store.TotalStaked()
+	c.Assert(err, IsNil)
+	c.Assert(totalStaked, Equals, uint64(200))
+
+	AddEvt := addTomlEvent1
+	asset, _ := common.NewAsset("TOML-4BC")
+	AddEvt.InTx.Coins = common.Coins{common.NewCoin(asset, 10), common.NewCoin(common.RuneAsset(), 100)}
+	err = s.Store.CreateAddRecord(&addTomlEvent1)
+	c.Assert(err, IsNil)
+
+	totalStaked, err = s.Store.TotalStaked()
+	c.Assert(err, IsNil)
+	c.Assert(totalStaked, Equals, uint64(400))
 }
