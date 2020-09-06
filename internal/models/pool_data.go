@@ -33,6 +33,9 @@ type PoolSimpleDetails struct {
 	AssetROI          float64
 	RuneROI           float64
 	PoolROI           float64
+	AssetChange       int64
+	RuneChange        int64
+	PoolChange        int64
 }
 
 type PoolDetails struct {

@@ -271,6 +271,18 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	if err != nil {
 		return nil, err
 	}
+	assetChange, err := uc.store.PoolAssetChange(asset)
+	if err != nil {
+		return nil, err
+	}
+	runeChange, err := uc.store.PoolRuneChange(asset)
+	if err != nil {
+		return nil, err
+	}
+	poolChange, err := uc.store.PoolChange(asset)
+	if err != nil {
+		return nil, err
+	}
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
 	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
 	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
@@ -282,6 +294,9 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		AssetROI:          assetROI,
 		RuneROI:           runeROI,
 		PoolROI:           (assetROI + runeROI) / 2,
+		AssetChange:       assetChange,
+		RuneChange:        runeChange,
+		PoolChange:        poolChange,
 	}, nil
 }
 
