@@ -459,6 +459,19 @@ func (s *Client) poolStakedTotal(asset common.Asset) (uint64, error) {
 	return stakedTotal, nil
 }
 
+func (s *Client) poolAddedTotal(asset common.Asset) (uint64, error) {
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "poolStakedTotal failed")
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if pool, ok := s.pools[asset.String()]; ok {
+		return uint64(pool.RuneAdded) + uint64(float64(pool.AssetAdded)*priceInRune), nil
+	}
+	return 0, nil
+}
+
 func (s *Client) GetAssetDepth(asset common.Asset) (uint64, error) {
 	depth, err := s.getAssetDepth(asset)
 	return uint64(depth), err
