@@ -236,6 +236,20 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
 
+	poolAssetChange, err := s.PoolAssetChange(asset)
+	if err != nil {
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
+	}
+
+	poolRuneChange, err := s.PoolRuneChange(asset)
+	if err != nil {
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
+	}
+	poolChange, err := s.PoolChange(asset)
+	if err != nil {
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
+	}
+
 	return models.PoolDetails{
 		Asset:            asset,
 		AssetDepth:       assetDepth,
@@ -252,6 +266,9 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		PoolFeesTotal:    poolFeesTotal,
 		PoolROI:          poolROI,
 		PoolROI12:        poolROI12,
+		PoolAssetChange:  poolAssetChange,
+		PoolChange:       poolChange,
+		PoolRuneChange:   poolRuneChange,
 		PoolSlipAverage:  poolSlipAverage,
 		PoolStakedTotal:  poolStakedTotal,
 		PoolTxAverage:    poolTxAverage,
