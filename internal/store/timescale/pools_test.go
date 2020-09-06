@@ -668,6 +668,81 @@ func (s *TimeScaleSuite) TestRuneDepth12m(c *C) {
 	c.Assert(runeDepth, Equals, uint64(10))
 }
 
+func (s *TimeScaleSuite) TestPoolChange(c *C) {
+	// No change
+	asset, _ := common.NewAsset("BNB.BNB")
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+
+	poolAssetChange, err := s.Store.PoolAssetChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAssetChange, Equals, int64(0))
+	poolRuneChange, err := s.Store.PoolRuneChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolRuneChange, Equals, int64(0))
+	poolChange, err := s.Store.PoolChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolChange, Equals, int64(0))
+
+	swapEvt := swapBuyRune2BnbEvent3
+	swapEvt.InTx.Coins[0].Amount = 1
+	swapEvt.OutTxs[0].Coins[0].Amount = 1
+	err = s.Store.CreateSwapRecord(&swapEvt)
+	c.Assert(err, IsNil)
+	poolAssetChange, err = s.Store.PoolAssetChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAssetChange, Equals, int64(7463556))
+	poolRuneChange, err = s.Store.PoolRuneChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolRuneChange, Equals, int64(0))
+	poolChange, err = s.Store.PoolChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolChange, Equals, int64(83757684))
+
+	swapEvt = swapSellBnb2RuneEvent5
+	swapEvt.InTx.Coins[0].Amount = 1
+	swapEvt.OutTxs[0].Coins[0].Amount = 4
+	err = s.Store.CreateSwapRecord(&swapEvt)
+	c.Assert(err, IsNil)
+	poolAssetChange, err = s.Store.PoolAssetChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAssetChange, Equals, int64(7463555))
+	poolRuneChange, err = s.Store.PoolRuneChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolRuneChange, Equals, int64(7463556))
+	poolChange, err = s.Store.PoolChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolChange, Equals, int64(79860039))
+
+	err = s.Store.CreateRewardRecord(&rewardBNBEvent0)
+	c.Assert(err, IsNil)
+	poolAssetChange, err = s.Store.PoolAssetChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAssetChange, Equals, int64(7463555))
+	poolRuneChange, err = s.Store.PoolRuneChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolRuneChange, Equals, int64(7464556))
+	poolChange, err = s.Store.PoolChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolChange, Equals, int64(826216539))
+
+	gasEvt := gasEvent1
+	gasEvt.Pools[0].Asset = asset
+	gasEvt.Pools[0].AssetAmt = 100
+	gasEvt.Pools[0].RuneAmt = 37500
+	err = s.Store.CreateGasRecord(&gasEvt)
+	c.Assert(err, IsNil)
+	poolAssetChange, err = s.Store.PoolAssetChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAssetChange, Equals, int64(-100))
+	poolRuneChange, err = s.Store.PoolRuneChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolRuneChange, Equals, int64(7502056))
+	poolChange, err = s.Store.PoolChange(asset)
+	c.Assert(err, IsNil)
+	c.Assert(poolChange, Equals, int64(7502056))
+}
+
 func (s *TimeScaleSuite) TestAssetSwap(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
