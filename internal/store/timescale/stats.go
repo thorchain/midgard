@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"time"
 
+	"gitlab.com/thorchain/midgard/internal/models"
+
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -68,17 +70,13 @@ func (s *Client) TotalStaked() (uint64, error) {
 }
 
 func (s *Client) GetTotalDepth() (uint64, error) {
-	stakes, err := s.TotalRuneStaked()
-	if err != nil {
-		return 0, errors.Wrap(err, "GetTotalDepth failed")
+	totalDepth := uint64(0)
+	for _, pool := range s.pools {
+		if pool.Status != models.Suspended {
+			totalDepth += uint64(pool.RuneDepth)
+		}
 	}
-	swaps, err := s.runeSwaps()
-	if err != nil {
-		return 0, errors.Wrap(err, "GetTotalDepth failed")
-	}
-
-	depth := stakes + swaps
-	return uint64(depth), nil
+	return totalDepth, nil
 }
 
 func (s *Client) TotalRuneStaked() (int64, error) {
