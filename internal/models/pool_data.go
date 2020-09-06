@@ -33,8 +33,8 @@ type PoolSimpleDetails struct {
 	AssetROI          float64
 	RuneROI           float64
 	PoolROI           float64
-	AssetChange       int64
-	RuneChange        int64
+	PoolAssetChange   int64
+	PoolRuneChange    int64
 	PoolChange        int64
 }
 
@@ -54,6 +54,9 @@ type PoolDetails struct {
 	PoolFeeAverage   float64
 	PoolFeesTotal    uint64
 	PoolROI          float64
+	PoolAssetChange  int64
+	PoolRuneChange   int64
+	PoolChange       int64
 	PoolROI12        float64
 	PoolSlipAverage  float64
 	PoolStakedTotal  uint64

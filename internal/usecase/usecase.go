@@ -292,8 +292,8 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		AssetROI:          assetROI,
 		RuneROI:           runeROI,
 		PoolROI:           (assetROI + runeROI) / 2,
-		AssetChange:       assetChange,
-		RuneChange:        runeChange,
+		PoolAssetChange:   assetChange,
+		PoolRuneChange:    runeChange,
 		PoolChange:        poolChange,
 	}, nil
 }
