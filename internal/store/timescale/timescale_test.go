@@ -1489,7 +1489,7 @@ var (
 			ID:     19,
 			Status: "Success",
 			Height: 10,
-			Type:   "pool",
+			Type:   "gas",
 		},
 		Pools: []models.GasPool{
 			{
@@ -1508,7 +1508,7 @@ var (
 			ID:     20,
 			Status: "Success",
 			Height: 10,
-			Type:   "pool",
+			Type:   "gas",
 		},
 		Pools: []models.GasPool{
 			{
