@@ -474,24 +474,32 @@ func (s *Client) getAssetDepth(asset common.Asset) (int64, error) {
 	return 0, nil
 }
 
-func (s *Client) poolAssetEarned12m(asset common.Asset) (uint64, error) {
+func (s *Client) gasUsed12m(asset common.Asset) (int64, error) {
 	stmnt := `SELECT SUM(asset_amount) FROM pools_history WHERE pool = $1 
 		AND  time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
 		AND event_type = 'gas'`
 
-	var depth sql.NullInt64
+	var gasUsed12m sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
-	if err := row.Scan(&depth); err != nil {
-		return 0, errors.Wrap(err, "assetDepth12m failed")
+	if err := row.Scan(&gasUsed12m); err != nil {
+		return 0, errors.Wrap(err, "gasUsed12m failed")
 	}
 
+	return gasUsed12m.Int64, nil
+}
+
+func (s *Client) poolAssetEarned12m(asset common.Asset) (int64, error) {
 	fee, err := s.buyFeesTotal12m(asset)
 	if err != nil {
-		return 0, errors.Wrap(err, "assetDepth12m failed")
+		return 0, errors.Wrap(err, "poolAssetEarned12m failed")
+	}
+	gas, err := s.gasUsed12m(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "poolAssetEarned12m failed")
 	}
 
-	return uint64(depth.Int64) + fee, nil
+	return gas + fee, nil
 }
 
 func (s *Client) GetRuneDepth(asset common.Asset) (uint64, error) {
@@ -509,24 +517,51 @@ func (s *Client) getRuneDepth(asset common.Asset) (int64, error) {
 	return 0, nil
 }
 
-func (s *Client) runeEarned12m(asset common.Asset) (uint64, error) {
+func (s *Client) gasReplenished12m(asset common.Asset) (int64, error) {
 	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1 
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
-		AND (event_type = 'gas' OR event_type = 'rewards')`
+		AND event_type = 'gas'`
 
-	var depth sql.NullInt64
+	var gasReplenished12m sql.NullInt64
 	row := s.db.QueryRow(stmnt, asset.String())
 
-	if err := row.Scan(&depth); err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
+	if err := row.Scan(&gasReplenished12m); err != nil {
+		return 0, errors.Wrap(err, "gasReplenished12m failed")
 	}
 
+	return gasReplenished12m.Int64, nil
+}
+
+func (s *Client) poolReward12m(asset common.Asset) (int64, error) {
+	stmnt := `SELECT SUM(rune_amount) FROM pools_history WHERE pool = $1 
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()
+		AND event_type = 'rewards'`
+
+	var poolReward12m sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&poolReward12m); err != nil {
+		return 0, errors.Wrap(err, "poolReward12m failed")
+	}
+
+	return poolReward12m.Int64, nil
+}
+
+func (s *Client) poolRuneEarned12m(asset common.Asset) (int64, error) {
 	fee, err := s.sellFeesTotal12m(asset)
 	if err != nil {
-		return 0, errors.Wrap(err, "runeDepth12m failed")
+		return 0, errors.Wrap(err, "poolRuneEarned12m failed")
+	}
+	gas, err := s.gasReplenished12m(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "poolRuneEarned12m failed")
+	}
+	reward, err := s.poolReward12m(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "poolRuneEarned12m failed")
 	}
 
-	return uint64(depth.Int64) + fee, nil
+	return fee + gas + reward, nil
 }
 
 // runeSwapped - amount rune swapped through the pool
@@ -934,7 +969,7 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(sellFeesTotal.Int64), nil
 }
 
-func (s *Client) sellFeesTotal12m(asset common.Asset) (uint64, error) {
+func (s *Client) sellFeesTotal12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(liquidity_fee)
 		FROM swaps
@@ -950,7 +985,7 @@ func (s *Client) sellFeesTotal12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "sellFeesTotal12m failed")
 	}
 
-	return uint64(sellFeesTotal12m.Int64), nil
+	return sellFeesTotal12m.Int64, nil
 }
 
 func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
@@ -976,7 +1011,7 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(float64(buyFeesTotal.Int64) * priceInRune), nil
 }
 
-func (s *Client) buyFeesTotal12m(asset common.Asset) (uint64, error) {
+func (s *Client) buyFeesTotal12m(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT SUM(liquidity_fee)
 		FROM swaps
@@ -992,7 +1027,7 @@ func (s *Client) buyFeesTotal12m(asset common.Asset) (uint64, error) {
 		return 0, errors.Wrap(err, "buyFeesTotal12m failed")
 	}
 
-	return uint64(buyFeesTotal12m.Int64), nil
+	return buyFeesTotal12m.Int64, nil
 }
 
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
@@ -1242,7 +1277,7 @@ func (s *Client) runeROI(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) runeROI12(asset common.Asset) (float64, error) {
-	runeEarned12m, err := s.runeEarned12m(asset)
+	runeEarned12m, err := s.poolRuneEarned12m(asset)
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI12 failed")
 	}
