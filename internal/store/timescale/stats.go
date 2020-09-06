@@ -58,7 +58,11 @@ func (s *Client) TotalStaked() (uint64, error) {
 		if err != nil {
 			return 0, errors.Wrap(err, "bTotalStaked failed")
 		}
-		totalStaked += poolStakedTotal
+		poolTotalAdded, err := s.poolAddedTotal(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "bTotalStaked failed")
+		}
+		totalStaked += poolStakedTotal + poolTotalAdded
 	}
 	return totalStaked, nil
 }

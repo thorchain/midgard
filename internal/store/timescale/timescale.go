@@ -157,6 +157,8 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount) FILTER (WHERE event_type = 'rewards'),
 		SUM(asset_amount) FILTER (WHERE event_type = 'gas'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'gas'),
+		SUM(asset_amount) FILTER (WHERE event_type = 'add'),
+		SUM(rune_amount) FILTER (WHERE event_type = 'add'),
 		SUM(units) FILTER (WHERE events.status = 'Success')
 		FROM pools_history
 		INNER JOIN events
@@ -180,10 +182,12 @@ func (s *Client) fetchAllPoolsBalances() error {
 			reward         sql.NullInt64
 			gasUsed        sql.NullInt64
 			gasReplenished sql.NullInt64
+			assetAdded     sql.NullInt64
+			runeAdded      sql.NullInt64
 			units          sql.NullInt64
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &units); err != nil {
+			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &assetAdded, &runeAdded, &units); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
@@ -198,6 +202,8 @@ func (s *Client) fetchAllPoolsBalances() error {
 			Reward:         reward.Int64,
 			GasUsed:        gasUsed.Int64,
 			GasReplenished: gasReplenished.Int64,
+			AssetAdded:     assetAdded.Int64,
+			RuneAdded:      runeAdded.Int64,
 			Units:          units.Int64,
 		}
 	}
@@ -260,6 +266,9 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		p.GasReplenished += change.RuneAmount
 	case "rewards":
 		p.Reward += change.RuneAmount
+	case "add":
+		p.AssetAdded += change.AssetAmount
+		p.RuneAdded += change.RuneAmount
 	}
 
 	if change.Status > models.Unknown {

@@ -12,6 +12,8 @@ type PoolBasics struct {
 	RuneWithdrawn  int64
 	GasUsed        int64
 	GasReplenished int64
+	AssetAdded     int64
+	RuneAdded      int64
 	Reward         int64
 	Units          int64
 	Status         PoolStatus
