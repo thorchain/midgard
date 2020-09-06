@@ -1224,6 +1224,48 @@ func (s *Client) PoolROI(asset common.Asset) (float64, error) {
 	return roi, errors.Wrap(err, "PoolROI failed")
 }
 
+func (s *Client) PoolAssetChange(pool common.Asset) (int64, error) {
+	poolBasic, err := s.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolAssetChange failed")
+	}
+	buyFee, err := s.buyFeesTotal(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolAssetChange failed")
+	}
+	price := float64(poolBasic.RuneDepth) / float64(poolBasic.AssetDepth)
+	return poolBasic.GasUsed + int64(float64(buyFee)/price), nil
+}
+
+func (s *Client) PoolRuneChange(pool common.Asset) (int64, error) {
+	poolBasic, err := s.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolRuneChange failed")
+	}
+	sellFee, err := s.sellFeesTotal(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolRuneChange failed")
+	}
+	return poolBasic.GasReplenished + poolBasic.Reward + int64(sellFee), nil
+}
+
+func (s *Client) PoolChange(pool common.Asset) (int64, error) {
+	poolRuneChange, err := s.PoolRuneChange(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolChange failed")
+	}
+	poolAssetChange, err := s.PoolAssetChange(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolChange failed")
+	}
+	price, err := s.getPriceInRune(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolChange failed")
+	}
+	poolChange := poolRuneChange + int64(float64(poolAssetChange)*price)
+	return poolChange, nil
+}
+
 func (s *Client) poolROI12(asset common.Asset) (float64, error) {
 	assetROI12, err := s.assetROI12(asset)
 	if err != nil {
