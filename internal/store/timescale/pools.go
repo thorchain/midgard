@@ -1232,11 +1232,10 @@ func (s *Client) runeROI(asset common.Asset) (float64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "runeROI failed")
 	}
-	staked := float64(runeStaked)
 
 	var roi float64
-	if staked > 0 {
-		roi = float64(runeEarned) / float64(staked)
+	if runeStaked > 0 {
+		roi = float64(runeEarned) / float64(runeStaked)
 	}
 
 	return roi, nil
