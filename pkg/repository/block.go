@@ -13,7 +13,8 @@ type Block struct {
 	Events []Event
 }
 
-// Event contains the event type, status and changes. note that each event can effect multiple pools (e.g. rewards).
+// Event contains the event type, status and changes.
+// Note that some events might affect more than one pool (e.g. rewards).
 type Event struct {
 	ID            int64
 	Type          EventType
