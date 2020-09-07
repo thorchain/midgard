@@ -13,36 +13,41 @@ type Block struct {
 	Events []Event
 }
 
-// Event contains the event type, status and changes. note that each event can effect multiple pools.
+// Event contains the event type, status and changes. note that each event can effect multiple pools (e.g. rewards).
 type Event struct {
 	ID            int64
 	Type          EventType
 	Status        EventStatus
-	StatusChanged bool
+	StatusChanged bool // This will notify the repository to update the event status of records.
 	Changes       []EventChange
 }
 
+// EventType determines the type of parent event and change records.
+// e.g. an unstake event will comes with 1 or 2 outbound changes.
 type EventType string
 
+// EventType options
 const (
-	EventTypeStake        = "stake"
-	EventTypeAdd          = "add"
-	EventTypeUnstake      = "unstake"
-	EventTypeSwap         = "swap"
-	EventTypeRefund       = "refund"
-	EventTypePool         = "pool"
-	EventTypeRewards      = "rewards"
-	EventTypeGas          = "gas"
-	EventTypeFee          = "fee"
-	EventTypeSlash        = "slash"
-	EventTypeErrata       = "errata"
-	EventTypeOutbound     = "outbound"
-	EventTypeBondPaid     = "bond_paid"
-	EventTypeBondReturned = "bond_returned"
+	EventTypeStake    = "stake"
+	EventTypeAdd      = "add"
+	EventTypeUnstake  = "unstake"
+	EventTypeSwap     = "swap"
+	EventTypeRefund   = "refund"
+	EventTypePool     = "pool"
+	EventTypeRewards  = "rewards"
+	EventTypeGas      = "gas"
+	EventTypeFee      = "fee"
+	EventTypeSlash    = "slash"
+	EventTypeErrata   = "errata"
+	EventTypeOutbound = "outbound"
+	EventTypeBond     = "bond"
 )
 
+// EventStatus determines if the event is successed or it's status is unknown at the moment.
+// e.g. an unstake or swap event will be "unknown" until one of the "outbound" changes arrive.
 type EventStatus string
 
+// EventStatus options.
 const (
 	EventStatusUnknown = "unknown"
 	EventStatusSuccess = "success"
@@ -56,7 +61,6 @@ type EventChange struct {
 	AssetAmount  int64
 	RuneAmount   int64
 	Units        int64
-	SwapType     SwapType
 	TradeSlip    *float64
 	LiquidityFee *int64
 	PriceTarget  *int64
@@ -64,28 +68,16 @@ type EventChange struct {
 	ToAddress    string
 	TxHash       string
 	TxMemo       string
-	TxDirection  TxDirection
 	PoolStatus   PoolStatus
 }
 
-type SwapType string
-
-const (
-	SwapTypeBuy  = "buy"
-	SwapTypeSell = "sell"
-)
-
-type TxDirection string
-
-const (
-	TxDirectionIn  = "in"
-	TxDirectionOut = "out"
-)
-
+// PoolStatus determines the current status of pool.
+// https://gitlab.com/thorchain/thornode/blob/6ff70aa3ab7da1f418fcb6f34840c1f160be7f06/x/thorchain/types/type_pool.go#L14
 type PoolStatus string
 
+// PoolStatus options.
 const (
-	PoolStatusEnabled   = "enabled"
-	PoolStatusBootstrap = "bootstrap"
-	PoolStatusSuspended = "suspended"
+	PoolStatusEnabled   = "Enabled"
+	PoolStatusBootstrap = "Bootstrap"
+	PoolStatusSuspended = "Suspended"
 )

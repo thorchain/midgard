@@ -1,14 +1,11 @@
 
 -- +migrate Up
 
-CREATE TYPE event_status AS enum('unknown', 'success');
-
 CREATE TYPE event_type AS enum(
     'stake',
     'add',
     'unstake',
     'swap',
-    'double_swap',
     'refund',
     'pool',
     'rewards',
@@ -17,12 +14,9 @@ CREATE TYPE event_type AS enum(
     'slash',
     'errata',
     'outbound',
-    'bond_paid',
-    'bond_returned');
+    'bond');
 
-CREATE TYPE swap_type AS enum('buy', 'sell');
-
-CREATE TYPE tx_direction AS enum('in', 'out');
+CREATE TYPE event_status AS enum('unknown', 'success');
 
 CREATE TYPE pool_status AS enum('enabled', 'bootstrap', 'suspended');
 
@@ -37,7 +31,6 @@ CREATE TABLE events (
     asset_amount    BIGINT,
     rune_amount     BIGINT,
     units           BIGINT,
-    swap_type       swap_type,
     trade_slip      REAL,
     liquidity_fee   BIGINT,
     price_target    BIGINT,
@@ -45,7 +38,6 @@ CREATE TABLE events (
     to_address      VARCHAR,
     tx_hash         VARCHAR,
     tx_memo         VARCHAR,
-    tx_direction    tx_direction,
     pool_status     pool_status,
     PRIMARY KEY (id, time)
 );
@@ -125,8 +117,6 @@ DROP TABLE pools;
 DROP TABLE stats_history;
 DROP TABLE stakers;
 
-DROP TYPE event_status;
 DROP TYPE event_type;
-DROP TYPE swap_type;
-DROP TYPE tx_direction;
+DROP TYPE event_status;
 DROP TYPE pool_status;
