@@ -210,6 +210,21 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
 				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 			}
+			poolChange, err := h.uc.PoolChange(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
+			poolAssetChange, err := h.uc.PoolAssetChange(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
+			poolRuneChange, err := h.uc.PoolRuneChange(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
 
 			response[i] = PoolDetail{
 				Asset:            ConvertAssetForAPI(asset),
@@ -220,9 +235,9 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				RuneROI:          Float64ToString(details.RuneROI),
 				RuneStakedTotal:  Uint64ToString(uint64(details.RuneStaked)),
 				PoolROI:          Float64ToString(details.PoolROI),
-				PoolAssetChange:  Int64ToString(details.PoolAssetChange),
-				PoolRuneChange:   Int64ToString(details.PoolRuneChange),
-				PoolChange:       Int64ToString(details.PoolChange),
+				PoolAssetChange:  Int64ToString(poolAssetChange),
+				PoolRuneChange:   Int64ToString(poolRuneChange),
+				PoolChange:       Int64ToString(poolChange),
 				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
 				PoolUnits:        Uint64ToString(uint64(details.Units)),
@@ -239,7 +254,21 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				h.logger.Err(err).Msg("GetPoolDetails failed")
 				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 			}
-
+			poolChange, err := h.uc.PoolChange(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
+			poolAssetChange, err := h.uc.PoolAssetChange(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
+			poolRuneChange, err := h.uc.PoolRuneChange(asset)
+			if err != nil {
+				h.logger.Err(err).Msg("GetPoolSimpleDetails failed")
+				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+			}
 			response[i] = PoolDetail{
 				Status:           pointy.String(details.Status),
 				Asset:            ConvertAssetForAPI(asset),
@@ -257,9 +286,9 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolFeesTotal:    Uint64ToString(details.PoolFeesTotal),
 				PoolROI:          Float64ToString(details.PoolROI),
 				PoolROI12:        Float64ToString(details.PoolROI12),
-				PoolAssetChange:  Int64ToString(details.PoolAssetChange),
-				PoolRuneChange:   Int64ToString(details.PoolRuneChange),
-				PoolChange:       Int64ToString(details.PoolChange),
+				PoolAssetChange:  Int64ToString(poolAssetChange),
+				PoolRuneChange:   Int64ToString(poolRuneChange),
+				PoolChange:       Int64ToString(poolChange),
 				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
 				PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
