@@ -975,6 +975,24 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(float64(buyFeesTotal.Int64) * priceInRune), nil
 }
 
+func (s *Client) buyFees(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(liquidity_fee)
+		FROM swaps
+		WHERE pool = $1
+		AND runeAmt > 0
+	`
+
+	var buyFeesTotal sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&buyFeesTotal); err != nil {
+		return 0, errors.Wrap(err, "buyFeesTotal failed")
+	}
+
+	return buyFeesTotal.Int64, nil
+}
+
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
 	buyFeesTotal, err := s.buyFeesTotal(asset)
 	if err != nil {
@@ -1246,12 +1264,11 @@ func (s *Client) PoolAssetChange(pool common.Asset) (int64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "PoolAssetChange failed")
 	}
-	buyFee, err := s.buyFeesTotal(pool)
+	buyFee, err := s.buyFees(pool)
 	if err != nil {
 		return 0, errors.Wrap(err, "PoolAssetChange failed")
 	}
-	price := float64(poolBasic.RuneDepth) / float64(poolBasic.AssetDepth)
-	return poolBasic.GasUsed + int64(float64(buyFee)/price), nil
+	return poolBasic.GasUsed + buyFee, nil
 }
 
 func (s *Client) PoolRuneChange(pool common.Asset) (int64, error) {
