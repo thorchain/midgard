@@ -271,18 +271,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	if err != nil {
 		return nil, err
 	}
-	assetChange, err := uc.store.PoolAssetChange(asset)
-	if err != nil {
-		return nil, err
-	}
-	runeChange, err := uc.store.PoolRuneChange(asset)
-	if err != nil {
-		return nil, err
-	}
-	poolChange, err := uc.store.PoolChange(asset)
-	if err != nil {
-		return nil, err
-	}
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
 	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
 	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
@@ -294,9 +282,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		AssetROI:          assetROI,
 		RuneROI:           runeROI,
 		PoolROI:           (assetROI + runeROI) / 2,
-		PoolAssetChange:   assetChange,
-		PoolRuneChange:    runeChange,
-		PoolChange:        poolChange,
 	}, nil
 }
 
@@ -593,4 +578,46 @@ func (uc *Usecase) GetTotalVolChanges(inv models.Interval, from, to time.Time) (
 	}
 
 	return uc.store.GetTotalVolChanges(inv, from, to)
+}
+
+func (s *Usecase) PoolAssetChange(pool common.Asset) (int64, error) {
+	poolBasic, err := s.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolAssetChange failed")
+	}
+	buyFee, err := s.store.BuyFees(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolAssetChange failed")
+	}
+	return poolBasic.GasUsed + buyFee, nil
+}
+
+func (s *Usecase) PoolRuneChange(pool common.Asset) (int64, error) {
+	poolBasic, err := s.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolRuneChange failed")
+	}
+	sellFee, err := s.store.SellFeesTotal(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolRuneChange failed")
+	}
+	return poolBasic.GasReplenished + poolBasic.Reward + int64(sellFee), nil
+}
+
+func (s *Usecase) PoolChange(pool common.Asset) (int64, error) {
+	poolRuneChange, err := s.PoolRuneChange(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolChange failed")
+	}
+	poolAssetChange, err := s.PoolAssetChange(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolChange failed")
+	}
+	basic, err := s.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "PoolChange failed")
+	}
+	price := s.calculateAssetPrice(uint64(basic.AssetDepth), uint64(basic.RuneDepth))
+	poolChange := poolRuneChange + int64(float64(poolAssetChange)*price)
+	return poolChange, nil
 }
