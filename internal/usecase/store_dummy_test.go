@@ -195,14 +195,10 @@ func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time)
 func (s *StoreDummy) UpdatePoolUnits(pool common.Asset, units int64) {
 }
 
-func (s *StoreDummy) PoolAssetChange(pool common.Asset) (int64, error) {
-	return 0, nil
+func (s *StoreDummy) BuyFees(asset common.Asset) (int64, error) {
+	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) PoolRuneChange(pool common.Asset) (int64, error) {
-	return 0, nil
-}
-
-func (s *StoreDummy) PoolChange(pool common.Asset) (int64, error) {
-	return 0, nil
+func (s *StoreDummy) SellFeesTotal(asset common.Asset) (uint64, error) {
+	return 0, ErrNotImplemented
 }
