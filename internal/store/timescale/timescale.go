@@ -323,7 +323,7 @@ func (s *Client) deleteSwapsAtHeight(height int64) error {
 }
 
 func (s *Client) deletePoolsHistoryAtHeight(height int64) error {
-	q := `DELETE FROM pools_history USING events WHERE pools_history.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM pools_history WHERE height = $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
