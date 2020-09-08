@@ -452,6 +452,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 				return err
 			}
 		}
+		unstake.Height=eh.height
 		err = eh.store.UpdateUnStakesRecord(unstake)
 		if err != nil {
 			return err
@@ -474,6 +475,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		}
 		var swap models.EventSwap
 		swap.Event = evt
+		swap.Height=eh.height
 		err = eh.store.UpdateSwapRecord(swap)
 		if err != nil {
 			return err
