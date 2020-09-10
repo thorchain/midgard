@@ -2156,3 +2156,46 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(txsCount, Equals, uint64(2))
 }
+
+func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsBalances()
+	c.Assert(s.Store.pools, DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:          common.BNBAsset,
+			AssetDepth:     10,
+			AssetStaked:    10,
+			AssetWithdrawn: 0,
+			RuneDepth:      100,
+			RuneStaked:     100,
+			RuneWithdrawn:  0,
+			GasUsed:        0,
+			GasReplenished: 0,
+			AssetAdded:     0,
+			RuneAdded:      0,
+			Reward:         0,
+			Units:          100,
+		},
+	})
+	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsBalances()
+	c.Assert(s.Store.pools, DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:          common.BNBAsset,
+			AssetDepth:     0,
+			AssetStaked:    10,
+			AssetWithdrawn: 10,
+			RuneDepth:      0,
+			RuneStaked:     100,
+			RuneWithdrawn:  100,
+			GasUsed:        0,
+			GasReplenished: 0,
+			AssetAdded:     0,
+			RuneAdded:      0,
+			Reward:         0,
+			Units:          100,
+		},
+	})
+}
