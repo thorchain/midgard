@@ -1248,6 +1248,12 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	c.Assert(err, NotNil)
 }
 
+func (t *TestGetNetworkInfoThorchain) GetMimir() (map[string]string, error) {
+	return map[string]string{
+		"mimir//NEWPOOLCYCLE": "50000",
+	}, nil
+}
+
 func (s *UsecaseSuite) TestParallelGetNetworkInfo(c *C) {
 	client := &TestGetNetworkInfoThorchain{
 		nodes: []thorchain.NodeAccount{
@@ -1292,6 +1298,11 @@ func (s *UsecaseSuite) TestParallelGetNetworkInfo(c *C) {
 		lastHeight: thorchain.LastHeights{
 			Thorchain: 25,
 		},
+		consts: thorchain.ConstantValues{
+			Int64Values: map[string]int64{
+				"NewPoolCycle": int64(51840),
+			},
+		},
 	}
 	store := &TestGetNetworkInfoStore{
 		totalDepth: 1500,
@@ -1299,7 +1310,7 @@ func (s *UsecaseSuite) TestParallelGetNetworkInfo(c *C) {
 	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 	var wg sync.WaitGroup
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10000; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
