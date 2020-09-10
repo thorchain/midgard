@@ -13,7 +13,7 @@ import (
 func (s *Client) GetLastHeight() (int64, error) {
 	query := fmt.Sprintf(`
 		SELECT Max(height) 
-		FROM   %s`, models.ModelEventsTable)
+		FROM   %s`, models.ModelPoolsHistoryTable)
 	var maxHeight sql.NullInt64
 	err := s.db.Get(&maxHeight, query)
 	if err != nil {

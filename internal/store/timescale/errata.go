@@ -19,6 +19,7 @@ func (s *Client) CreateErrataRecord(record *models.EventErrata) error {
 			Pool:        pool.Asset,
 			AssetAmount: pool.AssetAmt,
 			RuneAmount:  pool.RuneAmt,
+			Height:      record.Height,
 		}
 		if !pool.AssetAdd {
 			change.AssetAmount = -pool.AssetAmt

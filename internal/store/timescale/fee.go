@@ -20,6 +20,7 @@ func (s *Client) CreateFeeRecord(event models.Event, pool common.Asset) error {
 		Pool:        pool,
 		RuneAmount:  runeAmt,
 		AssetAmount: assetAmt,
+		Height:      event.Height,
 	}
 	err := s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

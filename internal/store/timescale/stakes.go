@@ -35,6 +35,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		AssetAmount: assetAmt,
 		RuneAmount:  runeAmt,
 		Units:       record.StakeUnits,
+		Height:      record.Height,
 	}
 	s.UpdatePoolUnits(record.Pool, record.StakeUnits)
 	err = s.UpdatePoolsHistory(change)
@@ -327,7 +328,7 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 
 func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT MAX(height) 
+		SELECT MAX(events.height) 
 		FROM events 
 		JOIN pools_history ON events.id = pools_history.event_id 
 		JOIN txs ON events.id = txs.event_id 
