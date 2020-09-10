@@ -739,6 +739,7 @@ func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
 			Type:   "unstake",
 			Time:   blockTime.Add(-10 * time.Second),
 			Status: "Success",
+			Height: 1,
 			OutTxs: common.Txs{
 				common.Tx{
 					ID:          "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
@@ -796,6 +797,7 @@ func (s *EventHandlerSuite) TestSwapOutboundEvent(c *C) {
 			Type:   "swap",
 			Status: "Success",
 			Time:   blockTime.Add(-10 * time.Second),
+			Height: 1,
 			OutTxs: common.Txs{
 				common.Tx{
 					ID:          "AA578D052B0EC26F2E4E50901512AC3145F5D5614D24231179C7E86892D42B4D",

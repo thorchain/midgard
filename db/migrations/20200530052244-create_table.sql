@@ -13,6 +13,7 @@ CREATE TABLE events (
 CREATE TABLE pools_history (
     time            TIMESTAMPTZ     NOT NULL,
     id              BIGSERIAL       NOT NULL,
+    height          BIGINT          NOT NULL,
     event_id        BIGINT          NOT NULL,
     event_type      VARCHAR         NOT NULL,
     pool            VARCHAR         NOT NULL,

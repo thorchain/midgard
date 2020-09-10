@@ -10,6 +10,7 @@ import (
 type PoolChange struct {
 	Time        time.Time
 	EventID     int64
+	Height      int64
 	EventType   string
 	Pool        common.Asset
 	AssetAmount int64

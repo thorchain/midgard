@@ -161,7 +161,7 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount) FILTER (WHERE event_type = 'add'),
 		SUM(units) FILTER (WHERE events.status = 'Success')
 		FROM pools_history
-		INNER JOIN events
+		LEFT JOIN events
 		ON events.id=pools_history.event_id
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
@@ -195,10 +195,10 @@ func (s *Client) fetchAllPoolsBalances() error {
 			Asset:          asset,
 			AssetDepth:     assetDepth.Int64,
 			AssetStaked:    assetStaked.Int64,
-			AssetWithdrawn: assetWithdrawn.Int64,
+			AssetWithdrawn: -assetWithdrawn.Int64,
 			RuneDepth:      runeDepth.Int64,
 			RuneStaked:     runeStaked.Int64,
-			RuneWithdrawn:  runeWithdrawn.Int64,
+			RuneWithdrawn:  -runeWithdrawn.Int64,
 			Reward:         reward.Int64,
 			GasUsed:        gasUsed.Int64,
 			GasReplenished: gasReplenished.Int64,
@@ -305,31 +305,31 @@ func (s *Client) deleteLatestBlock() error {
 }
 
 func (s *Client) deleteCoinsAtHeight(height int64) error {
-	q := `DELETE FROM coins USING events WHERE coins.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM coins USING events WHERE coins.event_id = events.id AND events.height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
 
 func (s *Client) deleteTxsAtHeight(height int64) error {
-	q := `DELETE FROM txs USING events WHERE txs.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM txs USING events WHERE txs.event_id = events.id AND events.height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
 
 func (s *Client) deleteSwapsAtHeight(height int64) error {
-	q := `DELETE FROM swaps USING events WHERE swaps.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM swaps USING events WHERE swaps.event_id = events.id AND events.height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
 
 func (s *Client) deletePoolsHistoryAtHeight(height int64) error {
-	q := `DELETE FROM pools_history USING events WHERE pools_history.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM pools_history WHERE height = $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
 
 func (s *Client) deleteEventsAtHeight(height int64) error {
-	q := `DELETE FROM events WHERE height = $1`
+	q := `DELETE FROM events WHERE height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
