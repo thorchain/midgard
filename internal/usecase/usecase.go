@@ -3,6 +3,7 @@ package usecase
 import (
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -33,6 +34,7 @@ type Usecase struct {
 	consts          thorchain.ConstantValues
 	eh              *eventHandler
 	scanner         *thorchain.BlockScanner
+	constMux        sync.Mutex
 }
 
 // NewUsecase initiate a new Usecase.
@@ -359,6 +361,8 @@ func (uc *Usecase) GetStakerAssetDetails(address common.Address, asset common.As
 
 // GetNetworkInfo returns some details about nodes stats in network.
 func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
+	uc.constMux.Lock()
+	defer uc.constMux.Unlock()
 	err := uc.updateConstantsByMimir()
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to update constants from mimir")
