@@ -305,19 +305,19 @@ func (s *Client) deleteLatestBlock() error {
 }
 
 func (s *Client) deleteCoinsAtHeight(height int64) error {
-	q := `DELETE FROM coins USING events WHERE coins.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM coins USING events WHERE coins.event_id = events.id AND events.height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
 
 func (s *Client) deleteTxsAtHeight(height int64) error {
-	q := `DELETE FROM txs USING events WHERE txs.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM txs USING events WHERE txs.event_id = events.id AND events.height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
 
 func (s *Client) deleteSwapsAtHeight(height int64) error {
-	q := `DELETE FROM swaps USING events WHERE swaps.event_id = events.id AND events.height = $1`
+	q := `DELETE FROM swaps USING events WHERE swaps.event_id = events.id AND events.height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
@@ -329,7 +329,7 @@ func (s *Client) deletePoolsHistoryAtHeight(height int64) error {
 }
 
 func (s *Client) deleteEventsAtHeight(height int64) error {
-	q := `DELETE FROM events WHERE height = $1`
+	q := `DELETE FROM events WHERE height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
