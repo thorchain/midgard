@@ -2195,7 +2195,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			AssetAdded:     0,
 			RuneAdded:      0,
 			Reward:         0,
-			Units:          100,
+			Units:          0,
 		},
 	})
 }
