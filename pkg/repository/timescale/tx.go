@@ -28,6 +28,8 @@ type Tx struct {
 	tx *sqlx.Tx
 }
 
+var _ repository.Tx = Tx{}
+
 // NewEvents implements repository.Tx.NewEvents
 func (tx Tx) NewEvents(events []repository.Event) error {
 	for _, e := range events {
@@ -156,10 +158,10 @@ func (tx Tx) UpsertStaker(staker *repository.Staker) error {
 
 // Commit implements repository.Tx.Commit
 func (tx Tx) Commit() error {
-	return nil
+	return tx.tx.Commit()
 }
 
 // RollBack implements repository.Tx.RollBack
 func (tx Tx) RollBack() error {
-	return nil
+	return tx.tx.Rollback()
 }
