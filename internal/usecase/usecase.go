@@ -32,9 +32,9 @@ type Usecase struct {
 	tendermintBatch thorchain.TendermintBatch
 	conf            *Config
 	consts          thorchain.ConstantValues
+	constsMu        sync.Mutex
 	eh              *eventHandler
 	scanner         *thorchain.BlockScanner
-	constMux        sync.Mutex
 }
 
 // NewUsecase initiate a new Usecase.
@@ -361,8 +361,8 @@ func (uc *Usecase) GetStakerAssetDetails(address common.Address, asset common.As
 
 // GetNetworkInfo returns some details about nodes stats in network.
 func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
-	uc.constMux.Lock()
-	defer uc.constMux.Unlock()
+	uc.constsMu.Lock()
+	defer uc.constsMu.Unlock()
 	err := uc.updateConstantsByMimir()
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to update constants from mimir")
