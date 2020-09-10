@@ -38,6 +38,7 @@ require (
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/gorp.v1 v1.7.2 // indirect
+	gopkg.in/nullbio/null.v4 v4.0.0-20160904091851-593ba42ffa02 // indirect
 	mvdan.cc/gofumpt v0.0.0-20200627213337-90206bd98491 // indirect
 )
 
