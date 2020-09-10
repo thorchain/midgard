@@ -22,6 +22,7 @@ CREATE TYPE pool_status AS enum('enabled', 'bootstrap', 'suspended');
 
 CREATE TABLE events (
     time            TIMESTAMP       NOT NULL,
+    height          BIGINT          NOT NULL,
     id              BIGSERIAL       NOT NULL,
     type            event_type      NOT NULL,
     event_id        BIGINT          NOT NULL,
@@ -104,7 +105,6 @@ CREATE TABLE stakers (
     PRIMARY KEY (address, pool)
 );
 
-CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
 SELECT create_hypertable('stats_history', 'time');
