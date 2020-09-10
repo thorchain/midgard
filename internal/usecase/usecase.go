@@ -375,6 +375,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 
 	activeBonds := filterNodeBonds(nodeAccounts, thorchain.Active)
 	standbyBonds := filterNodeBonds(nodeAccounts, thorchain.Standby)
+	standbyBonds = append(standbyBonds, filterNodeBonds(nodeAccounts, thorchain.Ready)...)
 	metrics := calculateBondMetrics(activeBonds, standbyBonds)
 	totalActiveBond := metrics.TotalActiveBond
 
