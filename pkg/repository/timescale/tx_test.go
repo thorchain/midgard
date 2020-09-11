@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/thorchain/midgard/internal/common"
+	"gitlab.com/thorchain/midgard/pkg/helpers"
 	"gitlab.com/thorchain/midgard/pkg/repository"
 	. "gopkg.in/check.v1"
 )
@@ -44,14 +44,14 @@ func (s *TxSuite) TestNewEvents(c *C) {
 			EventID:     1,
 			EventType:   repository.EventTypeStake,
 			EventStatus: repository.EventStatusSuccess,
-			Pool:        common.BNBAsset,
+			Pool:        asset1,
 			AssetAmount: 100,
 			RuneAmount:  200,
 			Meta:        json.RawMessage(`{"units": 1000}`),
 			FromAddress: address1,
 			ToAddress:   address2,
 			TxHash:      txHash1,
-			TxMemo:      fmt.Sprintf("STAKE:%s", common.BNBAsset),
+			TxMemo:      fmt.Sprintf("STAKE:%s", asset1),
 		},
 	}
 	err = tx.NewEvents(events)
@@ -61,12 +61,7 @@ func (s *TxSuite) TestNewEvents(c *C) {
 	c.Assert(err, IsNil)
 	obtained, err := s.store.GetEventByTxHash(ctx, txHash1)
 	c.Assert(err, IsNil)
-	c.Assert(obtained, HasLen, len(events))
-	// Ignore time fields
-	for i, e := range events {
-		obtained[i].Time = e.Time
-	}
-	c.Assert(obtained, DeepEquals, events)
+	c.Assert(obtained, helpers.DeepEquals, events)
 
 	tx, err = s.store.BeginTx(ctx)
 	c.Assert(err, IsNil)
@@ -80,12 +75,12 @@ func (s *TxSuite) TestNewEvents(c *C) {
 			EventID:     2,
 			EventType:   repository.EventTypeUnstake,
 			EventStatus: repository.EventStatusSuccess,
-			Pool:        common.BNBAsset,
+			Pool:        asset1,
 			Meta:        json.RawMessage(`{"units": -500}`),
 			FromAddress: address1,
 			ToAddress:   address2,
 			TxHash:      txHash2,
-			TxMemo:      fmt.Sprintf("WITHDRAW:%s", common.BNBAsset),
+			TxMemo:      fmt.Sprintf("WITHDRAW:%s", asset1),
 		},
 		{
 			Time:        now.Add(time.Second),
@@ -95,7 +90,7 @@ func (s *TxSuite) TestNewEvents(c *C) {
 			EventID:     2,
 			EventType:   repository.EventTypeOutbound,
 			EventStatus: repository.EventStatusSuccess,
-			Pool:        common.BNBAsset,
+			Pool:        asset1,
 			AssetAmount: -50,
 			FromAddress: address2,
 			ToAddress:   address1,
@@ -110,7 +105,7 @@ func (s *TxSuite) TestNewEvents(c *C) {
 			EventID:     2,
 			EventType:   repository.EventTypeOutbound,
 			EventStatus: repository.EventStatusSuccess,
-			Pool:        common.BNBAsset,
+			Pool:        asset1,
 			RuneAmount:  -100,
 			FromAddress: address2,
 			ToAddress:   address1,
@@ -126,19 +121,9 @@ func (s *TxSuite) TestNewEvents(c *C) {
 	// Get event by unstake tx hash
 	obtained, err = s.store.GetEventByTxHash(ctx, txHash2)
 	c.Assert(err, IsNil)
-	c.Assert(obtained, HasLen, len(events))
-	// Ignore time fields
-	for i, e := range events {
-		obtained[i].Time = e.Time
-	}
-	c.Assert(obtained, DeepEquals, events)
+	c.Assert(obtained, helpers.DeepEquals, events)
 	// Get event by outbound tx hash
 	obtained, err = s.store.GetEventByTxHash(ctx, txHash3)
 	c.Assert(err, IsNil)
-	c.Assert(obtained, HasLen, len(events))
-	// Ignore time fields
-	for i, e := range events {
-		obtained[i].Time = e.Time
-	}
-	c.Assert(obtained, DeepEquals, events)
+	c.Assert(obtained, helpers.DeepEquals, events)
 }

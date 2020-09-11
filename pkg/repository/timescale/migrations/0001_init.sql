@@ -19,7 +19,7 @@ CREATE TYPE event_type AS enum(
 CREATE TYPE event_status AS enum('unknown', 'success');
 
 CREATE TABLE events (
-    time            TIMESTAMP       NOT NULL,
+    time            TIMESTAMPTZ     NOT NULL,
     height          BIGINT          NOT NULL,
     id              BIGSERIAL       NOT NULL,
     type            event_type      NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE events (
 );
 
 CREATE TABLE pools_history (
-    time              TIMESTAMP                NOT NULL,
+    time              TIMESTAMPTZ              NOT NULL,
     height            BIGINT                   NOT NULL,
     pool              VARCHAR                  NOT NULL,
     asset_depth       BIGINT                   NOT NULL,
@@ -69,33 +69,33 @@ CREATE TABLE pools (
 );
 
 CREATE TABLE stats_history (
-    time                TIMESTAMP   NOT NULL,
-    height              BIGINT      NOT NULL,
-    total_users         BIGINT      NOT NULL,
-    total_txs           BIGINT      NOT NULL,
-    total_volume        BIGINT      NOT NULL,
-    total_staked        BIGINT      NOT NULL,
-    total_earned        BIGINT      NOT NULL,
-    rune_depth          BIGINT      NOT NULL,
-    pools_count         BIGINT      NOT NULL,
-    buys_count          BIGINT      NOT NULL,
-    sells_count         BIGINT      NOT NULL,
-    stakes_count        BIGINT      NOT NULL,
-    withdrawns_count    BIGINT      NOT NULL,
+    time                TIMESTAMPTZ     NOT NULL,
+    height              BIGINT          NOT NULL,
+    total_users         BIGINT          NOT NULL,
+    total_txs           BIGINT          NOT NULL,
+    total_volume        BIGINT          NOT NULL,
+    total_staked        BIGINT          NOT NULL,
+    total_earned        BIGINT          NOT NULL,
+    rune_depth          BIGINT          NOT NULL,
+    pools_count         BIGINT          NOT NULL,
+    buys_count          BIGINT          NOT NULL,
+    sells_count         BIGINT          NOT NULL,
+    stakes_count        BIGINT          NOT NULL,
+    withdrawns_count    BIGINT          NOT NULL,
     PRIMARY KEY (time)
 );
 
 CREATE TABLE stakers (
-    address             VARCHAR     NOT NULL,
-    pool                VARCHAR     NOT NULL,
-    units               BIGINT      NOT NULL,
-    asset_staked        BIGINT      NOT NULL,
-    asset_withdrawn     BIGINT      NOT NULL,
-    rune_staked         BIGINT      NOT NULL,
-    rune_withdrawn      BIGINT      NOT NULL,
-    first_stake_at      TIMESTAMP   NOT NULL,
-    last_stake_at       TIMESTAMP   NOT NULL,
-    last_withdrawn_at   TIMESTAMP,
+    address             VARCHAR         NOT NULL,
+    pool                VARCHAR         NOT NULL,
+    units               BIGINT          NOT NULL,
+    asset_staked        BIGINT          NOT NULL,
+    asset_withdrawn     BIGINT          NOT NULL,
+    rune_staked         BIGINT          NOT NULL,
+    rune_withdrawn      BIGINT          NOT NULL,
+    first_stake_at      TIMESTAMPTZ     NOT NULL,
+    last_stake_at       TIMESTAMPTZ     NOT NULL,
+    last_withdrawn_at   TIMESTAMPTZ,
     PRIMARY KEY (address, pool)
 );
 
