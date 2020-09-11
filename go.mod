@@ -12,6 +12,7 @@ require (
 	github.com/getkin/kin-openapi v0.2.0
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gobuffalo/packr/v2 v2.7.1 // indirect
+	github.com/google/go-cmp v0.5.2
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/huandu/go-sqlbuilder v1.7.0
 	github.com/jmoiron/sqlx v1.2.0
@@ -38,6 +39,7 @@ require (
 	google.golang.org/genproto v0.0.0-20191007204434-a023cd5227bd // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/gorp.v1 v1.7.2 // indirect
+	gopkg.in/nullbio/null.v4 v4.0.0-20160904091851-593ba42ffa02
 	mvdan.cc/gofumpt v0.0.0-20200627213337-90206bd98491 // indirect
 )
 
