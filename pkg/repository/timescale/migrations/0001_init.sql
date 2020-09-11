@@ -18,10 +18,9 @@ CREATE TYPE event_type AS enum(
 
 CREATE TYPE event_status AS enum('unknown', 'success');
 
-CREATE TYPE pool_status AS enum('enabled', 'bootstrap', 'suspended');
-
 CREATE TABLE events (
-    time            TIMESTAMP       NOT NULL,
+    time            TIMESTAMPTZ     NOT NULL,
+    height          BIGINT          NOT NULL,
     id              BIGSERIAL       NOT NULL,
     type            event_type      NOT NULL,
     event_id        BIGINT          NOT NULL,
@@ -30,20 +29,16 @@ CREATE TABLE events (
     pool            VARCHAR,
     asset_amount    BIGINT,
     rune_amount     BIGINT,
-    units           BIGINT,
-    trade_slip      REAL,
-    liquidity_fee   BIGINT,
-    price_target    BIGINT,
+    meta            JSONB,
     from_address    VARCHAR,
     to_address      VARCHAR,
     tx_hash         VARCHAR,
     tx_memo         VARCHAR,
-    pool_status     pool_status,
     PRIMARY KEY (id, time)
 );
 
 CREATE TABLE pools_history (
-    time              TIMESTAMP                NOT NULL,
+    time              TIMESTAMPTZ              NOT NULL,
     height            BIGINT                   NOT NULL,
     pool              VARCHAR                  NOT NULL,
     asset_depth       BIGINT                   NOT NULL,
@@ -74,37 +69,36 @@ CREATE TABLE pools (
 );
 
 CREATE TABLE stats_history (
-    time                TIMESTAMP   NOT NULL,
-    height              BIGINT      NOT NULL,
-    total_users         BIGINT      NOT NULL,
-    total_txs           BIGINT      NOT NULL,
-    total_volume        BIGINT      NOT NULL,
-    total_staked        BIGINT      NOT NULL,
-    total_earned        BIGINT      NOT NULL,
-    rune_depth          BIGINT      NOT NULL,
-    pools_count         BIGINT      NOT NULL,
-    buys_count          BIGINT      NOT NULL,
-    sells_count         BIGINT      NOT NULL,
-    stakes_count        BIGINT      NOT NULL,
-    withdrawns_count    BIGINT      NOT NULL,
+    time                TIMESTAMPTZ     NOT NULL,
+    height              BIGINT          NOT NULL,
+    total_users         BIGINT          NOT NULL,
+    total_txs           BIGINT          NOT NULL,
+    total_volume        BIGINT          NOT NULL,
+    total_staked        BIGINT          NOT NULL,
+    total_earned        BIGINT          NOT NULL,
+    rune_depth          BIGINT          NOT NULL,
+    pools_count         BIGINT          NOT NULL,
+    buys_count          BIGINT          NOT NULL,
+    sells_count         BIGINT          NOT NULL,
+    stakes_count        BIGINT          NOT NULL,
+    withdrawns_count    BIGINT          NOT NULL,
     PRIMARY KEY (time)
 );
 
 CREATE TABLE stakers (
-    address             VARCHAR     NOT NULL,
-    pool                VARCHAR     NOT NULL,
-    units               BIGINT      NOT NULL,
-    asset_staked        BIGINT      NOT NULL,
-    asset_withdrawn     BIGINT      NOT NULL,
-    rune_staked         BIGINT      NOT NULL,
-    rune_withdrawn      BIGINT      NOT NULL,
-    first_stake_at      TIMESTAMP   NOT NULL,
-    last_stake_at       TIMESTAMP   NOT NULL,
-    last_withdrawn_at   TIMESTAMP,
+    address             VARCHAR         NOT NULL,
+    pool                VARCHAR         NOT NULL,
+    units               BIGINT          NOT NULL,
+    asset_staked        BIGINT          NOT NULL,
+    asset_withdrawn     BIGINT          NOT NULL,
+    rune_staked         BIGINT          NOT NULL,
+    rune_withdrawn      BIGINT          NOT NULL,
+    first_stake_at      TIMESTAMPTZ     NOT NULL,
+    last_stake_at       TIMESTAMPTZ     NOT NULL,
+    last_withdrawn_at   TIMESTAMPTZ,
     PRIMARY KEY (address, pool)
 );
 
-CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
 SELECT create_hypertable('stats_history', 'time');
@@ -119,4 +113,3 @@ DROP TABLE stakers;
 
 DROP TYPE event_type;
 DROP TYPE event_status;
-DROP TYPE pool_status;
