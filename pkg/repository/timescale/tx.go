@@ -42,25 +42,21 @@ func (tx Tx) NewEvents(events []repository.Event) error {
 }
 
 type event struct {
-	Time         time.Time              `db:"time"`
-	Height       int64                  `db:"height"`
-	ID           int64                  `db:"id"`
-	Type         repository.EventType   `db:"type"`
-	EventID      int64                  `db:"event_type"`
-	EventType    repository.EventType   `db:"event_type"`
-	EventStatus  repository.EventStatus `db:"event_status"`
-	Pool         common.Asset           `db:"pool"`
-	AssetAmount  null.Int64             `db:"asset_amount"`
-	RuneAmount   null.Int64             `db:"rune_amount"`
-	Units        null.Int64             `db:"units"`
-	TradeSlip    null.Float64           `db:"trade_slip"`
-	LiquidityFee null.Int64             `db:"liquidity_fee"`
-	PriceTarget  null.Int64             `db:"price_target"`
-	FromAddress  null.String            `db:"from_address"`
-	ToAddress    null.String            `db:"to_address"`
-	TxHash       null.String            `db:"tx_hash"`
-	TxMemo       null.String            `db:"tx_memo"`
-	PoolStatus   repository.PoolStatus  `db:"pool_status"`
+	Time        time.Time              `db:"time"`
+	Height      int64                  `db:"height"`
+	ID          int64                  `db:"id"`
+	Type        repository.EventType   `db:"type"`
+	EventID     int64                  `db:"event_id"`
+	EventType   repository.EventType   `db:"event_type"`
+	EventStatus repository.EventStatus `db:"event_status"`
+	Pool        common.Asset           `db:"pool"`
+	AssetAmount null.Int64             `db:"asset_amount"`
+	RuneAmount  null.Int64             `db:"rune_amount"`
+	Meta        null.String            `db:"meta"`
+	FromAddress null.String            `db:"from_address"`
+	ToAddress   null.String            `db:"to_address"`
+	TxHash      null.String            `db:"tx_hash"`
+	TxMemo      null.String            `db:"tx_memo"`
 }
 
 func (tx Tx) insertEvent(e *repository.Event) error {
@@ -75,15 +71,11 @@ func (tx Tx) insertEvent(e *repository.Event) error {
 			pool,
 			asset_amount,
 			rune_amount,
-			units,
-			trade_slip,
-			liquidity_fee,
-			price_target,
+			meta,
 			from_address,
 			to_address,
 			tx_hash,
-			tx_memo,
-			pool_status
+			tx_memo
 		) VALUES
 		(
 			:time,
@@ -95,37 +87,29 @@ func (tx Tx) insertEvent(e *repository.Event) error {
 			:pool,
 			:asset_amount,
 			:rune_amount,
-			:units,
-			:trade_slip,
-			:liquidity_fee,
-			:price_target,
+			:meta,
 			:from_address,
 			:to_address,
 			:tx_hash,
-			:tx_memo,
-			:pool_status
+			:tx_memo
 		)`
 
 	ev := event{
-		Time:         e.Time,
-		Height:       e.Height,
-		ID:           e.ID,
-		Type:         e.Type,
-		EventID:      e.EventID,
-		EventType:    e.EventType,
-		EventStatus:  e.EventStatus,
-		Pool:         e.Pool,
-		AssetAmount:  null.NewInt64(e.AssetAmount, e.AssetAmount != 0),
-		RuneAmount:   null.NewInt64(e.RuneAmount, e.RuneAmount != 0),
-		Units:        null.NewInt64(e.Units, e.Units != 0),
-		TradeSlip:    null.Float64FromPtr(e.TradeSlip),
-		LiquidityFee: null.Int64FromPtr(e.LiquidityFee),
-		PriceTarget:  null.Int64FromPtr(e.PriceTarget),
-		FromAddress:  null.NewString(e.FromAddress, e.FromAddress != ""),
-		ToAddress:    null.NewString(e.ToAddress, e.ToAddress != ""),
-		TxHash:       null.NewString(e.TxHash, e.TxHash != ""),
-		TxMemo:       null.NewString(e.TxMemo, e.TxMemo != ""),
-		PoolStatus:   e.PoolStatus,
+		Time:        e.Time,
+		Height:      e.Height,
+		ID:          e.ID,
+		Type:        e.Type,
+		EventID:     e.EventID,
+		EventType:   e.EventType,
+		EventStatus: e.EventStatus,
+		Pool:        e.Pool,
+		AssetAmount: null.NewInt64(e.AssetAmount, e.AssetAmount != 0),
+		RuneAmount:  null.NewInt64(e.RuneAmount, e.RuneAmount != 0),
+		FromAddress: null.NewString(e.FromAddress, e.FromAddress != ""),
+		Meta:        null.NewString(string(e.Meta), len(e.Meta) > 0),
+		ToAddress:   null.NewString(e.ToAddress, e.ToAddress != ""),
+		TxHash:      null.NewString(e.TxHash, e.TxHash != ""),
+		TxMemo:      null.NewString(e.TxMemo, e.TxMemo != ""),
 	}
 	_, err := tx.tx.NamedExec(q, ev)
 	return err

@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/pkg/repository"
@@ -20,7 +21,7 @@ func (c *Client) GetEventByTxHash(ctx context.Context, hash string) ([]repositor
 		)
 		ORDER BY id`
 
-	result := []repository.Event{}
+	events := []repository.Event{}
 	rows, err := c.db.QueryxContext(ctx, q, hash)
 	if err != nil {
 		return nil, errors.Wrap(err, "query failed")
@@ -33,27 +34,26 @@ func (c *Client) GetEventByTxHash(ctx context.Context, hash string) ([]repositor
 			return nil, errors.Wrapf(err, "could not scan the result to struct of type %T", e)
 		}
 
-		result = append(result, repository.Event{
-			Time:         e.Time,
-			Height:       e.Height,
-			ID:           e.ID,
-			Type:         e.Type,
-			EventID:      e.EventID,
-			EventType:    e.EventType,
-			EventStatus:  e.EventStatus,
-			Pool:         e.Pool,
-			AssetAmount:  e.AssetAmount.Int64,
-			RuneAmount:   e.RuneAmount.Int64,
-			Units:        e.Units.Int64,
-			TradeSlip:    e.TradeSlip.Ptr(),
-			LiquidityFee: e.LiquidityFee.Ptr(),
-			PriceTarget:  e.PriceTarget.Ptr(),
-			FromAddress:  e.FromAddress.String,
-			ToAddress:    e.ToAddress.String,
-			TxHash:       e.TxHash.String,
-			TxMemo:       e.TxMemo.String,
-			PoolStatus:   e.PoolStatus,
-		})
+		event := repository.Event{
+			Time:        e.Time,
+			Height:      e.Height,
+			ID:          e.ID,
+			Type:        e.Type,
+			EventID:     e.EventID,
+			EventType:   e.EventType,
+			EventStatus: e.EventStatus,
+			Pool:        e.Pool,
+			AssetAmount: e.AssetAmount.Int64,
+			RuneAmount:  e.RuneAmount.Int64,
+			FromAddress: e.FromAddress.String,
+			ToAddress:   e.ToAddress.String,
+			TxHash:      e.TxHash.String,
+			TxMemo:      e.TxMemo.String,
+		}
+		if e.Meta.Valid {
+			event.Meta = json.RawMessage(e.Meta.String)
+		}
+		events = append(events, event)
 	}
-	return result, nil
+	return events, nil
 }

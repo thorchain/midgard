@@ -18,8 +18,6 @@ CREATE TYPE event_type AS enum(
 
 CREATE TYPE event_status AS enum('unknown', 'success');
 
-CREATE TYPE pool_status AS enum('enabled', 'bootstrap', 'suspended');
-
 CREATE TABLE events (
     time            TIMESTAMP       NOT NULL,
     height          BIGINT          NOT NULL,
@@ -31,15 +29,11 @@ CREATE TABLE events (
     pool            VARCHAR,
     asset_amount    BIGINT,
     rune_amount     BIGINT,
-    units           BIGINT,
-    trade_slip      REAL,
-    liquidity_fee   BIGINT,
-    price_target    BIGINT,
+    meta            JSONB,
     from_address    VARCHAR,
     to_address      VARCHAR,
     tx_hash         VARCHAR,
     tx_memo         VARCHAR,
-    pool_status     pool_status,
     PRIMARY KEY (id, time)
 );
 
@@ -119,4 +113,3 @@ DROP TABLE stakers;
 
 DROP TYPE event_type;
 DROP TYPE event_status;
-DROP TYPE pool_status;
