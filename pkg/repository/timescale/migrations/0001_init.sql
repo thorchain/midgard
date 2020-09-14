@@ -81,7 +81,7 @@ CREATE TABLE stats_history (
     buys_count          BIGINT          NOT NULL,
     sells_count         BIGINT          NOT NULL,
     stakes_count        BIGINT          NOT NULL,
-    withdrawns_count    BIGINT          NOT NULL,
+    withdraws_count    BIGINT          NOT NULL,
     PRIMARY KEY (time)
 );
 
@@ -93,8 +93,8 @@ CREATE TABLE stakers (
     asset_withdrawn     BIGINT          NOT NULL,
     rune_staked         BIGINT          NOT NULL,
     rune_withdrawn      BIGINT          NOT NULL,
-    first_stake_at      TIMESTAMPTZ     NOT NULL,
-    last_stake_at       TIMESTAMPTZ     NOT NULL,
+    first_stake_at      TIMESTAMPTZ,
+    last_stake_at       TIMESTAMPTZ,
     last_withdrawn_at   TIMESTAMPTZ,
     PRIMARY KEY (address, pool)
 );

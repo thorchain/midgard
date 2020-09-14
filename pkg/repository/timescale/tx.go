@@ -20,12 +20,13 @@ func (c *Client) BeginTx(ctx context.Context) (repository.Tx, error) {
 		return nil, errors.Wrap(err, "could not begin a new tx")
 	}
 
-	return Tx{tx: tx}, nil
+	return Tx{base: c, tx: tx}, nil
 }
 
 // Tx implements repository.Tx
 type Tx struct {
-	tx *sqlx.Tx
+	base *Client
+	tx   *sqlx.Tx
 }
 
 var _ repository.Tx = Tx{}
@@ -117,27 +118,128 @@ func (tx Tx) insertEvent(e *repository.Event) error {
 
 // SetEventStatus implements repository.Tx.SetEventStatus
 func (tx Tx) SetEventStatus(id int64, status repository.EventStatus) error {
-	return nil
+	q := `UPDATE "events" SET event_status = $1 WHERE event_id = $2`
+	_, err := tx.tx.Exec(q, status, id)
+	return err
 }
 
-// NewPool implements repository.Tx.NewPool
-func (tx Tx) NewPool(asset common.Asset) error {
-	return nil
-}
+// UpsertPool implements repository.Tx.UpsertPool
+func (tx Tx) UpsertPool(pool *models.PoolBasics) error {
+	_, err := tx.ensurePoolIsRegistered(pool.Asset)
+	if err != nil {
+		return errors.Wrap(err, "could not check whether pool is registered")
+	}
 
-// UpdatePool implements repository.Tx.UpdatePool
-func (tx Tx) UpdatePool(pool *models.PoolBasics) error {
-	return nil
+	q := `INSERT INTO "pools_history"
+		VALUES
+		(
+			:time,
+			:height,
+			:pool,
+			:asset_depth,
+			:asset_staked,
+			:asset_withdrawn,
+			:rune_depth,
+			:rune_staked,
+			:rune_withdrawn,
+			:units,
+			:status,
+			:buy_volume,
+			:buy_slip_total,
+			:buy_fee_total,
+			:buy_count,
+			:sell_volume,
+			:sell_slip_total,
+			:sell_fee_total,
+			:sell_count,
+			:stakers_count,
+			:swappers_count,
+			:stake_count,
+			:withdraw_count
+		)`
+
+	_, err = tx.tx.NamedExec(q, pool)
+	return err
 }
 
 // UpdateStats implements repository.Tx.UpdateStats
-func (tx Tx) UpdateStats(stats *models.StatsData) error {
-	return nil
+func (tx Tx) UpdateStats(stats *repository.Stats) error {
+	q := `INSERT INTO "stats_history"
+		VALUES
+		(
+			:time,
+			:height,
+			:total_users,
+			:total_txs,
+			:total_volume,
+			:total_staked,
+			:total_earned,
+			:rune_depth,
+			:pools_count,
+			:buys_count,
+			:sells_count,
+			:stakes_count,
+			:withdraws_count
+		)`
+
+	_, err := tx.tx.NamedExec(q, stats)
+	return err
+}
+
+type staker struct {
+	Address         common.Address `db:"address"`
+	Pool            common.Asset   `db:"pool"`
+	Units           int64          `db:"units"`
+	AssetStaked     int64          `db:"asset_staked"`
+	AssetWithdrawn  int64          `db:"asset_withdrawn"`
+	RuneStaked      int64          `db:"rune_staked"`
+	RuneWithdrawn   int64          `db:"rune_withdrawn"`
+	FirstStakeAt    null.Time      `db:"first_stake_at"`
+	LastStakeAt     null.Time      `db:"last_stake_at"`
+	LastWithdrawnAt null.Time      `db:"last_withdrawn_at"`
 }
 
 // UpsertStaker implements repository.Tx.UpsertStaker
-func (tx Tx) UpsertStaker(staker *repository.Staker) error {
-	return nil
+func (tx Tx) UpsertStaker(s *repository.Staker) error {
+	q := `INSERT INTO "stakers"
+		VALUES
+		(
+			:address,
+			:pool,
+			:units,
+			:asset_staked,
+			:asset_withdrawn,
+			:rune_staked,
+			:rune_withdrawn,
+			:first_stake_at,
+			:first_stake_at,
+			:last_withdrawn_at
+		)
+		ON CONFLICT (address, pool)
+		DO UPDATE
+		SET
+		units = "stakers"."units" + "excluded"."units",
+		asset_staked = "stakers"."asset_staked" + "excluded"."asset_staked",
+		asset_withdrawn = "stakers"."asset_withdrawn" + "excluded"."asset_withdrawn",
+		rune_staked = "stakers"."rune_staked" + "excluded"."rune_staked",
+		rune_withdrawn = "stakers"."rune_withdrawn" + "excluded"."rune_withdrawn",
+		last_stake_at = COALESCE("excluded"."last_stake_at", "stakers"."last_stake_at"),
+		last_withdrawn_at = COALESCE("excluded"."last_withdrawn_at", "stakers"."last_withdrawn_at")`
+
+	sk := staker{
+		Address:         s.Address,
+		Pool:            s.Pool,
+		Units:           s.Units,
+		AssetStaked:     s.AssetStaked,
+		AssetWithdrawn:  s.AssetWithdrawn,
+		RuneStaked:      s.RuneStaked,
+		RuneWithdrawn:   s.RuneWithdrawn,
+		FirstStakeAt:    null.TimeFromPtr(s.FirstStakeAt),
+		LastStakeAt:     null.TimeFromPtr(s.LastStakeAt),
+		LastWithdrawnAt: null.TimeFromPtr(s.LastWithdrawnAt),
+	}
+	_, err := tx.tx.NamedExec(q, sk)
+	return err
 }
 
 // Commit implements repository.Tx.Commit
@@ -148,4 +250,22 @@ func (tx Tx) Commit() error {
 // RollBack implements repository.Tx.RollBack
 func (tx Tx) RollBack() error {
 	return tx.tx.Rollback()
+}
+
+func (tx *Tx) ensurePoolIsRegistered(asset common.Asset) (bool, error) {
+	tx.base.mu.Lock()
+	defer tx.base.mu.Unlock()
+
+	if _, ok := tx.base.pools[asset]; ok {
+		return true, nil
+	}
+
+	q := `INSERT INTO "pools" VALUES ($1) ON CONFLICT DO NOTHING`
+	_, err := tx.tx.Exec(q, asset)
+	if err != nil {
+		return false, err
+	}
+
+	tx.base.pools[asset] = struct{}{}
+	return false, nil
 }

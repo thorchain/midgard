@@ -2,12 +2,16 @@ package timescale
 
 import (
 	"fmt"
+	"sync"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/jmoiron/sqlx"
+
 	// importing pq lib
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 )
 
@@ -15,6 +19,9 @@ import (
 type Client struct {
 	db              *sqlx.DB
 	migrationSource migrate.MigrationSource
+	falvor          sqlbuilder.Flavor
+	mu              sync.Mutex
+	pools           map[common.Asset]struct{}
 }
 
 // NewClient returns a new instance of Client with the given config.
@@ -36,6 +43,8 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		migrationSource: &migrate.FileMigrationSource{
 			Dir: cfg.MigrationsDir,
 		},
+		falvor: sqlbuilder.PostgreSQL,
+		pools:  map[common.Asset]struct{}{},
 	}
 	// Apply new migrations
 	err = c.upgradeDatabase()
