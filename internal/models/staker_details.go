@@ -11,7 +11,11 @@ type StakerAddressDetails struct {
 
 type StakerAddressAndAssetDetails struct {
 	Asset            common.Asset
-	StakeUnits       uint64
+	Units            uint64
+	AssetStaked      uint64
+	RuneStaked       uint64
+	AssetWithdrawn   uint64
+	RuneWithdrawn    uint64
 	DateFirstStaked  uint64
 	HeightLastStaked uint64
 }
