@@ -15,7 +15,7 @@ func (s *TimescaleSuite) TestGetEventByTxHash(c *C) {
 	ctx := context.Background()
 
 	tx, err := s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	now := time.Now()
 	events := []repository.Event{

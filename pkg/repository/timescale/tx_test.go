@@ -16,7 +16,7 @@ func (s *TimescaleSuite) TestTxNewEvents(c *C) {
 	ctx := context.Background()
 
 	tx, err := s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	now := time.Now()
 	events := []repository.Event{
@@ -74,7 +74,7 @@ func (s *TimescaleSuite) TestTxSetEventStatus(c *C) {
 	ctx := context.Background()
 
 	tx, err := s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	now := time.Now()
 	events := []repository.Event{
@@ -138,7 +138,7 @@ func (s *TimescaleSuite) TestTxUpsertPool(c *C) {
 	ctx := context.Background()
 
 	tx, err := s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	pool := models.PoolBasics{
 		Time:           time.Now(),
@@ -177,7 +177,7 @@ func (s *TimescaleSuite) TestTxUpsertPool(c *C) {
 
 	// Second upsert
 	tx, err = s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	pool = models.PoolBasics{
 		Time:           time.Now(),
@@ -219,7 +219,7 @@ func (s *TimescaleSuite) TestTxUpsertStaker(c *C) {
 	ctx := context.Background()
 
 	tx, err := s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	now := time.Now()
 	staker := repository.Staker{
@@ -243,7 +243,7 @@ func (s *TimescaleSuite) TestTxUpsertStaker(c *C) {
 
 	// Second upsert
 	tx, err = s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	staker = repository.Staker{
 		Address:         address1,
@@ -279,7 +279,7 @@ func (s *TimescaleSuite) TestTxUpdateStats(c *C) {
 	ctx := context.Background()
 
 	tx, err := s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	stats := repository.Stats{
 		Time:           time.Now(),
@@ -307,7 +307,7 @@ func (s *TimescaleSuite) TestTxUpdateStats(c *C) {
 
 	// Second update
 	tx, err = s.store.BeginTx(ctx)
-	defer tx.RollBack()
+	defer tx.Rollback()
 	c.Assert(err, IsNil)
 	stats = repository.Stats{
 		Time:           time.Now(),
@@ -332,4 +332,36 @@ func (s *TimescaleSuite) TestTxUpdateStats(c *C) {
 	obtained, err = s.store.GetStats(ctx, nil)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, helpers.DeepEquals, &stats)
+}
+
+func (s *TimescaleSuite) TestTxRollback(c *C) {
+	ctx := context.Background()
+
+	tx, err := s.store.BeginTx(ctx)
+	c.Assert(err, IsNil)
+	now := time.Now()
+	events := []repository.Event{
+		{
+			Time:        now,
+			Height:      1,
+			ID:          1,
+			Type:        repository.EventTypeStake,
+			EventID:     1,
+			EventType:   repository.EventTypeStake,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+		},
+	}
+	err = tx.NewEvents(events)
+	c.Assert(err, IsNil)
+	// Rollback the Tx
+	err = tx.Rollback()
+	c.Assert(err, IsNil)
+	// Commit should throw an error now
+	err = tx.Commit()
+	c.Assert(err, NotNil)
+	// The event record should not exist
+	obtained, err := s.store.GetEventByTxHash(ctx, txHash1)
+	c.Assert(err, IsNil)
+	c.Assert(obtained, HasLen, 0)
 }

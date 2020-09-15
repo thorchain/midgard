@@ -247,8 +247,8 @@ func (tx Tx) Commit() error {
 	return tx.tx.Commit()
 }
 
-// RollBack implements repository.Tx.RollBack
-func (tx Tx) RollBack() error {
+// Rollback implements repository.Tx.Rollback
+func (tx Tx) Rollback() error {
 	return tx.tx.Rollback()
 }
 

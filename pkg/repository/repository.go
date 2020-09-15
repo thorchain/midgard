@@ -36,5 +36,5 @@ type Tx interface {
 	UpsertStaker(staker *Staker) error
 	UpdateStats(stats *Stats) error
 	Commit() error
-	RollBack() error
+	Rollback() error
 }
