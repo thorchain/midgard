@@ -950,16 +950,11 @@ func (s *UsecaseSuite) TestGetStakerDetails(c *C) {
 type TestGetStakerAssetDetailsStore struct {
 	StoreDummy
 	asset           common.Asset
-	stakeUnits      uint64
-	runeStaked      int64
-	assetStaked     int64
-	poolStaked      int64
-	runeEarned      int64
-	assetEarned     int64
-	poolEarned      int64
-	runeROI         float64
-	assetROI        float64
-	poolROI         float64
+	units           uint64
+	assetStaked     uint64
+	runeStaked      uint64
+	assetWithdrawn  uint64
+	runeWithdrawn   uint64
 	dateFirstStaked uint64
 	err             error
 }
@@ -967,7 +962,11 @@ type TestGetStakerAssetDetailsStore struct {
 func (s *TestGetStakerAssetDetailsStore) GetStakersAddressAndAssetDetails(_ common.Address, _ common.Asset) (models.StakerAddressAndAssetDetails, error) {
 	details := models.StakerAddressAndAssetDetails{
 		Asset:           s.asset,
-		StakeUnits:      s.stakeUnits,
+		Units:           s.units,
+		AssetStaked:     s.assetStaked,
+		RuneStaked:      s.runeStaked,
+		AssetWithdrawn:  s.assetWithdrawn,
+		RuneWithdrawn:   s.runeWithdrawn,
 		DateFirstStaked: s.dateFirstStaked,
 	}
 	return details, s.err
@@ -980,16 +979,11 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 			Symbol: "TOML-4BC",
 			Ticker: "TOML",
 		},
-		stakeUnits:      100,
-		runeStaked:      10000,
+		units:           100,
 		assetStaked:     20000,
-		poolStaked:      15000,
-		runeEarned:      200,
-		assetEarned:     100,
-		poolEarned:      250,
-		runeROI:         1.005,
-		assetROI:        1.02,
-		poolROI:         0.0166666666666667,
+		assetWithdrawn:  10000,
+		runeStaked:      10000,
+		runeWithdrawn:   5000,
 		dateFirstStaked: uint64(time.Now().Unix()),
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
@@ -1001,7 +995,11 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.StakerAddressAndAssetDetails{
 		Asset:           store.asset,
-		StakeUnits:      store.stakeUnits,
+		Units:           store.units,
+		AssetStaked:     store.assetStaked,
+		RuneStaked:      store.runeStaked,
+		AssetWithdrawn:  store.assetWithdrawn,
+		RuneWithdrawn:   store.runeWithdrawn,
 		DateFirstStaked: store.dateFirstStaked,
 	})
 

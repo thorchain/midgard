@@ -100,7 +100,12 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		return models.StakerAddressAndAssetDetails{}, store.ErrPoolNotFound
 	}
 
-	stakeUnits, err := s.stakeUnits(address, asset)
+	units, err := s.stakeUnits(address, asset)
+	if err != nil {
+		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
+	}
+
+	stakeWithdrawn, err := s.stakeWithdrawn(address, asset)
 	if err != nil {
 		return models.StakerAddressAndAssetDetails{}, errors.Wrap(err, "getStakersAddressAndAssetDetails failed")
 	}
@@ -117,7 +122,11 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 
 	details := models.StakerAddressAndAssetDetails{
 		Asset:            asset,
-		StakeUnits:       stakeUnits,
+		Units:            units,
+		AssetStaked:      uint64(stakeWithdrawn.AssetStaked.Int64),
+		AssetWithdrawn:   uint64(stakeWithdrawn.AssetWithdrawn.Int64),
+		RuneStaked:       uint64(stakeWithdrawn.RuneStaked.Int64),
+		RuneWithdrawn:    uint64(stakeWithdrawn.RuneWithdrawn.Int64),
 		DateFirstStaked:  dateFirstStaked,
 		HeightLastStaked: heightLastStaked,
 	}
@@ -145,6 +154,36 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 	}
 
 	return uint64(stakeUnits.Int64), nil
+}
+
+type stakerStakeWithdrawn struct {
+	AssetStaked    sql.NullInt64 `db:"asset_staked"`
+	AssetWithdrawn sql.NullInt64 `db:"asset_withdrawn"`
+	RuneStaked     sql.NullInt64 `db:"rune_staked"`
+	RuneWithdrawn  sql.NullInt64 `db:"rune_withdrawn"`
+}
+
+func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*stakerStakeWithdrawn, error) {
+	query := `
+		SELECT
+		SUM(asset_amount) FILTER (WHERE asset_amount > 0) as asset_staked,
+		SUM(-asset_amount) FILTER (WHERE asset_amount < 0) as asset_withdrawn,
+		SUM(rune_amount) FILTER (WHERE rune_amount > 0) as rune_staked,
+		SUM(-rune_amount) FILTER (WHERE rune_amount < 0) as rune_withdrawn
+		FROM pools_history
+		JOIN events ON pools_history.event_id = events.id
+		JOIN txs ON pools_history.event_id = txs.event_id
+		WHERE pool = $1
+		AND events.type in ('stake', 'unstake')
+		AND txs.from_address = $2`
+
+	var result stakerStakeWithdrawn
+	err := s.db.QueryRowx(query, asset.String(), address).StructScan(&result)
+	if err != nil {
+		return nil, errors.Wrap(err, "stakeWithdrawn failed")
+	}
+
+	return &result, nil
 }
 
 // runeStakedForAddress - sum of rune staked by a specific address and pool
