@@ -13,8 +13,8 @@ type Stats struct {
 	TotalEarned    int64     `db:"total_earned"`
 	RuneDepth      int64     `db:"rune_depth"`
 	PoolsCount     int64     `db:"pools_count"`
-	BuysCount      int64     `db:"buys_count"`
-	SellsCount     int64     `db:"sells_count"`
-	StakesCount    int64     `db:"stakes_count"`
-	WithdrawsCount int64     `db:"withdraws_count"`
+	BuysCount      int64     `db:"buy_count"`
+	SellsCount     int64     `db:"sell_count"`
+	StakesCount    int64     `db:"stake_count"`
+	WithdrawsCount int64     `db:"withdraw_count"`
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // GetStakers implements repository.Tx.GetStakers
-func (c *Client) GetStakers(ctx context.Context, address common.Address, asset common.Asset) ([]repository.Staker, error) {
+func (c *Client) GetStakers(ctx context.Context, address common.Address, asset common.Asset, onlyActives bool) ([]repository.Staker, error) {
 	b := c.falvor.NewSelectBuilder()
 	b.Select("*")
 	b.From("stakers")
@@ -19,7 +19,9 @@ func (c *Client) GetStakers(ctx context.Context, address common.Address, asset c
 	if !asset.IsEmpty() {
 		b.Where(b.Equal("pool", asset.String()))
 	}
-
+	if onlyActives {
+		b.Where(b.GreaterThan("units", 0))
+	}
 	q, args := b.Build()
 
 	stakers := []repository.Staker{}

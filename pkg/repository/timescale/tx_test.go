@@ -236,7 +236,7 @@ func (s *TimescaleSuite) TestTxUpsertStaker(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	obtained, err := s.store.GetStakers(ctx, address1, asset1)
+	obtained, err := s.store.GetStakers(ctx, address1, asset1, true)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 1)
 	c.Assert(obtained[0], helpers.DeepEquals, staker)
@@ -258,7 +258,7 @@ func (s *TimescaleSuite) TestTxUpsertStaker(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	obtained, err = s.store.GetStakers(ctx, address1, asset1)
+	obtained, err = s.store.GetStakers(ctx, address1, asset1, true)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 1)
 	c.Assert(obtained[0], helpers.DeepEquals, repository.Staker{

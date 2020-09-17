@@ -78,10 +78,10 @@ CREATE TABLE stats_history (
     total_earned        BIGINT          NOT NULL,
     rune_depth          BIGINT          NOT NULL,
     pools_count         BIGINT          NOT NULL,
-    buys_count          BIGINT          NOT NULL,
-    sells_count         BIGINT          NOT NULL,
-    stakes_count        BIGINT          NOT NULL,
-    withdraws_count    BIGINT          NOT NULL,
+    buy_count           BIGINT          NOT NULL,
+    sell_count          BIGINT          NOT NULL,
+    stake_count         BIGINT          NOT NULL,
+    withdraw_count      BIGINT          NOT NULL,
     PRIMARY KEY (time)
 );
 

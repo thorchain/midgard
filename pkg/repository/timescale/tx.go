@@ -176,10 +176,10 @@ func (tx Tx) UpdateStats(stats *repository.Stats) error {
 			:total_earned,
 			:rune_depth,
 			:pools_count,
-			:buys_count,
-			:sells_count,
-			:stakes_count,
-			:withdraws_count
+			:buy_count,
+			:sell_count,
+			:stake_count,
+			:withdraw_count
 		)`
 
 	_, err := tx.tx.NamedExec(q, stats)

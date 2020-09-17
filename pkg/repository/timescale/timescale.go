@@ -13,6 +13,7 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/pkg/repository"
 )
 
 // Client implements methods required in Repository on top of timescaledb.
@@ -23,6 +24,8 @@ type Client struct {
 	mu              sync.Mutex
 	pools           map[common.Asset]struct{}
 }
+
+var _ repository.Repository = (*Client)(nil)
 
 // NewClient returns a new instance of Client with the given config.
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
