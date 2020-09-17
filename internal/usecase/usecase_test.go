@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -1245,6 +1246,79 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	client.err = errors.New("could not fetch requested data")
 	_, err = uc.GetNetworkInfo()
 	c.Assert(err, NotNil)
+}
+
+func (t *TestGetNetworkInfoThorchain) GetMimir() (map[string]string, error) {
+	return map[string]string{
+		"mimir//NEWPOOLCYCLE": "50000",
+	}, nil
+}
+
+func (s *UsecaseSuite) TestParallelGetNetworkInfo(c *C) {
+	client := &TestGetNetworkInfoThorchain{
+		nodes: []thorchain.NodeAccount{
+			{
+				Status: thorchain.Active,
+				Bond:   1000,
+			},
+			{
+				Status: thorchain.Active,
+				Bond:   1200,
+			},
+			{
+				Status: thorchain.Active,
+				Bond:   2000,
+			},
+			{
+				Status: thorchain.Standby,
+				Bond:   110,
+			},
+			{
+				Status: thorchain.Standby,
+				Bond:   175,
+			},
+		},
+		vaultData: thorchain.VaultData{
+			TotalReserve: 1120,
+		},
+		vaults: []thorchain.Vault{
+			{
+				Status:      thorchain.ActiveVault,
+				BlockHeight: 1,
+			},
+			{
+				Status:      thorchain.InactiveVault,
+				BlockHeight: 21,
+			},
+			{
+				Status:      thorchain.ActiveVault,
+				BlockHeight: 11,
+			},
+		},
+		lastHeight: thorchain.LastHeights{
+			Thorchain: 25,
+		},
+		consts: thorchain.ConstantValues{
+			Int64Values: map[string]int64{
+				"NewPoolCycle": int64(51840),
+			},
+		},
+	}
+	store := &TestGetNetworkInfoStore{
+		totalDepth: 1500,
+	}
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+	var wg sync.WaitGroup
+	for i := 0; i < 10000; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := uc.GetNetworkInfo()
+			c.Assert(err, IsNil)
+		}()
+	}
+	wg.Wait()
 }
 
 func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {
