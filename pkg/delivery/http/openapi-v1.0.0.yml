@@ -516,9 +516,21 @@ components:
       properties:
         asset:
           $ref: '#/components/schemas/asset'
-        stakeUnits:
+        units:
           type: string
           description: Represents ownership of a pool.
+        assetStaked:
+          type: string
+          description: Total of assets staked
+        assetWithdrawn:
+          type: string
+          description: Total of assets withdrawn
+        runeStaked:
+          type: string
+          description: Total of rune staked
+        runeWithdrawn:
+          type: string
+          description: Total of rune withdrawn
         dateFirstStaked:
           type: integer
           format: int64
