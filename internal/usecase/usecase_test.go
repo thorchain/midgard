@@ -655,6 +655,7 @@ type TestGetPoolDetailsStore struct {
 	assetDepth       uint64
 	assetROI         float64
 	assetStakedTotal uint64
+	assetChanges     int64
 	buyAssetCount    uint64
 	buyFeeAverage    float64
 	buyFeesTotal     uint64
@@ -670,12 +671,14 @@ type TestGetPoolDetailsStore struct {
 	poolStakedTotal  uint64
 	poolTxAverage    float64
 	poolUnits        uint64
+	poolChanges      int64
 	poolVolume       uint64
 	poolVolume24hr   uint64
 	price            float64
 	runeDepth        uint64
 	runeROI          float64
 	runeStakedTotal  uint64
+	runeChanges      int64
 	sellAssetCount   uint64
 	sellFeeAverage   float64
 	sellFeesTotal    uint64
@@ -704,6 +707,7 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 		AssetDepth:       s.assetDepth,
 		AssetROI:         s.assetROI,
 		AssetStakedTotal: s.assetStakedTotal,
+		AssetChanges:     s.assetChanges,
 		BuyAssetCount:    s.buyAssetCount,
 		BuyFeeAverage:    s.buyFeeAverage,
 		BuyFeesTotal:     s.buyFeesTotal,
@@ -719,12 +723,14 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 		PoolStakedTotal:  s.poolStakedTotal,
 		PoolTxAverage:    s.poolTxAverage,
 		PoolUnits:        s.poolUnits,
+		PoolChanges:      s.poolChanges,
 		PoolVolume:       s.poolVolume,
 		PoolVolume24hr:   s.poolVolume24hr,
 		Price:            s.price,
 		RuneDepth:        s.runeDepth,
 		RuneROI:          s.runeROI,
 		RuneStakedTotal:  s.runeStakedTotal,
+		RuneChanges:      s.runeChanges,
 		SellAssetCount:   s.sellAssetCount,
 		SellFeeAverage:   s.sellFeeAverage,
 		SellFeesTotal:    s.sellFeesTotal,
@@ -756,6 +762,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		assetDepth:       50000000010,
 		assetROI:         0.1791847095714499,
 		assetStakedTotal: 50000000010,
+		assetChanges:     100,
 		buyAssetCount:    2,
 		buyFeeAverage:    3730.5,
 		buyFeesTotal:     7461,
@@ -771,12 +778,14 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		poolStakedTotal:  4341978343,
 		poolTxAverage:    59503608,
 		poolUnits:        25025000100,
+		poolChanges:      201,
 		poolVolume:       357021653,
 		poolVolume24hr:   140331492,
 		price:            0.0010000019997999997,
 		runeDepth:        2349499997,
 		runeROI:          3.80000002,
 		runeStakedTotal:  2349500000,
+		runeChanges:      200,
 		sellAssetCount:   3,
 		sellFeeAverage:   7463556,
 		sellFeesTotal:    14927112,
@@ -802,6 +811,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		AssetDepth:       store.assetDepth,
 		AssetROI:         store.assetROI,
 		AssetStakedTotal: store.assetStakedTotal,
+		AssetChanges:     store.assetChanges,
 		BuyAssetCount:    store.buyAssetCount,
 		BuyFeeAverage:    store.buyFeeAverage,
 		BuyFeesTotal:     store.buyFeesTotal,
@@ -817,12 +827,14 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		PoolStakedTotal:  store.poolStakedTotal,
 		PoolTxAverage:    store.poolTxAverage,
 		PoolUnits:        store.poolUnits,
+		PoolChanges:      store.poolChanges,
 		PoolVolume:       store.poolVolume,
 		PoolVolume24hr:   store.poolVolume24hr,
 		Price:            store.price,
 		RuneDepth:        store.runeDepth,
 		RuneROI:          store.runeROI,
 		RuneStakedTotal:  store.runeStakedTotal,
+		RuneChanges:      store.runeChanges,
 		SellAssetCount:   store.sellAssetCount,
 		SellFeeAverage:   store.sellFeeAverage,
 		SellFeesTotal:    store.sellFeesTotal,

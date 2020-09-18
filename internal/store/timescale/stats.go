@@ -204,7 +204,7 @@ func (s *Client) TotalEarned() (int64, error) {
 		if err != nil {
 			return 0, err
 		}
-		sellFee, err := s.SellFeesTotal(pool)
+		sellFee, err := s.sellFeesTotal(pool)
 		if err != nil {
 			return 0, err
 		}

@@ -41,6 +41,7 @@ type PoolDetails struct {
 	AssetDepth       uint64
 	AssetROI         float64
 	AssetStakedTotal uint64
+	AssetChanges     int64
 	BuyAssetCount    uint64
 	BuyFeeAverage    float64
 	BuyFeesTotal     uint64
@@ -56,12 +57,14 @@ type PoolDetails struct {
 	PoolStakedTotal  uint64
 	PoolTxAverage    float64
 	PoolUnits        uint64
+	PoolChanges      int64
 	PoolVolume       uint64
 	PoolVolume24hr   uint64
 	Price            float64
 	RuneDepth        uint64
 	RuneROI          float64
 	RuneStakedTotal  uint64
+	RuneChanges      int64
 	SellAssetCount   uint64
 	SellFeeAverage   float64
 	SellFeesTotal    uint64
