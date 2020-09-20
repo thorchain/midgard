@@ -240,16 +240,16 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	if err != nil {
 		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
 	}
-	assetChanges := basics.GasUsed + int64(buyFeesTotal)
-	runeChanges := basics.GasReplenished + basics.Reward + int64(sellFeesTotal)
-	poolChanges := int64(float64(assetChanges)*priceInRune) + runeChanges
+	assetEarned := basics.GasUsed + int64(buyFeesTotal)
+	runeEarned := basics.GasReplenished + basics.Reward + int64(sellFeesTotal)
+	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 
 	return models.PoolDetails{
 		Asset:            asset,
 		AssetDepth:       assetDepth,
 		AssetROI:         assetROI,
 		AssetStakedTotal: assetStakedTotal,
-		AssetChanges:     assetChanges,
+		AssetEarned:      assetEarned,
 		BuyAssetCount:    buyAssetCount,
 		BuyFeeAverage:    buyFeeAverage,
 		BuyFeesTotal:     uint64(float64(buyFeesTotal) * priceInRune),
@@ -265,14 +265,14 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		PoolStakedTotal:  poolStakedTotal,
 		PoolTxAverage:    poolTxAverage,
 		PoolUnits:        poolUnits,
-		PoolChanges:      poolChanges,
+		PoolEarned:       poolEarned,
 		PoolVolume:       poolVolume,
 		PoolVolume24hr:   uint64(poolVolume24hr),
 		Price:            priceInRune,
 		RuneDepth:        runeDepth,
 		RuneROI:          runeROI,
 		RuneStakedTotal:  runeStakedTotal,
-		RuneChanges:      runeChanges,
+		RuneEarned:       runeEarned,
 		SellAssetCount:   sellAssetCount,
 		SellFeeAverage:   sellFeeAverage,
 		SellFeesTotal:    sellFeesTotal,

@@ -658,15 +658,15 @@ components:
         poolROI12:
           type: string
           description: Pool ROI over 12 months
-        assetChanges:
+        assetEarned:
           type: string
           description: Amount of pool asset changed by fee and gas
-        runeChanges:
+        runeEarned:
           type: string
           description: Amount of pool rune changed by fee,reward and gas
-        poolChanges:
+        poolEarned:
           type: string
-          description: (assetChanges * price) + runeChanges
+          description: (assetChanges * price) + runeEarned
 
     AssetDetail:
       type: object
