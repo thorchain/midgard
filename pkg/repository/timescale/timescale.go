@@ -1,6 +1,7 @@
 package timescale
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -20,12 +21,12 @@ import (
 type Client struct {
 	db              *sqlx.DB
 	migrationSource migrate.MigrationSource
-	falvor          sqlbuilder.Flavor
+	flavor          sqlbuilder.Flavor
 	mu              sync.Mutex
 	pools           map[common.Asset]struct{}
 }
 
-var _ repository.Repository = (*Client)(nil)
+//var _ repository.Repository = (*Client)(nil)
 
 // NewClient returns a new instance of Client with the given config.
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -46,7 +47,7 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		migrationSource: &migrate.FileMigrationSource{
 			Dir: cfg.MigrationsDir,
 		},
-		falvor: sqlbuilder.PostgreSQL,
+		flavor: sqlbuilder.PostgreSQL,
 		pools:  map[common.Asset]struct{}{},
 	}
 	// Apply new migrations
@@ -65,4 +66,44 @@ func (c *Client) upgradeDatabase() error {
 func (c *Client) downgradeDatabase() error {
 	_, err := migrate.Exec(c.db.DB, "postgres", c.migrationSource, migrate.Down)
 	return err
+}
+
+func (c *Client) queryCount(field string, distinct bool, b sqlbuilder.SelectBuilder) (int64, error) {
+	if distinct {
+		field = fmt.Sprintf(`COUNT(DISTINCT %s)`, field)
+	} else {
+		field = fmt.Sprintf(`COUNT(%s)`, field)
+	}
+	b.Select(field)
+	q, args := b.Build()
+
+	var count int64
+	err := c.db.QueryRowx(q, args...).Scan(&count)
+	return count, err
+}
+
+func applyPagination(ctx context.Context, b *sqlbuilder.SelectBuilder) {
+	page, ok := repository.ContextPagination(ctx)
+	if ok {
+		b.Offset(int(page.Offset))
+		b.Limit(int(page.Limit))
+	}
+}
+
+func applyTimeWindow(ctx context.Context, b *sqlbuilder.SelectBuilder) {
+	window, ok := repository.ContextTimeWindow(ctx)
+	if ok {
+		b.Where(b.Between("time", window.Start, window.End))
+	}
+}
+
+func applyHeight(ctx context.Context, b *sqlbuilder.SelectBuilder, le bool) {
+	height, ok := repository.ContextHeight(ctx)
+	if ok {
+		if le {
+			b.Where(b.LessEqualThan("height", height))
+		} else {
+			b.Where(b.Equal("height", height))
+		}
+	}
 }

@@ -61,7 +61,7 @@ type event struct {
 }
 
 func (tx Tx) insertEvent(e *repository.Event) error {
-	q := `INSERT INTO "events"
+	q := `INSERT INTO events
 		(
 			time,
 			height,
@@ -118,7 +118,7 @@ func (tx Tx) insertEvent(e *repository.Event) error {
 
 // SetEventStatus implements repository.Tx.SetEventStatus
 func (tx Tx) SetEventStatus(id int64, status repository.EventStatus) error {
-	q := `UPDATE "events" SET event_status = $1 WHERE event_id = $2`
+	q := `UPDATE events SET event_status = $1 WHERE event_id = $2`
 	_, err := tx.tx.Exec(q, status, id)
 	return err
 }
@@ -130,7 +130,7 @@ func (tx Tx) UpsertPool(pool *models.PoolBasics) error {
 		return errors.Wrap(err, "could not check whether pool is registered")
 	}
 
-	q := `INSERT INTO "pools_history"
+	q := `INSERT INTO pools_history
 		VALUES
 		(
 			:time,
@@ -164,7 +164,7 @@ func (tx Tx) UpsertPool(pool *models.PoolBasics) error {
 
 // UpdateStats implements repository.Tx.UpdateStats
 func (tx Tx) UpdateStats(stats *repository.Stats) error {
-	q := `INSERT INTO "stats_history"
+	q := `INSERT INTO stats_history
 		VALUES
 		(
 			:time,
@@ -201,7 +201,7 @@ type staker struct {
 
 // UpsertStaker implements repository.Tx.UpsertStaker
 func (tx Tx) UpsertStaker(s *repository.Staker) error {
-	q := `INSERT INTO "stakers"
+	q := `INSERT INTO stakers
 		VALUES
 		(
 			:address,
@@ -218,13 +218,13 @@ func (tx Tx) UpsertStaker(s *repository.Staker) error {
 		ON CONFLICT (address, pool)
 		DO UPDATE
 		SET
-		units = "stakers"."units" + "excluded"."units",
-		asset_staked = "stakers"."asset_staked" + "excluded"."asset_staked",
-		asset_withdrawn = "stakers"."asset_withdrawn" + "excluded"."asset_withdrawn",
-		rune_staked = "stakers"."rune_staked" + "excluded"."rune_staked",
-		rune_withdrawn = "stakers"."rune_withdrawn" + "excluded"."rune_withdrawn",
-		last_stake_at = COALESCE("excluded"."last_stake_at", "stakers"."last_stake_at"),
-		last_withdrawn_at = COALESCE("excluded"."last_withdrawn_at", "stakers"."last_withdrawn_at")`
+		units = stakers.units + excluded.units,
+		asset_staked = stakers.asset_staked + excluded.asset_staked,
+		asset_withdrawn = stakers.asset_withdrawn + excluded.asset_withdrawn,
+		rune_staked = stakers.rune_staked + excluded.rune_staked,
+		rune_withdrawn = stakers.rune_withdrawn + excluded.rune_withdrawn,
+		last_stake_at = COALESCE(excluded.last_stake_at, stakers.last_stake_at),
+		last_withdrawn_at = COALESCE(excluded.last_withdrawn_at, stakers.last_withdrawn_at)`
 
 	sk := staker{
 		Address:         s.Address,
@@ -260,7 +260,7 @@ func (tx *Tx) ensurePoolIsRegistered(asset common.Asset) (bool, error) {
 		return true, nil
 	}
 
-	q := `INSERT INTO "pools" VALUES ($1) ON CONFLICT DO NOTHING`
+	q := `INSERT INTO pools VALUES ($1) ON CONFLICT DO NOTHING`
 	_, err := tx.tx.Exec(q, asset)
 	if err != nil {
 		return false, err

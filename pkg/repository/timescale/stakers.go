@@ -10,7 +10,7 @@ import (
 
 // GetStakers implements repository.Tx.GetStakers
 func (c *Client) GetStakers(ctx context.Context, address common.Address, asset common.Asset, onlyActives bool) ([]repository.Staker, error) {
-	b := c.falvor.NewSelectBuilder()
+	b := c.flavor.NewSelectBuilder()
 	b.Select("*")
 	b.From("stakers")
 	if !address.IsEmpty() {

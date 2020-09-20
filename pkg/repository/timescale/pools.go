@@ -11,10 +11,10 @@ import (
 
 // GetPools implements repository.Tx.GetPools
 func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models.PoolStatus, at *time.Time) ([]models.PoolBasics, error) {
-	sb := c.falvor.NewSelectBuilder()
+	sb := c.flavor.NewSelectBuilder()
 	sb.Select("*")
 	sb.From("pools_history")
-	sb.Where(`"pool" = "pools"."asset"`)
+	sb.Where("pool = pools.asset")
 	sb.Limit(1)
 	if status != nil {
 		sb.Where(sb.Equal("status", *status))
@@ -26,8 +26,8 @@ func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models
 		sb.Desc()
 	}
 
-	b := c.falvor.NewSelectBuilder()
-	b.Select(`"basics".*`)
+	b := c.flavor.NewSelectBuilder()
+	b.Select("basics.*")
 	b.From("pools")
 	b.Join(fmt.Sprintf("LATERAL %s", b.BuilderAs(sb, "basics")), "TRUE")
 	b.OrderBy("rune_depth")

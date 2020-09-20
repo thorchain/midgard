@@ -10,7 +10,7 @@ import (
 
 // GetStats implements repository.Tx.GetStats
 func (c *Client) GetStats(ctx context.Context, at *time.Time) (*repository.Stats, error) {
-	b := c.falvor.NewSelectBuilder()
+	b := c.flavor.NewSelectBuilder()
 	b.Select("*")
 	b.From("stats_history")
 	b.Limit(1)
