@@ -707,7 +707,7 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 		AssetDepth:       s.assetDepth,
 		AssetROI:         s.assetROI,
 		AssetStakedTotal: s.assetStakedTotal,
-		AssetChanges:     s.assetChanges,
+		AssetEarned:      s.assetEarned,
 		BuyAssetCount:    s.buyAssetCount,
 		BuyFeeAverage:    s.buyFeeAverage,
 		BuyFeesTotal:     s.buyFeesTotal,
