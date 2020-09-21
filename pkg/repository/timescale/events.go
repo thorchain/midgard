@@ -66,7 +66,6 @@ func (c *Client) GetEvents(ctx context.Context, address common.Address, asset co
 	applyPagination(ctx, b)
 	q, args := b.Build()
 	q = fmt.Sprintf(`SELECT * FROM events WHERE event_id IN (%s) ORDER BY event_id DESC, id ASC`, q)
-	fmt.Println(q)
 	rows, err := c.db.QueryxContext(ctx, q, args...)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "query failed")

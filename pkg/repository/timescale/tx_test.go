@@ -170,7 +170,7 @@ func (s *TimescaleSuite) TestTxUpsertPool(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	obtained, err := s.store.GetPools(ctx, asset1.String(), nil, nil)
+	obtained, err := s.store.GetPools(ctx, asset1.String(), nil)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 1)
 	c.Assert(obtained[0], helpers.DeepEquals, pool)
@@ -209,7 +209,7 @@ func (s *TimescaleSuite) TestTxUpsertPool(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	obtained, err = s.store.GetPools(ctx, asset1.String(), nil, nil)
+	obtained, err = s.store.GetPools(ctx, asset1.String(), nil)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 1)
 	c.Assert(obtained[0], helpers.DeepEquals, pool)

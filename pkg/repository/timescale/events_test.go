@@ -176,6 +176,7 @@ func (s *TimescaleSuite) TestGetEvents(c *C) {
 	c.Assert(obtained, helpers.DeepEquals, events[1:])
 
 	// Get events with pagination
+	ctx = context.Background()
 	ctx = repository.WithPagination(ctx, models.NewPage(0, 1))
 	obtained, count, err = s.store.GetEvents(ctx, common.NoAddress, common.EmptyAsset, nil)
 	c.Assert(err, IsNil)

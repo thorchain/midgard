@@ -3,14 +3,13 @@ package timescale
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 // GetPools implements repository.Tx.GetPools
-func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models.PoolStatus, at *time.Time) ([]models.PoolBasics, error) {
+func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models.PoolStatus) ([]models.PoolBasics, error) {
 	sb := c.flavor.NewSelectBuilder()
 	sb.Select("*")
 	sb.From("pools_history")
@@ -19,9 +18,7 @@ func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models
 	if status != nil {
 		sb.Where(sb.Equal("status", *status))
 	}
-	if at != nil {
-		sb.Where(sb.LessEqualThan("time", *at))
-	} else {
+	if !(applyHeight(ctx, sb, true) || applyTime(ctx, sb)) {
 		sb.OrderBy("time")
 		sb.Desc()
 	}
@@ -33,8 +30,9 @@ func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models
 	b.OrderBy("rune_depth")
 	b.Desc()
 	if assetQuery != "" {
-		b.Like("asset", assetQuery)
+		b.Where(b.Like("asset", assetQuery))
 	}
+	applyPagination(ctx, b)
 	q, args := b.Build()
 
 	pools := []models.PoolBasics{}

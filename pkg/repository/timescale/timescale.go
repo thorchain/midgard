@@ -82,22 +82,26 @@ func (c *Client) queryCount(field string, distinct bool, b sqlbuilder.SelectBuil
 	return count, err
 }
 
-func applyPagination(ctx context.Context, b *sqlbuilder.SelectBuilder) {
+func applyPagination(ctx context.Context, b *sqlbuilder.SelectBuilder) bool {
 	page, ok := repository.ContextPagination(ctx)
 	if ok {
 		b.Offset(int(page.Offset))
 		b.Limit(int(page.Limit))
+		return true
 	}
+	return false
 }
 
-func applyTimeWindow(ctx context.Context, b *sqlbuilder.SelectBuilder) {
+func applyTimeWindow(ctx context.Context, b *sqlbuilder.SelectBuilder) bool {
 	window, ok := repository.ContextTimeWindow(ctx)
 	if ok {
 		b.Where(b.Between("time", window.Start, window.End))
+		return true
 	}
+	return false
 }
 
-func applyHeight(ctx context.Context, b *sqlbuilder.SelectBuilder, le bool) {
+func applyHeight(ctx context.Context, b *sqlbuilder.SelectBuilder, le bool) bool {
 	height, ok := repository.ContextHeight(ctx)
 	if ok {
 		if le {
@@ -105,5 +109,16 @@ func applyHeight(ctx context.Context, b *sqlbuilder.SelectBuilder, le bool) {
 		} else {
 			b.Where(b.Equal("height", height))
 		}
+		return true
 	}
+	return false
+}
+
+func applyTime(ctx context.Context, b *sqlbuilder.SelectBuilder) bool {
+	t, ok := repository.ContextTime(ctx)
+	if ok {
+		b.Where(b.LessEqualThan("time", t))
+		return true
+	}
+	return false
 }
