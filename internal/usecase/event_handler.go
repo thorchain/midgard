@@ -80,12 +80,12 @@ func newEventHandler(store store.Store, thorchain thorchain.Thorchain) (*eventHa
 }
 
 // NewBlock implements Callback.NewBlock
-func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end []thorchain.Event) {
+func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end []thorchain.Event) error {
 	eh.height = height
 	eh.blockTime = blockTime
 	eh.events = append(eh.events, begin...)
 	eh.events = append(eh.events, end...)
-	eh.processBlock()
+	return eh.processBlock()
 }
 
 // NewTx implements Callback.NewTx
@@ -93,7 +93,7 @@ func (eh *eventHandler) NewTx(height int64, events []thorchain.Event) {
 	eh.events = append(eh.events, events...)
 }
 
-func (eh *eventHandler) processBlock() {
+func (eh *eventHandler) processBlock() error {
 	// Shift outbound events to the end of list (First outbound of double swap comes before swap event)
 	var outboundEvts []thorchain.Event
 	i := 0
@@ -108,22 +108,28 @@ func (eh *eventHandler) processBlock() {
 	eh.events = eh.events[:i]
 	eh.events = append(eh.events, outboundEvts...)
 	for _, e := range eh.events {
-		eh.processEvent(e)
+		err := eh.processEvent(e)
+		if err != nil {
+			return err
+		}
 	}
 	eh.events = eh.events[:0]
+	return nil
 }
 
-func (eh *eventHandler) processEvent(event thorchain.Event) {
+func (eh *eventHandler) processEvent(event thorchain.Event) error {
 	h, ok := eh.handlers[event.Type]
 	if ok {
 		eh.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
 		err := h(event)
 		if err != nil {
 			eh.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
+			return err
 		}
 	} else {
 		eh.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
+	return nil
 }
 
 func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {

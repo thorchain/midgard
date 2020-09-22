@@ -580,13 +580,14 @@ type testTx struct {
 	events []Event
 }
 
-func (c *TestCallback) NewBlock(height int64, blockTime time.Time, begin, end []Event) {
+func (c *TestCallback) NewBlock(height int64, blockTime time.Time, begin, end []Event) error {
 	c.blocks = append(c.blocks, testBlock{
 		height:    height,
 		blockTime: blockTime,
 		begin:     begin,
 		end:       end,
 	})
+	return nil
 }
 
 func (c *TestCallback) NewTx(height int64, events []Event) {
