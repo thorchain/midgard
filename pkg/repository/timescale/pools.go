@@ -14,14 +14,14 @@ func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models
 	sb.Select("*")
 	sb.From("pools_history")
 	sb.Where("pool = pools.asset")
+	sb.OrderBy("time")
+	sb.Desc()
 	sb.Limit(1)
 	if status != nil {
 		sb.Where(sb.Equal("status", *status))
 	}
-	if !(applyHeight(ctx, sb, true) || applyTime(ctx, sb)) {
-		sb.OrderBy("time")
-		sb.Desc()
-	}
+	applyHeight(ctx, sb, true)
+	applyTime(ctx, sb)
 
 	b := c.flavor.NewSelectBuilder()
 	b.Select("basics.*")
