@@ -85,7 +85,19 @@ func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 	eh.blockTime = blockTime
 	eh.events = append(eh.events, begin...)
 	eh.events = append(eh.events, end...)
-	return eh.processBlock()
+	err := eh.processBlock()
+	if err != nil {
+		for {
+			err = eh.store.DeleteBlock(height)
+			if err == nil {
+				break
+			} else {
+				eh.logger.Err(err).Int64("height", height).Msg("Failed to delete incomplete block. Retry again in 3 second")
+				time.Sleep(3 * time.Second)
+			}
+		}
+	}
+	return err
 }
 
 // NewTx implements Callback.NewTx

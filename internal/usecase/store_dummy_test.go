@@ -194,3 +194,7 @@ func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time)
 
 func (s *StoreDummy) UpdatePoolUnits(pool common.Asset, units int64) {
 }
+
+func (s *StoreDummy) DeleteBlock(height int64) error {
+	return nil
+}
