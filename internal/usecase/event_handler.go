@@ -88,11 +88,11 @@ func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 	err := eh.processBlock()
 	if err != nil {
 		for {
-			err = eh.store.DeleteBlock(height)
-			if err == nil {
+			err1 := eh.store.DeleteBlock(height)
+			if err1 == nil {
 				break
 			} else {
-				eh.logger.Err(err).Int64("height", height).Msg("Failed to delete incomplete block. Retry again in 3 second")
+				eh.logger.Err(err1).Int64("height", height).Msg("Failed to delete incomplete block. Retry again in 3 second")
 				time.Sleep(3 * time.Second)
 			}
 		}
