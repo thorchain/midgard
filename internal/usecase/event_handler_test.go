@@ -965,10 +965,16 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 
 type BrokenTestStore struct {
 	*StoreDummy
+	height int64
 }
 
 func (s *BrokenTestStore) CreateStakeRecord(record *models.EventStake) error {
 	return errors.New("Failed to store event")
+}
+
+func (s *BrokenTestStore) DeleteBlock(height int64) error {
+	s.height = height
+	return nil
 }
 
 func (s *EventHandlerSuite) TestEventError(c *C) {
@@ -976,7 +982,7 @@ func (s *EventHandlerSuite) TestEventError(c *C) {
 	store := &BrokenTestStore{}
 	eh, err := newEventHandler(store, s.dummyThorchain)
 	c.Assert(err, IsNil)
-	eh.NewTx(1, []thorchain.Event{
+	eh.NewTx(15, []thorchain.Event{
 		{
 			Type: "stake",
 			Attributes: map[string]string{
@@ -989,7 +995,7 @@ func (s *EventHandlerSuite) TestEventError(c *C) {
 			},
 		},
 	})
-	err = eh.NewBlock(1, blockTime, nil, nil)
-
+	err = eh.NewBlock(15, blockTime, nil, nil)
 	c.Assert(err, NotNil)
+	c.Assert(eh.height, Equals, int64(15))
 }
