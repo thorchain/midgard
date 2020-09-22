@@ -177,7 +177,7 @@ func (sc *BlockScanner) executeBlock(meta *types.BlockMeta, block *coretypes.Res
 	endEvents := convertEvents(block.EndBlockEvents)
 	err := sc.callback.NewBlock(block.Height, meta.Header.Time, beginEvents, endEvents)
 	if err != nil {
-		sc.logger.Err(err).Int64("height=", meta.Header.Height).Msg("Process block failed")
+		sc.logger.Err(err).Int64("height", meta.Header.Height).Msg("Process block failed")
 		return err
 	}
 	sc.incrementHeight()
