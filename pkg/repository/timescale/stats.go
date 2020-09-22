@@ -2,24 +2,21 @@ package timescale
 
 import (
 	"context"
-	"time"
 
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/pkg/repository"
 )
 
 // GetStats implements repository.Tx.GetStats
-func (c *Client) GetStats(ctx context.Context, at *time.Time) (*repository.Stats, error) {
+func (c *Client) GetStats(ctx context.Context) (*repository.Stats, error) {
 	b := c.flavor.NewSelectBuilder()
 	b.Select("*")
 	b.From("stats_history")
+	b.OrderBy("time")
+	b.Desc()
 	b.Limit(1)
-	if at != nil {
-		b.Where(b.LessEqualThan("time", *at))
-	} else {
-		b.OrderBy("time")
-		b.Desc()
-	}
+	applyHeight(ctx, b, false)
+	applyTime(ctx, b)
 	q, args := b.Build()
 
 	var stats repository.Stats

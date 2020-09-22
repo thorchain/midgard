@@ -301,7 +301,7 @@ func (s *TimescaleSuite) TestTxUpdateStats(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	obtained, err := s.store.GetStats(ctx, nil)
+	obtained, err := s.store.GetStats(ctx)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, helpers.DeepEquals, &stats)
 
@@ -329,7 +329,7 @@ func (s *TimescaleSuite) TestTxUpdateStats(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	obtained, err = s.store.GetStats(ctx, nil)
+	obtained, err = s.store.GetStats(ctx)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, helpers.DeepEquals, &stats)
 }
