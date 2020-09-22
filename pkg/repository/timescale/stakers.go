@@ -13,6 +13,8 @@ func (c *Client) GetStakers(ctx context.Context, address common.Address, asset c
 	b := c.flavor.NewSelectBuilder()
 	b.Select("*")
 	b.From("stakers")
+	b.OrderBy("units")
+	b.Desc()
 	if !address.IsEmpty() {
 		b.Where(b.Equal("address", address.String()))
 	}
@@ -22,6 +24,7 @@ func (c *Client) GetStakers(ctx context.Context, address common.Address, asset c
 	if onlyActives {
 		b.Where(b.GreaterThan("units", 0))
 	}
+	applyPagination(ctx, b)
 	q, args := b.Build()
 
 	stakers := []repository.Staker{}
