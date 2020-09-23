@@ -55,3 +55,27 @@ func (c *Client) GetStakers(ctx context.Context, address common.Address, asset c
 	}
 	return stakers, nil
 }
+
+// GetStakersCount implements repository.Tx.GetStakersCount
+func (c *Client) GetStakersCount(ctx context.Context, address common.Address, asset common.Asset, onlyActives bool) (int64, error) {
+	b := c.flavor.NewSelectBuilder()
+	b.Select("COUNT(*)")
+	b.From("stakers")
+	if !address.IsEmpty() {
+		b.Where(b.Equal("address", address.String()))
+	}
+	if !asset.IsEmpty() {
+		b.Where(b.Equal("pool", asset.String()))
+	}
+	if onlyActives {
+		b.Where(b.GreaterThan("units", 0))
+	}
+	q, args := b.Build()
+
+	var count int64
+	err := c.db.QueryRowxContext(ctx, q, args...).Scan(&count)
+	if err != nil {
+		return 0, errors.Wrap(err, "query failed")
+	}
+	return count, nil
+}
