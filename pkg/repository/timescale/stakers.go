@@ -8,7 +8,7 @@ import (
 	"gitlab.com/thorchain/midgard/pkg/repository"
 )
 
-// GetStakers implements repository.Tx.GetStakers
+// GetStakers implements repository.GetStakers
 func (c *Client) GetStakers(ctx context.Context, address common.Address, asset common.Asset, onlyActives bool) ([]repository.Staker, error) {
 	b := c.flavor.NewSelectBuilder()
 	b.Select("*")
@@ -56,7 +56,7 @@ func (c *Client) GetStakers(ctx context.Context, address common.Address, asset c
 	return stakers, nil
 }
 
-// GetStakersCount implements repository.Tx.GetStakersCount
+// GetStakersCount implements repository.GetStakersCount
 func (c *Client) GetStakersCount(ctx context.Context, address common.Address, asset common.Asset, onlyActives bool) (int64, error) {
 	b := c.flavor.NewSelectBuilder()
 	b.Select("COUNT(*)")

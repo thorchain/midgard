@@ -68,6 +68,11 @@ func (c *Client) downgradeDatabase() error {
 	return err
 }
 
+// Ping implements repository.Ping
+func (c *Client) Ping() error {
+	return c.db.Ping()
+}
+
 func (c *Client) queryCount(field string, distinct bool, b sqlbuilder.SelectBuilder) (int64, error) {
 	if distinct {
 		field = fmt.Sprintf(`COUNT(DISTINCT %s)`, field)

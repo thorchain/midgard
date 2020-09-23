@@ -7,7 +7,7 @@ import (
 	"gitlab.com/thorchain/midgard/pkg/repository"
 )
 
-// GetStats implements repository.Tx.GetStats
+// GetStats implements repository.GetStats
 func (c *Client) GetStats(ctx context.Context) (*repository.Stats, error) {
 	b := c.flavor.NewSelectBuilder()
 	b.Select("*")

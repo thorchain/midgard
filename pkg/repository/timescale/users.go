@@ -7,7 +7,7 @@ import (
 	"gitlab.com/thorchain/midgard/pkg/repository"
 )
 
-// GetUsersCount implements repository.Tx.GetUsersCount
+// GetUsersCount implements repository.GetUsersCount
 func (c *Client) GetUsersCount(ctx context.Context, eventType repository.EventType) (int64, error) {
 	b := c.flavor.NewSelectBuilder()
 	b.Select("COUNT(DISTINCT from_address)")

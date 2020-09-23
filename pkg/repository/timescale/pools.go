@@ -8,7 +8,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-// GetPools implements repository.Tx.GetPools
+// GetPools implements repository.GetPools
 func (c *Client) GetPools(ctx context.Context, assetQuery string, status *models.PoolStatus) ([]models.PoolBasics, error) {
 	sb := c.flavor.NewSelectBuilder()
 	sb.Select("*")
