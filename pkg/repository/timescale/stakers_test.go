@@ -60,7 +60,15 @@ func (s *TimescaleSuite) TestGetStakers(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
+	// Get all stakers count
+	count, err := s.store.GetStakersCount(ctx, common.NoAddress, common.EmptyAsset, false)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(3))
+
 	// Get stakers by address
+	count, err = s.store.GetStakersCount(ctx, address1, common.EmptyAsset, false)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
 	obtained, err := s.store.GetStakers(ctx, address1, common.EmptyAsset, false)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 2)
@@ -69,6 +77,9 @@ func (s *TimescaleSuite) TestGetStakers(c *C) {
 	c.Assert(obtained[1], helpers.DeepEquals, staker2)
 
 	// Get stakers by asset
+	count, err = s.store.GetStakersCount(ctx, common.NoAddress, asset1, false)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
 	obtained, err = s.store.GetStakers(ctx, common.NoAddress, asset1, false)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 2)
@@ -76,6 +87,9 @@ func (s *TimescaleSuite) TestGetStakers(c *C) {
 	c.Assert(obtained[1], helpers.DeepEquals, staker3)
 
 	// Get active stakers
+	count, err = s.store.GetStakersCount(ctx, common.NoAddress, common.EmptyAsset, true)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
 	obtained, err = s.store.GetStakers(ctx, common.NoAddress, common.EmptyAsset, true)
 	c.Assert(err, IsNil)
 	c.Assert(obtained, HasLen, 2)
