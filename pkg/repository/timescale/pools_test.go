@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -157,4 +158,238 @@ func (s *TimescaleSuite) TestGetPools(c *C) {
 	c.Assert(obtained, HasLen, 2)
 	c.Assert(obtained[0], helpers.DeepEquals, pool1)
 	c.Assert(obtained[1], helpers.DeepEquals, pool2)
+}
+
+func (s *TimescaleSuite) TestGetPoolAggChanges(c *C) {
+	ctx := context.Background()
+	year := time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC)
+	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
+	tomorrow := today.Add(time.Hour * 24)
+
+	tx, err := s.store.BeginTx(ctx)
+	defer tx.Rollback()
+	c.Assert(err, IsNil)
+	events := []repository.Event{
+		{
+			Time:        today,
+			Height:      1,
+			ID:          1,
+			Type:        repository.EventTypeStake,
+			EventID:     1,
+			EventType:   repository.EventTypeStake,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+			AssetAmount: 100,
+			RuneAmount:  200,
+			Meta:        json.RawMessage(`{"units": 1000}`),
+		},
+		{
+			Time:        today.Add(time.Hour),
+			Height:      2,
+			ID:          2,
+			Type:        repository.EventTypeSwap,
+			EventID:     2,
+			EventType:   repository.EventTypeSwap,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+			AssetAmount: -10,
+			RuneAmount:  20,
+			Meta:        json.RawMessage(`{"liquidity_fee": 20}`),
+		},
+		{
+			Time:        tomorrow,
+			Height:      3,
+			ID:          3,
+			Type:        repository.EventTypeUnstake,
+			EventID:     3,
+			EventType:   repository.EventTypeUnstake,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+			AssetAmount: 0,
+			RuneAmount:  0,
+			Meta:        json.RawMessage(`{"units": -500}`),
+		},
+		{
+			Time:        tomorrow,
+			Height:      3,
+			ID:          4,
+			Type:        repository.EventTypeOutbound,
+			EventID:     3,
+			EventType:   repository.EventTypeUnstake,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+			AssetAmount: -45,
+			RuneAmount:  0,
+		},
+		{
+			Time:        tomorrow,
+			Height:      3,
+			ID:          5,
+			Type:        repository.EventTypeOutbound,
+			EventID:     3,
+			EventType:   repository.EventTypeUnstake,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+			AssetAmount: 0,
+			RuneAmount:  -110,
+		},
+		{
+			Time:        tomorrow.Add(time.Hour),
+			Height:      4,
+			ID:          6,
+			Type:        repository.EventTypeSwap,
+			EventID:     4,
+			EventType:   repository.EventTypeSwap,
+			EventStatus: repository.EventStatusSuccess,
+			Pool:        asset1,
+			AssetAmount: 5,
+			RuneAmount:  -12,
+			Meta:        json.RawMessage(`{"liquidity_fee": 30}`),
+		},
+	}
+	err = tx.NewEvents(events)
+	c.Assert(err, IsNil)
+	err = tx.UpsertPool(&models.PoolBasics{
+		Time:       today,
+		Height:     1,
+		Asset:      asset1,
+		AssetDepth: 100,
+		RuneDepth:  200,
+	})
+	c.Assert(err, IsNil)
+	err = tx.UpsertPool(&models.PoolBasics{
+		Time:       today.Add(time.Hour),
+		Height:     2,
+		Asset:      asset1,
+		AssetDepth: 90,
+		RuneDepth:  220,
+	})
+	c.Assert(err, IsNil)
+	err = tx.UpsertPool(&models.PoolBasics{
+		Time:       tomorrow,
+		Height:     3,
+		Asset:      asset1,
+		AssetDepth: 45,
+		RuneDepth:  110,
+	})
+	c.Assert(err, IsNil)
+	err = tx.UpsertPool(&models.PoolBasics{
+		Time:       tomorrow.Add(time.Hour),
+		Height:     4,
+		Asset:      asset1,
+		AssetDepth: 50,
+		RuneDepth:  100,
+	})
+	c.Assert(err, IsNil)
+	// Commit the Tx
+	err = tx.Commit()
+	c.Assert(err, IsNil)
+	// Test hourly aggregation
+	ctx = context.Background()
+	repository.WithTimeWindow(ctx, models.NewTimeWindow(today, tomorrow.Add(time.Hour)))
+	obtained, err := s.store.GetPoolAggChanges(ctx, asset1, models.HourlyInterval)
+	c.Assert(err, IsNil)
+	// Should be sorted by time in descending order
+	expected := []models.PoolAggChanges{
+		{
+			Time:         today,
+			AssetChanges: 100,
+			AssetDepth:   100,
+			AssetStaked:  100,
+			RuneChanges:  200,
+			RuneDepth:    200,
+			RuneStaked:   200,
+			UnitsChanges: 1000,
+			StakeCount:   1,
+		},
+		{
+			Time:         today.Add(time.Hour),
+			AssetDepth:   90,
+			AssetChanges: -10,
+			BuyCount:     1,
+			BuyVolume:    20,
+			RuneChanges:  20,
+			RuneDepth:    220,
+		},
+		{
+			Time:           tomorrow,
+			AssetChanges:   -45,
+			AssetDepth:     45,
+			AssetWithdrawn: 45,
+			RuneChanges:    -110,
+			RuneDepth:      110,
+			RuneWithdrawn:  110,
+			UnitsChanges:   -500,
+			WithdrawCount:  1,
+		},
+		{
+			Time:         tomorrow.Add(time.Hour),
+			AssetChanges: 5,
+			AssetDepth:   50,
+			RuneChanges:  -12,
+			RuneDepth:    100,
+			SellCount:    1,
+			SellVolume:   12,
+		},
+	}
+	c.Assert(obtained, helpers.DeepEquals, expected)
+
+	// Test daily aggregation
+	ctx = context.Background()
+	repository.WithTimeWindow(ctx, models.NewTimeWindow(today, tomorrow))
+	obtained, err = s.store.GetPoolAggChanges(ctx, asset1, models.DailyInterval)
+	c.Assert(err, IsNil)
+	expected = []models.PoolAggChanges{
+		{
+			Time:         today,
+			AssetChanges: 90,
+			AssetDepth:   90,
+			AssetStaked:  100,
+			BuyCount:     1,
+			BuyVolume:    20,
+			RuneChanges:  220,
+			RuneDepth:    220,
+			RuneStaked:   200,
+			UnitsChanges: 1000,
+			StakeCount:   1,
+		},
+		{
+			Time:           tomorrow,
+			AssetChanges:   -40,
+			AssetDepth:     50,
+			AssetWithdrawn: 45,
+			RuneChanges:    -122,
+			RuneDepth:      100,
+			RuneWithdrawn:  110,
+			SellCount:      1,
+			SellVolume:     12,
+			UnitsChanges:   -500,
+			WithdrawCount:  1,
+		},
+	}
+	c.Assert(obtained, helpers.DeepEquals, expected)
+
+	// Test yearly aggregation
+	ctx = context.Background()
+	obtained, err = s.store.GetPoolAggChanges(ctx, asset1, models.YearlyInterval)
+	c.Assert(err, IsNil)
+	c.Assert(obtained, HasLen, 1)
+	c.Assert(obtained[0], helpers.DeepEquals, models.PoolAggChanges{
+		Time:           year,
+		AssetChanges:   50,
+		AssetDepth:     50,
+		AssetStaked:    100,
+		AssetWithdrawn: 45,
+		BuyCount:       1,
+		BuyVolume:      20,
+		RuneChanges:    98,
+		RuneDepth:      100,
+		RuneStaked:     200,
+		RuneWithdrawn:  110,
+		SellCount:      1,
+		SellVolume:     12,
+		UnitsChanges:   500,
+		StakeCount:     1,
+		WithdrawCount:  1,
+	})
 }

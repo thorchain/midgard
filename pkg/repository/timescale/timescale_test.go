@@ -64,6 +64,10 @@ func (s *TimescaleSuite) SetUpTest(c *C) {
 }
 
 func (s *TimescaleSuite) TearDownTest(c *C) {
+	if s.store == nil {
+		return
+	}
+
 	err := s.store.downgradeDatabase()
 	c.Assert(err, IsNil)
 }

@@ -14,6 +14,7 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
+	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/pkg/repository"
 )
 
@@ -126,4 +127,41 @@ func applyTime(ctx context.Context, b *sqlbuilder.SelectBuilder) bool {
 		return true
 	}
 	return false
+}
+
+func getIntervalTableSuffix(interval models.Interval) string {
+	switch interval {
+	case models.FiveMinInterval:
+		return "_5_min"
+	case models.HourlyInterval:
+		return "_1_hour"
+	}
+	return "_1_day"
+}
+
+func getTimeBucket(inv models.Interval) string {
+	if inv > models.DailyInterval {
+		return fmt.Sprintf("DATE_TRUNC('%s', time)", getIntervalDateTrunc(inv))
+	}
+	return "time"
+}
+
+func getIntervalDateTrunc(inv models.Interval) string {
+	switch inv {
+	case models.FiveMinInterval:
+		return "5 Minute"
+	case models.HourlyInterval:
+		return "Hour"
+	case models.DailyInterval:
+		return "Day"
+	case models.WeeklyInterval:
+		return "Week"
+	case models.MonthlyInterval:
+		return "Month"
+	case models.QuarterInterval:
+		return "Quarter"
+	case models.YearlyInterval:
+		return "Year"
+	}
+	return ""
 }
