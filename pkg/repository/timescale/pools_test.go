@@ -284,9 +284,9 @@ func (s *TimescaleSuite) TestGetPoolAggChanges(c *C) {
 	// Commit the Tx
 	err = tx.Commit()
 	c.Assert(err, IsNil)
-	// Test hourly aggregation
+	// Get hourly aggregated
 	ctx = context.Background()
-	repository.WithTimeWindow(ctx, models.NewTimeWindow(today, tomorrow.Add(time.Hour)))
+	ctx = repository.WithTimeWindow(ctx, models.NewTimeWindow(today, tomorrow.Add(time.Hour)))
 	obtained, err := s.store.GetPoolAggChanges(ctx, asset1, models.HourlyInterval)
 	c.Assert(err, IsNil)
 	// Should be sorted by time in descending order
@@ -334,9 +334,9 @@ func (s *TimescaleSuite) TestGetPoolAggChanges(c *C) {
 	}
 	c.Assert(obtained, helpers.DeepEquals, expected)
 
-	// Test daily aggregation
+	// Get daily aggregated
 	ctx = context.Background()
-	repository.WithTimeWindow(ctx, models.NewTimeWindow(today, tomorrow))
+	ctx = repository.WithTimeWindow(ctx, models.NewTimeWindow(today, tomorrow))
 	obtained, err = s.store.GetPoolAggChanges(ctx, asset1, models.DailyInterval)
 	c.Assert(err, IsNil)
 	expected = []models.PoolAggChanges{
@@ -368,8 +368,15 @@ func (s *TimescaleSuite) TestGetPoolAggChanges(c *C) {
 		},
 	}
 	c.Assert(obtained, helpers.DeepEquals, expected)
+	// Get daily aggregated with pagination
+	ctx = context.Background()
+	ctx = repository.WithPagination(ctx, models.NewPage(1, 1))
+	obtained, err = s.store.GetPoolAggChanges(ctx, asset1, models.DailyInterval)
+	c.Assert(err, IsNil)
+	c.Assert(obtained, HasLen, 1)
+	c.Assert(obtained[0], helpers.DeepEquals, expected[1])
 
-	// Test yearly aggregation
+	// Get yearly aggregated
 	ctx = context.Background()
 	obtained, err = s.store.GetPoolAggChanges(ctx, asset1, models.YearlyInterval)
 	c.Assert(err, IsNil)

@@ -27,7 +27,7 @@ type Client struct {
 	pools           map[common.Asset]struct{}
 }
 
-//var _ repository.Repository = (*Client)(nil)
+var _ repository.Repository = (*Client)(nil)
 
 // NewClient returns a new instance of Client with the given config.
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {

@@ -113,6 +113,8 @@ func (c *Client) GetPoolAggChanges(ctx context.Context, pool common.Asset, inter
 	sb.Where(sb.Equal("pool", pool.String()))
 	applyPagination(ctx, sb)
 	applyTimeWindow(ctx, sb)
+	q, args := sb.Build()
+	println(q)
 
 	b := c.flavor.NewSelectBuilder()
 	b.Select(
@@ -122,7 +124,8 @@ func (c *Client) GetPoolAggChanges(ctx context.Context, pool common.Asset, inter
 	)
 	b.From(b.BuilderAs(sb, "changes"))
 	b.JoinWithOption(sqlbuilder.LeftJoin, b.As("pools_history", "last"), b.Equal("last.pool", pool.String()), "changes.end_height = last.height")
-	q, args := b.Build()
+	q, args = b.Build()
+	println(q)
 	rows, err := c.db.Queryx(q, args...)
 	if err != nil {
 		return nil, err

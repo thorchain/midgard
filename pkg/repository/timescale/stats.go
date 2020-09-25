@@ -52,7 +52,7 @@ type statsAggChanges struct {
 
 // GetStatsAggChanges implements repository.GetStatsAggChanges
 func (c *Client) GetStatsAggChanges(ctx context.Context, interval models.Interval) ([]models.StatsAggChanges, error) {
-	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb := c.flavor.NewSelectBuilder()
 	colsTemplate := "%s"
 	firstTemplate := "%s"
 	lastTemplate := "%s"
