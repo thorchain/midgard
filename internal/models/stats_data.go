@@ -27,10 +27,9 @@ type StatsAggChanges struct {
 	RuneChanges   int64
 	RuneDepth     int64
 	Earned        int64
-	TotalTxs      int64
+	TxsCount      int64
 	TotalStaked   int64
 	TotalEarned   int64
-	PoolsCount    int64
 	BuyVolume     int64
 	BuyCount      int64
 	SellVolume    int64

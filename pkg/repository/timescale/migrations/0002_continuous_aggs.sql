@@ -256,7 +256,7 @@ SELECT
     first(height, id) AS start_height,
     last(height, id) AS end_height,
     SUM(rune_amount) AS rune_changes,
-    COUNT(tx_hash) AS total_txs,
+    COUNT(tx_hash) AS txs_count,
     SUM(
         CASE
             WHEN rune_amount > 0
@@ -309,7 +309,7 @@ SELECT time_bucket('1 hour', time) AS time,
     first(height, id) AS start_height,
     last(height, id) AS end_height,
     SUM(rune_amount) AS rune_changes,
-    COUNT(tx_hash) AS total_txs,
+    COUNT(tx_hash) AS txs_count,
     SUM(
         CASE
             WHEN rune_amount > 0
@@ -361,7 +361,7 @@ SELECT time_bucket('1 day', time) AS time,
     first(height, id) AS start_height,
     last(height, id) AS end_height,
     SUM(rune_amount) AS rune_changes,
-    COUNT(tx_hash) AS total_txs,
+    COUNT(tx_hash) AS txs_count,
     SUM(
         CASE
             WHEN rune_amount > 0
