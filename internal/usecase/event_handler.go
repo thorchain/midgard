@@ -122,6 +122,7 @@ func (eh *eventHandler) processBlock() error {
 	for _, e := range eh.events {
 		err := eh.processEvent(e)
 		if err != nil {
+			eh.events = eh.events[:0]
 			return err
 		}
 	}
