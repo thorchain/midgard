@@ -15,7 +15,7 @@ type Staker struct {
 	AssetWithdrawn  int64
 	RuneStaked      int64
 	RuneWithdrawn   int64
-	FirstStakeAt    time.Time
-	LastStakeAt     time.Time
+	FirstStakeAt    *time.Time
+	LastStakeAt     *time.Time
 	LastWithdrawnAt *time.Time
 }
