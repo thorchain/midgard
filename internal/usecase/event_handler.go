@@ -87,6 +87,8 @@ func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 		if err != nil {
 			return errors.Wrapf(err, "could not delete the block %d before inserting new data", eh.height)
 		}
+		// Unset the flag after block deleted successfully.
+		eh.errorFlag = false
 	}
 
 	eh.height = height
@@ -95,6 +97,7 @@ func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 	eh.events = append(eh.events, end...)
 	err := eh.processBlock()
 	if err != nil {
+		// Set the flag so in the next time we delete this blocks data first.
 		eh.errorFlag = true
 		return errors.Wrap(err, "could not insert block's data to the database")
 	}
