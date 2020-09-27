@@ -144,7 +144,6 @@ func (eh *eventHandler) processEvent(event thorchain.Event) error {
 		eh.logger.Debug().Str("evt.Type", event.Type).Msg("New event")
 		err := h(event)
 		if err != nil {
-			eh.logger.Err(err).Str("evt.Type", event.Type).Msg("Process event failed")
 			return err
 		}
 	} else {
