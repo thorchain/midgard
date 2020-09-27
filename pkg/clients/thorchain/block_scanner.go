@@ -123,14 +123,9 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 		if block == nil {
 			return false, fmt.Errorf("could not get block %d", meta.Header.Height)
 		}
-		for {
-			err = sc.executeBlock(meta, block)
-			if err == nil {
-				break
-			} else {
-				sc.logger.Err(err).Msg("Execute block failed. Wait for 3 second")
-				time.Sleep(3 * time.Second)
-			}
+		err = sc.executeBlock(meta, block)
+		if err != nil {
+			return false, errors.Wrap(err, "could not execute block")
 		}
 	}
 
@@ -177,7 +172,6 @@ func (sc *BlockScanner) executeBlock(meta *types.BlockMeta, block *coretypes.Res
 	endEvents := convertEvents(block.EndBlockEvents)
 	err := sc.callback.NewBlock(block.Height, meta.Header.Time, beginEvents, endEvents)
 	if err != nil {
-		sc.logger.Err(err).Int64("height", meta.Header.Height).Msg("Process block failed")
 		return err
 	}
 	sc.incrementHeight()
