@@ -47,6 +47,7 @@ type eventHandler struct {
 	height       int64
 	blockTime    time.Time
 	events       []thorchain.Event
+	errorFlag    bool
 	logger       zerolog.Logger
 }
 
@@ -81,23 +82,19 @@ func newEventHandler(store store.Store, thorchain thorchain.Thorchain) (*eventHa
 
 // NewBlock implements Callback.NewBlock
 func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end []thorchain.Event) error {
+	if eh.errorFlag {
+		err := eh.store.DeleteBlock(eh.height)
+		if err != nil {
+			return errors.Wrapf(err, "could not delete the block %d before inserting new data", eh.height)
+		}
+	}
+
 	eh.height = height
 	eh.blockTime = blockTime
 	eh.events = append(eh.events, begin...)
 	eh.events = append(eh.events, end...)
 	err := eh.processBlock()
-	if err != nil {
-		for {
-			err1 := eh.store.DeleteBlock(height)
-			if err1 == nil {
-				break
-			} else {
-				eh.logger.Err(err1).Int64("height", height).Msg("Failed to delete incomplete block. Retry again in 3 second")
-				time.Sleep(3 * time.Second)
-			}
-		}
-	}
-	return err
+	return errors.Wrap(err, "could not insert block's data to the database")
 }
 
 // NewTx implements Callback.NewTx
