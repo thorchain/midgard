@@ -94,7 +94,11 @@ func (eh *eventHandler) NewBlock(height int64, blockTime time.Time, begin, end [
 	eh.events = append(eh.events, begin...)
 	eh.events = append(eh.events, end...)
 	err := eh.processBlock()
-	return errors.Wrap(err, "could not insert block's data to the database")
+	if err != nil {
+		eh.errorFlag = true
+		return errors.Wrap(err, "could not insert block's data to the database")
+	}
+	return nil
 }
 
 // NewTx implements Callback.NewTx
