@@ -106,6 +106,8 @@ func (eh *eventHandler) NewTx(height int64, events []thorchain.Event) {
 }
 
 func (eh *eventHandler) processBlock() error {
+	defer eh.clearBuffer()
+
 	// Shift outbound events to the end of list (First outbound of double swap comes before swap event)
 	var outboundEvts []thorchain.Event
 	i := 0
@@ -122,12 +124,14 @@ func (eh *eventHandler) processBlock() error {
 	for _, e := range eh.events {
 		err := eh.processEvent(e)
 		if err != nil {
-			eh.events = eh.events[:0]
 			return err
 		}
 	}
-	eh.events = eh.events[:0]
 	return nil
+}
+
+func (eh *eventHandler) clearBuffer() {
+	eh.events = eh.events[:0]
 }
 
 func (eh *eventHandler) processEvent(event thorchain.Event) error {
