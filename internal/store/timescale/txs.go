@@ -26,7 +26,7 @@ func (s *Client) GetTxDetails(address common.Address, txID common.TxID, asset co
 }
 
 func (s *Client) getTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventTypes []string, offset, limit int64) ([]models.TxDetails, error) {
-	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.Ticker.String(), eventTypes, false, limit, offset)
+	q, args := s.buildEventsQuery(address.String(), txID.String(), asset.String(), eventTypes, false, limit, offset)
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "getTxDetails failed")
@@ -81,8 +81,8 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.Where(sb.Equal("txs.tx_hash", txID))
 	}
 	if asset != "" {
-		sb.JoinWithOption(sqlbuilder.LeftJoin, "coins", "txs.tx_hash = coins.tx_hash")
-		sb.Where(sb.Equal("coins.ticker", asset))
+		sb.JoinWithOption(sqlbuilder.LeftJoin, "pools_history", "pools_history.event_id = events.id")
+		sb.Where(sb.Equal("pools_history.pool", asset))
 	}
 	if len(eventTypes) > 0 {
 		var types []interface{}
