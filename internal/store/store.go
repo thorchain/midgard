@@ -54,4 +54,5 @@ type Store interface {
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
 	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)
+	DeleteBlock(height int64) error
 }

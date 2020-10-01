@@ -123,7 +123,10 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 		if block == nil {
 			return false, fmt.Errorf("could not get block %d", meta.Header.Height)
 		}
-		sc.executeBlock(meta, block)
+		err = sc.executeBlock(meta, block)
+		if err != nil {
+			return false, errors.Wrap(err, "could not execute block")
+		}
 	}
 
 	synced := info.LastHeight == sc.GetHeight()
@@ -160,15 +163,19 @@ func (sc *BlockScanner) fetchResults(from, to int64) ([]*coretypes.ResultBlockRe
 	return blocks, nil
 }
 
-func (sc *BlockScanner) executeBlock(meta *types.BlockMeta, block *coretypes.ResultBlockResults) {
+func (sc *BlockScanner) executeBlock(meta *types.BlockMeta, block *coretypes.ResultBlockResults) error {
 	for _, tx := range block.TxsResults {
 		events := convertEvents(tx.Events)
 		sc.callback.NewTx(block.Height, events)
 	}
 	beginEvents := convertEvents(block.BeginBlockEvents)
 	endEvents := convertEvents(block.EndBlockEvents)
-	sc.callback.NewBlock(block.Height, meta.Header.Time, beginEvents, endEvents)
+	err := sc.callback.NewBlock(block.Height, meta.Header.Time, beginEvents, endEvents)
+	if err != nil {
+		return err
+	}
 	sc.incrementHeight()
+	return nil
 }
 
 func (sc *BlockScanner) incrementHeight() {
@@ -212,6 +219,6 @@ type TendermintBatch interface {
 
 // Callback represents methods required by Scanner to notify events.
 type Callback interface {
-	NewBlock(height int64, blockTime time.Time, begin, end []Event)
+	NewBlock(height int64, blockTime time.Time, begin, end []Event) error
 	NewTx(height int64, events []Event)
 }

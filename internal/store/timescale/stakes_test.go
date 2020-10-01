@@ -134,7 +134,9 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 		},
 		DateFirstStaked:  uint64(stakeTomlEvent1.Time.Unix()),
 		HeightLastStaked: uint64(2),
-		StakeUnits:       100,
+		Units:            100,
+		AssetStaked:      10,
+		RuneStaked:       100,
 	}
 	actualDetails, err := s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)
@@ -150,7 +152,11 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 		},
 		DateFirstStaked:  uint64(stakeTomlEvent1.Time.Unix()),
 		HeightLastStaked: uint64(2),
-		StakeUnits:       50,
+		Units:            50,
+		AssetStaked:      10,
+		RuneStaked:       100,
+		AssetWithdrawn:   5,
+		RuneWithdrawn:    50,
 	}
 	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
 	c.Assert(err, IsNil)

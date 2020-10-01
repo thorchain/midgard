@@ -1369,7 +1369,7 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.poolFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, float64(2.99160765e+07), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, float64(2.991607667403315e+07), Commentf("feeAverage: %v", feeAverage))
 
 	// Buy Swap
 	swap.ID = +1
@@ -1378,7 +1378,7 @@ func (s *TimeScaleSuite) TestPoolFeeAverage(c *C) {
 
 	feeAverage, err = s.Store.poolFeeAverage(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feeAverage, Equals, float64(3.9617966333333336e+07), Commentf("feeAverage: %v", feeAverage))
+	c.Assert(feeAverage, Equals, float64(3.961796650841894e+07), Commentf("feeAverage: %v", feeAverage))
 }
 
 func (s *TimeScaleSuite) TestSellFeesTotal(c *C) {
@@ -1457,7 +1457,7 @@ func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.buyFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7463), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
 
 	// Sell swap
 	swap = swapSellBnb2RuneEvent4
@@ -1467,7 +1467,7 @@ func (s *TimeScaleSuite) TestBuyFeesTotal(c *C) {
 
 	feesTotal, err = s.Store.buyFeesTotal(asset)
 	c.Assert(err, IsNil)
-	c.Assert(feesTotal, Equals, uint64(7460), Commentf("feesTotal: %v", feesTotal))
+	c.Assert(feesTotal, Equals, uint64(7463556), Commentf("feesTotal: %v", feesTotal))
 }
 
 func (s *TimeScaleSuite) TestPoolFeesTotal(c *C) {

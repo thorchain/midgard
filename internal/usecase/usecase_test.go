@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -654,6 +655,7 @@ type TestGetPoolDetailsStore struct {
 	assetDepth       uint64
 	assetROI         float64
 	assetStakedTotal uint64
+	assetEarned      int64
 	buyAssetCount    uint64
 	buyFeeAverage    float64
 	buyFeesTotal     uint64
@@ -669,12 +671,14 @@ type TestGetPoolDetailsStore struct {
 	poolStakedTotal  uint64
 	poolTxAverage    float64
 	poolUnits        uint64
+	poolEarned       int64
 	poolVolume       uint64
 	poolVolume24hr   uint64
 	price            float64
 	runeDepth        uint64
 	runeROI          float64
 	runeStakedTotal  uint64
+	runeEarned       int64
 	sellAssetCount   uint64
 	sellFeeAverage   float64
 	sellFeesTotal    uint64
@@ -703,6 +707,7 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 		AssetDepth:       s.assetDepth,
 		AssetROI:         s.assetROI,
 		AssetStakedTotal: s.assetStakedTotal,
+		AssetEarned:      s.assetEarned,
 		BuyAssetCount:    s.buyAssetCount,
 		BuyFeeAverage:    s.buyFeeAverage,
 		BuyFeesTotal:     s.buyFeesTotal,
@@ -718,12 +723,14 @@ func (s *TestGetPoolDetailsStore) GetPoolData(asset common.Asset) (models.PoolDe
 		PoolStakedTotal:  s.poolStakedTotal,
 		PoolTxAverage:    s.poolTxAverage,
 		PoolUnits:        s.poolUnits,
+		PoolEarned:       s.poolEarned,
 		PoolVolume:       s.poolVolume,
 		PoolVolume24hr:   s.poolVolume24hr,
 		Price:            s.price,
 		RuneDepth:        s.runeDepth,
 		RuneROI:          s.runeROI,
 		RuneStakedTotal:  s.runeStakedTotal,
+		RuneEarned:       s.runeEarned,
 		SellAssetCount:   s.sellAssetCount,
 		SellFeeAverage:   s.sellFeeAverage,
 		SellFeesTotal:    s.sellFeesTotal,
@@ -755,6 +762,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		assetDepth:       50000000010,
 		assetROI:         0.1791847095714499,
 		assetStakedTotal: 50000000010,
+		assetEarned:      100,
 		buyAssetCount:    2,
 		buyFeeAverage:    3730.5,
 		buyFeesTotal:     7461,
@@ -770,12 +778,14 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		poolStakedTotal:  4341978343,
 		poolTxAverage:    59503608,
 		poolUnits:        25025000100,
+		poolEarned:       201,
 		poolVolume:       357021653,
 		poolVolume24hr:   140331492,
 		price:            0.0010000019997999997,
 		runeDepth:        2349499997,
 		runeROI:          3.80000002,
 		runeStakedTotal:  2349500000,
+		runeEarned:       200,
 		sellAssetCount:   3,
 		sellFeeAverage:   7463556,
 		sellFeesTotal:    14927112,
@@ -801,6 +811,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		AssetDepth:       store.assetDepth,
 		AssetROI:         store.assetROI,
 		AssetStakedTotal: store.assetStakedTotal,
+		AssetEarned:      store.assetEarned,
 		BuyAssetCount:    store.buyAssetCount,
 		BuyFeeAverage:    store.buyFeeAverage,
 		BuyFeesTotal:     store.buyFeesTotal,
@@ -816,12 +827,14 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		PoolStakedTotal:  store.poolStakedTotal,
 		PoolTxAverage:    store.poolTxAverage,
 		PoolUnits:        store.poolUnits,
+		PoolEarned:       store.poolEarned,
 		PoolVolume:       store.poolVolume,
 		PoolVolume24hr:   store.poolVolume24hr,
 		Price:            store.price,
 		RuneDepth:        store.runeDepth,
 		RuneROI:          store.runeROI,
 		RuneStakedTotal:  store.runeStakedTotal,
+		RuneEarned:       store.runeEarned,
 		SellAssetCount:   store.sellAssetCount,
 		SellFeeAverage:   store.sellFeeAverage,
 		SellFeesTotal:    store.sellFeesTotal,
@@ -949,16 +962,11 @@ func (s *UsecaseSuite) TestGetStakerDetails(c *C) {
 type TestGetStakerAssetDetailsStore struct {
 	StoreDummy
 	asset           common.Asset
-	stakeUnits      uint64
-	runeStaked      int64
-	assetStaked     int64
-	poolStaked      int64
-	runeEarned      int64
-	assetEarned     int64
-	poolEarned      int64
-	runeROI         float64
-	assetROI        float64
-	poolROI         float64
+	units           uint64
+	assetStaked     uint64
+	runeStaked      uint64
+	assetWithdrawn  uint64
+	runeWithdrawn   uint64
 	dateFirstStaked uint64
 	err             error
 }
@@ -966,7 +974,11 @@ type TestGetStakerAssetDetailsStore struct {
 func (s *TestGetStakerAssetDetailsStore) GetStakersAddressAndAssetDetails(_ common.Address, _ common.Asset) (models.StakerAddressAndAssetDetails, error) {
 	details := models.StakerAddressAndAssetDetails{
 		Asset:           s.asset,
-		StakeUnits:      s.stakeUnits,
+		Units:           s.units,
+		AssetStaked:     s.assetStaked,
+		RuneStaked:      s.runeStaked,
+		AssetWithdrawn:  s.assetWithdrawn,
+		RuneWithdrawn:   s.runeWithdrawn,
 		DateFirstStaked: s.dateFirstStaked,
 	}
 	return details, s.err
@@ -979,16 +991,11 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 			Symbol: "TOML-4BC",
 			Ticker: "TOML",
 		},
-		stakeUnits:      100,
-		runeStaked:      10000,
+		units:           100,
 		assetStaked:     20000,
-		poolStaked:      15000,
-		runeEarned:      200,
-		assetEarned:     100,
-		poolEarned:      250,
-		runeROI:         1.005,
-		assetROI:        1.02,
-		poolROI:         0.0166666666666667,
+		assetWithdrawn:  10000,
+		runeStaked:      10000,
+		runeWithdrawn:   5000,
 		dateFirstStaked: uint64(time.Now().Unix()),
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
@@ -1000,7 +1007,11 @@ func (s *UsecaseSuite) TestGetStakerAssetDetails(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.StakerAddressAndAssetDetails{
 		Asset:           store.asset,
-		StakeUnits:      store.stakeUnits,
+		Units:           store.units,
+		AssetStaked:     store.assetStaked,
+		RuneStaked:      store.runeStaked,
+		AssetWithdrawn:  store.assetWithdrawn,
+		RuneWithdrawn:   store.runeWithdrawn,
 		DateFirstStaked: store.dateFirstStaked,
 	})
 
@@ -1166,6 +1177,10 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 				Status: thorchain.Standby,
 				Bond:   175,
 			},
+			{
+				Status: thorchain.Ready,
+				Bond:   75,
+			},
 		},
 		vaultData: thorchain.VaultData{
 			TotalReserve: 1120,
@@ -1207,17 +1222,17 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			MedianActiveBond:   1200,
 			MinimumActiveBond:  1000,
 			MaximumActiveBond:  2000,
-			TotalStandbyBond:   285,
-			AverageStandbyBond: 285.0 / 2.0,
+			TotalStandbyBond:   360,
+			AverageStandbyBond: 360.0 / 3.0,
 			MedianStandbyBond:  175,
-			MinimumStandbyBond: 110,
+			MinimumStandbyBond: 75,
 			MaximumStandbyBond: 175,
 		},
 		ActiveBonds:      []uint64{1000, 1200, 2000},
-		StandbyBonds:     []uint64{110, 175},
+		StandbyBonds:     []uint64{110, 175, 75},
 		TotalStaked:      1500,
 		ActiveNodeCount:  3,
-		StandbyNodeCount: 2,
+		StandbyNodeCount: 3,
 		TotalReserve:     1120,
 		PoolShareFactor:  poolShareFactor,
 		BlockReward: models.BlockRewards{
@@ -1241,6 +1256,79 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	client.err = errors.New("could not fetch requested data")
 	_, err = uc.GetNetworkInfo()
 	c.Assert(err, NotNil)
+}
+
+func (t *TestGetNetworkInfoThorchain) GetMimir() (map[string]string, error) {
+	return map[string]string{
+		"mimir//NEWPOOLCYCLE": "50000",
+	}, nil
+}
+
+func (s *UsecaseSuite) TestParallelGetNetworkInfo(c *C) {
+	client := &TestGetNetworkInfoThorchain{
+		nodes: []thorchain.NodeAccount{
+			{
+				Status: thorchain.Active,
+				Bond:   1000,
+			},
+			{
+				Status: thorchain.Active,
+				Bond:   1200,
+			},
+			{
+				Status: thorchain.Active,
+				Bond:   2000,
+			},
+			{
+				Status: thorchain.Standby,
+				Bond:   110,
+			},
+			{
+				Status: thorchain.Standby,
+				Bond:   175,
+			},
+		},
+		vaultData: thorchain.VaultData{
+			TotalReserve: 1120,
+		},
+		vaults: []thorchain.Vault{
+			{
+				Status:      thorchain.ActiveVault,
+				BlockHeight: 1,
+			},
+			{
+				Status:      thorchain.InactiveVault,
+				BlockHeight: 21,
+			},
+			{
+				Status:      thorchain.ActiveVault,
+				BlockHeight: 11,
+			},
+		},
+		lastHeight: thorchain.LastHeights{
+			Thorchain: 25,
+		},
+		consts: thorchain.ConstantValues{
+			Int64Values: map[string]int64{
+				"NewPoolCycle": int64(51840),
+			},
+		},
+	}
+	store := &TestGetNetworkInfoStore{
+		totalDepth: 1500,
+	}
+	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+	var wg sync.WaitGroup
+	for i := 0; i < 10000; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := uc.GetNetworkInfo()
+			c.Assert(err, IsNil)
+		}()
+	}
+	wg.Wait()
 }
 
 func (s *UsecaseSuite) TestComputeNextChurnHight(c *C) {

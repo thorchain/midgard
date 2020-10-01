@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Midgard Public API
-  version: 1.0.0-oas3
+  version: 0.2.0
   contact:
     email: devs@thorchain.org
   description: The Midgard Public API queries THORChain and any chains linked via the Bifröst and prepares information about the network to be readily available for public users. The API parses transaction event data from THORChain and stores them in a time-series database to make time-dependent queries easy. Midgard does not hold critical information. To interact with BEPSwap and Asgardex, users should query THORChain directly.
@@ -516,9 +516,21 @@ components:
       properties:
         asset:
           $ref: '#/components/schemas/asset'
-        stakeUnits:
+        units:
           type: string
           description: Represents ownership of a pool.
+        assetStaked:
+          type: string
+          description: Total of assets staked
+        assetWithdrawn:
+          type: string
+          description: Total of assets withdrawn
+        runeStaked:
+          type: string
+          description: Total of rune staked
+        runeWithdrawn:
+          type: string
+          description: Total of rune withdrawn
         dateFirstStaked:
           type: integer
           format: int64
@@ -646,6 +658,15 @@ components:
         poolROI12:
           type: string
           description: Pool ROI over 12 months
+        assetEarned:
+          type: string
+          description: Amount of pool asset changed by fee and gas
+        runeEarned:
+          type: string
+          description: Amount of pool rune changed by fee,reward and gas
+        poolEarned:
+          type: string
+          description: (assetChanges * price) + runeEarned
 
     AssetDetail:
       type: object

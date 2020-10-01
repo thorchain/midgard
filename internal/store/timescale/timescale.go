@@ -284,7 +284,11 @@ func (s *Client) deleteLatestBlock() error {
 	if height < 1 {
 		return nil
 	}
+	return s.DeleteBlock(height)
+}
 
+func (s *Client) DeleteBlock(height int64) error {
+	var err error
 	if err = s.deleteCoinsAtHeight(height); err != nil {
 		return errors.Wrapf(err, "could not delete coins at height %d", height)
 	}

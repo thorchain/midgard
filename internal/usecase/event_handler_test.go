@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -960,4 +961,41 @@ func (s *EventHandlerSuite) TestSwapFee(c *C) {
 		PoolDeduct: 100000000,
 	})
 	c.Assert(store.unstake, DeepEquals, models.EventUnstake{})
+}
+
+type BrokenTestStore struct {
+	*StoreDummy
+	height int64
+}
+
+func (s *BrokenTestStore) CreateStakeRecord(record *models.EventStake) error {
+	return errors.New("Failed to store event")
+}
+
+func (s *BrokenTestStore) DeleteBlock(height int64) error {
+	s.height = height
+	return nil
+}
+
+func (s *EventHandlerSuite) TestEventError(c *C) {
+	blockTime := time.Now()
+	store := &BrokenTestStore{}
+	eh, err := newEventHandler(store, s.dummyThorchain)
+	c.Assert(err, IsNil)
+	eh.NewTx(15, []thorchain.Event{
+		{
+			Type: "stake",
+			Attributes: map[string]string{
+				"BNB_txid":     "91811747D3FBD9401CD5627F4F453BF3E7F0409D65FF6F4FDEC8772FE1387369",
+				"asset_amount": "150000000",
+				"rune_amount":  "50000000000",
+				"stake_units":  "25075000000",
+				"rune_address": "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+				"pool":         "BNB.BNB",
+			},
+		},
+	})
+	err = eh.NewBlock(15, blockTime, nil, nil)
+	c.Assert(err, NotNil)
+	c.Assert(eh.height, Equals, int64(15))
 }

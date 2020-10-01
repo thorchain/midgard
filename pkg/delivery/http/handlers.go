@@ -236,13 +236,13 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				h.logger.Err(err).Msg("GetPoolDetails failed")
 				return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 			}
-
 			response[i] = PoolDetail{
 				Status:           pointy.String(details.Status),
 				Asset:            ConvertAssetForAPI(asset),
 				AssetDepth:       Uint64ToString(details.AssetDepth),
 				AssetROI:         Float64ToString(details.AssetROI),
 				AssetStakedTotal: Uint64ToString(details.AssetStakedTotal),
+				AssetEarned:      Int64ToString(details.AssetEarned),
 				BuyAssetCount:    Uint64ToString(details.BuyAssetCount),
 				BuyFeeAverage:    Float64ToString(details.BuyFeeAverage),
 				BuyFeesTotal:     Uint64ToString(details.BuyFeesTotal),
@@ -258,12 +258,14 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
 				PoolUnits:        Uint64ToString(details.PoolUnits),
+				PoolEarned:       Int64ToString(details.PoolEarned),
 				PoolVolume:       Uint64ToString(details.PoolVolume),
 				PoolVolume24hr:   Uint64ToString(details.PoolVolume24hr),
 				Price:            Float64ToString(details.Price),
 				RuneDepth:        Uint64ToString(details.RuneDepth),
 				RuneROI:          Float64ToString(details.RuneROI),
 				RuneStakedTotal:  Uint64ToString(details.RuneStakedTotal),
+				RuneEarned:       Int64ToString(details.RuneEarned),
 				SellAssetCount:   Uint64ToString(details.SellAssetCount),
 				SellFeeAverage:   Float64ToString(details.SellFeeAverage),
 				SellFeesTotal:    Uint64ToString(details.SellFeesTotal),
@@ -361,7 +363,11 @@ func (h *Handlers) GetStakersAddressAndAssetData(ctx echo.Context, address strin
 		response[i] = StakersAssetData{
 			Asset:            ConvertAssetForAPI(details.Asset),
 			DateFirstStaked:  pointy.Int64(int64(details.DateFirstStaked)),
-			StakeUnits:       Uint64ToString(details.StakeUnits),
+			Units:            Uint64ToString(details.Units),
+			AssetStaked:      Uint64ToString(details.AssetStaked),
+			AssetWithdrawn:   Uint64ToString(details.AssetWithdrawn),
+			RuneStaked:       Uint64ToString(details.RuneStaked),
+			RuneWithdrawn:    Uint64ToString(details.RuneWithdrawn),
 			HeightLastStaked: pointy.Int64(int64(details.HeightLastStaked)),
 		}
 	}
