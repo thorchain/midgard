@@ -289,12 +289,11 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "add":
 		p.AssetAdded += change.AssetAmount
 		p.RuneAdded += change.RuneAmount
-	case "swap":
-		if change.RuneAmount > 0 || change.AssetAmount < 0 {
-			p.BuyFeesTotal += change.Fee
-		} else {
-			p.SellFeesTotal += change.Fee
-		}
+	}
+	if change.RuneAmount > 0 || change.AssetAmount < 0 {
+		p.BuyFeesTotal += change.Fee
+	} else {
+		p.SellFeesTotal += change.Fee
 	}
 
 	if change.Status > models.Unknown {
