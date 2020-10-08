@@ -102,6 +102,7 @@ func (s *TimeScaleSuite) TestPoolBasicsLiquidityFee(c *C) {
 		RuneAmount:   -1,
 		LiquidityFee: 10,
 		EventType:    "swap",
+		SwapType:     models.SwapTypeSell,
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -123,6 +124,7 @@ func (s *TimeScaleSuite) TestPoolBasicsLiquidityFee(c *C) {
 		RuneAmount:   1000,
 		LiquidityFee: 20,
 		EventType:    "swap",
+		SwapType:     models.SwapTypeBuy,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
