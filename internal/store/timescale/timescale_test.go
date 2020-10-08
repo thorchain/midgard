@@ -2201,18 +2201,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 }
 
 func (s *TimeScaleSuite) TestFetchAllPoolsFees(c *C) {
-	s.Store.pools = map[string]*models.PoolBasics{
-		"BNB.BNB": {
-			Asset: common.BNBAsset,
-		},
-	}
-
-	err := s.Store.fetchAllPoolsFees()
-	c.Assert(err, IsNil)
-	c.Assert(s.Store.pools["BNB.BNB"].BuyFeesTotal, Equals, int64(0))
-	c.Assert(s.Store.pools["BNB.BNB"].SellFeesTotal, Equals, int64(0))
-
-	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
+	err := s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsFees()
 	c.Assert(err, IsNil)
