@@ -243,8 +243,8 @@ func (s *Client) fetchAllPoolsStatus() error {
 
 func (s *Client) fetchAllPoolsFees() error {
 	q := `SELECT pool,
-		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0),
-		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0)
+		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0 or assetAmt < 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0 or assetAmt > 0)
 		FROM swaps
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
@@ -305,9 +305,10 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		p.AssetAdded += change.AssetAmount
 		p.RuneAdded += change.RuneAmount
 	}
-	if change.RuneAmount > 0 || change.AssetAmount < 0 {
+	switch change.SwapType {
+	case models.SwapTypeBuy:
 		p.BuyFeesTotal += change.LiquidityFee
-	} else {
+	case models.SwapTypeSell:
 		p.SellFeesTotal += change.LiquidityFee
 	}
 
