@@ -242,21 +242,17 @@ func (s *Client) fetchAllPoolsStatus() error {
 }
 
 func (s *Client) fetchAllPoolsFees() error {
-	pools, err := s.GetPools()
-	if err != nil {
-		return err
-	}
-	for _, pool := range pools {
-		buyFee, err := s.buyFeesTotal(pool)
+	for _, pool := range s.pools {
+		buyFee, err := s.buyFeesTotal(pool.Asset)
 		if err != nil {
 			return err
 		}
-		sellFee, err := s.sellFeesTotal(pool)
+		sellFee, err := s.sellFeesTotal(pool.Asset)
 		if err != nil {
 			return err
 		}
-		s.pools[pool.String()].SellFeesTotal = int64(sellFee)
-		s.pools[pool.String()].BuyFeesTotal = int64(buyFee)
+		s.pools[pool.Asset.String()].SellFeesTotal = int64(sellFee)
+		s.pools[pool.Asset.String()].BuyFeesTotal = int64(buyFee)
 	}
 	return nil
 }
