@@ -39,7 +39,6 @@ type Store interface {
 	TotalAssetSells() (uint64, error)
 	TotalStakeTx() (uint64, error)
 	TotalWithdrawTx() (uint64, error)
-	GetPoolData(asset common.Asset) (models.PoolDetails, error)
 	GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error)
 	GetStakerAddresses() ([]common.Address, error)
 	GetStakerAddressDetails(address common.Address) (models.StakerAddressDetails, error)
@@ -56,4 +55,7 @@ type Store interface {
 	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)
 	GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error)
 	DeleteBlock(height int64) error
+	GetPoolROI12(asset common.Asset) (float64, error)
+	GetStakersCount(asset common.Asset) (uint64, error)
+	GetSwappersCount(asset common.Asset) (uint64, error)
 }
