@@ -95,13 +95,13 @@ func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
 
 func (s *TimeScaleSuite) TestPoolBasicsLiquidityFee(c *C) {
 	change := &models.PoolChange{
-		Time:        time.Now(),
-		EventID:     1,
-		Pool:        common.BNBAsset,
-		AssetAmount: 1000,
-		RuneAmount:  -1,
-		Fee:         10,
-		EventType:   "swap",
+		Time:         time.Now(),
+		EventID:      1,
+		Pool:         common.BNBAsset,
+		AssetAmount:  1000,
+		RuneAmount:   -1,
+		LiquidityFee: 10,
+		EventType:    "swap",
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -116,13 +116,13 @@ func (s *TimeScaleSuite) TestPoolBasicsLiquidityFee(c *C) {
 	})
 
 	change = &models.PoolChange{
-		Time:        time.Now(),
-		EventID:     2,
-		Pool:        common.BNBAsset,
-		AssetAmount: -1,
-		RuneAmount:  1000,
-		Fee:         20,
-		EventType:   "swap",
+		Time:         time.Now(),
+		EventID:      2,
+		Pool:         common.BNBAsset,
+		AssetAmount:  -1,
+		RuneAmount:   1000,
+		LiquidityFee: 20,
+		EventType:    "swap",
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)

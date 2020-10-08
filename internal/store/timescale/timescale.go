@@ -291,9 +291,9 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		p.RuneAdded += change.RuneAmount
 	}
 	if change.RuneAmount > 0 || change.AssetAmount < 0 {
-		p.BuyFeesTotal += change.Fee
+		p.BuyFeesTotal += change.LiquidityFee
 	} else {
-		p.SellFeesTotal += change.Fee
+		p.SellFeesTotal += change.LiquidityFee
 	}
 
 	if change.Status > models.Unknown {
