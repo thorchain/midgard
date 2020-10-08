@@ -6,6 +6,12 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
+// SwapType options
+const (
+	SwapTypeBuy  = "buy"
+	SwapTypeSell = "sell"
+)
+
 // PoolChange represents a change in pool state.
 type PoolChange struct {
 	Time         time.Time
@@ -17,6 +23,7 @@ type PoolChange struct {
 	RuneAmount   int64
 	Units        int64
 	Status       PoolStatus
+	SwapType     string
 	LiquidityFee int64
 }
 

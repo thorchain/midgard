@@ -83,6 +83,12 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		Height:       record.Height,
 		LiquidityFee: record.LiquidityFee,
 	}
+	if assetAmt < 0 || runeAmt > 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
+	}
+
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
 }
@@ -130,6 +136,12 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		Height:       record.Height,
 		LiquidityFee: record.LiquidityFee,
 	}
+	if assetAmt > 0 || runeAmt < 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
+	}
+
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
 }
