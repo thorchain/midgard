@@ -242,17 +242,32 @@ func (s *Client) fetchAllPoolsStatus() error {
 }
 
 func (s *Client) fetchAllPoolsFees() error {
-	for _, pool := range s.pools {
-		buyFee, err := s.buyFeesTotal(pool.Asset)
-		if err != nil {
+	q := `SELECT pool,
+		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0)
+		FROM swaps
+		GROUP BY pool`
+	rows, err := s.db.Queryx(q)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			pool    string
+			buyFee  sql.NullInt64
+			sellFee sql.NullInt64
+		)
+		if err := rows.Scan(&pool, &buyFee, &sellFee); err != nil {
 			return err
 		}
-		sellFee, err := s.sellFeesTotal(pool.Asset)
-		if err != nil {
-			return err
+		asset, _ := common.NewAsset(pool)
+		s.pools[pool] = &models.PoolBasics{
+			Asset:         asset,
+			BuyFeesTotal:  buyFee.Int64,
+			SellFeesTotal: sellFee.Int64,
 		}
-		s.pools[pool.Asset.String()].SellFeesTotal = int64(sellFee)
-		s.pools[pool.Asset.String()].BuyFeesTotal = int64(buyFee)
 	}
 	return nil
 }
