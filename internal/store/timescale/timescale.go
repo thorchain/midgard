@@ -143,6 +143,10 @@ func (s *Client) initPoolCache() error {
 		return err
 	}
 	err = s.fetchAllPoolsStatus()
+	if err != nil {
+		return err
+	}
+	err = s.fetchAllPoolsFees()
 	return err
 }
 
@@ -237,6 +241,26 @@ func (s *Client) fetchAllPoolsStatus() error {
 	return nil
 }
 
+func (s *Client) fetchAllPoolsFees() error {
+	pools, err := s.GetPools()
+	if err != nil {
+		return err
+	}
+	for _, pool := range pools {
+		buyFee, err := s.buyFeesTotal(pool)
+		if err != nil {
+			return err
+		}
+		sellFee, err := s.sellFeesTotal(pool)
+		if err != nil {
+			return err
+		}
+		s.pools[pool.String()].SellFeesTotal = int64(sellFee)
+		s.pools[pool.String()].BuyFeesTotal = int64(buyFee)
+	}
+	return nil
+}
+
 func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -269,6 +293,12 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "add":
 		p.AssetAdded += change.AssetAmount
 		p.RuneAdded += change.RuneAmount
+	case "swap":
+		if change.RuneAmount > 0 || change.AssetAmount < 0 {
+			p.BuyFeesTotal += change.Fee
+		} else {
+			p.SellFeesTotal += change.Fee
+		}
 	}
 
 	if change.Status > models.Unknown {

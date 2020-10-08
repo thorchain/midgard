@@ -17,6 +17,7 @@ type PoolChange struct {
 	RuneAmount  int64
 	Units       int64
 	Status      PoolStatus
+	Fee         int64
 }
 
 // PoolAggChanges contains aggregated changes of a specific pool or event

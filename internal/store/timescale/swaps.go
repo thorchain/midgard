@@ -81,6 +81,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		AssetAmount: assetAmt,
 		RuneAmount:  runeAmt,
 		Height:      record.Height,
+		Fee:         record.LiquidityFee,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
@@ -127,6 +128,7 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		Height:      record.Height,
+		Fee:         record.LiquidityFee,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

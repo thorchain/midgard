@@ -274,6 +274,9 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
 	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
 	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
+	assetEarned := basics.GasUsed + int64(basics.BuyFeesTotal)
+	runeEarned := basics.GasReplenished + basics.Reward + int64(basics.SellFeesTotal)
+	poolEarned := int64(float64(assetEarned)*price) + runeEarned
 	return &models.PoolSimpleDetails{
 		PoolBasics:        basics,
 		PoolSwapStats:     swapStats,
@@ -282,6 +285,9 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		AssetROI:          assetROI,
 		RuneROI:           runeROI,
 		PoolROI:           (assetROI + runeROI) / 2,
+		PoolEarned:        poolEarned,
+		AssetEarned:       assetEarned,
+		RuneEarned:        runeEarned,
 	}, nil
 }
 
