@@ -569,17 +569,12 @@ type TestGetPoolSimpleDetailsStore struct {
 	from              time.Time
 	to                time.Time
 	basics            models.PoolBasics
-	swapStats         models.PoolSwapStats
 	poolVolume24Hours int64
 	err               error
 }
 
 func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
 	return s.basics, s.err
-}
-
-func (s *TestGetPoolSimpleDetailsStore) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
-	return s.swapStats, s.err
 }
 
 func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
@@ -600,11 +595,12 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 			RuneWithdrawn:  2000,
 			Units:          500,
 			Status:         models.Enabled,
-		},
-		swapStats: models.PoolSwapStats{
-			PoolTxAverage:   1.145,
-			PoolSlipAverage: 0.98,
-			SwappingTxCount: 102,
+			BuyVolume:      120,
+			BuySlipTotal:   15.75,
+			BuyCount:       51,
+			SellVolume:     100,
+			SellSlipTotal:  10.5,
+			SellCount:      51,
 		},
 		poolVolume24Hours: 124,
 	}
@@ -615,8 +611,12 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
 	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
-		PoolBasics:        store.basics,
-		PoolSwapStats:     store.swapStats,
+		PoolBasics: store.basics,
+		PoolSwapStats: models.PoolSwapStats{
+			PoolTxAverage:   15.098039215686274,
+			PoolSlipAverage: 0.25735294117647056,
+			SwappingTxCount: 102,
+		},
 		Price:             12,
 		AssetROI:          1,
 		RuneROI:           0.5,

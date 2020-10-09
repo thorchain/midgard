@@ -261,10 +261,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 			return nil, err
 		}
 	}
-	swapStats, err := uc.store.GetPoolSwapStats(asset)
-	if err != nil {
-		return nil, err
-	}
 	now := time.Now()
 	pastDay := now.Add(-day)
 	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
@@ -277,18 +273,23 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	assetEarned := basics.GasUsed + basics.BuyFeesTotal
 	runeEarned := basics.GasReplenished + basics.Reward + basics.SellFeesTotal
 	poolEarned := int64(float64(assetEarned)*price) + runeEarned
-	return &models.PoolSimpleDetails{
+	details := &models.PoolSimpleDetails{
 		PoolBasics:        basics,
-		PoolSwapStats:     swapStats,
 		PoolVolume24Hours: vol24,
 		Price:             price,
 		AssetROI:          assetROI,
+		AssetEarned:       assetEarned,
 		RuneROI:           runeROI,
+		RuneEarned:        runeEarned,
 		PoolROI:           (assetROI + runeROI) / 2,
 		PoolEarned:        poolEarned,
-		AssetEarned:       assetEarned,
-		RuneEarned:        runeEarned,
-	}, nil
+	}
+	details.SwappingTxCount = basics.BuyCount + basics.SellCount
+	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
+	poolVolume := int64(float64(details.BuyVolume)*details.Price) + details.SellVolume
+	details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+	details.PoolTxAverage = float64(poolVolume) / float64(details.SwappingTxCount)
+	return details, nil
 }
 
 func calculatePrice(assetDepth int64, runeDepth int64) float64 {
@@ -365,7 +366,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		RuneEarned:      basics.GasReplenished + basics.Reward + basics.SellFeesTotal,
 		Price:           calculatePrice(basics.RuneDepth, basics.AssetDepth),
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
-		PoolVolume:      uint64(basics.BuyVolume + basics.SellVolume),
 		PoolVolume24hr:  uint64(vol24),
 		PoolROI12:       poolROI12,
 		PoolFeesTotal:   uint64(basics.BuyFeesTotal + basics.SellFeesTotal),
@@ -373,6 +373,8 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		SwappersCount:   swappersCount,
 		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
 	}
+	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
+	details.BuyVolume = int64(float64(basics.BuyVolume) * details.Price)
 	if basics.BuyCount > 0 {
 		details.BuyFeeAverage = float64(basics.BuyFeesTotal) * details.Price / float64(basics.BuyCount)
 		details.BuySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
@@ -384,6 +386,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		details.SellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
 	}
 	if details.SwappingTxCount > 0 {
+		details.PoolVolume = uint64(basics.BuyVolume + basics.SellVolume)
 		details.PoolFeeAverage = float64(details.PoolFeesTotal) / float64(details.SwappingTxCount)
 		details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
 		details.PoolTxAverage = float64(details.PoolVolume) / float64(details.SwappingTxCount)
@@ -391,8 +394,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
-	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
-	details.BuyVolume = int64(float64(details.BuyVolume) * details.Price)
 
 	return details, nil
 }
