@@ -270,8 +270,8 @@ func (s *Client) fetchAllPoolsFees() error {
 				SellFeesTotal: sellFee.Int64,
 			}
 		} else {
+			s.pools[pool].BuyFeesTotal = buyFee.Int64
 			s.pools[pool].SellFeesTotal = sellFee.Int64
-			s.pools[pool].SellFeesTotal = buyFee.Int64
 		}
 	}
 	return nil
