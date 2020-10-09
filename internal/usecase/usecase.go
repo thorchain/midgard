@@ -364,7 +364,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		AssetEarned:     basics.GasUsed + basics.BuyFeesTotal,
 		RuneROI:         calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn),
 		RuneEarned:      basics.GasReplenished + basics.Reward + basics.SellFeesTotal,
-		Price:           calculatePrice(basics.RuneDepth, basics.AssetDepth),
+		Price:           calculatePrice(basics.AssetDepth, basics.RuneDepth),
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
 		PoolVolume24hr:  uint64(vol24),
 		PoolROI12:       poolROI12,

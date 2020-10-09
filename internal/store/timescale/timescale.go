@@ -280,11 +280,11 @@ func (s *Client) fetchAllPoolsSwap() error {
 			&sellVolume, &sellFeesTotal, &sellSlipTotal, &sellCount); err != nil {
 			return err
 		}
-		s.pools[pool].BuyVolume = buyVolume.Int64
+		s.pools[pool].BuyVolume = -buyVolume.Int64
 		s.pools[pool].BuyFeesTotal = buyFeesTotal.Int64
 		s.pools[pool].BuySlipTotal = buySlipTotal.Float64
 		s.pools[pool].BuyCount = buyCount.Int64
-		s.pools[pool].SellVolume = sellVolume.Int64
+		s.pools[pool].SellVolume = -sellVolume.Int64
 		s.pools[pool].SellFeesTotal = sellFeesTotal.Int64
 		s.pools[pool].SellSlipTotal = sellSlipTotal.Float64
 		s.pools[pool].SellCount = sellCount.Int64
