@@ -993,29 +993,30 @@ func (s *Client) PoolROI(asset common.Asset) (float64, error) {
 	return roi, errors.Wrap(err, "PoolROI failed")
 }
 
-func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
+func (s *Client) getStakes12(asset common.Asset) (int64, int64, error) {
 	stmnt := `
 		SELECT
-		SUM(rune_amount),
-		SUM(asset_amount)
+		SUM(asset_amount),
+		SUM(rune_amount)
 		FROM pools_history
 		WHERE pool = $1
 		AND event_type in ('stake', 'unstake')
 		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var (
-		runeStaked  sql.NullInt64
 		assetStaked sql.NullInt64
+		runeStaked  sql.NullInt64
 	)
 	row := s.db.QueryRow(stmnt, asset.String())
-	if err := row.Scan(&runeStaked, &assetStaked); err != nil {
-		return 0, errors.Wrap(err, "could not get staked12 and withdrawn12")
-	}
+	err := row.Scan(&assetStaked, &runeStaked)
+	return assetStaked.Int64, runeStaked.Int64, errors.Wrap(err, "getStakes12 failed")
+}
 
-	stmnt = `
+func (s *Client) getDepth12(asset common.Asset) (int64, int64, error) {
+	stmnt := `
 		SELECT
-		rune_depth,
-		asset_depth
+		asset_depth,
+		rune_depth
 		FROM pools_history
 		WHERE pool = $1
 		AND event_type in ('stake', 'unstake')
@@ -1024,28 +1025,40 @@ func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
 		LIMIT 1`
 
 	var (
-		runeDepth12  sql.NullInt64
 		assetDepth12 sql.NullInt64
+		runeDepth12  sql.NullInt64
 	)
-	row = s.db.QueryRow(stmnt, asset.String())
-	err := row.Scan(&runeDepth12, &assetDepth12)
+	row := s.db.QueryRow(stmnt, asset.String())
+	err := row.Scan(&assetDepth12, &runeDepth12)
 	if err != sql.ErrNoRows && err != nil {
-		return 0, errors.Wrap(err, "could not get asset and rune depth of last 12 months")
+		return 0, 0, errors.Wrap(err, "getDepth12 failed")
 	}
+	return assetDepth12.Int64, runeDepth12.Int64, nil
+}
 
+func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
 	basics, err := s.GetPoolBasics(asset)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
-	assetDepth := basics.AssetDepth - assetDepth12.Int64
-	runeDepth := basics.RuneDepth - runeDepth12.Int64
+	assetDepth12, runeDepth12, err := s.getDepth12(asset)
+	if err != nil {
+		return 0, err
+	}
+	assetStaked, runeStaked, err := s.getStakes12(asset)
+	if err != nil {
+		return 0, err
+	}
+
+	assetChanges := basics.AssetDepth - assetDepth12
+	runeChanges := basics.RuneDepth - runeDepth12
 	var assetROI float64
-	if assetStaked.Int64 > 0 {
-		assetROI = float64(assetDepth-assetStaked.Int64) / float64(assetStaked.Int64)
+	if assetStaked > 0 {
+		assetROI = float64(assetChanges-assetStaked) / float64(assetStaked)
 	}
 	var runeROI float64
-	if runeStaked.Int64 > 0 {
-		runeROI = float64(runeDepth-runeStaked.Int64) / float64(runeStaked.Int64)
+	if runeStaked > 0 {
+		runeROI = float64(runeChanges-runeStaked) / float64(runeStaked)
 	}
 	return (assetROI + runeROI) / 2, nil
 }
