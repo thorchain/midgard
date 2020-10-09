@@ -93,52 +93,6 @@ func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
 	c.Assert(pools[0], DeepEquals, common.BNBAsset)
 }
 
-func (s *TimeScaleSuite) TestPoolBasicsLiquidityFee(c *C) {
-	change := &models.PoolChange{
-		Time:         time.Now(),
-		EventID:      1,
-		Pool:         common.BNBAsset,
-		AssetAmount:  1000,
-		RuneAmount:   -1,
-		LiquidityFee: 10,
-		EventType:    "swap",
-		SwapType:     models.SwapTypeSell,
-	}
-	err := s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
-	c.Assert(err, IsNil)
-	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:         common.BNBAsset,
-		AssetDepth:    1000,
-		RuneDepth:     -1,
-		BuyFeesTotal:  0,
-		SellFeesTotal: 10,
-	})
-
-	change = &models.PoolChange{
-		Time:         time.Now(),
-		EventID:      2,
-		Pool:         common.BNBAsset,
-		AssetAmount:  -1,
-		RuneAmount:   1000,
-		LiquidityFee: 20,
-		EventType:    "swap",
-		SwapType:     models.SwapTypeBuy,
-	}
-	err = s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-	basics, err = s.Store.GetPoolBasics(common.BNBAsset)
-	c.Assert(err, IsNil)
-	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:         common.BNBAsset,
-		AssetDepth:    999,
-		RuneDepth:     999,
-		BuyFeesTotal:  20,
-		SellFeesTotal: 10,
-	})
-}
-
 func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 	change := &models.PoolChange{
 		Time:        time.Now(),
@@ -210,13 +164,17 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	c.Assert(err, IsNil)
 	s.Store.UpdatePoolUnits(common.BNBAsset, 10000)
 
+	tradeSlip := 0.5
 	change = &models.PoolChange{
-		Time:        today,
-		EventID:     2,
-		EventType:   "swap",
-		Pool:        common.BNBAsset,
-		AssetAmount: -50,
-		RuneAmount:  100,
+		Time:         today,
+		EventID:      2,
+		EventType:    "swap",
+		Pool:         common.BNBAsset,
+		AssetAmount:  -50,
+		RuneAmount:   100,
+		SwapType:     models.SwapTypeBuy,
+		LiquidityFee: 1,
+		TradeSlip:    &tradeSlip,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -253,6 +211,20 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	tradeSlip = 0.75
+	change = &models.PoolChange{
+		Time:         today,
+		EventID:      2,
+		EventType:    "swap",
+		Pool:         common.BTCAsset,
+		AssetAmount:  5,
+		RuneAmount:   -100,
+		SwapType:     models.SwapTypeSell,
+		LiquidityFee: 2,
+		TradeSlip:    &tradeSlip,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
 	s.Store.UpdatePoolUnits(common.BTCAsset, 1000)
 
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
@@ -267,18 +239,29 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		RuneWithdrawn:  100,
 		Units:          9000,
 		Status:         models.Bootstrap,
+		BuyVolume:      50,
+		BuyFeesTotal:   1,
+		BuySlipTotal:   0.5,
+		BuyCount:       1,
+		StakeCount:     1,
+		WithdrawCount:  1,
 	})
 
 	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:       common.BTCAsset,
-		AssetDepth:  20,
-		AssetStaked: 20,
-		RuneDepth:   2400,
-		RuneStaked:  2400,
-		Units:       1000,
-		Status:      models.Unknown,
+		Asset:         common.BTCAsset,
+		AssetDepth:    25,
+		AssetStaked:   20,
+		RuneDepth:     2300,
+		RuneStaked:    2400,
+		Units:         1000,
+		Status:        models.Unknown,
+		SellVolume:    100,
+		SellFeesTotal: 2,
+		SellSlipTotal: 0.75,
+		SellCount:     1,
+		StakeCount:    1,
 	})
 
 	ethAsset, _ := common.NewAsset("ETH.ETH")

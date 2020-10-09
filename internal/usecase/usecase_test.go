@@ -691,7 +691,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 
 	store := &TestGetPoolDetailsStore{
 		basics: models.PoolBasics{
-			Status: models.Enabled,
+			Status: models.Unknown,
 			Asset: common.Asset{
 				Chain:  "BNB",
 				Symbol: "TOML-4BC",
@@ -725,7 +725,29 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stats, DeepEquals, &models.PoolDetails{
-		PoolBasics:      store.basics,
+		PoolBasics: models.PoolBasics{
+			Status: models.Enabled,
+			Asset: common.Asset{
+				Chain:  "BNB",
+				Symbol: "TOML-4BC",
+				Ticker: "TOML",
+			},
+			AssetDepth:    50000000010,
+			AssetStaked:   100000,
+			BuyVolume:     2986411815, // store.basics.BuyVolume * price
+			BuySlipTotal:  0.246000007,
+			BuyFeesTotal:  7461,
+			BuyCount:      2,
+			RuneDepth:     2349499997,
+			RuneStaked:    458000,
+			SellVolume:    357021653,
+			SellSlipTotal: 0.246047854,
+			SellFeesTotal: 14927112,
+			SellCount:     3,
+			Units:         25025000100,
+			StakeCount:    1,
+			WithdrawCount: 1,
+		},
 		AssetROI:        499999.0001,
 		AssetEarned:     7461,
 		BuyFeeAverage:   79389.23186868384,
@@ -756,7 +778,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	client.status = models.Bootstrap
 	stats, err = uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
-	c.Assert(stats.Status, Equals, models.Bootstrap.String())
+	c.Assert(stats.Status, Equals, models.Bootstrap)
 
 	store = &TestGetPoolDetailsStore{
 		err: errors.New("could not fetch requested data"),
