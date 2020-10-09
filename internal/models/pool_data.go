@@ -17,6 +17,8 @@ type PoolBasics struct {
 	Reward         int64
 	Units          int64
 	Status         PoolStatus
+	BuyFeesTotal   int64
+	SellFeesTotal  int64
 }
 
 type PoolSwapStats struct {
@@ -33,6 +35,9 @@ type PoolSimpleDetails struct {
 	AssetROI          float64
 	RuneROI           float64
 	PoolROI           float64
+	PoolEarned        int64
+	AssetEarned       int64
+	RuneEarned        int64
 }
 
 type PoolDetails struct {

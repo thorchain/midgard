@@ -143,6 +143,10 @@ func (s *Client) initPoolCache() error {
 		return err
 	}
 	err = s.fetchAllPoolsStatus()
+	if err != nil {
+		return err
+	}
+	err = s.fetchAllPoolsFees()
 	return err
 }
 
@@ -237,6 +241,37 @@ func (s *Client) fetchAllPoolsStatus() error {
 	return nil
 }
 
+func (s *Client) fetchAllPoolsFees() error {
+	q := `SELECT pool,
+		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0 or assetAmt < 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0 or assetAmt > 0)
+		FROM swaps
+		GROUP BY pool`
+	rows, err := s.db.Queryx(q)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			pool    string
+			buyFee  sql.NullInt64
+			sellFee sql.NullInt64
+		)
+		if err := rows.Scan(&pool, &buyFee, &sellFee); err != nil {
+			return err
+		}
+		asset, _ := common.NewAsset(pool)
+		s.pools[pool] = &models.PoolBasics{
+			Asset:         asset,
+			BuyFeesTotal:  buyFee.Int64,
+			SellFeesTotal: sellFee.Int64,
+		}
+	}
+	return nil
+}
+
 func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -269,6 +304,12 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "add":
 		p.AssetAdded += change.AssetAmount
 		p.RuneAdded += change.RuneAmount
+	}
+	switch change.SwapType {
+	case models.SwapTypeBuy:
+		p.BuyFeesTotal += change.LiquidityFee
+	case models.SwapTypeSell:
+		p.SellFeesTotal += change.LiquidityFee
 	}
 
 	if change.Status > models.Unknown {

@@ -74,14 +74,21 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 	}
 
 	change := &models.PoolChange{
-		Time:        record.Time,
-		EventID:     record.ID,
-		EventType:   record.Type,
-		Pool:        record.Pool,
-		AssetAmount: assetAmt,
-		RuneAmount:  runeAmt,
-		Height:      record.Height,
+		Time:         record.Time,
+		EventID:      record.ID,
+		EventType:    record.Type,
+		Pool:         record.Pool,
+		AssetAmount:  assetAmt,
+		RuneAmount:   runeAmt,
+		Height:       record.Height,
+		LiquidityFee: record.LiquidityFee,
 	}
+	if assetAmt < 0 || runeAmt > 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
+	}
+
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
 }
@@ -120,14 +127,21 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		return errors.Wrapf(err, "could not get pool of event %d", record.ID)
 	}
 	change := &models.PoolChange{
-		Time:        record.Time,
-		EventID:     record.ID,
-		EventType:   record.Type,
-		Pool:        pool,
-		AssetAmount: -assetAmt,
-		RuneAmount:  -runeAmt,
-		Height:      record.Height,
+		Time:         record.Time,
+		EventID:      record.ID,
+		EventType:    record.Type,
+		Pool:         pool,
+		AssetAmount:  -assetAmt,
+		RuneAmount:   -runeAmt,
+		Height:       record.Height,
+		LiquidityFee: record.LiquidityFee,
 	}
+	if assetAmt > 0 || runeAmt < 0 {
+		change.SwapType = models.SwapTypeBuy
+	} else {
+		change.SwapType = models.SwapTypeSell
+	}
+
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")
 }
