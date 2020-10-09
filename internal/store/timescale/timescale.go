@@ -263,10 +263,15 @@ func (s *Client) fetchAllPoolsFees() error {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
-		s.pools[pool] = &models.PoolBasics{
-			Asset:         asset,
-			BuyFeesTotal:  buyFee.Int64,
-			SellFeesTotal: sellFee.Int64,
+		if _, ok := s.pools[pool]; !ok {
+			s.pools[pool] = &models.PoolBasics{
+				Asset:         asset,
+				BuyFeesTotal:  buyFee.Int64,
+				SellFeesTotal: sellFee.Int64,
+			}
+		} else {
+			s.pools[pool].SellFeesTotal = sellFee.Int64
+			s.pools[pool].SellFeesTotal = buyFee.Int64
 		}
 	}
 	return nil
