@@ -1983,7 +1983,7 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 
 	// No stake
 	roi, err := s.Store.GetPoolROI12(asset)
-	c.Assert(err, IsNil)
+	c.Assert(err, NotNil)
 	c.Assert(roi, Equals, 0.0)
 
 	// stake
