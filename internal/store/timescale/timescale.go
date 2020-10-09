@@ -333,7 +333,7 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	}
 	switch change.SwapType {
 	case models.SwapTypeBuy:
-		p.BuyVolume += change.RuneAmount
+		p.BuyVolume += -change.AssetAmount
 		if change.TradeSlip != nil {
 			p.BuySlipTotal += *change.TradeSlip
 			p.BuyFeesTotal += change.LiquidityFee

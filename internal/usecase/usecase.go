@@ -391,6 +391,8 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
+	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
+	details.BuyVolume = int64(float64(details.BuyVolume) * details.Price)
 
 	return details, nil
 }

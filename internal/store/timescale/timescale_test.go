@@ -2200,7 +2200,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 	})
 }
 
-func (s *TimeScaleSuite) TestFetchAllPoolsFees(c *C) {
+func (s *TimeScaleSuite) TestFetchAllPoolsSwap(c *C) {
 	err := s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsSwap()
