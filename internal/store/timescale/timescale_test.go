@@ -2203,7 +2203,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 func (s *TimeScaleSuite) TestFetchAllPoolsFees(c *C) {
 	err := s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
-	err = s.Store.fetchAllPoolsFees()
+	err = s.Store.fetchAllPoolsSwap()
 	c.Assert(err, IsNil)
 	c.Assert(s.Store.pools["BNB.BNB"].BuyFeesTotal, Equals, int64(0))
 	c.Assert(s.Store.pools["BNB.BNB"].SellFeesTotal, Equals, int64(7463556))
@@ -2212,7 +2212,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsFees(c *C) {
 	swap.ID += 1
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
-	err = s.Store.fetchAllPoolsFees()
+	err = s.Store.fetchAllPoolsSwap()
 	c.Assert(err, IsNil)
 	c.Assert(s.Store.pools["BNB.BNB"].BuyFeesTotal, Equals, int64(7463556))
 	c.Assert(s.Store.pools["BNB.BNB"].SellFeesTotal, Equals, int64(7463556))
