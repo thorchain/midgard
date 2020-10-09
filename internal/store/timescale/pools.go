@@ -994,19 +994,60 @@ func (s *Client) PoolROI(asset common.Asset) (float64, error) {
 }
 
 func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
-	assetROI12, err := s.assetROI12(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolROI12 failed")
-	}
-	runeROI12, err := s.runeROI12(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "poolROI12 failed")
+	stmnt := `
+		SELECT
+		SUM(rune_amount),
+		SUM(asset_amount)
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type in ('stake', 'unstake')
+		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
+
+	var (
+		runeStaked  sql.NullInt64
+		assetStaked sql.NullInt64
+	)
+	row := s.db.QueryRow(stmnt, asset.String())
+	if err := row.Scan(&runeStaked, &assetStaked); err != nil {
+		return 0, errors.Wrap(err, "could not get staked12 and withdrawn12")
 	}
 
-	var roi float64
-	roi = (assetROI12 + runeROI12) / 2
+	stmnt = `
+		SELECT
+		rune_depth,
+		asset_depth
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type in ('stake', 'unstake')
+		AND time < NOW() - INTERVAL '12 MONTHS'
+		ORDER BY id ASC
+		LIMIT 1`
 
-	return roi, errors.Wrap(err, "poolROI12 failed")
+	var (
+		runeDepth12  sql.NullInt64
+		assetDepth12 sql.NullInt64
+	)
+	row = s.db.QueryRow(stmnt, asset.String())
+	err := row.Scan(&runeDepth12, &assetDepth12)
+	if err != sql.ErrNoRows && err != nil {
+		return 0, errors.Wrap(err, "could not get asset and rune depth of last 12 months")
+	}
+
+	basics, err := s.GetPoolBasics(asset)
+	if err != nil {
+		return 0, nil
+	}
+	assetDepth := basics.AssetDepth - assetDepth12.Int64
+	runeDepth := basics.RuneDepth - runeDepth12.Int64
+	var assetROI float64
+	if assetStaked.Int64 > 0 {
+		assetROI = float64(assetDepth-assetStaked.Int64) / float64(assetStaked.Int64)
+	}
+	var runeROI float64
+	if runeStaked.Int64 > 0 {
+		runeROI = float64(runeDepth-runeStaked.Int64) / float64(runeStaked.Int64)
+	}
+	return (assetROI + runeROI) / 2, nil
 }
 
 // GetPoolStatus - latest pool status
