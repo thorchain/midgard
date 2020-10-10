@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
-	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
@@ -55,47 +54,68 @@ func (s *Client) GetEventPool(id int64) (common.Asset, error) {
 }
 
 type poolAggChanges struct {
-	Time            time.Time     `db:"time"`
-	PosAssetChanges sql.NullInt64 `db:"pos_asset_changes"`
-	NegAssetChanges sql.NullInt64 `db:"neg_asset_changes"`
-	PosRuneChanges  sql.NullInt64 `db:"pos_rune_changes"`
-	NegRuneChanges  sql.NullInt64 `db:"neg_rune_changes"`
-	UnitsChanges    sql.NullInt64 `db:"units_changes"`
+	Time           time.Time     `db:"time"`
+	AssetChanges   sql.NullInt64 `db:"asset_changes"`
+	AssetDepth     sql.NullInt64 `db:"asset_depth"`
+	AssetStaked    sql.NullInt64 `db:"asset_staked"`
+	AssetWithdrawn sql.NullInt64 `db:"asset_withdrawn"`
+	AssetAdded     sql.NullInt64 `db:"asset_added"`
+	BuyCount       sql.NullInt64 `db:"buy_count"`
+	BuyVolume      sql.NullInt64 `db:"buy_volume"`
+	RuneChanges    sql.NullInt64 `db:"rune_changes"`
+	RuneDepth      sql.NullInt64 `db:"rune_depth"`
+	RuneStaked     sql.NullInt64 `db:"rune_staked"`
+	RuneWithdrawn  sql.NullInt64 `db:"rune_withdrawn"`
+	RuneAdded      sql.NullInt64 `db:"rune_added"`
+	SellCount      sql.NullInt64 `db:"sell_count"`
+	SellVolume     sql.NullInt64 `db:"sell_volume"`
+	UnitsChanges   sql.NullInt64 `db:"units_changes"`
+	Reward         sql.NullInt64 `db:"reward"`
+	GasUsed        sql.NullInt64 `db:"gas_used"`
+	GasReplenished sql.NullInt64 `db:"gas_replenished"`
+	StakeCount     sql.NullInt64 `db:"stake_count"`
+	WithdrawCount  sql.NullInt64 `db:"withdraw_count"`
 }
 
-func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulative bool, bucket models.Interval, from, to *time.Time) ([]models.PoolAggChanges, error) {
+// GetPoolAggChanges returns historical aggregated details of the specified pool.
+func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	colsTemplate := "%s"
-	if cumulative {
-		colsTemplate = "SUM(%s) OVER (ORDER BY time)"
+	lastTemplate := "%s"
+	timeBucket := getTimeBucket(inv)
+	if inv > models.DailyInterval {
+		colsTemplate = "SUM(%s)"
+		lastTemplate = "last(%s, time)"
+		sb.GroupBy(timeBucket, "pool")
 	}
-	cols := []string{
-		sb.As(fmt.Sprintf(colsTemplate, "SUM(pos_asset_changes)"), "pos_asset_changes"),
-		sb.As(fmt.Sprintf(colsTemplate, "SUM(neg_asset_changes)"), "neg_asset_changes"),
-		sb.As(fmt.Sprintf(colsTemplate, "SUM(pos_rune_changes)"), "pos_rune_changes"),
-		sb.As(fmt.Sprintf(colsTemplate, "SUM(neg_rune_changes)"), "neg_rune_changes"),
-		sb.As(fmt.Sprintf(colsTemplate, "SUM(units_changes)"), "units_changes"),
-	}
-	if bucket != models.MaxInterval {
-		cols = append(cols, sb.As(fmt.Sprintf("DATE_TRUNC(%s, time)", sb.Var(getIntervalDateTrunc(bucket))), "time"))
-		sb.GroupBy("time")
-	}
-	sb.Select(cols...)
-	sb.From("pool_changes_daily")
+	sb.Select(
+		sb.As(timeBucket, "time"),
+		sb.As(fmt.Sprintf(colsTemplate, "asset_changes"), "asset_changes"),
+		sb.As(fmt.Sprintf(lastTemplate, "asset_depth"), "asset_depth"),
+		sb.As(fmt.Sprintf(colsTemplate, "asset_staked"), "asset_staked"),
+		sb.As(fmt.Sprintf(colsTemplate, "asset_withdrawn"), "asset_withdrawn"),
+		sb.As(fmt.Sprintf(colsTemplate, "asset_added"), "asset_added"),
+		sb.As(fmt.Sprintf(colsTemplate, "buy_count"), "buy_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "buy_volume"), "buy_volume"),
+		sb.As(fmt.Sprintf(colsTemplate, "rune_changes"), "rune_changes"),
+		sb.As(fmt.Sprintf(lastTemplate, "rune_depth"), "rune_depth"),
+		sb.As(fmt.Sprintf(colsTemplate, "rune_staked"), "rune_staked"),
+		sb.As(fmt.Sprintf(colsTemplate, "rune_withdrawn"), "rune_withdrawn"),
+		sb.As(fmt.Sprintf(colsTemplate, "rune_added"), "rune_added"),
+		sb.As(fmt.Sprintf(colsTemplate, "sell_count"), "sell_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "sell_volume"), "sell_volume"),
+		sb.As(fmt.Sprintf(colsTemplate, "units_changes"), "units_changes"),
+		sb.As(fmt.Sprintf(colsTemplate, "reward"), "reward"),
+		sb.As(fmt.Sprintf(colsTemplate, "gas_used"), "gas_used"),
+		sb.As(fmt.Sprintf(colsTemplate, "gas_replenished"), "gas_replenished"),
+		sb.As(fmt.Sprintf(colsTemplate, "stake_count"), "stake_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "withdraw_count"), "withdraw_count"),
+	)
+	sb.From("pool_changes" + getIntervalTableSuffix(inv))
 	sb.Where(sb.Equal("pool", pool.String()))
-	if eventType != "" {
-		sb.Where(sb.Equal("event_type", eventType))
-	}
+	sb.Where(sb.Between(timeBucket, from, to))
 
 	q, args := sb.Build()
-	if bucket != models.MaxInterval {
-		if from == nil || to == nil {
-			return nil, errors.New("from or to could not be null when bucket is not Max")
-		}
-
-		q = fmt.Sprintf("SELECT * FROM (%s) t WHERE time BETWEEN $%d AND $%d", q, len(args)+1, len(args)+2)
-		args = append(args, *from, *to)
-	}
 	rows, err := s.db.Queryx(q, args...)
 	if err != nil {
 		return nil, err
@@ -108,14 +128,28 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, eventType string, cumulati
 		if err != nil {
 			return nil, err
 		}
-
 		result = append(result, models.PoolAggChanges{
-			Time:            changes.Time,
-			PosAssetChanges: changes.PosAssetChanges.Int64,
-			NegAssetChanges: changes.NegAssetChanges.Int64,
-			PosRuneChanges:  changes.PosRuneChanges.Int64,
-			NegRuneChanges:  changes.NegRuneChanges.Int64,
-			UnitsChanges:    changes.UnitsChanges.Int64,
+			Time:           changes.Time,
+			AssetChanges:   changes.AssetChanges.Int64,
+			AssetDepth:     changes.AssetDepth.Int64,
+			AssetStaked:    changes.AssetStaked.Int64,
+			AssetWithdrawn: changes.AssetWithdrawn.Int64,
+			AssetAdded:     changes.AssetAdded.Int64,
+			BuyCount:       changes.BuyCount.Int64,
+			BuyVolume:      changes.BuyVolume.Int64,
+			RuneChanges:    changes.RuneChanges.Int64,
+			RuneDepth:      changes.RuneDepth.Int64,
+			RuneStaked:     changes.RuneStaked.Int64,
+			RuneWithdrawn:  changes.RuneWithdrawn.Int64,
+			RuneAdded:      changes.RuneAdded.Int64,
+			SellCount:      changes.SellCount.Int64,
+			SellVolume:     changes.SellVolume.Int64,
+			UnitsChanges:   changes.UnitsChanges.Int64,
+			Reward:         changes.Reward.Int64,
+			GasUsed:        changes.GasUsed.Int64,
+			GasReplenished: changes.GasReplenished.Int64,
+			StakeCount:     changes.StakeCount.Int64,
+			WithdrawCount:  changes.WithdrawCount.Int64,
 		})
 	}
 	return result, nil
