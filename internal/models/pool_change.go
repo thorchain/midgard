@@ -27,15 +27,30 @@ type PoolChange struct {
 	LiquidityFee int64
 }
 
-// PoolAggChanges contains aggregated changes of a specific pool or event
+// PoolAggChanges contains aggregated changes of a specific pool
 // during a specific time bucket.
 type PoolAggChanges struct {
-	Time            time.Time `db:"time"`
-	PosAssetChanges int64     `db:"pos_asset_changes"`
-	NegAssetChanges int64     `db:"neg_asset_changes"`
-	PosRuneChanges  int64     `db:"pos_rune_changes"`
-	NegRuneChanges  int64     `db:"neg_rune_changes"`
-	UnitsChanges    int64     `db:"units_changes"`
+	Time           time.Time
+	AssetChanges   int64
+	AssetDepth     int64
+	AssetStaked    int64
+	AssetWithdrawn int64
+	AssetAdded     int64
+	BuyCount       int64
+	BuyVolume      int64
+	RuneChanges    int64
+	RuneDepth      int64
+	RuneStaked     int64
+	RuneWithdrawn  int64
+	RuneAdded      int64
+	SellCount      int64
+	SellVolume     int64
+	UnitsChanges   int64
+	Reward         int64
+	GasUsed        int64
+	GasReplenished int64
+	StakeCount     int64
+	WithdrawCount  int64
 }
 
 // TotalVolChanges contains aggregated buy/sell volume changes and running total of all pools.
