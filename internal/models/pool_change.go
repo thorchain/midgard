@@ -45,6 +45,8 @@ type PoolAggChanges struct {
 	RuneAdded      int64
 	SellCount      int64
 	SellVolume     int64
+	Price          float64
+	PoolVolume     int64
 	UnitsChanges   int64
 	Reward         int64
 	GasUsed        int64

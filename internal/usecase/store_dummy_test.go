@@ -192,6 +192,10 @@ func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time)
 	return nil, ErrNotImplemented
 }
 
+func (s *StoreDummy) GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error) {
+	return nil, ErrNotImplemented
+}
+
 func (s *StoreDummy) UpdatePoolUnits(pool common.Asset, units int64) {
 }
 
