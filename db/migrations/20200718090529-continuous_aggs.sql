@@ -111,6 +111,8 @@ GROUP BY time_bucket('1 day', time);
 
 -- +migrate Down
 
+DROP VIEW pool_changes_5_min CASCADE;
+DROP VIEW pool_changes_hourly CASCADE;
 DROP VIEW pool_changes_daily CASCADE;
 DROP VIEW total_volume_changes_5_min CASCADE;
 DROP VIEW total_volume_changes_hourly CASCADE;
