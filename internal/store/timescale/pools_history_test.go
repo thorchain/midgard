@@ -108,7 +108,7 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 		EventType:   "swap",
 		Pool:        bnbAsset,
 		AssetAmount: -10,
-		RuneAmount:  +20,
+		RuneAmount:  20,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -150,8 +150,37 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 		EventID:     4,
 		EventType:   "swap",
 		Pool:        bnbAsset,
-		AssetAmount: +5,
+		AssetAmount: 5,
 		RuneAmount:  -12,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow.Add(time.Hour),
+		EventID:     4,
+		EventType:   "add",
+		Pool:        bnbAsset,
+		AssetAmount: 1,
+		RuneAmount:  2,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow.Add(time.Hour),
+		EventID:     4,
+		EventType:   "gas",
+		Pool:        bnbAsset,
+		AssetAmount: -6,
+		RuneAmount:  12,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:       tomorrow.Add(time.Hour),
+		EventID:    4,
+		EventType:  "rewards",
+		Pool:       bnbAsset,
+		RuneAmount: 20,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -162,12 +191,17 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	c.Assert(changes, HasLen, 4)
 	expected := map[int64]models.PoolAggChanges{
 		tomorrow.Add(time.Hour).Unix(): {
-			AssetChanges: 5,
-			AssetDepth:   50,
-			RuneChanges:  -12,
-			RuneDepth:    99,
-			SellCount:    1,
-			SellVolume:   12,
+			AssetChanges:   0,
+			AssetDepth:     45,
+			AssetAdded:     1,
+			RuneChanges:    22,
+			RuneDepth:      133,
+			RuneAdded:      2,
+			Reward:         20,
+			GasUsed:        -6,
+			GasReplenished: 12,
+			SellCount:      1,
+			SellVolume:     12,
 		},
 		tomorrow.Unix(): {
 			AssetChanges:   -45,
@@ -210,15 +244,20 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	c.Assert(changes, HasLen, 2)
 	expected = map[int64]models.PoolAggChanges{
 		tomorrow.Unix(): {
-			AssetChanges:   -40,
-			AssetDepth:     50,
+			AssetChanges:   -45,
+			AssetDepth:     45,
 			AssetWithdrawn: 45,
-			RuneChanges:    -121,
-			RuneDepth:      99,
+			AssetAdded:     1,
+			RuneChanges:    -87,
+			RuneDepth:      133,
 			RuneWithdrawn:  110,
+			RuneAdded:      2,
 			SellCount:      1,
 			SellVolume:     12,
 			UnitsChanges:   -500,
+			Reward:         20,
+			GasUsed:        -6,
+			GasReplenished: 12,
 			WithdrawCount:  1,
 		},
 		today.Unix(): {
@@ -246,19 +285,24 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	c.Assert(changes, HasLen, 1)
 	exp := models.PoolAggChanges{
 		Time:           changes[0].Time,
-		AssetChanges:   50,
-		AssetDepth:     50,
+		AssetChanges:   45,
+		AssetDepth:     45,
 		AssetStaked:    100,
 		AssetWithdrawn: 45,
+		AssetAdded:     1,
 		BuyCount:       1,
 		BuyVolume:      20,
-		RuneChanges:    99,
-		RuneDepth:      99,
+		RuneChanges:    133,
+		RuneDepth:      133,
 		RuneStaked:     200,
 		RuneWithdrawn:  110,
+		RuneAdded:      2,
 		SellCount:      1,
 		SellVolume:     12,
 		UnitsChanges:   500,
+		Reward:         20,
+		GasUsed:        -6,
+		GasReplenished: 12,
 		StakeCount:     1,
 		WithdrawCount:  1,
 	}
