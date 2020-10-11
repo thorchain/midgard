@@ -447,3 +447,49 @@ func (h *Handlers) GetTotalVolChanges(ctx echo.Context, params GetTotalVolChange
 
 	return ctx.JSON(http.StatusOK, response)
 }
+
+// (GET /v1/history/pools)
+func (h *Handlers) GetPoolAggChanges(ctx echo.Context, params GetPoolAggChangesParams) error {
+	inv := models.GetIntervalFromString(params.Interval)
+	from := time.Unix(params.From, 0)
+	to := time.Unix(params.To, 0)
+	pool, err := common.NewAsset(params.Pool)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
+	}
+
+	changes, err := h.uc.GetPoolAggChanges(pool, inv, from, to)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
+
+	response := make([]PoolAggChanges, len(changes))
+	for i, ch := range changes {
+		time := ch.Time.Unix()
+		response[i] = PoolAggChanges{
+			Time:           &(time),
+			AssetChanges:   Int64ToString(ch.AssetChanges),
+			AssetDepth:     Int64ToString(ch.AssetDepth),
+			AssetStaked:    Int64ToString(ch.AssetStaked),
+			AssetWithdrawn: Int64ToString(ch.AssetWithdrawn),
+			BuyCount:       &ch.BuyCount,
+			BuyVolume:      Int64ToString(ch.BuyVolume),
+			RuneChanges:    Int64ToString(ch.RuneChanges),
+			RuneDepth:      Int64ToString(ch.RuneDepth),
+			RuneStaked:     Int64ToString(ch.RuneStaked),
+			RuneWithdrawn:  Int64ToString(ch.RuneWithdrawn),
+			SellCount:      &ch.SellCount,
+			SellVolume:     Int64ToString(ch.SellVolume),
+			Price:          Float64ToString(ch.Price),
+			PoolVolume:     Int64ToString(ch.PoolVolume),
+			UnitsChanges:   Int64ToString(ch.UnitsChanges),
+			Reward:         Int64ToString(ch.Reward),
+			GasUsed:        Int64ToString(ch.GasUsed),
+			GasReplenished: Int64ToString(ch.GasReplenished),
+			StakeCount:     &ch.StakeCount,
+			WithdrawCount:  &ch.WithdrawCount,
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+}
