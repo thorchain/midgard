@@ -114,6 +114,7 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from,
 	sb.From("pool_changes" + getIntervalTableSuffix(inv))
 	sb.Where(sb.Equal("pool", pool.String()))
 	sb.Where(sb.Between(timeBucket, from, to))
+	sb.OrderBy("time")
 
 	q, args := sb.Build()
 	rows, err := s.db.Queryx(q, args...)
@@ -152,6 +153,7 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from,
 			WithdrawCount:  changes.WithdrawCount.Int64,
 		})
 	}
+	fmt.Println(result)
 	return result, nil
 }
 
