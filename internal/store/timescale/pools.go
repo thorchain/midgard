@@ -1036,6 +1036,9 @@ func (s *Client) getDepth12(asset common.Asset) (int64, int64, error) {
 		return 0, 0, errors.Wrap(err, "getDepth12 failed")
 	}
 	basics, err := s.GetPoolBasics(asset)
+	if err != nil {
+		return 0, 0, errors.Wrap(err, "getDepth12 failed")
+	}
 	assetDepth12 := basics.AssetDepth - assetDepthLastYear.Int64
 	runeDepth12 := basics.RuneDepth - runeDepthLastYear.Int64
 	return assetDepth12, runeDepth12, nil
