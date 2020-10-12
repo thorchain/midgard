@@ -467,18 +467,18 @@ func (h *Handlers) GetPoolAggChanges(ctx echo.Context, params GetPoolAggChangesP
 	for i, ch := range changes {
 		time := ch.Time.Unix()
 		response[i] = PoolAggChanges{
-			Time:           &(time),
+			Time:           &time,
 			AssetChanges:   Int64ToString(ch.AssetChanges),
 			AssetDepth:     Int64ToString(ch.AssetDepth),
 			AssetStaked:    Int64ToString(ch.AssetStaked),
 			AssetWithdrawn: Int64ToString(ch.AssetWithdrawn),
-			BuyCount:       &ch.BuyCount,
+			BuyCount:       &changes[i].BuyCount,
 			BuyVolume:      Int64ToString(ch.BuyVolume),
 			RuneChanges:    Int64ToString(ch.RuneChanges),
 			RuneDepth:      Int64ToString(ch.RuneDepth),
 			RuneStaked:     Int64ToString(ch.RuneStaked),
 			RuneWithdrawn:  Int64ToString(ch.RuneWithdrawn),
-			SellCount:      &ch.SellCount,
+			SellCount:      &changes[i].SellCount,
 			SellVolume:     Int64ToString(ch.SellVolume),
 			Price:          Float64ToString(ch.Price),
 			PoolVolume:     Int64ToString(ch.PoolVolume),
@@ -486,8 +486,8 @@ func (h *Handlers) GetPoolAggChanges(ctx echo.Context, params GetPoolAggChangesP
 			Reward:         Int64ToString(ch.Reward),
 			GasUsed:        Int64ToString(ch.GasUsed),
 			GasReplenished: Int64ToString(ch.GasReplenished),
-			StakeCount:     &ch.StakeCount,
-			WithdrawCount:  &ch.WithdrawCount,
+			StakeCount:     &changes[i].StakeCount,
+			WithdrawCount:  &changes[i].WithdrawCount,
 		}
 	}
 
