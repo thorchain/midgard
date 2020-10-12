@@ -999,9 +999,12 @@ func (s *Client) getStakes12(asset common.Asset) (int64, int64, error) {
 		SUM(asset_amount),
 		SUM(rune_amount)
 		FROM pools_history
+		LEFT JOIN events
+		ON events.id = pools_history.event_id
 		WHERE pool = $1
 		AND event_type in ('stake', 'unstake')
-		AND time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
+		AND events.status = 'Success' 
+		AND pools_history.time BETWEEN NOW() - INTERVAL '12 MONTHS' AND NOW()`
 
 	var (
 		assetStaked sql.NullInt64
@@ -1019,28 +1022,26 @@ func (s *Client) getDepth12(asset common.Asset) (int64, int64, error) {
 		rune_depth
 		FROM pools_history
 		WHERE pool = $1
-		AND event_type in ('stake', 'unstake')
 		AND time < NOW() - INTERVAL '12 MONTHS'
 		ORDER BY id ASC
 		LIMIT 1`
 
 	var (
-		assetDepth12 sql.NullInt64
-		runeDepth12  sql.NullInt64
+		assetDepthLastYear sql.NullInt64
+		runeDepthLastYear  sql.NullInt64
 	)
 	row := s.db.QueryRow(stmnt, asset.String())
-	err := row.Scan(&assetDepth12, &runeDepth12)
+	err := row.Scan(&assetDepthLastYear, &runeDepthLastYear)
 	if err != sql.ErrNoRows && err != nil {
 		return 0, 0, errors.Wrap(err, "getDepth12 failed")
 	}
-	return assetDepth12.Int64, runeDepth12.Int64, nil
+	basics, err := s.GetPoolBasics(asset)
+	assetDepth12 := basics.AssetDepth - assetDepthLastYear.Int64
+	runeDepth12 := basics.RuneDepth - runeDepthLastYear.Int64
+	return assetDepth12, runeDepth12, nil
 }
 
 func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
-	basics, err := s.GetPoolBasics(asset)
-	if err != nil {
-		return 0, err
-	}
 	assetDepth12, runeDepth12, err := s.getDepth12(asset)
 	if err != nil {
 		return 0, err
@@ -1050,15 +1051,13 @@ func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
 		return 0, err
 	}
 
-	assetChanges := basics.AssetDepth - assetDepth12
-	runeChanges := basics.RuneDepth - runeDepth12
 	var assetROI float64
 	if assetStaked > 0 {
-		assetROI = float64(assetChanges-assetStaked) / float64(assetStaked)
+		assetROI = float64(assetDepth12-assetStaked) / float64(assetStaked)
 	}
 	var runeROI float64
 	if runeStaked > 0 {
-		runeROI = float64(runeChanges-runeStaked) / float64(runeStaked)
+		runeROI = float64(runeDepth12-runeStaked) / float64(runeStaked)
 	}
 	return (assetROI + runeROI) / 2, nil
 }
