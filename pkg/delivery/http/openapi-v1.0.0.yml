@@ -1024,12 +1024,16 @@ components:
         time:
           type: integer
           format: int64
+          description: Determining end of current time bucket in unix timestamp
         buyVolume:
           type: string
+          description: Sum of "rune_amount" of buy swap events
         sellVolume:
           type: string
+          description: Sum of "rune_amount" of sell swap events
         totalVolume:
           type: string
+          description: buyVolume + sellVolume
 
     PoolAggChanges:
       type: object
@@ -1037,50 +1041,71 @@ components:
         time:
           type: integer
           format: int64
+          description: Determining end of current time bucket in unix timestamp
         assetChanges:
           type: string
+          description: Total changes in asset depth at this time bucket
         assetDepth:
           type: string
+          description: Depth of asset at the end of current time bucket
         assetStaked:
           type: string
+          description: Total asset staked
         assetWithdrawn:
           type: string
+          description: Total asset withdrawn
         buyCount:
           type: integer
           format: int64
+          description: Count of buy swaps
         buyVolume:
           type: string
+          description: Sum of "rune_amount" of buy swap events
         runeChanges:
           type: string
+          description: Total changes in rune depth at this time bucket
         runeDepth:
           type: string
+          description: Depth of rune at the end of current time bucket
         runeStaked:
           type: string
+          description: Total rune staked
         runeWithdrawn:
           type: string
+          description: Total rune withdrawn
         sellCount:
           type: integer
           format: int64
+          description: Count of sell swaps
         sellVolume:
           type: string
+          description: Sum of "rune_amount" of sell swap events
         price:
           type: string
+          description: Asset price in rune at the end of current time bucket
         poolVolume:
           type: string
+          description: buyVolume + sellVolume
         unitsChanges:
           type: string
+          description: Total changes in pool units (stakes/withdraws)
         reward:
           type: string
+          description: Sum of "rewards" events in rune
         gasUsed:
           type: string
+          description: Total amount of asset used as gas for network transactions (e.g. BNB.BNB, ETH.ETH)
         gasReplenished:
           type: string
+          description: Total amount of rune, paid by the network to neutralize "gasUsed" changes
         stakeCount:
           type: integer
           format: int64
+          description: Count of stake events
         withdrawCount:
           type: integer
           format: int64
+          description: Count of withdraw events
 
 
 servers:
