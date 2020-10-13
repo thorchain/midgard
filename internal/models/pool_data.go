@@ -82,4 +82,5 @@ type PoolDetails struct {
 	SwappersCount    uint64
 	SwappingTxCount  uint64
 	WithdrawTxCount  uint64
+	APY              float64
 }

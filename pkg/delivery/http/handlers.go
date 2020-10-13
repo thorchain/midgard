@@ -281,6 +281,7 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				SwappersCount:    Uint64ToString(details.SwappersCount),
 				SwappingTxCount:  Uint64ToString(details.SwappingTxCount),
 				WithdrawTxCount:  Uint64ToString(details.WithdrawTxCount),
+				APY:              Float64ToString(details.APY),
 			}
 		}
 	default:

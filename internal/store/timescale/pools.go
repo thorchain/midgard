@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"math"
 	"time"
 
 	"gitlab.com/thorchain/midgard/internal/store"
@@ -244,6 +245,13 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 	runeEarned := basics.GasReplenished + basics.Reward + int64(sellFeesTotal)
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 
+	poolEarned30d, err := s.GetPoolEarned30d(asset)
+	if err != nil {
+		return models.PoolDetails{}, errors.Wrap(err, "getPoolData failed")
+	}
+	periodicRate := float64(poolEarned30d) / float64(poolDepth)
+	APY := math.Pow(1+periodicRate, 12) - 1
+
 	return models.PoolDetails{
 		Asset:            asset,
 		AssetDepth:       assetDepth,
@@ -286,6 +294,7 @@ func (s *Client) GetPoolData(asset common.Asset) (models.PoolDetails, error) {
 		SwappingTxCount:  swappingTxCount,
 		WithdrawTxCount:  withdrawTxCount,
 		Status:           poolStatus.String(),
+		APY:              APY,
 	}, nil
 }
 
