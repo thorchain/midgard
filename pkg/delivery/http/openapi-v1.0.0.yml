@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Midgard Public API
-  version: 0.2.1
+  version: 0.3.0
   contact:
     email: devs@thorchain.org
   description: The Midgard Public API queries THORChain and any chains linked via the Bifröst and prepares information about the network to be readily available for public users. The API parses transaction event data from THORChain and stores them in a time-series database to make time-dependent queries easy. Midgard does not hold critical information. To interact with BEPSwap and Asgardex, users should query THORChain directly.
@@ -270,6 +270,44 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/TotalVolChangesResponse'
+  "/v1/history/pools":
+    get:
+      operationId: GetPoolAggChanges
+      summary: Get Pool Aggregated Changes
+      description: Returns historical aggregated details of the specified pool.
+      parameters:
+        - in: query
+          name: pool
+          description: Pool asset name
+          required: true
+          schema:
+            type: string
+          example: [BNB.TOMOB-1E1, BNB.TCAN-014]
+        - in: query
+          name: interval
+          description: Interval of calculations
+          required: true
+          schema:
+            type: string
+            enum: ["5min", "hour", "day", "week", "month", "year"]
+        - in: query
+          name: from
+          description: Start time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: to
+          description: End time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          $ref: '#/components/responses/GetPoolAggChangesResponse'
+
 components:
   responses:
     PoolsDetailedResponse:
@@ -413,6 +451,16 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/TotalVolChanges'
+
+    GetPoolAggChangesResponse:
+      description: Get Return an array of pool changes.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/PoolAggChanges'
+
   schemas:
     TxDetails:
       properties:
@@ -976,12 +1024,89 @@ components:
         time:
           type: integer
           format: int64
+          description: Determining end of current time bucket in unix timestamp
         buyVolume:
           type: string
+          description: Sum of "rune_amount" of buy swap events
         sellVolume:
           type: string
+          description: Sum of "rune_amount" of sell swap events
         totalVolume:
           type: string
+          description: buyVolume + sellVolume
+
+    PoolAggChanges:
+      type: object
+      properties:
+        time:
+          type: integer
+          format: int64
+          description: Determining end of current time bucket in unix timestamp
+        assetChanges:
+          type: string
+          description: Total changes in asset depth at this time bucket
+        assetDepth:
+          type: string
+          description: Depth of asset at the end of current time bucket
+        assetStaked:
+          type: string
+          description: Total asset staked
+        assetWithdrawn:
+          type: string
+          description: Total asset withdrawn
+        buyCount:
+          type: integer
+          format: int64
+          description: Count of buy swaps
+        buyVolume:
+          type: string
+          description: Sum of "rune_amount" of buy swap events
+        runeChanges:
+          type: string
+          description: Total changes in rune depth at this time bucket
+        runeDepth:
+          type: string
+          description: Depth of rune at the end of current time bucket
+        runeStaked:
+          type: string
+          description: Total rune staked
+        runeWithdrawn:
+          type: string
+          description: Total rune withdrawn
+        sellCount:
+          type: integer
+          format: int64
+          description: Count of sell swaps
+        sellVolume:
+          type: string
+          description: Sum of "rune_amount" of sell swap events
+        price:
+          type: string
+          description: Asset price in rune at the end of current time bucket
+        poolVolume:
+          type: string
+          description: buyVolume + sellVolume
+        unitsChanges:
+          type: string
+          description: Total changes in pool units (stakes/withdraws)
+        reward:
+          type: string
+          description: Sum of "rewards" events in rune
+        gasUsed:
+          type: string
+          description: Total amount of asset used as gas for network transactions (e.g. BNB.BNB, ETH.ETH)
+        gasReplenished:
+          type: string
+          description: Total amount of rune, paid by the network to neutralize "gasUsed" changes
+        stakeCount:
+          type: integer
+          format: int64
+          description: Count of stake events
+        withdrawCount:
+          type: integer
+          format: int64
+          description: Count of withdraw events
+
 
 servers:
   - url: http://127.0.0.1:8080
