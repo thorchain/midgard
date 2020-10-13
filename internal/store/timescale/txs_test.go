@@ -402,6 +402,133 @@ func (s *TimeScaleSuite) TestGetTxDetailsByEventType(c *C) {
 	c.Assert(events[0], DeepEquals, evts[1])
 }
 
+func (s *TimeScaleSuite) TestGetTxDetailsAssetFilter(c *C) {
+	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(0))
+	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
+	c.Assert(err, IsNil)
+	asset, _ := common.NewAsset("TOML-4BC")
+	c.Assert(err, IsNil)
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, asset, nil, 0, 50)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events, DeepEquals, []models.TxDetails{
+		{
+			Pool: asset,
+			Type: "stake",
+			In: models.TxData{
+				TxID: "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998",
+				Coin: common.Coins{
+					common.Coin{
+						Asset:  common.RuneB1AAsset,
+						Amount: 100,
+					},
+					common.Coin{
+						Asset:  asset,
+						Amount: 10,
+					},
+				},
+				Address: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				Memo:    "stake:TOML",
+			},
+			Height: 2,
+			Date:   uint64(stakeTomlEvent1.Time.Unix()),
+			Events: models.Events{
+				StakeUnits: 100,
+			},
+			Status: "Success",
+			Out:    []models.TxData{},
+		},
+	})
+
+	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
+	c.Assert(err, IsNil)
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, asset, nil, 0, 50)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(2))
+	c.Assert(len(events), Equals, 2)
+	c.Assert(events, DeepEquals, []models.TxDetails{
+		{
+			Pool: asset,
+			Type: "unstake",
+			In: models.TxData{
+				TxID: "24F5D0CF0DC1B1F1E3DA0DEC19E13252072F8E1F1CFB2839937C9DE38378E57C",
+				Coin: common.Coins{
+					common.Coin{
+						Asset:  common.BNBAsset,
+						Amount: 1,
+					},
+				},
+				Address: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				Memo:    "WITHDRAW:TOML-4BC",
+			},
+			Height: 3,
+			Date:   uint64(unstakeTomlEvent0.Time.Unix()),
+			Events: models.Events{
+				StakeUnits: -100,
+			},
+			Status: "Success",
+			Out: []models.TxData{
+				{
+					TxID: "E5869F3E93A4B0C0C63D79130ACBFA8A40590F0B54F82343E7F3C334C23F55B4",
+					Coin: common.Coins{
+						common.Coin{
+							Asset:  common.RuneB1AAsset,
+							Amount: 90,
+						},
+					},
+					Address: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					Memo:    "",
+				},
+				{
+					TxID: "4B074E4B83156A4E69A565B7E5AA8E106FC62F3390D9A947AA68BFEF2B092021",
+					Coin: common.Coins{
+						common.Coin{
+							Asset:  asset,
+							Amount: 10,
+						},
+					},
+					Address: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					Memo:    "",
+				},
+			},
+		},
+		{
+			Pool: asset,
+			Type: "stake",
+			In: models.TxData{
+				TxID: "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998",
+				Coin: common.Coins{
+					common.Coin{
+						Asset:  common.RuneB1AAsset,
+						Amount: 100,
+					},
+					common.Coin{
+						Asset:  asset,
+						Amount: 10,
+					},
+				},
+				Address: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				Memo:    "stake:TOML",
+			},
+			Height: 2,
+			Date:   uint64(stakeTomlEvent1.Time.Unix()),
+			Events: models.Events{
+				StakeUnits: 100,
+			},
+			Status: "Success",
+			Out:    []models.TxData{},
+		},
+	})
+
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.BNBAsset, nil, 0, 50)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(0))
+	c.Assert(len(events), Equals, 0)
+}
+
 func (s *TimeScaleSuite) TestGetTxDetailsPagination(c *C) {
 	_, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, nil, 0, 1)
 	c.Assert(err, IsNil)
