@@ -715,6 +715,9 @@ components:
         poolEarned:
           type: string
           description: (assetChanges * price) + runeEarned
+        APY:
+          type: string
+          description: (1 + (poolEarned/poolDepth)) ^ 12 -1
 
     AssetDetail:
       type: object
