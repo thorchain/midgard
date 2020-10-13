@@ -1382,8 +1382,8 @@ func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
 	}
-	assetEarned := gas_used.Int64 + int64(buyFee)
-	runeEarned := gas_replenished.Int64 + reward.Int64 + int64(sellFee)
+	assetEarned := gas_used.Int64 + buyFee
+	runeEarned := gas_replenished.Int64 + reward.Int64 + sellFee
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 	activeDays := time.Now().Sub(lastInactiveDate).Hours() / 24
 	if activeDays < 30 {
