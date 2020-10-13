@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	day   = time.Hour * 24
-	month = day * 30
+	day           = time.Hour * 24
+	month         = day * 30
+	monthsPerYear = 12
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
@@ -379,7 +380,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to update constants from mimir")
 	}
-	totalStaked, err := uc.store.GetTotalDepth()
+	totalDepth, err := uc.store.GetTotalDepth()
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +400,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
-	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalStaked)
+	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalDepth)
 	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
 	lastHeight, err := uc.thorchain.GetLastChainHeight()
@@ -412,18 +413,21 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	}
 
 	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
+	blocksPerMonth := blocksPerYear / monthsPerYear
 	netInfo := models.NetworkInfo{
 		BondMetrics:             metrics,
 		ActiveBonds:             activeBonds,
 		StandbyBonds:            standbyBonds,
-		TotalStaked:             totalStaked,
+		TotalStaked:             totalDepth,
 		ActiveNodeCount:         len(activeBonds),
 		StandbyNodeCount:        len(standbyBonds),
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
 		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
-		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
+		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
+		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalDepth), monthsPerYear),
+		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalDepth), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
