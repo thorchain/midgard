@@ -1644,3 +1644,11 @@ func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
 	_, err = uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
 }
+
+func (s *UsecaseSuite) TestCalculateAPY(c *C) {
+	apy := calculateAPY(0.2, 12)
+	c.Assert(apy, Equals, 0.21939108490523185)
+
+	apy = calculateAPY(1.3, 365)
+	c.Assert(apy, Equals, 2.6608318896163454)
+}

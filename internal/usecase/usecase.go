@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -303,6 +304,11 @@ func calculateROI(depth, staked int64) float64 {
 		return float64(depth-staked) / float64(staked)
 	}
 	return 0
+}
+
+func calculateAPY(rate float64, n float64) float64 {
+	// APY = (1 + rate / n) ^ n + 1
+	return math.Pow(1+rate/n, n) - 1
 }
 
 // fetchPoolStatus fetches pool status from thorchain and update database.
