@@ -951,6 +951,25 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(sellFeesTotal.Int64), nil
 }
 
+func (s *Client) sellFees30d(asset common.Asset) (uint64, error) {
+	stmnt := `
+		SELECT SUM(liquidity_fee)
+		FROM swaps
+		WHERE pool = $1
+		AND runeAmt < 0
+		AND time > NOW() - INTERVAL '30 DAYS'
+	`
+
+	var sellFees30d sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&sellFees30d); err != nil {
+		return 0, errors.Wrap(err, "sellFees30d failed")
+	}
+
+	return uint64(sellFees30d.Int64), nil
+}
+
 func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(liquidity_fee)
@@ -967,6 +986,25 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	}
 
 	return uint64(buyFeesTotal.Int64), nil
+}
+
+func (s *Client) buyFees30d(asset common.Asset) (uint64, error) {
+	stmnt := `
+		SELECT SUM(liquidity_fee)
+		FROM swaps
+		WHERE pool = $1
+		AND runeAmt > 0
+		AND time > NOW() - INTERVAL '30 DAYS'
+	`
+
+	var buyFees30d sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&buyFees30d); err != nil {
+		return 0, errors.Wrap(err, "buyFees30d failed")
+	}
+
+	return uint64(buyFees30d.Int64), nil
 }
 
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
@@ -1266,4 +1304,44 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 		return pool.Status, nil
 	}
 	return models.Unknown, nil
+}
+
+func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT Sum(reward), 
+       	Sum(gas_used), 
+       	Sum(gas_replenished), 
+       	Min(time) 
+		FROM   pool_changes_daily 
+		WHERE  pool= $1
+		AND    time> Now() - interval '30 DAYS'
+	`
+
+	var reward, gas_used, gas_replenished sql.NullInt64
+	var minDate time.Time
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&reward, gas_used, gas_replenished, minDate); err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+	}
+	buyFee30d, err := s.buyFees30d(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+	}
+	sellFee30d, err := s.sellFees30d(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+	}
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+	}
+	assetEarned30d := gas_used.Int64 + int64(buyFee30d)
+	runeEarned30d := gas_replenished.Int64 + reward.Int64 + int64(sellFee30d)
+	poolEarned30d := int64(float64(assetEarned30d)*priceInRune) + runeEarned30d
+	dayDiff := time.Now().Sub(minDate)
+	if dayDiff < 30 {
+		poolEarned30d = poolEarned30d * int64(30/dayDiff)
+	}
+	return poolEarned30d, nil
 }
