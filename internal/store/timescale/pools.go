@@ -960,25 +960,6 @@ func (s *Client) sellFeesTotal(asset common.Asset) (uint64, error) {
 	return uint64(sellFeesTotal.Int64), nil
 }
 
-func (s *Client) sellFees30d(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(liquidity_fee)
-		FROM swaps
-		WHERE pool = $1
-		AND runeAmt < 0
-		AND time > NOW() - INTERVAL '30 DAYS'
-	`
-
-	var sellFees30d sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&sellFees30d); err != nil {
-		return 0, errors.Wrap(err, "sellFees30d failed")
-	}
-
-	return uint64(sellFees30d.Int64), nil
-}
-
 func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	stmnt := `
 		SELECT SUM(liquidity_fee)
@@ -995,25 +976,6 @@ func (s *Client) buyFeesTotal(asset common.Asset) (uint64, error) {
 	}
 
 	return uint64(buyFeesTotal.Int64), nil
-}
-
-func (s *Client) buyFees30d(asset common.Asset) (uint64, error) {
-	stmnt := `
-		SELECT SUM(liquidity_fee)
-		FROM swaps
-		WHERE pool = $1
-		AND runeAmt > 0
-		AND time > NOW() - INTERVAL '30 DAYS'
-	`
-
-	var buyFees30d sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String())
-
-	if err := row.Scan(&buyFees30d); err != nil {
-		return 0, errors.Wrap(err, "buyFees30d failed")
-	}
-
-	return uint64(buyFees30d.Int64), nil
 }
 
 func (s *Client) poolFeesTotal(asset common.Asset) (uint64, error) {
