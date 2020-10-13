@@ -1306,22 +1306,40 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	return models.Unknown, nil
 }
 
+func (s *Client) activeDayCount30d(asset common.Asset) (int64, error) {
+	stmnt := `
+		SELECT Count(*) 
+		FROM   ( 
+				SELECT   Date_trunc('day',time) AS days 
+				FROM     pools_history 
+				WHERE    pool = 'BNB.BNB' 
+				AND      status = 0 
+				AND      time > Now() - interval '30 DAYS' 
+				GROUP BY 1)t'
+	`
+
+	var cnt sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String())
+
+	if err := row.Scan(&cnt); err != nil {
+		return 0, errors.Wrap(err, "activeDayCount30d failed")
+	}
+}
+
 func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT Sum(reward), 
        	Sum(gas_used), 
        	Sum(gas_replenished), 
-       	Min(time) 
 		FROM   pool_changes_daily 
-		WHERE  pool= $1
-		AND    time> Now() - interval '30 DAYS'
+		WHERE  pool = $1
+		AND    time > Now() - interval '30 DAYS'
 	`
 
 	var reward, gas_used, gas_replenished sql.NullInt64
-	var minDate time.Time
 	row := s.db.QueryRow(stmnt, asset.String())
 
-	if err := row.Scan(&reward, gas_used, gas_replenished, minDate); err != nil {
+	if err := row.Scan(&reward, &gas_used, &gas_replenished); err != nil {
 		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
 	}
 	buyFee30d, err := s.buyFees30d(asset)
@@ -1339,9 +1357,9 @@ func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	assetEarned30d := gas_used.Int64 + int64(buyFee30d)
 	runeEarned30d := gas_replenished.Int64 + reward.Int64 + int64(sellFee30d)
 	poolEarned30d := int64(float64(assetEarned30d)*priceInRune) + runeEarned30d
-	dayDiff := time.Now().Sub(minDate)
-	if dayDiff < 30 {
-		poolEarned30d = poolEarned30d * int64(30/dayDiff)
+	activeDays, err := s.activeDayCount30d(asset)
+	if activeDays < 30 {
+		poolEarned30d = poolEarned30d * int64(30/activeDays)
 	}
 	return poolEarned30d, nil
 }
