@@ -2038,3 +2038,78 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(dateCreated, Equals, uint64(stakeTomlEvent1.Time.Unix()))
 }
+
+func (s *TimeScaleSuite) TestLastPoolInactiveDate(c *C) {
+	now := time.Now()
+
+	lastDate, err := s.Store.lastPoolInactiveDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.IsZero(), Equals, true)
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-20 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Bootstrap,
+		Pool:   common.BNBAsset,
+	})
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate, Equals, now.Add(-20*24*time.Hour))
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-15 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate, Equals, now.Add(-30*24*time.Hour))
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-10 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Bootstrap,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	_, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate, Equals, now.Add(-10*24*time.Hour))
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-5 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate, Equals, now.Add(-10*24*time.Hour))
+}
