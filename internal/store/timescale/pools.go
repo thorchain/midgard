@@ -1110,7 +1110,7 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 
 func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	lastInactiveDate, err := s.lastPoolInactiveDate(asset)
-	if err != nil  {
+	if err != nil {
 		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
 	}
 	if lastInactiveDate.IsZero() {
