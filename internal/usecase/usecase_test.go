@@ -684,6 +684,10 @@ func (s *TestGetPoolDetailsStore) GetSwappersCount(asset common.Asset) (uint64, 
 	return s.swappersCount, s.err
 }
 
+func (s *TestGetPoolDetailsStore) GetPoolEarned30d(asset common.Asset) (int64, error) {
+	return 4000000, nil
+}
+
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	client := &TestGetPoolDetailsThorchain{
 		status: models.Enabled,
@@ -787,6 +791,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		StakersCount:    1,
 		SwappersCount:   3,
 		SwappingTxCount: 5,
+		PoolAPY:         0.010262900109454076,
 	})
 
 	client.status = models.Bootstrap
