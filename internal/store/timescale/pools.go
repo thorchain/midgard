@@ -1081,11 +1081,11 @@ func (s *Client) lastPoolInactiveDate(asset common.Asset) (time.Time, error) {
 		SELECT Max(time) 
 		FROM   pools_history 
 		WHERE  pool = $1 
-		AND    status != 0 
+		AND    status = $2 
 		AND    time > Now() - interval '30 DAYS'`
 
 	var inactiveTime sql.NullTime
-	row := s.db.QueryRow(stmnt, asset.String())
+	row := s.db.QueryRow(stmnt, asset.String(), models.Bootstrap)
 
 	if err := row.Scan(&inactiveTime); err != nil {
 		return time.Time{}, errors.Wrap(err, "lastPoolInactiveDate failed")

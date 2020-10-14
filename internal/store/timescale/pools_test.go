@@ -2060,7 +2060,7 @@ func (s *TimeScaleSuite) TestLastPoolInactiveDate(c *C) {
 	c.Assert(err, IsNil)
 	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(lastDate, Equals, now.Add(-20*24*time.Hour))
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
 
 	err = s.Store.CreatePoolRecord(&models.EventPool{
 		Event: models.Event{
@@ -2077,7 +2077,7 @@ func (s *TimeScaleSuite) TestLastPoolInactiveDate(c *C) {
 	c.Assert(err, IsNil)
 	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(lastDate, Equals, now.Add(-15*24*time.Hour))
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
 
 	err = s.Store.CreatePoolRecord(&models.EventPool{
 		Event: models.Event{
@@ -2092,9 +2092,9 @@ func (s *TimeScaleSuite) TestLastPoolInactiveDate(c *C) {
 	})
 
 	c.Assert(err, IsNil)
-	_, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
+	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(lastDate, Equals, now.Add(-10*24*time.Hour))
+	c.Assert(lastDate.Unix(), Equals, now.Add(-10*24*time.Hour).Unix())
 
 	err = s.Store.CreatePoolRecord(&models.EventPool{
 		Event: models.Event{
@@ -2111,5 +2111,5 @@ func (s *TimeScaleSuite) TestLastPoolInactiveDate(c *C) {
 	c.Assert(err, IsNil)
 	lastDate, err = s.Store.lastPoolInactiveDate(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(lastDate, Equals, now.Add(-10*24*time.Hour))
+	c.Assert(lastDate.Unix(), Equals, now.Add(-10*24*time.Hour).Unix())
 }
