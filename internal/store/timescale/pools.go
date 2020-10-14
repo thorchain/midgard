@@ -1148,7 +1148,7 @@ func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 	activeDays := time.Now().Sub(lastInactiveDate).Hours() / 24
 	if activeDays < 30 {
-		poolEarned = int64(float64(poolEarned) * float64(30/activeDays))
+		poolEarned = int64(float64(poolEarned) * 30 / activeDays)
 	}
 	return poolEarned, nil
 }
