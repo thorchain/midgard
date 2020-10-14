@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -394,7 +395,12 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
-
+	poolEarned30d, err := uc.store.GetPoolEarned30d(asset)
+	if err != nil {
+		return nil, err
+	}
+	periodicRate := float64(poolEarned30d) / float64(details.PoolDepth)
+	details.APY = math.Pow(1+periodicRate, 12) - 1
 	return details, nil
 }
 

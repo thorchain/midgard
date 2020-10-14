@@ -210,3 +210,7 @@ func (s *StoreDummy) GetStakersCount(asset common.Asset) (uint64, error) {
 func (s *StoreDummy) GetSwappersCount(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
+
+func (s *StoreDummy) GetPoolEarned30d(asset common.Asset) (int64, error) {
+	return 0, ErrNotImplemented
+}
