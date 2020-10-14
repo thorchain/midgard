@@ -1281,9 +1281,9 @@ func (s *Client) lastPoolInactiveDate(asset common.Asset) (time.Time, error) {
 	stmnt := `
 		SELECT Max(time) 
 		FROM   pools_history 
-		WHERE  pool= $1 
-		AND    status!=0 
-		AND    time> Now() - interval '30 DAYS'`
+		WHERE  pool = $1 
+		AND    status != 0 
+		AND    time > Now() - interval '30 DAYS'`
 
 	var inactiveTime sql.NullTime
 	row := s.db.QueryRow(stmnt, asset.String())
@@ -1324,10 +1324,10 @@ func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	stmnt := `
 		SELECT Sum(reward), 
        	Sum(gas_used), 
-       	Sum(gas_replenished), 
+       	Sum(gas_replenished) 
 		FROM   pool_changes_daily 
 		WHERE  pool = $1
-		AND    time > $2
+		AND    time >= $2
 	`
 
 	var reward, gas_used, gas_replenished sql.NullInt64
