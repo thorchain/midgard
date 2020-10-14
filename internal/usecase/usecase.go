@@ -400,7 +400,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		return nil, err
 	}
 	periodicRate := float64(poolEarned30d) / float64(details.PoolDepth)
-	details.APY = math.Pow(1+periodicRate, 12) - 1
+	details.PoolAPY = math.Pow(1+periodicRate, 12) - 1
 	return details, nil
 }
 
