@@ -43,6 +43,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			}
 		}
 	}
+	tradeSlip := float64(record.TradeSlip) / slipBasisPoints
 
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
@@ -64,7 +65,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		record.Event.InTx.ToAddress,
 		record.Pool.String(),
 		record.PriceTarget,
-		float64(record.TradeSlip)/slipBasisPoints,
+		tradeSlip,
 		record.LiquidityFee,
 		runeAmt,
 		assetAmt,
@@ -81,6 +82,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 		AssetAmount:  assetAmt,
 		RuneAmount:   runeAmt,
 		Height:       record.Height,
+		TradeSlip:    &tradeSlip,
 		LiquidityFee: record.LiquidityFee,
 	}
 	if assetAmt < 0 || runeAmt > 0 {

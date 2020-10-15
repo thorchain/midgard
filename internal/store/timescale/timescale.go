@@ -146,7 +146,7 @@ func (s *Client) initPoolCache() error {
 	if err != nil {
 		return err
 	}
-	err = s.fetchAllPoolsFees()
+	err = s.fetchAllPoolsSwap()
 	return err
 }
 
@@ -163,10 +163,12 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount) FILTER (WHERE event_type = 'gas'),
 		SUM(asset_amount) FILTER (WHERE event_type = 'add'),
 		SUM(rune_amount) FILTER (WHERE event_type = 'add'),
-		SUM(units) FILTER (WHERE events.status = 'Success')
+		SUM(units) FILTER (WHERE events.status = 'Success'),
+		COUNT(*) FILTER (WHERE units > 0 AND events.status = 'Success'),
+		COUNT(*) FILTER (WHERE units < 0 AND events.status = 'Success')
 		FROM pools_history
 		LEFT JOIN events
-		ON events.id=pools_history.event_id
+		ON events.id = pools_history.event_id
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
 	if err != nil {
@@ -189,9 +191,12 @@ func (s *Client) fetchAllPoolsBalances() error {
 			assetAdded     sql.NullInt64
 			runeAdded      sql.NullInt64
 			units          sql.NullInt64
+			stakeCount     sql.NullInt64
+			withdrawCount  sql.NullInt64
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
-			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &assetAdded, &runeAdded, &units); err != nil {
+			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &assetAdded, &runeAdded,
+			&units, &stakeCount, &withdrawCount); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
@@ -241,10 +246,16 @@ func (s *Client) fetchAllPoolsStatus() error {
 	return nil
 }
 
-func (s *Client) fetchAllPoolsFees() error {
+func (s *Client) fetchAllPoolsSwap() error {
 	q := `SELECT pool,
+		SUM(assetAmt) FILTER (WHERE assetAmt < 0),
 		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0 or assetAmt < 0),
-		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0 or assetAmt > 0)
+		SUM(trade_slip) FILTER (WHERE runeAmt > 0 or assetAmt < 0),
+		COUNT(*) FILTER (WHERE assetAmt < 0),
+		SUM(runeAmt) FILTER (WHERE runeAmt < 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0 or assetAmt > 0),
+		SUM(trade_slip) FILTER (WHERE runeAmt < 0 or assetAmt > 0),
+		COUNT(*) FILTER (WHERE runeAmt < 0)
 		FROM swaps
 		GROUP BY pool`
 	rows, err := s.db.Queryx(q)
@@ -255,24 +266,28 @@ func (s *Client) fetchAllPoolsFees() error {
 
 	for rows.Next() {
 		var (
-			pool    string
-			buyFee  sql.NullInt64
-			sellFee sql.NullInt64
+			pool          string
+			buyVolume     sql.NullInt64
+			buyFeesTotal  sql.NullInt64
+			buySlipTotal  sql.NullFloat64
+			buyCount      sql.NullInt64
+			sellVolume    sql.NullInt64
+			sellFeesTotal sql.NullInt64
+			sellSlipTotal sql.NullFloat64
+			sellCount     sql.NullInt64
 		)
-		if err := rows.Scan(&pool, &buyFee, &sellFee); err != nil {
+		if err := rows.Scan(&pool, &buyVolume, &buyFeesTotal, &buySlipTotal, &buyCount,
+			&sellVolume, &sellFeesTotal, &sellSlipTotal, &sellCount); err != nil {
 			return err
 		}
-		asset, _ := common.NewAsset(pool)
-		if _, ok := s.pools[pool]; !ok {
-			s.pools[pool] = &models.PoolBasics{
-				Asset:         asset,
-				BuyFeesTotal:  buyFee.Int64,
-				SellFeesTotal: sellFee.Int64,
-			}
-		} else {
-			s.pools[pool].BuyFeesTotal = buyFee.Int64
-			s.pools[pool].SellFeesTotal = sellFee.Int64
-		}
+		s.pools[pool].BuyVolume = -buyVolume.Int64
+		s.pools[pool].BuyFeesTotal = buyFeesTotal.Int64
+		s.pools[pool].BuySlipTotal = buySlipTotal.Float64
+		s.pools[pool].BuyCount = buyCount.Int64
+		s.pools[pool].SellVolume = -sellVolume.Int64
+		s.pools[pool].SellFeesTotal = sellFeesTotal.Int64
+		s.pools[pool].SellSlipTotal = sellSlipTotal.Float64
+		s.pools[pool].SellCount = sellCount.Int64
 	}
 	return nil
 }
@@ -298,9 +313,15 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	case "stake":
 		p.AssetStaked += change.AssetAmount
 		p.RuneStaked += change.RuneAmount
+		if change.Units > 0 {
+			p.StakeCount++
+		}
 	case "unstake":
 		p.AssetWithdrawn += -change.AssetAmount
 		p.RuneWithdrawn += -change.RuneAmount
+		if change.Units < 0 {
+			p.WithdrawCount++
+		}
 	case "gas":
 		p.GasUsed += change.AssetAmount
 		p.GasReplenished += change.RuneAmount
@@ -312,9 +333,19 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	}
 	switch change.SwapType {
 	case models.SwapTypeBuy:
-		p.BuyFeesTotal += change.LiquidityFee
+		p.BuyVolume += -change.AssetAmount
+		if change.TradeSlip != nil {
+			p.BuySlipTotal += *change.TradeSlip
+			p.BuyFeesTotal += change.LiquidityFee
+			p.BuyCount++
+		}
 	case models.SwapTypeSell:
-		p.SellFeesTotal += change.LiquidityFee
+		p.SellVolume += -change.RuneAmount
+		if change.TradeSlip != nil {
+			p.SellSlipTotal += *change.TradeSlip
+			p.SellFeesTotal += change.LiquidityFee
+			p.SellCount++
+		}
 	}
 
 	if change.Status > models.Unknown {
