@@ -1598,7 +1598,7 @@ type TestGetPoolAPY struct {
 	depth       int64
 }
 
-func (s *TestGetPoolAPY) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
+func (s *TestGetPoolAPY) GetPoolLastEnabledDate(_ common.Asset) (time.Time, error) {
 	return s.enabledDate, nil
 }
 
@@ -1610,7 +1610,7 @@ func (s *TestGetPoolAPY) GetPoolStatus(_ common.Asset) (models.PoolStatus, error
 	return s.status, nil
 }
 
-func (s *TestGetPoolAPY) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+func (s *TestGetPoolAPY) GetPoolBasics(_ common.Asset) (models.PoolBasics, error) {
 	return models.PoolBasics{
 		Status:    s.status,
 		RuneDepth: s.depth,
@@ -1639,5 +1639,5 @@ func (s *UsecaseSuite) TestGetPoolAPY(c *C) {
 	store.enabledDate = time.Now().Add(-10 * 24 * time.Hour)
 	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(poolAPY, Equals, math.Pow(1+float64((float64(30.0/10.0)*40.0)/200.0), 12)-1)
+	c.Assert(poolAPY, Equals, math.Pow(1+float64(3.0*40.0/200.0), 12)-1)
 }
