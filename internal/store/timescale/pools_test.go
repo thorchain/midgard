@@ -2162,4 +2162,3 @@ func (s *TimeScaleSuite) TestGetPoolEarned(c *C){
 	c.Assert(err, IsNil)
 	c.Assert(earned, Equals, int64(7471028))
 }
-
