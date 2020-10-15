@@ -88,7 +88,7 @@ func (sc *BlockScanner) scan() {
 			var err error
 			sc.synced, err = sc.processNextBatch()
 			if err != nil {
-				//sc.logger.Error().Int64("height", sc.GetHeight()).Err(err).Msg("failed to process the next block")
+				sc.logger.Error().Int64("height", sc.GetHeight()).Err(err).Msg("failed to process the next block")
 			} else {
 				if !sc.synced {
 					continue
@@ -109,7 +109,7 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 	to := from + maxBlockchainInfoSize - 1
 	info, err := sc.fetchInfo(from, to)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	to = from + int64(len(info.BlockMetas)) - 1
 
