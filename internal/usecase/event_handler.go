@@ -459,6 +459,20 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	if len(evts) == 0 {
 		return nil
 	}
+	for _, evt := range evts {
+		if evt.Type == refundEventType {
+			err = eh.store.UpdateEventStatus(evt.ID, successEvent)
+			if err != nil {
+				return err
+			}
+			evt.OutTxs = common.Txs{outTx}
+			err = eh.store.ProcessTxRecord("out", evt, outTx)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
 	var evt models.Event
 	if evts[0].Type == unstakeEventType {
 		evt = evts[0]
