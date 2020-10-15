@@ -2116,7 +2116,7 @@ func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
 	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
 }
 
-func (s *TimeScaleSuite) TestGetPoolEarned(c *C){
+func (s *TimeScaleSuite) TestGetPoolEarned(c *C) {
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
@@ -2125,7 +2125,7 @@ func (s *TimeScaleSuite) TestGetPoolEarned(c *C){
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
-	earned, err := s.Store.GetPoolEarned(common.BNBAsset,time.Now().Add(-30*24*time.Hour))
+	earned, err := s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(earned, Equals, int64(7463556))
 
@@ -2135,7 +2135,7 @@ func (s *TimeScaleSuite) TestGetPoolEarned(c *C){
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
-	earned, err = s.Store.GetPoolEarned(common.BNBAsset,time.Now().Add(-30*24*time.Hour))
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(earned, Equals, int64(7471019))
 
@@ -2144,7 +2144,7 @@ func (s *TimeScaleSuite) TestGetPoolEarned(c *C){
 	err = s.Store.CreateRewardRecord(&reward)
 	c.Assert(err, IsNil)
 
-	earned, err = s.Store.GetPoolEarned(common.BNBAsset,time.Now().Add(-30*24*time.Hour))
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(earned, Equals, int64(7472019))
 
@@ -2154,11 +2154,11 @@ func (s *TimeScaleSuite) TestGetPoolEarned(c *C){
 	err = s.Store.CreateGasRecord(&gas)
 	c.Assert(err, IsNil)
 
-	earned, err = s.Store.GetPoolEarned(common.BNBAsset,time.Now().Add(-30*24*time.Hour))
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(earned, Equals, int64(7472028))
 
-	earned, err = s.Store.GetPoolEarned(common.BNBAsset,time.Now().Add(-25*24*time.Hour))
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-25*24*time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(earned, Equals, int64(7471028))
 }
