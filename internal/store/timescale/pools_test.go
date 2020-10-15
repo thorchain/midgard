@@ -2062,3 +2062,56 @@ func (s *TimeScaleSuite) TestGetPoolLiquidityFee(c *C) {
 	c.Assert(buyFee, Equals, int64(0))
 	c.Assert(sellFee, Equals, int64(7463556))
 }
+
+func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
+	now := time.Now().UTC()
+	err := s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-20 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+	c.Assert(err, IsNil)
+	lastDate, err := s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-25 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Bootstrap,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-10 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+}
