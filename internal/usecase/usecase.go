@@ -395,7 +395,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
-	details.PoolAPY, err = uc.GetPoolAPY(asset)
+	details.PoolAPY, err = uc.getPoolAPY(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -405,12 +405,12 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 // GetPoolAPY calculate poolAPY as follow
 // periodicRate = poolEarned/totalDepth (if pool is active less than 30 days, then we should extrapolate to 30)
 // APY = (1 + periodicRate) ^ 12 -1
-func (uc *Usecase) GetPoolAPY(pool common.Asset) (float64, error) {
-	status, err := uc.fetchPoolStatus(pool)
+func (uc *Usecase) getPoolAPY(pool common.Asset) (float64, error) {
+	poolBasic, err := uc.GetPoolBasics(pool)
 	if err != nil {
 		return 0, errors.Wrap(err, "GetPoolAPY failed")
 	}
-	if status != models.Enabled {
+	if poolBasic.Status != models.Enabled {
 		return 0, nil
 	}
 	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
@@ -427,10 +427,6 @@ func (uc *Usecase) GetPoolAPY(pool common.Asset) (float64, error) {
 	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
 	if activeDays < 30 {
 		poolEarned = int64(float64(poolEarned) * 30 / activeDays)
-	}
-	poolBasic, err := uc.GetPoolBasics(pool)
-	if err != nil {
-		return 0, errors.Wrap(err, "GetPoolAPY failed")
 	}
 	periodicRate := float64(poolEarned) / float64(poolBasic.RuneDepth*2)
 	return math.Pow(1+periodicRate, 12) - 1, nil

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"math"
 	"sync"
 	"testing"
 	"time"
@@ -1587,4 +1588,56 @@ func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
 
 	_, err = uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
+}
+
+type TestGetPoolAPY struct {
+	StoreDummy
+	status      models.PoolStatus
+	earned      int64
+	enabledDate time.Time
+	depth       int64
+}
+
+func (s *TestGetPoolAPY) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
+	return s.enabledDate, nil
+}
+
+func (s *TestGetPoolAPY) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
+	return s.earned, nil
+}
+
+func (s *TestGetPoolAPY) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
+	return s.status, nil
+}
+
+func (s *TestGetPoolAPY) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return models.PoolBasics{
+		Status:    s.status,
+		RuneDepth: s.depth,
+	}, nil
+}
+
+func (s *UsecaseSuite) TestGetPoolAPY(c *C) {
+	store := &TestGetPoolAPY{
+		status: models.Bootstrap,
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	poolAPY, err := uc.getPoolAPY(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAPY, Equals, float64(0))
+
+	store.status = models.Enabled
+	store.depth = 100
+	store.earned = 40
+	store.enabledDate = time.Now().Add(-40 * 24 * time.Hour)
+	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAPY, Equals, math.Pow(1+float64(40.0/200.0), 12)-1)
+
+	store.enabledDate = time.Now().Add(-10 * 24 * time.Hour)
+	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAPY, Equals, math.Pow(1+float64((float64(30.0/10.0)*40.0)/200.0), 12)-1)
 }
