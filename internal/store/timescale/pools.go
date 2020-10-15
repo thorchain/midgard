@@ -1082,7 +1082,7 @@ func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
 		SELECT time 
 		FROM   pools_history 
 		WHERE  pool = $1 
-			   AND status = $2 
+		AND status = $2 
 		ORDER  BY time ASC 
 		LIMIT  1 `
 

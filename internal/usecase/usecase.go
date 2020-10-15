@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	day   = time.Hour * 24
-	month = day * 30
+	day           = time.Hour * 24
+	month         = day * 30
+	monthsPerYear = 12
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
@@ -307,6 +308,11 @@ func calculateROI(depth, staked int64) float64 {
 	return 0
 }
 
+func calculateAPY(periodicRate float64, n float64) float64 {
+	// APY = (1 + periodicRate) ^ 12 -1
+	return math.Pow(1+periodicRate, n) - 1
+}
+
 // fetchPoolStatus fetches pool status from thorchain and update database.
 func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	status, err := uc.thorchain.GetPoolStatus(asset)
@@ -429,7 +435,7 @@ func (uc *Usecase) getPoolAPY(pool common.Asset) (float64, error) {
 		poolEarned = int64(float64(poolEarned) * 30 / activeDays)
 	}
 	periodicRate := float64(poolEarned) / float64(poolBasic.RuneDepth*2)
-	return math.Pow(1+periodicRate, 12) - 1, nil
+	return calculateAPY(periodicRate, monthsPerYear), nil
 }
 
 // GetStakers returns list of all active stakers in network.
