@@ -1076,7 +1076,7 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	return models.Unknown, nil
 }
 
-// Get the first time when pool status channged to enabled
+// Get the first time when pool status changed to enabled
 func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
 	stmnt := `
 		SELECT time 
@@ -1095,7 +1095,7 @@ func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
 	return inactiveTime.Time, nil
 }
 
-// Calculate buy and sell liquidity fee for an asset from a specified date till now
+// Calculate buy and sell liquidity fee for an asset from a specific date till now
 func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64, int64, error) {
 	q := `
 		SELECT 
