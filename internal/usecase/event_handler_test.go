@@ -665,6 +665,7 @@ type OutboundTestStore struct {
 	swap      models.EventSwap
 	fee       common.Fee
 	outTxs    common.Txs
+	refund    models.EventRefund
 }
 
 func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
@@ -692,7 +693,12 @@ func (s *OutboundTestStore) CreateFeeRecord(event models.Event, _ common.Asset) 
 	return nil
 }
 
-func (s *OutboundTestStore) UpdateEventStatus(_ int64, status string) error {
+func (s *OutboundTestStore) UpdateEventStatus(id int64, status string) error {
+	for i := range s.events {
+		if s.events[i].ID == id {
+			s.events[i].Status = status
+		}
+	}
 	return nil
 }
 
@@ -998,4 +1004,37 @@ func (s *EventHandlerSuite) TestEventError(c *C) {
 	err = eh.NewBlock(15, blockTime, nil, nil)
 	c.Assert(err, NotNil)
 	c.Assert(eh.height, Equals, int64(15))
+}
+
+func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
+	store := &OutboundTestStore{}
+	eh, err := newEventHandler(store, s.dummyThorchain)
+	c.Assert(err, IsNil)
+	blockTime := time.Now()
+	store.events = []models.Event{
+		{
+			Type: "swap",
+			Time: blockTime.Add(-10 * time.Second),
+		},
+		{
+			Type: "refund",
+			Time: blockTime.Add(-10 * time.Second),
+		},
+	}
+	evt := thorchain.Event{
+		Type: "outbound",
+		Attributes: map[string]string{
+			"chain":    "BTC",
+			"coin":     "23282731 BTC.BTC",
+			"from":     "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+			"id":       "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
+			"in_tx_id": "04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			"memo":     "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+			"to":       "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
+		},
+	}
+	eh.NewTx(1, []thorchain.Event{evt})
+
+	eh.NewBlock(1, blockTime, nil, nil)
+	c.Assert(store.events[1].Status, Equals, "Success")
 }
