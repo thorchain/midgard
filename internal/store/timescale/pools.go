@@ -1076,23 +1076,26 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	return models.Unknown, nil
 }
 
-func (s *Client) lastPoolInactiveDate(asset common.Asset) (time.Time, error) {
+// Get the first time when pool status channged to enabled
+func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
 	stmnt := `
-		SELECT Max(time) 
+		SELECT time 
 		FROM   pools_history 
 		WHERE  pool = $1 
-		AND    status = $2 
-		AND    time > Now() - interval '30 DAYS'`
+			   AND status = $2 
+		ORDER  BY time ASC 
+		LIMIT  1 `
 
 	var inactiveTime sql.NullTime
-	row := s.db.QueryRow(stmnt, asset.String(), models.Bootstrap)
+	row := s.db.QueryRow(stmnt, asset.String(), models.Enabled)
 
 	if err := row.Scan(&inactiveTime); err != nil {
-		return time.Time{}, errors.Wrap(err, "lastPoolInactiveDate failed")
+		return time.Time{}, errors.Wrap(err, "GetPoolLastEnabledDate failed")
 	}
 	return inactiveTime.Time, nil
 }
 
+// Calculate buy and sell liquidity fee for an asset from a specified date till now
 func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64, int64, error) {
 	q := `
 		SELECT 
@@ -1111,18 +1114,11 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 	return buyFee.Int64, sellFee.Int64, nil
 }
 
-func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
-	lastInactiveDate, err := s.lastPoolInactiveDate(asset)
-	if err != nil {
-		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
-	}
-	if lastInactiveDate.IsZero() {
-		lastInactiveDate = time.Now().Add(-30 * 24 * time.Hour)
-	}
-	if time.Now().Sub(lastInactiveDate).Hours() == 0 {
-		return 0, nil
-	}
-
+// Calculate poolEarned for a pool from a specified date till now
+// runeEarned  = gasUsed + buyFee
+// assetEarned = gasReplenished + reward + sellFee
+// poolEarned = assetEarned * Price + runeEarned
+func (s *Client) GetPoolEarned(asset common.Asset, from time.Time) (int64, error) {
 	stmnt := `
 		SELECT Sum(reward), 
        	Sum(gas_used), 
@@ -1132,12 +1128,12 @@ func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 		AND    time >= $2`
 
 	var reward, gasUsed, gasReplenished sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), lastInactiveDate)
+	row := s.db.QueryRow(stmnt, asset.String(), from)
 
 	if err := row.Scan(&reward, &gasUsed, &gasReplenished); err != nil {
-		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+		return 0, errors.Wrap(err, "GetPoolEarned failed")
 	}
-	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, lastInactiveDate)
+	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
 	if err != nil {
 		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
 	}
@@ -1148,9 +1144,5 @@ func (s *Client) GetPoolEarned30d(asset common.Asset) (int64, error) {
 	assetEarned := gasUsed.Int64 + buyFee
 	runeEarned := gasReplenished.Int64 + reward.Int64 + sellFee
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
-	activeDays := time.Now().Sub(lastInactiveDate).Hours() / 24
-	if activeDays < 30 {
-		poolEarned = int64(float64(poolEarned) * 30 / activeDays)
-	}
 	return poolEarned, nil
 }

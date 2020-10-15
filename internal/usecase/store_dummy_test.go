@@ -211,6 +211,10 @@ func (s *StoreDummy) GetSwappersCount(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolEarned30d(asset common.Asset) (int64, error) {
+func (s *StoreDummy) GetPoolEarned(asset common.Asset, from time.Time) (int64, error) {
 	return 0, nil
+}
+
+func (s *StoreDummy) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
+	return time.Time{}, nil
 }
