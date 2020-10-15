@@ -1035,6 +1035,7 @@ func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
 	}
 	eh.NewTx(1, []thorchain.Event{evt})
 
-	eh.NewBlock(1, blockTime, nil, nil)
+	err = eh.NewBlock(1, blockTime, nil, nil)
+	c.Assert(err, IsNil)
 	c.Assert(store.events[1].Status, Equals, "Success")
 }
