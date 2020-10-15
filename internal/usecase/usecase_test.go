@@ -791,7 +791,6 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		StakersCount:    1,
 		SwappersCount:   3,
 		SwappingTxCount: 5,
-		PoolAPY:         0.010262900109454076,
 	})
 
 	client.status = models.Bootstrap

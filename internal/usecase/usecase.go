@@ -414,6 +414,9 @@ func (uc *Usecase) GetPoolAPY(pool common.Asset) (float64, error) {
 		return 0, nil
 	}
 	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
 	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
 		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
 	}
