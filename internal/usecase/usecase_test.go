@@ -1590,7 +1590,7 @@ func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
 	c.Assert(err, NotNil)
 }
 
-type TestGetPoolAPY struct {
+type TestGetPoolAPYStore struct {
 	StoreDummy
 	status      models.PoolStatus
 	earned      int64
@@ -1598,19 +1598,19 @@ type TestGetPoolAPY struct {
 	depth       int64
 }
 
-func (s *TestGetPoolAPY) GetPoolLastEnabledDate(_ common.Asset) (time.Time, error) {
+func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time, error) {
 	return s.enabledDate, nil
 }
 
-func (s *TestGetPoolAPY) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
+func (s *TestGetPoolAPYStore) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
 	return s.earned, nil
 }
 
-func (s *TestGetPoolAPY) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
+func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
 	return s.status, nil
 }
 
-func (s *TestGetPoolAPY) GetPoolBasics(_ common.Asset) (models.PoolBasics, error) {
+func (s *TestGetPoolAPYStore) GetPoolBasics(_ common.Asset) (models.PoolBasics, error) {
 	return models.PoolBasics{
 		Status:    s.status,
 		RuneDepth: s.depth,
@@ -1618,7 +1618,7 @@ func (s *TestGetPoolAPY) GetPoolBasics(_ common.Asset) (models.PoolBasics, error
 }
 
 func (s *UsecaseSuite) TestGetPoolAPY(c *C) {
-	store := &TestGetPoolAPY{
+	store := &TestGetPoolAPYStore{
 		status: models.Bootstrap,
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
@@ -1635,9 +1635,4 @@ func (s *UsecaseSuite) TestGetPoolAPY(c *C) {
 	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
 	c.Assert(err, IsNil)
 	c.Assert(poolAPY, Equals, math.Pow(1+float64(40.0/200.0), 12)-1)
-
-	store.enabledDate = time.Now().Add(-10 * 24 * time.Hour)
-	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
-	c.Assert(err, IsNil)
-	c.Assert(poolAPY, Equals, math.Pow(1+float64(3.0*40.0/200.0), 12)-1)
 }
