@@ -307,9 +307,9 @@ func calculateROI(depth, staked int64) float64 {
 	return 0
 }
 
-func calculateAPY(rate float64, n float64) float64 {
-	// APY = (1 + rate / n) ^ n + 1
-	return math.Pow(1+rate/n, n) - 1
+func calculateAPY(periodicRate float64, n float64) float64 {
+	// APY = (1 + periodicRate) ^ 12 -1
+	return math.Pow(1+periodicRate, n) - 1
 }
 
 // fetchPoolStatus fetches pool status from thorchain and update database.
