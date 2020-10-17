@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tendermint/tendermint/libs/kv"
+
 	"github.com/pkg/errors"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -1586,4 +1588,199 @@ func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
 
 	_, err = uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
+}
+
+type TestFetchPoolStatusStore struct {
+	StoreDummy
+	changes []models.PoolAggChanges
+	err     error
+	event   *models.EventPool
+}
+
+func (s *TestFetchPoolStatusStore) CreatePoolRecord(record *models.EventPool) error {
+	s.event = record
+	return nil
+}
+
+type TestFetchPoolStatusThorchain struct {
+	ThorchainDummy
+	Status models.PoolStatus
+}
+
+func (s *TestFetchPoolStatusThorchain) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
+	return s.Status, nil
+}
+
+type TestFetchPoolStatusTendermint struct {
+	TendermintDummy
+	metas   []*tmtype.BlockMeta
+	results []*coretypes.ResultBlockResults
+}
+
+func (t *TestFetchPoolStatusTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error) {
+	if minHeight > int64(len(t.metas)) {
+		return nil, errors.Errorf("last block height is %d", len(t.metas))
+	}
+	if maxHeight > int64(len(t.metas)) {
+		maxHeight = int64(len(t.metas))
+	}
+
+	result := &coretypes.ResultBlockchainInfo{
+		LastHeight: int64(len(t.metas)),
+		BlockMetas: t.metas[minHeight-1 : maxHeight],
+	}
+	return result, nil
+}
+
+func (t *TestFetchPoolStatusTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResults, error) {
+	return &coretypes.ResultBlockResults{
+		BeginBlockEvents: []abcitypes.Event{},
+		TxsResults: []*abcitypes.ResponseDeliverTx{
+			{
+				Events: []abcitypes.Event{},
+			},
+		},
+		EndBlockEvents: []abcitypes.Event{},
+		Height:         *height,
+	}, nil
+}
+
+type TestCallback struct {
+}
+
+func (c *TestCallback) NewBlock(height int64, blockTime time.Time, begin, end []thorchain.Event) error {
+	return nil
+}
+
+func (c *TestCallback) NewTx(height int64, events []thorchain.Event) {
+}
+
+func (s *UsecaseSuite) TestFetchPoolStatus(c *C) {
+	now := time.Now()
+	store := &TestFetchPoolStatusStore{}
+	client := &TestFetchPoolStatusThorchain{}
+	tendermint := &TestFetchPoolStatusTendermint{
+		metas: []*tmtype.BlockMeta{
+			{
+				Header: tmtype.Header{
+					Height: 1,
+					Time:   now,
+				},
+			},
+			{
+				Header: tmtype.Header{
+					Height: 2,
+					Time:   now.Add(time.Second * 3),
+				},
+			},
+		},
+		results: []*coretypes.ResultBlockResults{
+			{
+				Height: 1,
+				TxsResults: []*abcitypes.ResponseDeliverTx{
+					{
+						Events: []abcitypes.Event{
+							{
+								Type: "deliver_tx_event_1",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key1"),
+										Value: []byte("value1"),
+									},
+								},
+							},
+						},
+					},
+				},
+				BeginBlockEvents: []abcitypes.Event{
+					{
+						Type: "begin_event_1",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key2"),
+								Value: []byte("value2"),
+							},
+						},
+					},
+					{
+						Type: "begin_event_2",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key3"),
+								Value: []byte("value3"),
+							},
+						},
+					},
+				},
+				EndBlockEvents: []abcitypes.Event{
+					{
+						Type: "end_event_1",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key4"),
+								Value: []byte("value4"),
+							},
+						},
+					},
+				},
+			},
+			{
+				Height: 2,
+				TxsResults: []*abcitypes.ResponseDeliverTx{
+					{
+						Events: []abcitypes.Event{
+							{
+								Type: "deliver_tx_event_2",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key5"),
+										Value: []byte("value5"),
+									},
+								},
+							},
+							{
+								Type: "deliver_tx_event_3",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key6"),
+										Value: []byte("value6"),
+									},
+								},
+							},
+						},
+					},
+				},
+				BeginBlockEvents: []abcitypes.Event{},
+				EndBlockEvents: []abcitypes.Event{
+					{
+						Type: "end_event_2",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key7"),
+								Value: []byte("value7"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	uc, err := NewUsecase(client, tendermint, tendermint, store, s.config)
+	c.Assert(err, IsNil)
+	uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.tendermintBatch, &TestCallback{}, uc.conf.ScanInterval)
+	client.Status = models.Bootstrap
+	status, err := uc.fetchPoolStatus(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(status, Equals, models.Bootstrap)
+	c.Assert(store.event, IsNil)
+
+	uc.scanner.Start()
+	time.Sleep(2 * time.Second)
+	uc.scanner.Stop()
+
+	client.Status = models.Enabled
+	status, err = uc.fetchPoolStatus(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(status, Equals, models.Enabled)
+	c.Assert(store.event.Status, DeepEquals, models.Enabled)
 }
