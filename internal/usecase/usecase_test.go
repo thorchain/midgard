@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tendermint/tendermint/libs/kv"
-
 	"github.com/pkg/errors"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -1618,18 +1616,7 @@ type TestFetchPoolStatusTendermint struct {
 }
 
 func (t *TestFetchPoolStatusTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error) {
-	if minHeight > int64(len(t.metas)) {
-		return nil, errors.Errorf("last block height is %d", len(t.metas))
-	}
-	if maxHeight > int64(len(t.metas)) {
-		maxHeight = int64(len(t.metas))
-	}
-
-	result := &coretypes.ResultBlockchainInfo{
-		LastHeight: int64(len(t.metas)),
-		BlockMetas: t.metas[minHeight-1 : maxHeight],
-	}
-	return result, nil
+	return &coretypes.ResultBlockchainInfo{LastHeight: 0, BlockMetas: []*tmtype.BlockMeta{}}, nil
 }
 
 func (t *TestFetchPoolStatusTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResults, error) {
@@ -1656,115 +1643,9 @@ func (c *TestCallback) NewTx(height int64, events []thorchain.Event) {
 }
 
 func (s *UsecaseSuite) TestFetchPoolStatus(c *C) {
-	now := time.Now()
 	store := &TestFetchPoolStatusStore{}
 	client := &TestFetchPoolStatusThorchain{}
-	tendermint := &TestFetchPoolStatusTendermint{
-		metas: []*tmtype.BlockMeta{
-			{
-				Header: tmtype.Header{
-					Height: 1,
-					Time:   now,
-				},
-			},
-			{
-				Header: tmtype.Header{
-					Height: 2,
-					Time:   now.Add(time.Second * 3),
-				},
-			},
-		},
-		results: []*coretypes.ResultBlockResults{
-			{
-				Height: 1,
-				TxsResults: []*abcitypes.ResponseDeliverTx{
-					{
-						Events: []abcitypes.Event{
-							{
-								Type: "deliver_tx_event_1",
-								Attributes: []kv.Pair{
-									{
-										Key:   []byte("key1"),
-										Value: []byte("value1"),
-									},
-								},
-							},
-						},
-					},
-				},
-				BeginBlockEvents: []abcitypes.Event{
-					{
-						Type: "begin_event_1",
-						Attributes: []kv.Pair{
-							{
-								Key:   []byte("key2"),
-								Value: []byte("value2"),
-							},
-						},
-					},
-					{
-						Type: "begin_event_2",
-						Attributes: []kv.Pair{
-							{
-								Key:   []byte("key3"),
-								Value: []byte("value3"),
-							},
-						},
-					},
-				},
-				EndBlockEvents: []abcitypes.Event{
-					{
-						Type: "end_event_1",
-						Attributes: []kv.Pair{
-							{
-								Key:   []byte("key4"),
-								Value: []byte("value4"),
-							},
-						},
-					},
-				},
-			},
-			{
-				Height: 2,
-				TxsResults: []*abcitypes.ResponseDeliverTx{
-					{
-						Events: []abcitypes.Event{
-							{
-								Type: "deliver_tx_event_2",
-								Attributes: []kv.Pair{
-									{
-										Key:   []byte("key5"),
-										Value: []byte("value5"),
-									},
-								},
-							},
-							{
-								Type: "deliver_tx_event_3",
-								Attributes: []kv.Pair{
-									{
-										Key:   []byte("key6"),
-										Value: []byte("value6"),
-									},
-								},
-							},
-						},
-					},
-				},
-				BeginBlockEvents: []abcitypes.Event{},
-				EndBlockEvents: []abcitypes.Event{
-					{
-						Type: "end_event_2",
-						Attributes: []kv.Pair{
-							{
-								Key:   []byte("key7"),
-								Value: []byte("value7"),
-							},
-						},
-					},
-				},
-			},
-		},
-	}
+	tendermint := &TestFetchPoolStatusTendermint{}
 	uc, err := NewUsecase(client, tendermint, tendermint, store, s.config)
 	c.Assert(err, IsNil)
 	uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.tendermintBatch, &TestCallback{}, uc.conf.ScanInterval)
