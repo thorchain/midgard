@@ -17,6 +17,8 @@ import (
 
 const maxBlockchainInfoSize = 20
 
+var blockInfoLimitErrorRegexp = regexp.MustCompile("min height [0-9]+ can't be greater than max height [0-9]+")
+
 // BlockScanner is a kind of scanner that will fetch events through scanning blocks.
 // with websocket or directly by requesting http endpoint.
 type BlockScanner struct {
@@ -110,8 +112,7 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 	to := from + maxBlockchainInfoSize - 1
 	info, err := sc.fetchInfo(from, to)
 	if err != nil {
-		matched, err1 := regexp.MatchString("min height [0-9]+ can't be greater than max height [0-9]+", err.Error())
-		if matched && err1 == nil {
+		if blockInfoLimitErrorRegexp.MatchString(err.Error()) {
 			return true, nil
 		}
 		return false, err
