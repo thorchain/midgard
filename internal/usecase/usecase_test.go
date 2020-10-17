@@ -1162,7 +1162,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	stakeReward := blockReward - bondReward
 	blocksPerMonth := float64(blocksPerYear) / 12
 	var liquidityAPY float64 = calculateAPY(float64(stakeReward)*blocksPerMonth/float64(1500), 12)
-	var bondingAPY float64 = calculateAPY(float64(bondReward)*blocksPerMonth/float64(1500), 12)
+	var bondingAPY float64 = calculateAPY(float64(bondReward)*blocksPerMonth/float64(4200), 12)
 
 	c.Assert(stats, DeepEquals, &models.NetworkInfo{
 		BondMetrics: models.BondMetrics{

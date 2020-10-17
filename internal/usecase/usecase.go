@@ -517,7 +517,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
 		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
 		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalDepth), monthsPerYear),
-		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalDepth), monthsPerYear),
+		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalActiveBond), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
