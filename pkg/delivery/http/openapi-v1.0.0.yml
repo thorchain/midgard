@@ -888,6 +888,12 @@ components:
           type: integer
           format: int64
           description: The remaining time of pool activation (in blocks)
+        liquidityAPY:
+          type: string
+          description: (1 + (stakeReward * blocksPerMonth/totalDepth)) ^ 12 -1
+        bondingAPY:
+          type: string
+          description: (1 + (bondReward * blocksPerMonth/totalDepth)) ^ 12 -1
 
     NodeKey:
       type: object
