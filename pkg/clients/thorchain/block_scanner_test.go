@@ -766,3 +766,134 @@ func (s *BlockScannerSuite) TestBlockError(c *C) {
 		},
 	})
 }
+
+func (s *BlockScannerSuite) TestIsSynced(c *C) {
+	now := time.Now()
+	client := &TestTendermint{
+		metas: []*types.BlockMeta{
+			{
+				Header: types.Header{
+					Height: 1,
+					Time:   now,
+				},
+			},
+			{
+				Header: types.Header{
+					Height: 2,
+					Time:   now.Add(time.Second * 3),
+				},
+			},
+		},
+		results: []*coretypes.ResultBlockResults{
+			{
+				Height: 1,
+				TxsResults: []*abcitypes.ResponseDeliverTx{
+					{
+						Events: []abcitypes.Event{
+							{
+								Type: "deliver_tx_event_1",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key1"),
+										Value: []byte("value1"),
+									},
+								},
+							},
+						},
+					},
+				},
+				BeginBlockEvents: []abcitypes.Event{
+					{
+						Type: "begin_event_1",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key2"),
+								Value: []byte("value2"),
+							},
+						},
+					},
+					{
+						Type: "begin_event_2",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key3"),
+								Value: []byte("value3"),
+							},
+						},
+					},
+				},
+				EndBlockEvents: []abcitypes.Event{
+					{
+						Type: "end_event_1",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key4"),
+								Value: []byte("value4"),
+							},
+						},
+					},
+				},
+			},
+			{
+				Height: 2,
+				TxsResults: []*abcitypes.ResponseDeliverTx{
+					{
+						Events: []abcitypes.Event{
+							{
+								Type: "deliver_tx_event_2",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key5"),
+										Value: []byte("value5"),
+									},
+								},
+							},
+							{
+								Type: "deliver_tx_event_3",
+								Attributes: []kv.Pair{
+									{
+										Key:   []byte("key6"),
+										Value: []byte("value6"),
+									},
+								},
+							},
+						},
+					},
+				},
+				BeginBlockEvents: []abcitypes.Event{},
+				EndBlockEvents: []abcitypes.Event{
+					{
+						Type: "end_event_2",
+						Attributes: []kv.Pair{
+							{
+								Key:   []byte("key7"),
+								Value: []byte("value7"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	callback := &TestCallback{}
+	bc := NewBlockScanner(client, client, callback, time.Second*3)
+
+	err := bc.Start()
+	c.Assert(err, IsNil)
+
+	time.Sleep(time.Second)
+
+	err = bc.Stop()
+	c.Assert(err, IsNil)
+	c.Assert(bc.IsSynced(), Equals, true)
+
+	err = bc.Start()
+	c.Assert(err, IsNil)
+
+	time.Sleep(time.Second)
+
+	err = bc.Stop()
+	c.Assert(err, IsNil)
+
+	c.Assert(bc.IsSynced(), Equals, true)
+}
