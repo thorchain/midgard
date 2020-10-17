@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"math"
 	"sync"
 	"testing"
 	"time"
@@ -682,6 +683,10 @@ func (s *TestGetPoolDetailsStore) GetStakersCount(asset common.Asset) (uint64, e
 
 func (s *TestGetPoolDetailsStore) GetSwappersCount(asset common.Asset) (uint64, error) {
 	return s.swappersCount, s.err
+}
+
+func (s *TestGetPoolDetailsStore) GetPoolEarned30d(asset common.Asset) (int64, error) {
+	return 4000000, nil
 }
 
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
@@ -1583,4 +1588,51 @@ func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
 
 	_, err = uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
+}
+
+type TestGetPoolAPYStore struct {
+	StoreDummy
+	status      models.PoolStatus
+	earned      int64
+	enabledDate time.Time
+	depth       int64
+}
+
+func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time, error) {
+	return s.enabledDate, nil
+}
+
+func (s *TestGetPoolAPYStore) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
+	return s.earned, nil
+}
+
+func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
+	return s.status, nil
+}
+
+func (s *TestGetPoolAPYStore) GetPoolBasics(_ common.Asset) (models.PoolBasics, error) {
+	return models.PoolBasics{
+		Status:    s.status,
+		RuneDepth: s.depth,
+	}, nil
+}
+
+func (s *UsecaseSuite) TestGetPoolAPY(c *C) {
+	store := &TestGetPoolAPYStore{
+		status: models.Bootstrap,
+	}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	c.Assert(err, IsNil)
+
+	poolAPY, err := uc.getPoolAPY(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAPY, Equals, float64(0))
+
+	store.status = models.Enabled
+	store.depth = 100
+	store.earned = 40
+	store.enabledDate = time.Now().Add(-40 * 24 * time.Hour)
+	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(poolAPY, Equals, math.Pow(1+float64(40.0/200.0), 12)-1)
 }

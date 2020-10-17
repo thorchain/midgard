@@ -58,4 +58,6 @@ type Store interface {
 	GetPoolROI12(asset common.Asset) (float64, error)
 	GetStakersCount(asset common.Asset) (uint64, error)
 	GetSwappersCount(asset common.Asset) (uint64, error)
+	GetPoolEarned(asset common.Asset, from time.Time) (int64, error)
+	GetPoolLastEnabledDate(asset common.Asset) (time.Time, error)
 }
