@@ -2,6 +2,7 @@ package thorchain
 
 import (
 	"fmt"
+	"regexp"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -109,6 +110,10 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 	to := from + maxBlockchainInfoSize - 1
 	info, err := sc.fetchInfo(from, to)
 	if err != nil {
+		matched, err1 := regexp.MatchString("min height [0-9]+ can't be greater than max height [0-9]+", err.Error())
+		if matched && err1 == nil {
+			return true, nil
+		}
 		return false, err
 	}
 	to = from + int64(len(info.BlockMetas)) - 1
