@@ -1128,7 +1128,7 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			},
 		},
 		vaultData: thorchain.VaultData{
-			TotalReserve: 1120,
+			TotalReserve: 100000000,
 		},
 		vaults: []thorchain.Vault{
 			{
@@ -1157,9 +1157,13 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 	stats, err := uc.GetNetworkInfo()
 	c.Assert(err, IsNil)
 	var poolShareFactor float64 = 2700.0 / 5700.0
-	var blockReward uint64 = 1120 / (emissionCurve * blocksPerYear)
+	var blockReward uint64 = 100000000 / (emissionCurve * blocksPerYear)
 	var bondReward uint64 = uint64((1 - poolShareFactor) * float64(blockReward))
 	stakeReward := blockReward - bondReward
+	blocksPerMonth := float64(blocksPerYear) / 12
+	var liquidityAPY float64 = calculateAPY(float64(stakeReward)*blocksPerMonth/float64(1500), 12)
+	var bondingAPY float64 = calculateAPY(float64(bondReward)*blocksPerMonth/float64(1500), 12)
+
 	c.Assert(stats, DeepEquals, &models.NetworkInfo{
 		BondMetrics: models.BondMetrics{
 			TotalActiveBond:    4200,
@@ -1178,15 +1182,17 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 		TotalStaked:      1500,
 		ActiveNodeCount:  3,
 		StandbyNodeCount: 3,
-		TotalReserve:     1120,
+		TotalReserve:     100000000,
 		PoolShareFactor:  poolShareFactor,
 		BlockReward: models.BlockRewards{
 			BlockReward: uint64(blockReward),
 			BondReward:  uint64(bondReward),
 			StakeReward: uint64(stakeReward),
 		},
-		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4485,
+		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4200,
 		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
+		LiquidityAPY:            liquidityAPY,
+		BondingAPY:              bondingAPY,
 		NextChurnHeight:         51851,
 		PoolActivationCountdown: 49975,
 	})
@@ -1635,4 +1641,15 @@ func (s *UsecaseSuite) TestGetPoolAPY(c *C) {
 	poolAPY, err = uc.getPoolAPY(common.BNBAsset)
 	c.Assert(err, IsNil)
 	c.Assert(poolAPY, Equals, math.Pow(1+float64(40.0/200.0), 12)-1)
+}
+
+func (s *UsecaseSuite) TestCalculateAPY(c *C) {
+	// stake reward = 85852784
+	// blocks per month = 525949
+	// total depth = 951751013473080
+	apy := calculateAPY(0.04747187602734120966287535497874, 12)
+	c.Assert(apy, Equals, float64(0.7446505635895115))
+
+	apy = calculateAPY(0.05570907125001629154412345541088, 12)
+	c.Assert(apy, Equals, float64(0.9165980383058261))
 }
