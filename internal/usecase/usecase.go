@@ -263,10 +263,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 			return nil, err
 		}
 	}
-	swapStats, err := uc.store.GetPoolSwapStats(asset)
-	if err != nil {
-		return nil, err
-	}
 	now := time.Now()
 	pastDay := now.Add(-day)
 	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
@@ -279,18 +275,23 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	assetEarned := basics.GasUsed + basics.BuyFeesTotal
 	runeEarned := basics.GasReplenished + basics.Reward + basics.SellFeesTotal
 	poolEarned := int64(float64(assetEarned)*price) + runeEarned
-	return &models.PoolSimpleDetails{
+	details := &models.PoolSimpleDetails{
 		PoolBasics:        basics,
-		PoolSwapStats:     swapStats,
 		PoolVolume24Hours: vol24,
 		Price:             price,
 		AssetROI:          assetROI,
+		AssetEarned:       assetEarned,
 		RuneROI:           runeROI,
+		RuneEarned:        runeEarned,
 		PoolROI:           (assetROI + runeROI) / 2,
 		PoolEarned:        poolEarned,
-		AssetEarned:       assetEarned,
-		RuneEarned:        runeEarned,
-	}, nil
+	}
+	details.SwappingTxCount = basics.BuyCount + basics.SellCount
+	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
+	poolVolume := int64(float64(details.BuyVolume)*details.Price) + details.SellVolume
+	details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+	details.PoolTxAverage = float64(poolVolume) / float64(details.SwappingTxCount)
+	return details, nil
 }
 
 func calculatePrice(assetDepth int64, runeDepth int64) float64 {
@@ -334,18 +335,107 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
 func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
-	data, err := uc.store.GetPoolData(asset)
+	basics, err := uc.store.GetPoolBasics(asset)
 	if err != nil {
 		return nil, err
 	}
-	if data.Status == "unknown" {
+	if basics.Status == models.Unknown {
 		status, err := uc.fetchPoolStatus(asset)
 		if err != nil {
 			return nil, err
 		}
-		data.Status = status.String()
+		basics.Status = status
 	}
-	return &data, nil
+
+	now := time.Now()
+	pastDay := now.Add(-day)
+	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
+	if err != nil {
+		return nil, err
+	}
+	poolROI12, err := uc.store.GetPoolROI12(asset)
+	if err != nil {
+		return nil, err
+	}
+	stakersCount, err := uc.store.GetStakersCount(asset)
+	if err != nil {
+		return nil, err
+	}
+	swappersCount, err := uc.store.GetSwappersCount(asset)
+	if err != nil {
+		return nil, err
+	}
+	details := &models.PoolDetails{
+		PoolBasics:      basics,
+		AssetROI:        calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn),
+		AssetEarned:     basics.GasUsed + basics.BuyFeesTotal,
+		RuneROI:         calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn),
+		RuneEarned:      basics.GasReplenished + basics.Reward + basics.SellFeesTotal,
+		Price:           calculatePrice(basics.AssetDepth, basics.RuneDepth),
+		PoolDepth:       uint64(basics.RuneDepth) * 2,
+		PoolVolume24hr:  uint64(vol24),
+		PoolROI12:       poolROI12,
+		PoolFeesTotal:   uint64(basics.BuyFeesTotal + basics.SellFeesTotal),
+		StakersCount:    stakersCount,
+		SwappersCount:   swappersCount,
+		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
+	}
+	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
+	details.BuyVolume = int64(float64(basics.BuyVolume) * details.Price)
+	if basics.BuyCount > 0 {
+		details.BuyFeeAverage = float64(basics.BuyFeesTotal) * details.Price / float64(basics.BuyCount)
+		details.BuySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
+		details.BuyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
+	}
+	if basics.SellCount > 0 {
+		details.SellFeeAverage = float64(basics.SellFeesTotal) / float64(basics.SellCount)
+		details.SellSlipAverage = basics.SellSlipTotal / float64(basics.SellCount)
+		details.SellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
+	}
+	if details.SwappingTxCount > 0 {
+		details.PoolVolume = uint64(basics.BuyVolume + basics.SellVolume)
+		details.PoolFeeAverage = float64(details.PoolFeesTotal) / float64(details.SwappingTxCount)
+		details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+		details.PoolTxAverage = float64(details.PoolVolume) / float64(details.SwappingTxCount)
+	}
+	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
+	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
+	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
+	details.PoolAPY, err = uc.getPoolAPY(asset)
+	if err != nil {
+		return nil, err
+	}
+	return details, nil
+}
+
+// GetPoolAPY calculate poolAPY as follow
+// periodicRate = poolEarned/totalDepth (if pool is active less than 30 days, then we should extrapolate to 30)
+// APY = (1 + periodicRate) ^ 12 -1
+func (uc *Usecase) getPoolAPY(pool common.Asset) (float64, error) {
+	poolBasic, err := uc.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	if poolBasic.Status != models.Enabled {
+		return 0, nil
+	}
+	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
+		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+	}
+	poolEarned, err := uc.store.GetPoolEarned(pool, lastActiveDate)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
+	if activeDays < 30 {
+		poolEarned = int64(float64(poolEarned) * 30 / activeDays)
+	}
+	periodicRate := float64(poolEarned) / float64(poolBasic.RuneDepth*2)
+	return calculateAPY(periodicRate, monthsPerYear), nil
 }
 
 // GetStakers returns list of all active stakers in network.

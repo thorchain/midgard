@@ -93,52 +93,6 @@ func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
 	c.Assert(pools[0], DeepEquals, common.BNBAsset)
 }
 
-func (s *TimeScaleSuite) TestPoolBasicsLiquidityFee(c *C) {
-	change := &models.PoolChange{
-		Time:         time.Now(),
-		EventID:      1,
-		Pool:         common.BNBAsset,
-		AssetAmount:  1000,
-		RuneAmount:   -1,
-		LiquidityFee: 10,
-		EventType:    "swap",
-		SwapType:     models.SwapTypeSell,
-	}
-	err := s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
-	c.Assert(err, IsNil)
-	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:         common.BNBAsset,
-		AssetDepth:    1000,
-		RuneDepth:     -1,
-		BuyFeesTotal:  0,
-		SellFeesTotal: 10,
-	})
-
-	change = &models.PoolChange{
-		Time:         time.Now(),
-		EventID:      2,
-		Pool:         common.BNBAsset,
-		AssetAmount:  -1,
-		RuneAmount:   1000,
-		LiquidityFee: 20,
-		EventType:    "swap",
-		SwapType:     models.SwapTypeBuy,
-	}
-	err = s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-	basics, err = s.Store.GetPoolBasics(common.BNBAsset)
-	c.Assert(err, IsNil)
-	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:         common.BNBAsset,
-		AssetDepth:    999,
-		RuneDepth:     999,
-		BuyFeesTotal:  20,
-		SellFeesTotal: 10,
-	})
-}
-
 func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 	change := &models.PoolChange{
 		Time:        time.Now(),
@@ -210,13 +164,17 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	c.Assert(err, IsNil)
 	s.Store.UpdatePoolUnits(common.BNBAsset, 10000)
 
+	tradeSlip := 0.5
 	change = &models.PoolChange{
-		Time:        today,
-		EventID:     2,
-		EventType:   "swap",
-		Pool:        common.BNBAsset,
-		AssetAmount: -50,
-		RuneAmount:  100,
+		Time:         today,
+		EventID:      2,
+		EventType:    "swap",
+		Pool:         common.BNBAsset,
+		AssetAmount:  -50,
+		RuneAmount:   100,
+		SwapType:     models.SwapTypeBuy,
+		LiquidityFee: 1,
+		TradeSlip:    &tradeSlip,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -253,6 +211,20 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	tradeSlip = 0.75
+	change = &models.PoolChange{
+		Time:         today,
+		EventID:      2,
+		EventType:    "swap",
+		Pool:         common.BTCAsset,
+		AssetAmount:  5,
+		RuneAmount:   -100,
+		SwapType:     models.SwapTypeSell,
+		LiquidityFee: 2,
+		TradeSlip:    &tradeSlip,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
 	s.Store.UpdatePoolUnits(common.BTCAsset, 1000)
 
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
@@ -267,100 +239,34 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		RuneWithdrawn:  100,
 		Units:          9000,
 		Status:         models.Bootstrap,
+		BuyVolume:      50,
+		BuyFeesTotal:   1,
+		BuySlipTotal:   0.5,
+		BuyCount:       1,
+		StakeCount:     1,
+		WithdrawCount:  1,
 	})
 
 	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:       common.BTCAsset,
-		AssetDepth:  20,
-		AssetStaked: 20,
-		RuneDepth:   2400,
-		RuneStaked:  2400,
-		Units:       1000,
-		Status:      models.Unknown,
+		Asset:         common.BTCAsset,
+		AssetDepth:    25,
+		AssetStaked:   20,
+		RuneDepth:     2300,
+		RuneStaked:    2400,
+		Units:         1000,
+		Status:        models.Unknown,
+		SellVolume:    100,
+		SellFeesTotal: 2,
+		SellSlipTotal: 0.75,
+		SellCount:     1,
+		StakeCount:    1,
 	})
 
 	ethAsset, _ := common.NewAsset("ETH.ETH")
 	_, err = s.Store.GetPoolBasics(ethAsset)
 	c.Assert(err, NotNil)
-}
-
-func (s *TimeScaleSuite) TestGetPoolData(c *C) {
-	c.Skip("This needs revision once all others are completed. ")
-
-	// Stakes
-	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeTcanEvent3)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeTcanEvent4)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateStakeRecord(&stakeBoltEvent5)
-	c.Assert(err, IsNil)
-
-	// Swaps
-	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent1)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent2)
-	c.Assert(err, IsNil)
-
-	err = s.Store.CreateSwapRecord(&swapSellBolt2RuneEvent3)
-	c.Assert(err, IsNil)
-
-	asset, _ := common.NewAsset("BNB.BNB")
-	poolData, err := s.Store.GetPoolData(asset)
-	c.Assert(err, IsNil)
-
-	c.Assert(poolData.Asset, Equals, asset)
-	c.Assert(poolData.AssetDepth, Equals, uint64(50000000010), Commentf("%v", poolData.AssetDepth))
-	c.Assert(poolData.AssetStakedTotal, Equals, uint64(50000000010), Commentf("%v", poolData.AssetStakedTotal))
-	c.Assert(poolData.PoolDepth, Equals, uint64(100000200), Commentf("%v", poolData.PoolDepth))
-	c.Assert(poolData.PoolStakedTotal, Equals, uint64(100000200), Commentf("%v", poolData.PoolStakedTotal))
-	c.Assert(poolData.PoolUnits, Equals, uint64(25025000100), Commentf("%v", poolData.PoolUnits))
-	c.Assert(poolData.Price, Equals, float64(0.0010000019997999997), Commentf("%v", poolData.Price))
-	c.Assert(poolData.RuneDepth, Equals, uint64(50000100), Commentf("%v", poolData.RuneDepth))
-	c.Assert(poolData.RuneStakedTotal, Equals, uint64(50000100), Commentf("%v", poolData.RuneStakedTotal))
-	c.Assert(poolData.StakeTxCount, Equals, uint64(2), Commentf("%v", poolData.StakeTxCount))
-	c.Assert(poolData.StakersCount, Equals, uint64(2), Commentf("%v", poolData.StakersCount))
-	c.Assert(poolData.StakingTxCount, Equals, uint64(2), Commentf("%v", poolData.StakingTxCount))
-
-	asset, _ = common.NewAsset("BNB.BOLT-014")
-	poolData, err = s.Store.GetPoolData(asset)
-	c.Assert(err, IsNil)
-
-	c.Check(poolData.Asset, Equals, asset)
-	c.Check(poolData.AssetDepth, Equals, uint64(394850000), Commentf("%d", poolData.AssetDepth))
-	c.Check(poolData.AssetROI, Equals, 0.1791847095714499, Commentf("%v", poolData.AssetROI))
-	c.Check(poolData.AssetStakedTotal, Equals, uint64(334850000), Commentf("%d", poolData.AssetStakedTotal))
-	c.Check(poolData.PoolDepth, Equals, uint64(4698999994), Commentf("%d", poolData.PoolDepth))
-	c.Check(poolData.PoolSlipAverage, Equals, 0.06151196360588074)
-	c.Check(poolData.PoolStakedTotal, Equals, uint64(4341978343), Commentf("%d", poolData.PoolStakedTotal))
-	c.Check(poolData.PoolTxAverage, Equals, uint64(59503608), Commentf("%d", poolData.PoolTxAverage))
-	c.Check(poolData.PoolUnits, Equals, uint64(1342175000), Commentf("%d", poolData.PoolUnits))
-	c.Check(poolData.PoolVolume, Equals, uint64(357021653), Commentf("%d", poolData.PoolVolume))
-	c.Check(poolData.Price, Equals, float64(5.950360888945169), Commentf("%d", poolData.Price))
-	c.Check(poolData.RuneDepth, Equals, uint64(2349499997), Commentf("%d", poolData.RuneDepth))
-	c.Check(poolData.RuneStakedTotal, Equals, uint64(2349500000), Commentf("%d", poolData.RuneStakedTotal))
-	c.Check(poolData.SellAssetCount, Equals, uint64(3))
-	c.Check(poolData.SellSlipAverage, Equals, 0.12302392721176147)
-	c.Check(poolData.SellTxAverage, Equals, uint64(119007217), Commentf("%d", poolData.SellTxAverage))
-	c.Check(poolData.SellVolume, Equals, uint64(357021653), Commentf("%v", poolData.SellVolume))
-	c.Check(poolData.StakeTxCount, Equals, uint64(1), Commentf("%v", poolData.StakeTxCount))
-	c.Check(poolData.StakersCount, Equals, uint64(1), Commentf("%v", poolData.StakersCount))
-	c.Check(poolData.StakingTxCount, Equals, uint64(1), Commentf("%v", poolData.StakingTxCount))
-	c.Check(poolData.SwappersCount, Equals, uint64(3), Commentf("%v", poolData.SwappersCount))
-	c.Check(poolData.SwappingTxCount, Equals, uint64(3), Commentf("%v", poolData.SwappingTxCount))
 }
 
 func (s *TimeScaleSuite) TestGetPoolSwapStats(c *C) {
@@ -1696,7 +1602,7 @@ func (s *TimeScaleSuite) TestSwappingTxCount(c *C) {
 func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	swappersCount, err := s.Store.swappersCount(asset)
+	swappersCount, err := s.Store.GetSwappersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swappersCount, Equals, uint64(0))
 
@@ -1705,7 +1611,7 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	c.Assert(err, IsNil)
 
 	asset, _ = common.NewAsset("BNB.BOLT-014")
-	swappersCount, err = s.Store.swappersCount(asset)
+	swappersCount, err = s.Store.GetSwappersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swappersCount, Equals, uint64(1))
 
@@ -1715,7 +1621,7 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
-	swappersCount, err = s.Store.swappersCount(asset)
+	swappersCount, err = s.Store.GetSwappersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swappersCount, Equals, uint64(1), Commentf("swappersCount: %v", swappersCount))
 
@@ -1725,7 +1631,7 @@ func (s *TimeScaleSuite) TestSwappersCount(c *C) {
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
 
-	swappersCount, err = s.Store.swappersCount(asset)
+	swappersCount, err = s.Store.GetSwappersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(swappersCount, Equals, uint64(2), Commentf("swappersCount: %v", swappersCount))
 }
@@ -1833,7 +1739,7 @@ func (s *TimeScaleSuite) TestStakingTxCount(c *C) {
 func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	// No stake
 	asset, _ := common.NewAsset("BNB.BNB")
-	stakersCount, err := s.Store.stakersCount(asset)
+	stakersCount, err := s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 
 	c.Assert(stakersCount, Equals, uint64(0))
@@ -1842,14 +1748,14 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	stakersCount, err = s.Store.stakersCount(asset)
+	stakersCount, err = s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	stakersCount, err = s.Store.stakersCount(asset)
+	stakersCount, err = s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 
@@ -1857,7 +1763,7 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
-	stakersCount, err = s.Store.stakersCount(asset)
+	stakersCount, err = s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(2))
 
@@ -1867,7 +1773,7 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
 	c.Assert(err, IsNil)
 
-	stakersCount, err = s.Store.stakersCount(asset)
+	stakersCount, err = s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 
@@ -1875,12 +1781,12 @@ func (s *TimeScaleSuite) TestStakersCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeTcanEvent3)
 	c.Assert(err, IsNil)
 
-	stakersCount, err = s.Store.stakersCount(asset)
+	stakersCount, err = s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 
 	asset, _ = common.NewAsset("BNB.TCAN-014")
-	stakersCount, err = s.Store.stakersCount(asset)
+	stakersCount, err = s.Store.GetStakersCount(asset)
 	c.Assert(err, IsNil)
 	c.Assert(stakersCount, Equals, uint64(1))
 }
@@ -2076,15 +1982,15 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 	asset, _ := common.NewAsset("BNB.BNB")
 
 	// No stake
-	roi, err := s.Store.poolROI12(asset)
-	c.Assert(err, IsNil)
+	roi, err := s.Store.GetPoolROI12(asset)
+	c.Assert(err, NotNil)
 	c.Assert(roi, Equals, 0.0)
 
 	// stake
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI12(asset)
+	roi, err = s.Store.GetPoolROI12(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 0.0)
 
@@ -2092,7 +1998,7 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent5)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI12(asset)
+	roi, err = s.Store.GetPoolROI12(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, -0.0999)
 
@@ -2100,7 +2006,7 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent2)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI12(asset)
+	roi, err = s.Store.GetPoolROI12(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, -0.10009999)
 
@@ -2108,7 +2014,7 @@ func (s *TimeScaleSuite) TestPoolROI12(c *C) {
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
 
-	roi, err = s.Store.poolROI12(asset)
+	roi, err = s.Store.GetPoolROI12(asset)
 	c.Assert(err, IsNil)
 	c.Assert(roi, Equals, 1.89970001)
 }
@@ -2131,4 +2037,128 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	dateCreated, err = s.Store.GetDateCreated(asset)
 	c.Assert(err, IsNil)
 	c.Assert(dateCreated, Equals, uint64(stakeTomlEvent1.Time.Unix()))
+}
+
+func (s *TimeScaleSuite) TestGetPoolLiquidityFee(c *C) {
+	err := s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+	buyFee, sellFee, err := s.Store.getPoolLiquidityFee(common.BNBAsset, time.Now().Add(-24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(buyFee, Equals, int64(0))
+	c.Assert(sellFee, Equals, int64(7463556))
+
+	swap := swapBuyRune2BnbEvent2
+	swap.ID += 1
+	swap.Time = time.Now().Add(-30 * 24 * time.Hour)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	buyFee, sellFee, err = s.Store.getPoolLiquidityFee(common.BNBAsset, time.Now().Add(-40*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(buyFee, Equals, int64(7463556))
+	c.Assert(sellFee, Equals, int64(7463556))
+
+	buyFee, sellFee, err = s.Store.getPoolLiquidityFee(common.BNBAsset, time.Now().Add(-24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(buyFee, Equals, int64(0))
+	c.Assert(sellFee, Equals, int64(7463556))
+}
+
+func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
+	now := time.Now().UTC()
+	err := s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-20 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+	c.Assert(err, IsNil)
+	lastDate, err := s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-25 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Bootstrap,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-10 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+}
+
+func (s *TimeScaleSuite) TestGetPoolEarned(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	swap := swapSellBnb2RuneEvent4
+	swap.Time = time.Now().Add(-20 * 24 * time.Hour)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+
+	earned, err := s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7463556))
+
+	swap = swapBuyRune2BnbEvent2
+	swap.ID += 1
+	swap.Time = time.Now().Add(-20 * 24 * time.Hour)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7471019))
+
+	reward := rewardBNBEvent0
+	reward.Time = time.Now().Add(-25 * 24 * time.Hour)
+	err = s.Store.CreateRewardRecord(&reward)
+	c.Assert(err, IsNil)
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7472019))
+
+	gas := gasEvent1
+	gas.Pools[0].Asset = common.BNBAsset
+	gas.Time = time.Now().Add(-20 * 24 * time.Hour)
+	err = s.Store.CreateGasRecord(&gas)
+	c.Assert(err, IsNil)
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7472028))
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-25*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7471028))
 }

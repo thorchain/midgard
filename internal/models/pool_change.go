@@ -24,6 +24,7 @@ type PoolChange struct {
 	Units        int64
 	Status       PoolStatus
 	SwapType     string
+	TradeSlip    *float64
 	LiquidityFee int64
 }
 
