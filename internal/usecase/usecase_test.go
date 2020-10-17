@@ -728,6 +728,9 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
