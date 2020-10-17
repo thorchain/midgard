@@ -533,7 +533,7 @@ func (t *TestTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.
 		return nil, t.err
 	}
 	if minHeight > int64(len(t.metas)) {
-		return nil, errors.Errorf("last block height is %d", len(t.metas))
+		return nil, errors.Errorf("min height %d can't be greater than max height %d", minHeight, len(t.metas))
 	}
 	if maxHeight > int64(len(t.metas)) {
 		maxHeight = int64(len(t.metas))
