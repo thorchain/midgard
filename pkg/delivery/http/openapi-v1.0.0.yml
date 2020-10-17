@@ -893,7 +893,7 @@ components:
           description: (1 + (stakeReward * blocksPerMonth/totalDepth)) ^ 12 -1
         bondingAPY:
           type: string
-          description: (1 + (bondReward * blocksPerMonth/totalDepth)) ^ 12 -1
+          description: (1 + (bondReward * blocksPerMonth/totalActiveBond)) ^ 12 -1
 
     NodeKey:
       type: object
