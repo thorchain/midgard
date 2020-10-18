@@ -21,7 +21,7 @@ func Test(t *testing.T) {
 }
 
 const (
-	port          = 5432
+	port          = 15432
 	userName      = "postgres"
 	password      = "password"
 	database      = "midgard_test"
@@ -2176,6 +2176,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			RuneAdded:      0,
 			Reward:         0,
 			Units:          100,
+			DateCreated:    stakeBnbEvent0.Time,
 		},
 	})
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
