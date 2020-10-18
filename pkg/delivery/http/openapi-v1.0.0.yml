@@ -624,10 +624,10 @@ components:
           description: Total pool units outstanding
         sellVolume:
           type: string
-          description: Total Asset sell volume (ASSET>RUNE) (in RUNE).
+          description: Total Asset sell volume (ASSET->RUNE) (in RUNE).
         buyVolume:
           type: string
-          description: Total Asset buy volume (RUNE->ASSET) (in Asset)
+          description: Total Asset buy volume (RUNE->ASSET) (in RUNE)
         poolVolume:
           type: string
           description: Two-way volume of all-time (in RUNE)
