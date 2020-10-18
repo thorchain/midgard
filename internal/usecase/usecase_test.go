@@ -1072,6 +1072,16 @@ func (s *UsecaseSuite) TestZeroStandbyNodes(c *C) {
 	}
 	store := &TestGetNetworkInfoStore{
 		totalDepth: 1500,
+		pools: []common.Asset{
+			common.BNBAsset,
+		},
+		poolBasics: []models.PoolBasics{
+			{
+				Asset:     common.BNBAsset,
+				Status:    models.Enabled,
+				RuneDepth: 100,
+			},
+		},
 	}
 	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
