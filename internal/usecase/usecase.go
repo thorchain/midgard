@@ -501,7 +501,10 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
-
+	totalEnabledRuneDepth, err := uc.totalEnabledRuneDepth()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get NodeAccounts")
+	}
 	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
 	blocksPerMonth := blocksPerYear / monthsPerYear
 	netInfo := models.NetworkInfo{
@@ -516,12 +519,30 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		BlockReward:             rewards,
 		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
 		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
-		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalDepth), monthsPerYear),
+		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalEnabledRuneDepth), monthsPerYear),
 		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalActiveBond), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
 	return &netInfo, nil
+}
+
+func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
+	pools, err := uc.GetPools()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
+	}
+	var runeDepth int64
+	for _, pool := range pools {
+		poolBasic, err := uc.GetPoolBasics(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
+		}
+		if poolBasic.Status == models.Enabled {
+			runeDepth += poolBasic.RuneDepth
+		}
+	}
+	return runeDepth, nil
 }
 
 func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics {
