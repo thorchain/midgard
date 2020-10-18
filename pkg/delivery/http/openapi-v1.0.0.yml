@@ -890,7 +890,7 @@ components:
           description: The remaining time of pool activation (in blocks)
         liquidityAPY:
           type: string
-          description: (1 + (stakeReward * blocksPerMonth/totalDepth)) ^ 12 -1
+          description: (1 + (stakeReward * blocksPerMonth/totalDepth of active pools)) ^ 12 -1
         bondingAPY:
           type: string
           description: (1 + (bondReward * blocksPerMonth/totalActiveBond)) ^ 12 -1
