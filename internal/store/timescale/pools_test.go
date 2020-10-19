@@ -118,7 +118,7 @@ func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 	change = &models.PoolChange{
 		Time:        time.Now(),
 		EventID:     1,
-		EventType:   "add",
+		EventType:   "add13123123",
 		Pool:        common.BTCAsset,
 		AssetAmount: 250,
 		RuneAmount:  300,
