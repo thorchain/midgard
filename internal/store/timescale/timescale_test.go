@@ -21,7 +21,7 @@ func Test(t *testing.T) {
 }
 
 const (
-	port          = 5432
+	port          = 15432
 	userName      = "postgres"
 	password      = "password"
 	database      = "midgard_test"
@@ -2158,7 +2158,10 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 }
 
 func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
-	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	event := stakeBnbEvent0
+	// Remove nano second part
+	event.Time = time.Unix(time.Now().Add(-1*time.Hour).Unix(), 0)
+	err := s.Store.CreateStakeRecord(&event)
 	c.Assert(err, IsNil)
 	s.Store.fetchAllPoolsBalances()
 	c.Assert(s.Store.pools, DeepEquals, map[string]*models.PoolBasics{
@@ -2176,7 +2179,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			RuneAdded:      0,
 			Reward:         0,
 			Units:          100,
-			DateCreated:    stakeBnbEvent0.Time,
+			DateCreated:    event.Time.UTC(),
 		},
 	})
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
@@ -2197,6 +2200,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			RuneAdded:      0,
 			Reward:         0,
 			Units:          0,
+			DateCreated:    event.Time.UTC(),
 		},
 	})
 }

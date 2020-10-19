@@ -308,8 +308,8 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 		}
 		s.pools[pool] = p
 	}
-	if p.DateCreated.IsZero() {
-		p.DateCreated = change.Time
+	if p.DateCreated.IsZero() || change.Time.UTC().Before(p.DateCreated) {
+		p.DateCreated = change.Time.UTC()
 	}
 
 	p.AssetDepth += change.AssetAmount
