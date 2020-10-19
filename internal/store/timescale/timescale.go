@@ -166,7 +166,7 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(units) FILTER (WHERE events.status = 'Success'),
 		COUNT(*) FILTER (WHERE units > 0 AND events.status = 'Success'),
 		COUNT(*) FILTER (WHERE units < 0 AND events.status = 'Success'),
-		MIN(pools_history.time)
+		MIN(pools_history.time) FILTER (WHERE event_type = 'stake')
 		FROM pools_history
 		LEFT JOIN events
 		ON events.id = pools_history.event_id
