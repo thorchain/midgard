@@ -715,6 +715,9 @@ components:
         poolEarned:
           type: string
           description: (assetChanges * price) + runeEarned
+        poolAPY:
+          type: string
+          description: (1 + (poolEarned/poolDepth)) ^ 12 -1
 
     AssetDetail:
       type: object
@@ -885,6 +888,12 @@ components:
           type: integer
           format: int64
           description: The remaining time of pool activation (in blocks)
+        liquidityAPY:
+          type: string
+          description: (1 + (stakeReward * blocksPerMonth/totalDepth of active pools)) ^ 12 -1
+        bondingAPY:
+          type: string
+          description: (1 + (bondReward * blocksPerMonth/totalActiveBond)) ^ 12 -1
 
     NodeKey:
       type: object

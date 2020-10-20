@@ -1075,3 +1075,74 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	}
 	return models.Unknown, nil
 }
+
+// Get the first time when pool status changed to enabled
+func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
+	stmnt := `
+		SELECT time 
+		FROM   pools_history 
+		WHERE  pool = $1 
+		AND status = $2 
+		ORDER  BY time ASC 
+		LIMIT  1 `
+
+	var inactiveTime sql.NullTime
+	row := s.db.QueryRow(stmnt, asset.String(), models.Enabled)
+
+	if err := row.Scan(&inactiveTime); err != nil {
+		return time.Time{}, errors.Wrap(err, "GetPoolLastEnabledDate failed")
+	}
+	return inactiveTime.Time, nil
+}
+
+// Calculate buy and sell liquidity fee for an asset from a specific date till now
+func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64, int64, error) {
+	q := `
+		SELECT 
+		SUM(liquidity_fee) FILTER (WHERE runeAmt > 0 or assetAmt < 0),
+		SUM(liquidity_fee) FILTER (WHERE runeAmt < 0 or assetAmt > 0)
+		FROM swaps
+		WHERE pool = $1
+		AND time > $2`
+
+	row := s.db.QueryRow(q, asset.String(), from)
+	var buyFee, sellFee sql.NullInt64
+
+	if err := row.Scan(&buyFee, &sellFee); err != nil {
+		return 0, 0, errors.Wrap(err, "getPoolLiquidityFee failed")
+	}
+	return buyFee.Int64, sellFee.Int64, nil
+}
+
+// Calculate poolEarned for a pool from a specified date till now
+// runeEarned  = gasUsed + buyFee
+// assetEarned = gasReplenished + reward + sellFee
+// poolEarned = assetEarned * Price + runeEarned
+func (s *Client) GetPoolEarned(asset common.Asset, from time.Time) (int64, error) {
+	stmnt := `
+		SELECT Sum(reward), 
+       	Sum(gas_used), 
+       	Sum(gas_replenished) 
+		FROM   pool_changes_daily 
+		WHERE  pool = $1
+		AND    time >= $2`
+
+	var reward, gasUsed, gasReplenished sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), from)
+
+	if err := row.Scan(&reward, &gasUsed, &gasReplenished); err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned failed")
+	}
+	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+	}
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolEarned30d failed")
+	}
+	assetEarned := gasUsed.Int64 + buyFee
+	runeEarned := gasReplenished.Int64 + reward.Int64 + sellFee
+	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
+	return poolEarned, nil
+}

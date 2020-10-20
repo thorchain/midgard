@@ -2038,3 +2038,127 @@ func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(dateCreated, Equals, uint64(stakeTomlEvent1.Time.Unix()))
 }
+
+func (s *TimeScaleSuite) TestGetPoolLiquidityFee(c *C) {
+	err := s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
+	c.Assert(err, IsNil)
+	buyFee, sellFee, err := s.Store.getPoolLiquidityFee(common.BNBAsset, time.Now().Add(-24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(buyFee, Equals, int64(0))
+	c.Assert(sellFee, Equals, int64(7463556))
+
+	swap := swapBuyRune2BnbEvent2
+	swap.ID += 1
+	swap.Time = time.Now().Add(-30 * 24 * time.Hour)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	buyFee, sellFee, err = s.Store.getPoolLiquidityFee(common.BNBAsset, time.Now().Add(-40*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(buyFee, Equals, int64(7463556))
+	c.Assert(sellFee, Equals, int64(7463556))
+
+	buyFee, sellFee, err = s.Store.getPoolLiquidityFee(common.BNBAsset, time.Now().Add(-24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(buyFee, Equals, int64(0))
+	c.Assert(sellFee, Equals, int64(7463556))
+}
+
+func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
+	now := time.Now().UTC()
+	err := s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-20 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+	c.Assert(err, IsNil)
+	lastDate, err := s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-25 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Bootstrap,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+
+	err = s.Store.CreatePoolRecord(&models.EventPool{
+		Event: models.Event{
+			Time:   now.Add(-10 * 24 * time.Hour),
+			ID:     17,
+			Status: "Success",
+			Height: 10,
+			Type:   "pool",
+		},
+		Status: models.Enabled,
+		Pool:   common.BNBAsset,
+	})
+
+	c.Assert(err, IsNil)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
+}
+
+func (s *TimeScaleSuite) TestGetPoolEarned(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent2)
+	c.Assert(err, IsNil)
+
+	swap := swapSellBnb2RuneEvent4
+	swap.Time = time.Now().Add(-20 * 24 * time.Hour)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+
+	earned, err := s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7463556))
+
+	swap = swapBuyRune2BnbEvent2
+	swap.ID += 1
+	swap.Time = time.Now().Add(-20 * 24 * time.Hour)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7471019))
+
+	reward := rewardBNBEvent0
+	reward.Time = time.Now().Add(-25 * 24 * time.Hour)
+	err = s.Store.CreateRewardRecord(&reward)
+	c.Assert(err, IsNil)
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7472019))
+
+	gas := gasEvent1
+	gas.Pools[0].Asset = common.BNBAsset
+	gas.Time = time.Now().Add(-20 * 24 * time.Hour)
+	err = s.Store.CreateGasRecord(&gas)
+	c.Assert(err, IsNil)
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-30*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7472028))
+
+	earned, err = s.Store.GetPoolEarned(common.BNBAsset, time.Now().Add(-25*24*time.Hour))
+	c.Assert(err, IsNil)
+	c.Assert(earned, Equals, int64(7471028))
+}

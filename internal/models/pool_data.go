@@ -77,4 +77,5 @@ type PoolDetails struct {
 	StakersCount    uint64
 	SwappersCount   uint64
 	SwappingTxCount uint64
+	PoolAPY         float64
 }

@@ -12,6 +12,8 @@ type NetworkInfo struct {
 	BlockReward             BlockRewards
 	BondingROI              float64
 	StakingROI              float64
+	LiquidityAPY            float64
+	BondingAPY              float64
 	NextChurnHeight         int64
 	PoolActivationCountdown int64
 }

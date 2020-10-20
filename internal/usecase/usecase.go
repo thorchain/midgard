@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,8 +15,9 @@ import (
 )
 
 const (
-	day   = time.Hour * 24
-	month = day * 30
+	day           = time.Hour * 24
+	month         = day * 30
+	monthsPerYear = 12
 )
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
@@ -306,6 +308,11 @@ func calculateROI(depth, staked int64) float64 {
 	return 0
 }
 
+func calculateAPY(periodicRate float64, n float64) float64 {
+	// APY = (1 + periodicRate) ^ 12 -1
+	return math.Pow(1+periodicRate, n) - 1
+}
+
 // fetchPoolStatus fetches pool status from thorchain and update database.
 func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	status, err := uc.thorchain.GetPoolStatus(asset)
@@ -396,8 +403,41 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
-
+	details.PoolAPY, err = uc.getPoolAPY(asset)
+	if err != nil {
+		return nil, err
+	}
 	return details, nil
+}
+
+// GetPoolAPY calculate poolAPY as follow
+// periodicRate = poolEarned/totalDepth (if pool is active less than 30 days, then we should extrapolate to 30)
+// APY = (1 + periodicRate) ^ 12 -1
+func (uc *Usecase) getPoolAPY(pool common.Asset) (float64, error) {
+	poolBasic, err := uc.GetPoolBasics(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	if poolBasic.Status != models.Enabled {
+		return 0, nil
+	}
+	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
+		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+	}
+	poolEarned, err := uc.store.GetPoolEarned(pool, lastActiveDate)
+	if err != nil {
+		return 0, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
+	if activeDays < 30 {
+		poolEarned = int64(float64(poolEarned) * 30 / activeDays)
+	}
+	periodicRate := float64(poolEarned) / float64(poolBasic.RuneDepth*2)
+	return calculateAPY(periodicRate, monthsPerYear), nil
 }
 
 // GetStakers returns list of all active stakers in network.
@@ -432,7 +472,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to update constants from mimir")
 	}
-	totalStaked, err := uc.store.GetTotalDepth()
+	totalDepth, err := uc.store.GetTotalDepth()
 	if err != nil {
 		return nil, err
 	}
@@ -452,7 +492,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
-	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalStaked)
+	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalDepth)
 	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
 	lastHeight, err := uc.thorchain.GetLastChainHeight()
@@ -463,24 +503,48 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
-
+	totalEnabledRuneDepth, err := uc.totalEnabledRuneDepth()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get NodeAccounts")
+	}
 	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
+	blocksPerMonth := blocksPerYear / monthsPerYear
 	netInfo := models.NetworkInfo{
 		BondMetrics:             metrics,
 		ActiveBonds:             activeBonds,
 		StandbyBonds:            standbyBonds,
-		TotalStaked:             totalStaked,
+		TotalStaked:             totalDepth,
 		ActiveNodeCount:         len(activeBonds),
 		StandbyNodeCount:        len(standbyBonds),
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
 		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
-		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
+		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
+		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalEnabledRuneDepth), monthsPerYear),
+		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalActiveBond), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
 	return &netInfo, nil
+}
+
+func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
+	pools, err := uc.GetPools()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
+	}
+	var runeDepth int64
+	for _, pool := range pools {
+		poolBasic, err := uc.GetPoolBasics(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
+		}
+		if poolBasic.Status == models.Enabled {
+			runeDepth += poolBasic.RuneDepth
+		}
+	}
+	return runeDepth, nil
 }
 
 func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics {
