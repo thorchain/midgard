@@ -319,16 +319,18 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 	if err != nil {
 		return models.Unknown, errors.Wrap(err, "failed to get pool status")
 	}
-	err = uc.store.CreatePoolRecord(&models.EventPool{
-		Pool:   asset,
-		Status: status,
-		Event: models.Event{
-			Time: time.Now(),
-			Type: "pool",
-		},
-	})
-	if err != nil {
-		return models.Unknown, errors.Wrap(err, "failed to update pool status")
+	if uc.scanner.IsSynced() {
+		err = uc.store.CreatePoolRecord(&models.EventPool{
+			Pool:   asset,
+			Status: status,
+			Event: models.Event{
+				Time: time.Now(),
+				Type: "pool",
+			},
+		})
+		if err != nil {
+			return models.Unknown, errors.Wrap(err, "failed to update pool status")
+		}
 	}
 	return status, nil
 }

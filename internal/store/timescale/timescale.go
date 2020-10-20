@@ -222,7 +222,7 @@ func (s *Client) fetchAllPoolsBalances() error {
 func (s *Client) fetchAllPoolsStatus() error {
 	q := `SELECT pool, status FROM
 		(
-			SELECT pool, status, ROW_NUMBER() OVER (PARTITION BY pool ORDER BY time DESC) as row_num
+			SELECT pool, status, ROW_NUMBER() OVER (PARTITION BY pool ORDER BY height DESC) as row_num
 			FROM pools_history
 			WHERE status > 0
 		) t 

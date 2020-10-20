@@ -733,6 +733,9 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	uc, err := NewUsecase(client, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
+	err = uc.StartScanner()
+	c.Assert(err, IsNil)
+
 	asset, _ := common.NewAsset("BNB.TOML-4BC")
 	stats, err := uc.GetPoolDetails(asset)
 	c.Assert(err, IsNil)
@@ -1635,6 +1638,84 @@ func (s *UsecaseSuite) TestGetPoolAggChanges(c *C) {
 
 	_, err = uc.GetPoolAggChanges(common.BNBAsset, models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
+}
+
+type TestFetchPoolStatusStore struct {
+	StoreDummy
+	changes []models.PoolAggChanges
+	err     error
+	event   *models.EventPool
+}
+
+func (s *TestFetchPoolStatusStore) CreatePoolRecord(record *models.EventPool) error {
+	s.event = record
+	return nil
+}
+
+type TestFetchPoolStatusThorchain struct {
+	ThorchainDummy
+	Status models.PoolStatus
+}
+
+func (s *TestFetchPoolStatusThorchain) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
+	return s.Status, nil
+}
+
+type TestFetchPoolStatusTendermint struct {
+	TendermintDummy
+	metas   []*tmtype.BlockMeta
+	results []*coretypes.ResultBlockResults
+}
+
+func (t *TestFetchPoolStatusTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.ResultBlockchainInfo, error) {
+	return &coretypes.ResultBlockchainInfo{LastHeight: 0, BlockMetas: []*tmtype.BlockMeta{}}, nil
+}
+
+func (t *TestFetchPoolStatusTendermint) BlockResults(height *int64) (*coretypes.ResultBlockResults, error) {
+	return &coretypes.ResultBlockResults{
+		BeginBlockEvents: []abcitypes.Event{},
+		TxsResults: []*abcitypes.ResponseDeliverTx{
+			{
+				Events: []abcitypes.Event{},
+			},
+		},
+		EndBlockEvents: []abcitypes.Event{},
+		Height:         *height,
+	}, nil
+}
+
+type TestCallback struct {
+}
+
+func (c *TestCallback) NewBlock(height int64, blockTime time.Time, begin, end []thorchain.Event) error {
+	return nil
+}
+
+func (c *TestCallback) NewTx(height int64, events []thorchain.Event) {
+}
+
+func (s *UsecaseSuite) TestFetchPoolStatus(c *C) {
+	store := &TestFetchPoolStatusStore{}
+	client := &TestFetchPoolStatusThorchain{}
+	tendermint := &TestFetchPoolStatusTendermint{}
+	uc, err := NewUsecase(client, tendermint, tendermint, store, s.config)
+	c.Assert(err, IsNil)
+	uc.scanner = thorchain.NewBlockScanner(uc.tendermint, uc.tendermintBatch, &TestCallback{}, uc.conf.ScanInterval)
+	client.Status = models.Bootstrap
+	status, err := uc.fetchPoolStatus(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(status, Equals, models.Bootstrap)
+	c.Assert(store.event, IsNil)
+
+	uc.scanner.Start()
+	time.Sleep(2 * time.Second)
+	uc.scanner.Stop()
+
+	client.Status = models.Enabled
+	status, err = uc.fetchPoolStatus(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(status, Equals, models.Enabled)
+	c.Assert(store.event.Status, DeepEquals, models.Enabled)
 }
 
 type TestGetPoolAPYStore struct {
