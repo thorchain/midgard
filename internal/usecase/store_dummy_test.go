@@ -218,3 +218,11 @@ func (s *StoreDummy) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
 func (s *StoreDummy) GetPoolLastEnabledDate(_ common.Asset) (time.Time, error) {
 	return time.Time{}, nil
 }
+
+func (s *StoreDummy) GetEventPool(id int64) (common.Asset, error) {
+	return common.Asset{}, ErrNotImplemented
+}
+
+func (s *StoreDummy) CreateRefundedEvent(record *models.Event, pool common.Asset) error {
+	return ErrNotImplemented
+}

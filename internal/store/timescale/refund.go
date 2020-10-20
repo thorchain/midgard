@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
@@ -27,4 +28,32 @@ func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
 		return errors.Wrap(err, "Failed to create fee record")
 	}
 	return nil
+}
+
+func (s *Client) CreateRefundedEvent(record *models.Event, pool common.Asset) error {
+	var runeAmt int64
+	var assetAmt int64
+	runeAmt += record.Fee.RuneFee()
+	assetAmt += record.Fee.AssetFee()
+	if len(record.OutTxs) > 0 {
+		for _, coin := range record.OutTxs[0].Coins {
+			if common.IsRuneAsset(coin.Asset) {
+				runeAmt += coin.Amount
+			} else {
+				assetAmt += coin.Amount
+			}
+		}
+	}
+	change := &models.PoolChange{
+		Time:        record.Time,
+		EventID:     record.ID,
+		EventType:   "refund",
+		Pool:        pool,
+		AssetAmount: -assetAmt,
+		RuneAmount:  -runeAmt,
+		Height:      record.Height,
+	}
+
+	err := s.UpdatePoolsHistory(change)
+	return errors.Wrap(err, "could not update pool history")
 }
