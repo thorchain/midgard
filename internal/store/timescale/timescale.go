@@ -165,7 +165,8 @@ func (s *Client) fetchAllPoolsBalances() error {
 		SUM(rune_amount) FILTER (WHERE event_type = 'add'),
 		SUM(units) FILTER (WHERE events.status = 'Success'),
 		COUNT(*) FILTER (WHERE units > 0 AND events.status = 'Success'),
-		COUNT(*) FILTER (WHERE units < 0 AND events.status = 'Success')
+		COUNT(*) FILTER (WHERE units < 0 AND events.status = 'Success'),
+		MIN(pools_history.time) FILTER (WHERE event_type = 'stake')
 		FROM pools_history
 		LEFT JOIN events
 		ON events.id = pools_history.event_id
@@ -193,10 +194,11 @@ func (s *Client) fetchAllPoolsBalances() error {
 			units          sql.NullInt64
 			stakeCount     sql.NullInt64
 			withdrawCount  sql.NullInt64
+			dateCreated    sql.NullTime
 		)
 		if err := rows.Scan(&pool, &assetDepth, &assetStaked, &assetWithdrawn,
 			&runeDepth, &runeStaked, &runeWithdrawn, &reward, &gasUsed, &gasReplenished, &assetAdded, &runeAdded,
-			&units, &stakeCount, &withdrawCount); err != nil {
+			&units, &stakeCount, &withdrawCount, &dateCreated); err != nil {
 			return err
 		}
 		asset, _ := common.NewAsset(pool)
@@ -214,6 +216,7 @@ func (s *Client) fetchAllPoolsBalances() error {
 			AssetAdded:     assetAdded.Int64,
 			RuneAdded:      runeAdded.Int64,
 			Units:          units.Int64,
+			DateCreated:    dateCreated.Time,
 		}
 	}
 	return nil
@@ -304,6 +307,9 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 			Asset: asset,
 		}
 		s.pools[pool] = p
+	}
+	if p.DateCreated.IsZero() || change.Time.UTC().Before(p.DateCreated) {
+		p.DateCreated = change.Time.UTC()
 	}
 
 	p.AssetDepth += change.AssetAmount
