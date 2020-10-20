@@ -1053,6 +1053,24 @@ func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
 	err = eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(store.events[1].Status, Equals, "Success")
-	c.Assert(store.RefundedEvt, DeepEquals, store.events[0])
+	c.Assert(store.RefundedEvt, DeepEquals, models.Event{
+		InTx: store.events[0].InTx,
+		OutTxs: common.Txs{
+			{
+				ID:          "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
+				Coins:       common.Coins{common.NewCoin(common.BTCAsset, 23282731)},
+				FromAddress: "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+				ToAddress:   "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
+				Memo:        "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+				Chain:       "BTC",
+			},
+		},
+		ID:     store.events[0].ID,
+		Type:   store.events[0].Type,
+		Time:   store.events[0].Time,
+		Status: store.events[0].Status,
+		Fee:    store.events[0].Fee,
+		Height: store.events[0].Height,
+	})
 	c.Assert(store.RefundedPool, DeepEquals, common.BTCAsset)
 }
