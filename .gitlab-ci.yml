@@ -87,10 +87,7 @@ build-gitlab-docker:
   tags:
     - midgard
   only:
-    - master # build mocknet image
-    - testnet
-    - chaosnet
-    - mainnet
+    - master
   services:
     - docker:19-dind
   before_script:
