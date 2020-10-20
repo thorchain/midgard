@@ -1716,6 +1716,8 @@ func (s *UsecaseSuite) TestFetchPoolStatus(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(status, Equals, models.Enabled)
 	c.Assert(store.event.Status, DeepEquals, models.Enabled)
+}
+
 type TestGetPoolAPYStore struct {
 	StoreDummy
 	status      models.PoolStatus
