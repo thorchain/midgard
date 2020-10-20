@@ -658,14 +658,17 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 
 type OutboundTestStore struct {
 	*StoreDummy
-	events    []models.Event
-	direction string
-	tx        common.Tx
-	unstake   models.EventUnstake
-	swap      models.EventSwap
-	fee       common.Fee
-	outTxs    common.Txs
-	refund    models.EventRefund
+	events       []models.Event
+	direction    string
+	tx           common.Tx
+	unstake      models.EventUnstake
+	swap         models.EventSwap
+	fee          common.Fee
+	outTxs       common.Txs
+	refund       models.EventRefund
+	pool         common.Asset
+	RefundedEvt  models.Event
+	RefundedPool common.Asset
 }
 
 func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
@@ -680,6 +683,12 @@ func (s *OutboundTestStore) ProcessTxRecord(direction string, _ models.Event, re
 
 func (s *OutboundTestStore) UpdateUnStakesRecord(record models.EventUnstake) error {
 	s.unstake = record
+	return nil
+}
+
+func (s *OutboundTestStore) CreateRefundedEvent(record *models.Event, pool common.Asset) error {
+	s.RefundedEvt = *record
+	s.RefundedPool = pool
 	return nil
 }
 
@@ -711,6 +720,10 @@ func (s *OutboundTestStore) GetTxDetails(_ common.Address, _ common.TxID, _ comm
 			},
 		},
 	}, 1, nil
+}
+
+func (s *OutboundTestStore) GetEventPool(id int64) (common.Asset, error) {
+	return s.pool, nil
 }
 
 func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
@@ -1007,7 +1020,9 @@ func (s *EventHandlerSuite) TestEventError(c *C) {
 }
 
 func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
-	store := &OutboundTestStore{}
+	store := &OutboundTestStore{
+		pool: common.BTCAsset,
+	}
 	eh, err := newEventHandler(store, s.dummyThorchain)
 	c.Assert(err, IsNil)
 	blockTime := time.Now()
@@ -1038,4 +1053,6 @@ func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
 	err = eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(store.events[1].Status, Equals, "Success")
+	c.Assert(store.RefundedEvt, DeepEquals, store.events[0])
+	c.Assert(store.RefundedPool, DeepEquals, common.BTCAsset)
 }
