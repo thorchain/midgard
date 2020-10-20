@@ -482,6 +482,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 				if err != nil {
 					return errors.Wrapf(err, "could not get pool of event %d", evt.ID)
 				}
+				evt.OutTxs = common.Txs{outTx}
 				err = eh.store.CreateRefundedEvent(&evt, pool)
 				if err != nil {
 					return err
