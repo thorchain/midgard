@@ -420,6 +420,8 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		StakingROI:              Float64ToString(netInfo.StakingROI),
 		NextChurnHeight:         Int64ToString(netInfo.NextChurnHeight),
 		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
+		BondingAPY:              Float64ToString(netInfo.BondingAPY),
+		LiquidityAPY:            Float64ToString(netInfo.LiquidityAPY),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }

@@ -319,16 +319,18 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 	if err != nil {
 		return models.Unknown, errors.Wrap(err, "failed to get pool status")
 	}
-	err = uc.store.CreatePoolRecord(&models.EventPool{
-		Pool:   asset,
-		Status: status,
-		Event: models.Event{
-			Time: time.Now(),
-			Type: "pool",
-		},
-	})
-	if err != nil {
-		return models.Unknown, errors.Wrap(err, "failed to update pool status")
+	if uc.scanner.IsSynced() {
+		err = uc.store.CreatePoolRecord(&models.EventPool{
+			Pool:   asset,
+			Status: status,
+			Event: models.Event{
+				Time: time.Now(),
+				Type: "pool",
+			},
+		})
+		if err != nil {
+			return models.Unknown, errors.Wrap(err, "failed to update pool status")
+		}
 	}
 	return status, nil
 }
@@ -470,7 +472,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to update constants from mimir")
 	}
-	totalStaked, err := uc.store.GetTotalDepth()
+	totalDepth, err := uc.store.GetTotalDepth()
 	if err != nil {
 		return nil, err
 	}
@@ -490,7 +492,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get VaultData")
 	}
-	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalStaked)
+	poolShareFactor := calculatePoolShareFactor(totalActiveBond, totalDepth)
 	rewards := uc.calculateRewards(vaultData.TotalReserve, poolShareFactor)
 
 	lastHeight, err := uc.thorchain.GetLastChainHeight()
@@ -501,24 +503,48 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get NodeAccounts")
 	}
-
+	totalEnabledRuneDepth, err := uc.totalEnabledRuneDepth()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get NodeAccounts")
+	}
 	blocksPerYear := float64(uc.consts.Int64Values["BlocksPerYear"])
+	blocksPerMonth := blocksPerYear / monthsPerYear
 	netInfo := models.NetworkInfo{
 		BondMetrics:             metrics,
 		ActiveBonds:             activeBonds,
 		StandbyBonds:            standbyBonds,
-		TotalStaked:             totalStaked,
+		TotalStaked:             totalDepth,
 		ActiveNodeCount:         len(activeBonds),
 		StandbyNodeCount:        len(standbyBonds),
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
 		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
-		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalStaked),
+		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
+		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalEnabledRuneDepth), monthsPerYear),
+		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalActiveBond), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
 		PoolActivationCountdown: uc.calculatePoolActivationCountdown(lastHeight.Thorchain),
 	}
 	return &netInfo, nil
+}
+
+func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
+	pools, err := uc.GetPools()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
+	}
+	var runeDepth int64
+	for _, pool := range pools {
+		poolBasic, err := uc.GetPoolBasics(pool)
+		if err != nil {
+			return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
+		}
+		if poolBasic.Status == models.Enabled {
+			runeDepth += poolBasic.RuneDepth
+		}
+	}
+	return runeDepth, nil
 }
 
 func calculateBondMetrics(activeBonds, standbyBonds []uint64) models.BondMetrics {

@@ -12,6 +12,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/pkg/helpers"
 )
 
 var tables = []string{"coins", "events", "pools_history", "swaps", "txs"}
@@ -2161,7 +2162,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 	s.Store.fetchAllPoolsBalances()
-	c.Assert(s.Store.pools, DeepEquals, map[string]*models.PoolBasics{
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
 		"BNB.BNB": {
 			Asset:          common.BNBAsset,
 			AssetDepth:     10,
@@ -2176,12 +2177,13 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			RuneAdded:      0,
 			Reward:         0,
 			Units:          100,
+			DateCreated:    stakeBnbEvent0.Time.UTC(),
 		},
 	})
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
 	c.Assert(err, IsNil)
 	s.Store.fetchAllPoolsBalances()
-	c.Assert(s.Store.pools, DeepEquals, map[string]*models.PoolBasics{
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
 		"BNB.BNB": {
 			Asset:          common.BNBAsset,
 			AssetDepth:     0,
@@ -2196,6 +2198,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			RuneAdded:      0,
 			Reward:         0,
 			Units:          0,
+			DateCreated:    unstakeBnbEvent1.Time.UTC(),
 		},
 	})
 }
