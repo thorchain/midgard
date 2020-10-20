@@ -11,8 +11,10 @@ docker-gitlab-release:
 	./scripts/semver_tags.sh ${IMAGE} ${GIT_TAG} | xargs -n1 | grep registry | xargs -n1 docker push
 	docker push ${IMAGE}:${GIT_REF}
 
-docker-gitlab-master:
-	docker build -t ${IMAGE}:${GIT_REF} -t ${IMAGE}:latest .
+docker-gitlab-master: docker-gitlab-build
 	docker push ${IMAGE}:${GIT_REF}
 	docker push ${IMAGE}:latest
+
+docker-gitlab-build:
+	docker build -t ${IMAGE}:${GIT_REF} -t ${IMAGE}:latest .
 # ------------------------------------------------------------------ #
