@@ -658,14 +658,17 @@ func (s *EventHandlerSuite) TestErrataEvent(c *C) {
 
 type OutboundTestStore struct {
 	*StoreDummy
-	events    []models.Event
-	direction string
-	tx        common.Tx
-	unstake   models.EventUnstake
-	swap      models.EventSwap
-	fee       common.Fee
-	outTxs    common.Txs
-	refund    models.EventRefund
+	events       []models.Event
+	direction    string
+	tx           common.Tx
+	unstake      models.EventUnstake
+	swap         models.EventSwap
+	fee          common.Fee
+	outTxs       common.Txs
+	refund       models.EventRefund
+	pool         common.Asset
+	RefundedEvt  models.Event
+	RefundedPool common.Asset
 }
 
 func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, error) {
@@ -680,6 +683,12 @@ func (s *OutboundTestStore) ProcessTxRecord(direction string, _ models.Event, re
 
 func (s *OutboundTestStore) UpdateUnStakesRecord(record models.EventUnstake) error {
 	s.unstake = record
+	return nil
+}
+
+func (s *OutboundTestStore) CreateRefundedEvent(record *models.Event, pool common.Asset) error {
+	s.RefundedEvt = *record
+	s.RefundedPool = pool
 	return nil
 }
 
@@ -711,6 +720,10 @@ func (s *OutboundTestStore) GetTxDetails(_ common.Address, _ common.TxID, _ comm
 			},
 		},
 	}, 1, nil
+}
+
+func (s *OutboundTestStore) GetEventPool(id int64) (common.Asset, error) {
+	return s.pool, nil
 }
 
 func (s *EventHandlerSuite) TestUnstakeOutboundEvent(c *C) {
@@ -1007,7 +1020,9 @@ func (s *EventHandlerSuite) TestEventError(c *C) {
 }
 
 func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
-	store := &OutboundTestStore{}
+	store := &OutboundTestStore{
+		pool: common.BTCAsset,
+	}
 	eh, err := newEventHandler(store, s.dummyThorchain)
 	c.Assert(err, IsNil)
 	blockTime := time.Now()
@@ -1038,4 +1053,24 @@ func (s *EventHandlerSuite) TestRefundedSwapEvent(c *C) {
 	err = eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(store.events[1].Status, Equals, "Success")
+	c.Assert(store.RefundedEvt, DeepEquals, models.Event{
+		InTx: store.events[0].InTx,
+		OutTxs: common.Txs{
+			{
+				ID:          "04AE4EC733CA6366D431376DA600C1E4E091982D06F25B13028C99EC11A4C1E4",
+				Coins:       common.Coins{common.NewCoin(common.BTCAsset, 23282731)},
+				FromAddress: "bcrt1q53nknrl2d2nmvguhhvacd4dfsm4jlv8c46ed3y",
+				ToAddress:   "bcrt1q0s4mg25tu6termrk8egltfyme4q7sg3h8kkydt",
+				Memo:        "OUTBOUND:04FFE1117647700F48F678DF53372D503F31C745D6DDE3599D9CB6381188620E",
+				Chain:       "BTC",
+			},
+		},
+		ID:     store.events[0].ID,
+		Type:   store.events[0].Type,
+		Time:   store.events[0].Time,
+		Status: store.events[0].Status,
+		Fee:    store.events[0].Fee,
+		Height: store.events[0].Height,
+	})
+	c.Assert(store.RefundedPool, DeepEquals, common.BTCAsset)
 }

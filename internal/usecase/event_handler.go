@@ -459,6 +459,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	if len(evts) == 0 {
 		return nil
 	}
+	refunded := false
 	for _, evt := range evts {
 		if evt.Type == refundEventType {
 			err = eh.store.UpdateEventStatus(evt.ID, successEvent)
@@ -470,8 +471,25 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			if err != nil {
 				return err
 			}
-			return nil
+			refunded = true
 		}
+	}
+	if refunded {
+		// refund main event
+		for _, evt := range evts {
+			if evt.Type != refundEventType {
+				pool, err := eh.store.GetEventPool(evt.ID)
+				if err != nil {
+					return errors.Wrapf(err, "could not get pool of event %d", evt.ID)
+				}
+				evt.OutTxs = common.Txs{outTx}
+				err = eh.store.CreateRefundedEvent(&evt, pool)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 	var evt models.Event
 	if evts[0].Type == unstakeEventType {

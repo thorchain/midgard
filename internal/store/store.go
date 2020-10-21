@@ -17,6 +17,7 @@ type Store interface {
 	CreatePoolRecord(record *models.EventPool) error
 	CreateGasRecord(record *models.EventGas) error
 	CreateRefundRecord(record *models.EventRefund) error
+	CreateRefundedEvent(record *models.Event, pool common.Asset) error
 	CreateSlashRecord(record *models.EventSlash) error
 	CreateErrataRecord(record *models.EventErrata) error
 	Ping() error
@@ -58,4 +59,5 @@ type Store interface {
 	GetPoolROI12(asset common.Asset) (float64, error)
 	GetStakersCount(asset common.Asset) (uint64, error)
 	GetSwappersCount(asset common.Asset) (uint64, error)
+	GetEventPool(id int64) (common.Asset, error)
 }
