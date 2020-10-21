@@ -44,3 +44,53 @@ func (s *TimeScaleSuite) TestRefund(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, uint64(0))
 }
+
+func (s *TimeScaleSuite) TestRefundedEvent(c *C) {
+	evt := swapSellBnb2RuneEvent5
+	evt.OutTxs = common.Txs{}
+	err := s.Store.CreateSwapRecord(&evt)
+	c.Assert(err, IsNil)
+	assetDepth, err := s.Store.GetAssetDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth, Equals, uint64(10000000))
+	runeDepth, err := s.Store.GetRuneDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(0))
+
+	evt.OutTxs = common.Txs{
+		evt.InTx,
+	}
+	evt.InTx = common.Tx{}
+	err = s.Store.CreateRefundedEvent(&evt.Event, common.BNBAsset)
+	c.Assert(err, IsNil)
+	assetDepth, err = s.Store.GetAssetDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth, Equals, uint64(0))
+	runeDepth, err = s.Store.GetRuneDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(0))
+
+	evt = swapBuyRune2BnbEvent3
+	evt.OutTxs = common.Txs{}
+	err = s.Store.CreateSwapRecord(&evt)
+	c.Assert(err, IsNil)
+	assetDepth, err = s.Store.GetAssetDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth, Equals, uint64(0))
+	runeDepth, err = s.Store.GetRuneDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(200000000))
+
+	evt.OutTxs = common.Txs{
+		evt.InTx,
+	}
+	evt.InTx = common.Tx{}
+	err = s.Store.CreateRefundedEvent(&evt.Event, common.BNBAsset)
+	c.Assert(err, IsNil)
+	assetDepth, err = s.Store.GetAssetDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(assetDepth, Equals, uint64(0))
+	runeDepth, err = s.Store.GetRuneDepth(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(runeDepth, Equals, uint64(0))
+}

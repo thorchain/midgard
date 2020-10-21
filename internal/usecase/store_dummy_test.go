@@ -210,3 +210,11 @@ func (s *StoreDummy) GetStakersCount(asset common.Asset) (uint64, error) {
 func (s *StoreDummy) GetSwappersCount(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
+
+func (s *StoreDummy) GetEventPool(id int64) (common.Asset, error) {
+	return common.Asset{}, ErrNotImplemented
+}
+
+func (s *StoreDummy) CreateRefundedEvent(record *models.Event, pool common.Asset) error {
+	return ErrNotImplemented
+}
