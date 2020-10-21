@@ -63,7 +63,6 @@ smoke-test:
     - apk update
     - apk add make git jq curl
     - make docker-gitlab-build
-    - docker tag registry.gitlab.com/thorchain/midgard:latest registry.gitlab.com/thorchain/midgard:mocknet
     - git clone --single-branch -b $CI_COMMIT_BRANCH https://gitlab.com/thorchain/thornode.git || git clone --single-branch -b master https://gitlab.com/thorchain/thornode.git
     - cd thornode
     - test master = $(git rev-parse --abbrev-ref HEAD) && docker pull registry.gitlab.com/thorchain/thornode:mocknet
@@ -80,17 +79,14 @@ smoke-test:
   after_script:
     - ./thornode/scripts/docker_logs.sh
 
-# Build docker image
-build-gitlab-docker:
+# Build docker image for master branch as latest
+build-master:
   stage: build
   image: docker:stable
   tags:
     - midgard
   only:
-    - master # build mocknet image
-    - testnet
-    - chaosnet
-    - mainnet
+    - master
   services:
     - docker:19-dind
   before_script:
@@ -98,5 +94,21 @@ build-gitlab-docker:
     - apk add make git jq curl
     - make docker-gitlab-login
   script:
-    - make docker-gitlab-build
-    - make docker-gitlab-push
+    - make docker-gitlab-master
+
+# Build docker image for release using git tag
+build-release:
+  stage: build
+  image: docker:stable
+  tags:
+    - midgard
+  only:
+    - tags
+  services:
+    - docker:19-dind
+  before_script:
+    - apk update
+    - apk add make git jq curl
+    - make docker-gitlab-login
+  script:
+    - make docker-gitlab-release

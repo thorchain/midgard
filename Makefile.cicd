@@ -1,20 +1,20 @@
-
-BRANCH=$(shell git rev-parse --abbrev-ref HEAD | sed 's/master/mocknet/g')
-GITREF=$(shell git rev-parse --short HEAD)
-
-# pull branch name from CI, if available
-ifdef CI_COMMIT_BRANCH
-	BRANCH=$(shell echo ${CI_COMMIT_BRANCH} | sed 's/master/mocknet/g')
-endif
+GIT_REF=$(shell git rev-parse --short HEAD)
+GIT_TAG=$(shell git tag --points-at HEAD | sed 's/^v//g')
+IMAGE=registry.gitlab.com/thorchain/midgard
 
 # -------------------------- Gitlab -------------------------------- #
 docker-gitlab-login:
 	docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
 
-docker-gitlab-push:
-	docker push registry.gitlab.com/thorchain/midgard:latest
-	docker push registry.gitlab.com/thorchain/midgard:${BRANCH}
+docker-gitlab-release:
+	docker build $(shell sh ./scripts/semver_tags.sh ${IMAGE} ${GIT_TAG}) -t ${IMAGE}:${GIT_REF} .
+	./scripts/semver_tags.sh ${IMAGE} ${GIT_TAG} | xargs -n1 | grep registry | xargs -n1 docker push
+	docker push ${IMAGE}:${GIT_REF}
+
+docker-gitlab-master: docker-gitlab-build
+	docker push ${IMAGE}:${GIT_REF}
+	docker push ${IMAGE}:latest
 
 docker-gitlab-build:
-	docker build -t registry.gitlab.com/thorchain/midgard -t registry.gitlab.com/thorchain/midgard:${BRANCH} -t registry.gitlab.com/thorchain/midgard:${GITREF} .
+	docker build -t ${IMAGE}:${GIT_REF} -t ${IMAGE}:latest .
 # ------------------------------------------------------------------ #
