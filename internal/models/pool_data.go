@@ -51,6 +51,7 @@ type PoolSimpleDetails struct {
 	PoolEarned        int64
 	AssetEarned       int64
 	RuneEarned        int64
+	PoolAPY           float64
 }
 
 type PoolDetails struct {
