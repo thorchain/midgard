@@ -82,31 +82,91 @@ SELECT pool, time_bucket('1 day', time) AS time,
 FROM pools_history
 GROUP BY pool, time_bucket('1 day', time);
 
-CREATE VIEW total_volume_changes_5_min WITH
+CREATE VIEW total_changes_5_min WITH
 (timescaledb.continuous, timescaledb.refresh_lag = "0", timescaledb.refresh_interval = '10 min')
 AS
 SELECT time_bucket('5 minute', time) AS time,
+    COUNT(CASE WHEN event_type = 'swap' AND asset_amount < 0 THEN 1 ELSE NULL END) AS buy_count,
     SUM(CASE WHEN rune_amount > 0 AND event_type = 'swap' THEN rune_amount ELSE 0 END) AS buy_volume,
-    SUM(CASE WHEN rune_amount < 0 AND event_type = 'swap' THEN -rune_amount ELSE 0 END) AS sell_volume
+    COUNT(CASE WHEN event_type = 'swap' AND rune_amount < 0 THEN 1 ELSE NULL END) AS sell_count,
+    SUM(CASE WHEN rune_amount < 0 AND event_type = 'swap' THEN -rune_amount ELSE 0 END) AS sell_volume,
+    SUM(CASE WHEN event_type = 'rewards' THEN rune_amount ELSE 0 END) AS total_rewards,
+    COUNT(CASE WHEN event_type = 'add' THEN 1 ELSE NULL END) AS add_count,
+    COUNT(CASE WHEN units > 0 THEN 1 ELSE NULL END) AS stake_count,
+    COUNT(CASE WHEN units < 0 THEN 1 ELSE NULL END) AS withdraw_count
 FROM pools_history
 GROUP BY time_bucket('5 minute', time);
 
-CREATE VIEW total_volume_changes_hourly WITH
+CREATE VIEW total_changes_hourly WITH
 (timescaledb.continuous, timescaledb.refresh_lag = "0", timescaledb.refresh_interval = '10 min')
 AS
 SELECT time_bucket('1 hour', time) AS time,
+    COUNT(CASE WHEN event_type = 'swap' AND asset_amount < 0 THEN 1 ELSE NULL END) AS buy_count,
     SUM(CASE WHEN rune_amount > 0 AND event_type = 'swap' THEN rune_amount ELSE 0 END) AS buy_volume,
-    SUM(CASE WHEN rune_amount < 0 AND event_type = 'swap' THEN -rune_amount ELSE 0 END) AS sell_volume
+    COUNT(CASE WHEN event_type = 'swap' AND rune_amount < 0 THEN 1 ELSE NULL END) AS sell_count,
+    SUM(CASE WHEN rune_amount < 0 AND event_type = 'swap' THEN -rune_amount ELSE 0 END) AS sell_volume,
+    SUM(CASE WHEN event_type = 'rewards' THEN rune_amount ELSE 0 END) AS total_rewards,
+    COUNT(CASE WHEN event_type = 'add' THEN 1 ELSE NULL END) AS add_count,
+    COUNT(CASE WHEN units > 0 THEN 1 ELSE NULL END) AS stake_count,
+    COUNT(CASE WHEN units < 0 THEN 1 ELSE NULL END) AS withdraw_count
 FROM pools_history
 GROUP BY time_bucket('1 hour', time);
 
-CREATE VIEW total_volume_changes_daily WITH
+CREATE VIEW total_changes_daily WITH
 (timescaledb.continuous, timescaledb.refresh_lag = "0", timescaledb.refresh_interval = '10 min')
 AS
 SELECT time_bucket('1 day', time) AS time,
+    COUNT(CASE WHEN event_type = 'swap' AND asset_amount < 0 THEN 1 ELSE NULL END) AS buy_count,
     SUM(CASE WHEN rune_amount > 0 AND event_type = 'swap' THEN rune_amount ELSE 0 END) AS buy_volume,
-    SUM(CASE WHEN rune_amount < 0 AND event_type = 'swap' THEN -rune_amount ELSE 0 END) AS sell_volume
+    COUNT(CASE WHEN event_type = 'swap' AND rune_amount < 0 THEN 1 ELSE NULL END) AS sell_count,
+    SUM(CASE WHEN rune_amount < 0 AND event_type = 'swap' THEN -rune_amount ELSE 0 END) AS sell_volume,
+    SUM(CASE WHEN event_type = 'rewards' THEN rune_amount ELSE 0 END) AS total_rewards,
+    COUNT(CASE WHEN event_type = 'add' THEN 1 ELSE NULL END) AS add_count,
+    COUNT(CASE WHEN units > 0 THEN 1 ELSE NULL END) AS stake_count,
+    COUNT(CASE WHEN units < 0 THEN 1 ELSE NULL END) AS withdraw_count
 FROM pools_history
+GROUP BY time_bucket('1 day', time);
+
+CREATE VIEW stats_changes_5_min WITH
+(timescaledb.continuous, timescaledb.refresh_lag = "0", timescaledb.refresh_interval = '10 min')
+AS
+SELECT time_bucket('5 minute', time) AS time,
+    MIN(height) AS start_height,
+    MAX(height) AS end_height,
+    last(total_rune_depth, height) AS total_rune_depth,
+    SUM(total_earned) AS total_earned,
+    last(enabled_pools, height) AS enabled_pools,
+    last(bootstrapped_pools, height) AS bootstrapped_pools,
+    last(suspended_pools, height) AS suspended_pools
+FROM stats_history
+GROUP BY time_bucket('5 minute', time);
+
+CREATE VIEW stats_changes_hourly WITH
+(timescaledb.continuous, timescaledb.refresh_lag = "0", timescaledb.refresh_interval = '10 min')
+AS
+SELECT time_bucket('1 hour', time) AS time,
+    MIN(height) AS start_height,
+    MAX(height) AS end_height,
+    last(total_rune_depth, height) AS total_rune_depth,
+    SUM(total_earned) AS total_earned,
+    last(enabled_pools, height) AS enabled_pools,
+    last(bootstrapped_pools, height) AS bootstrapped_pools,
+    last(suspended_pools, height) AS suspended_pools
+FROM stats_history
+GROUP BY time_bucket('1 hour', time);
+
+CREATE VIEW stats_changes_daily WITH
+(timescaledb.continuous, timescaledb.refresh_lag = "0", timescaledb.refresh_interval = '10 min')
+AS
+SELECT time_bucket('1 day', time) AS time,
+    MIN(height) AS start_height,
+    MAX(height) AS end_height,
+    last(total_rune_depth, height) AS total_rune_depth,
+    SUM(total_earned) AS total_earned,
+    last(enabled_pools, height) AS enabled_pools,
+    last(bootstrapped_pools, height) AS bootstrapped_pools,
+    last(suspended_pools, height) AS suspended_pools
+FROM stats_history
 GROUP BY time_bucket('1 day', time);
 
 -- +migrate Down
@@ -114,6 +174,9 @@ GROUP BY time_bucket('1 day', time);
 DROP VIEW pool_changes_5_min CASCADE;
 DROP VIEW pool_changes_hourly CASCADE;
 DROP VIEW pool_changes_daily CASCADE;
-DROP VIEW total_volume_changes_5_min CASCADE;
-DROP VIEW total_volume_changes_hourly CASCADE;
-DROP VIEW total_volume_changes_daily CASCADE;
+DROP VIEW total_changes_5_min CASCADE;
+DROP VIEW total_changes_hourly CASCADE;
+DROP VIEW total_changes_daily CASCADE;
+DROP VIEW stats_changes_5_min CASCADE;
+DROP VIEW stats_changes_hourly CASCADE;
+DROP VIEW stats_changes_daily CASCADE;
