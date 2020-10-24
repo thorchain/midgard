@@ -29,6 +29,17 @@ CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);
 CREATE INDEX pools_history_event_type_idx ON pools_history (event_type);
 CREATE INDEX pools_history_pool_idx ON pools_history (pool);
 
+CREATE TABLE stats_history (
+    time                 TIMESTAMPTZ     NOT NULL,
+    height               BIGINT          NOT NULL,
+    total_rune_depth     ‌BIGINT          NOT NULL,
+    total_earned         BIGINT          NOT NULL,
+    enabled_pools        INT             NOT NULL,
+    bootstrapped_pools   INT             NOT NULL,
+    suspended_pools      INT             NOT NULL,
+    PRIMARY KEY (time)
+);
+
 CREATE TABLE swaps (
     time        TIMESTAMPTZ       NOT NULL,
     id SERIAL,
