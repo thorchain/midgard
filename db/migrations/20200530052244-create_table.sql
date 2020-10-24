@@ -32,7 +32,7 @@ CREATE INDEX pools_history_pool_idx ON pools_history (pool);
 CREATE TABLE stats_history (
     time                 TIMESTAMPTZ     NOT NULL,
     height               BIGINT          NOT NULL,
-    total_rune_depth     ‌BIGINT          NOT NULL,
+    total_rune_depth     BIGINT          NOT NULL,
     total_earned         BIGINT          NOT NULL,
     enabled_pools        INT             NOT NULL,
     bootstrapped_pools   INT             NOT NULL,
@@ -85,6 +85,7 @@ CREATE TABLE coins (
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
+SELECT create_hypertable('stats_history', 'time');
 SELECT create_hypertable('swaps', 'time');
 SELECT create_hypertable('txs', 'time');
 SELECT create_hypertable('coins', 'time');
@@ -93,6 +94,7 @@ SELECT create_hypertable('coins', 'time');
 
 DROP TABLE events;
 DROP TABLE pools_history;
+DROP TABLE stats_history;
 DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
