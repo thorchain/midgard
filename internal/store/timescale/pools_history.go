@@ -173,7 +173,7 @@ func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time
 		sb.As("SUM(sell_volume)", "sell_volume"),
 		sb.As("SUM(buy_volume + sell_volume)", "total_volume"),
 	)
-	sb.From("total_volume_changes" + getIntervalTableSuffix(interval))
+	sb.From("total_changes" + getIntervalTableSuffix(interval))
 	sb.GroupBy(timeBucket)
 	sb.Where(sb.Between("time", from, to))
 	sb.OrderBy("time")
