@@ -214,6 +214,8 @@ func (s *Client) fetchAllPoolsBalances() error {
 			AssetAdded:     assetAdded.Int64,
 			RuneAdded:      runeAdded.Int64,
 			Units:          units.Int64,
+			StakeCount:     stakeCount.Int64,
+			WithdrawCount:  withdrawCount.Int64,
 		}
 	}
 	return nil
