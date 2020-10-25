@@ -368,7 +368,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
 		PoolVolume24hr:  uint64(vol24),
 		PoolROI12:       poolROI12,
-		PoolFeesTotal:   uint64(basics.BuyFeesTotal + basics.SellFeesTotal),
 		StakersCount:    stakersCount,
 		SwappersCount:   swappersCount,
 		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
