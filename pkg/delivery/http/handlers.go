@@ -230,6 +230,7 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolVolume24hr:   Uint64ToString(uint64(details.PoolVolume24Hours)),
 				Price:            Float64ToString(details.Price),
 				Status:           pointy.String(details.Status.String()),
+				PoolAPY:          Float64ToString(details.PoolAPY),
 			}
 		}
 	case "full":
@@ -420,6 +421,8 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 		StakingROI:              Float64ToString(netInfo.StakingROI),
 		NextChurnHeight:         Int64ToString(netInfo.NextChurnHeight),
 		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
+		BondingAPY:              Float64ToString(netInfo.BondingAPY),
+		LiquidityAPY:            Float64ToString(netInfo.LiquidityAPY),
 	}
 	return ctx.JSON(http.StatusOK, response)
 }

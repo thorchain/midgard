@@ -94,8 +94,9 @@ func (s *TimeScaleSuite) TestGetPoolByFailedUnstake(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
+	now := time.Now()
 	change := &models.PoolChange{
-		Time:        time.Now(),
+		Time:        now,
 		EventID:     1,
 		EventType:   "add",
 		Pool:        common.BNBAsset,
@@ -108,15 +109,16 @@ func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 	basics, err := s.Store.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:      common.BNBAsset,
-		AssetDepth: 500,
-		RuneDepth:  1000,
-		AssetAdded: 500,
-		RuneAdded:  1000,
+		Asset:       common.BNBAsset,
+		AssetDepth:  500,
+		RuneDepth:   1000,
+		AssetAdded:  500,
+		RuneAdded:   1000,
+		DateCreated: now.UTC(),
 	})
 
 	change = &models.PoolChange{
-		Time:        time.Now(),
+		Time:        now,
 		EventID:     1,
 		EventType:   "add",
 		Pool:        common.BTCAsset,
@@ -129,21 +131,23 @@ func (s *TimeScaleSuite) TestPoolBasicsAddEvent(c *C) {
 	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:      common.BTCAsset,
-		AssetDepth: 250,
-		RuneDepth:  300,
-		AssetAdded: 250,
-		RuneAdded:  300,
+		Asset:       common.BTCAsset,
+		AssetDepth:  250,
+		RuneDepth:   300,
+		AssetAdded:  250,
+		RuneAdded:   300,
+		DateCreated: now.UTC(),
 	})
 
 	basics, err = s.Store.GetPoolBasics(common.BNBAsset)
 	c.Assert(err, IsNil)
 	c.Assert(basics, DeepEquals, models.PoolBasics{
-		Asset:      common.BNBAsset,
-		AssetDepth: 500,
-		RuneDepth:  1000,
-		AssetAdded: 500,
-		RuneAdded:  1000,
+		Asset:       common.BNBAsset,
+		AssetDepth:  500,
+		RuneDepth:   1000,
+		AssetAdded:  500,
+		RuneAdded:   1000,
+		DateCreated: now.UTC(),
 	})
 }
 
@@ -245,6 +249,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		BuyCount:       1,
 		StakeCount:     1,
 		WithdrawCount:  1,
+		DateCreated:    today.UTC(),
 	})
 
 	basics, err = s.Store.GetPoolBasics(common.BTCAsset)
@@ -262,6 +267,7 @@ func (s *TimeScaleSuite) TestGetPoolBasics(c *C) {
 		SellSlipTotal: 0.75,
 		SellCount:     1,
 		StakeCount:    1,
+		DateCreated:   today.UTC(),
 	})
 
 	ethAsset, _ := common.NewAsset("ETH.ETH")

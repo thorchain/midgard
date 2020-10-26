@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -29,6 +31,7 @@ type PoolBasics struct {
 	SellCount      int64
 	StakeCount     int64
 	WithdrawCount  int64
+	DateCreated    time.Time
 }
 
 type PoolSwapStats struct {
@@ -48,6 +51,7 @@ type PoolSimpleDetails struct {
 	PoolEarned        int64
 	AssetEarned       int64
 	RuneEarned        int64
+	PoolAPY           float64
 }
 
 type PoolDetails struct {
