@@ -282,7 +282,7 @@ paths:
           required: true
           schema:
             type: string
-          example: [BNB.TOMOB-1E1, BNB.TCAN-014]
+          example: BNB.TOMOB-1E1
         - in: query
           name: interval
           description: Interval of calculations
