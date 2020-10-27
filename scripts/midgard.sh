@@ -32,7 +32,8 @@ echo "{
       \"pool_addresses\",
       \"constants\",
       \"lastblock\",
-      \"mimir\"
+      \"mimir\",
+      \"queue\"
     ]
   },
   \"timescale\": {
