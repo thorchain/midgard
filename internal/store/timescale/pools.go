@@ -1135,3 +1135,42 @@ func (s *Client) GetPoolEarned(asset common.Asset, from time.Time) (int64, error
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 	return poolEarned, nil
 }
+
+func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	stmnt := `
+		SELECT 
+		Sum(reward) FILTER (WHERE reward > 0), 
+		Sum(reward) FILTER (WHERE reward < 0),
+       	Sum(gas_used), 
+       	Sum(gas_replenished) 
+		FROM   pool_changes_daily 
+		WHERE  pool = $1
+		AND    time >= $2`
+	var reward, deficit, gasUsed, gasReplenished sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), from)
+
+	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished); err != nil {
+		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
+	if err != nil {
+		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	assetEarned := gasUsed.Int64 + buyFee
+	runeEarned := gasReplenished.Int64 + reward.Int64 + sellFee
+	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
+	return models.PoolEarningReport{
+		Reward:        reward.Int64,
+		Deficit:       deficit.Int64,
+		BuyFee:        buyFee,
+		SellFee:       sellFee,
+		GasPaid:       gasUsed.Int64,
+		GasReimbursed: gasReplenished.Int64,
+		PoolFee:       int64(float64(buyFee)*priceInRune) + sellFee,
+		PoolEarned:    poolEarned,
+	}, nil
+}
