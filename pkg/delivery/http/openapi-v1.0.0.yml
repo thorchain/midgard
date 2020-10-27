@@ -308,6 +308,23 @@ paths:
         "200":
           $ref: '#/components/responses/GetPoolAggChangesResponse'
 
+  "/v1/report/earning":
+    get:
+      operationId: GetEarningReport
+      summary: Get Pool Earning Report
+      description: Returns earning report and apy of the specified pool.
+      parameters:
+        - in: query
+          name: pool
+          description: Pool asset name
+          required: true
+          schema:
+            type: string
+          example: BNB.BNB
+      responses:
+        "200":
+          $ref: '#/components/responses/GetEarningReportResponse'
+
 components:
   responses:
     PoolsDetailedResponse:
@@ -460,6 +477,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/PoolAggChanges'
+
+    GetEarningReportResponse:
+      description: Get Return an array of pool changes.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EarningReport'
 
   schemas:
     TxDetails:
@@ -1116,6 +1140,54 @@ components:
           format: int64
           description: Count of withdraw events
 
+
+    EarningReport:
+      type: object
+      properties:
+        pool:
+          type: string
+        totalReward:
+          type: string
+        totalPoolDeficit:
+          type: string
+        totalGasPaid:
+          type: string
+        totalGasReimbursed:
+          type: string
+        totalBuyFee:
+          type: string
+        totalSellFee:
+          type: string
+        totalPoolFee:
+          type: string
+        totalPoolEarning:
+          type: string
+        activeDays:
+          type: string
+        lastMonthReward:
+          type: string
+        lastMonthPoolDeficit:
+          type: string
+        lastMonthGasPaid:
+          type: string
+        lastMonthGasReimbursed:
+          type: string
+        lastMonthBuyFee:
+          type: string
+        lastMonthSellFee:
+          type: string
+        lastMonthPoolFee:
+          type: string
+        lastMonthPoolEarning:
+          type: string
+        poolDepth:
+          type: string
+        periodicRate:
+          type: string
+        price:
+          type: string
+        poolAPY:
+          type: string
 
 servers:
   - url: http://127.0.0.1:8080
