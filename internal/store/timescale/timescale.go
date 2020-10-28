@@ -25,6 +25,8 @@ type Client struct {
 	migrationsDir string
 	mu            sync.RWMutex
 	pools         map[string]*models.PoolBasics
+	blockHeight   int64
+	blockTime     time.Time
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -216,6 +218,8 @@ func (s *Client) fetchAllPoolsBalances() error {
 			AssetAdded:     assetAdded.Int64,
 			RuneAdded:      runeAdded.Int64,
 			Units:          units.Int64,
+			StakeCount:     stakeCount.Int64,
+			WithdrawCount:  withdrawCount.Int64,
 			DateCreated:    dateCreated.Time,
 		}
 	}
@@ -299,6 +303,21 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if change.Height > s.blockHeight {
+		// If this is the first time after startup, set the height and time of the block.
+		if s.blockHeight == 0 {
+			s.blockHeight = change.Height
+			s.blockTime = change.Time
+		}
+
+		err := s.insertBlockStats()
+		if err != nil {
+			s.logger.Error().Err(err).Msg("could not insert block stats")
+		}
+		s.blockHeight = change.Height
+		s.blockTime = change.Time
+	}
+
 	pool := change.Pool.String()
 	p, ok := s.pools[pool]
 	if !ok {
@@ -359,6 +378,37 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 	}
 }
 
+func (s *Client) insertBlockStats() error {
+	var (
+		totalRuneDepth    int64
+		enabledPools      int64
+		bootstrappedPools int64
+		suspendedPools    int64
+	)
+	for _, p := range s.pools {
+		totalRuneDepth += p.RuneDepth
+		switch p.Status {
+		case models.Enabled:
+			enabledPools++
+		case models.Bootstrap:
+			bootstrappedPools++
+		case models.Suspended:
+			suspendedPools++
+		}
+	}
+
+	q := `INSERT INTO stats_history (time, height, total_rune_depth, enabled_pools, bootstrapped_pools, suspended_pools) 
+			VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err := s.db.Exec(q,
+		s.blockTime,
+		s.blockHeight,
+		totalRuneDepth,
+		enabledPools,
+		bootstrappedPools,
+		suspendedPools)
+	return err
+}
+
 func (s *Client) deleteLatestBlock() error {
 	height, err := s.GetLastHeight()
 	if err != nil {
@@ -386,6 +436,9 @@ func (s *Client) DeleteBlock(height int64) error {
 	}
 	if err = s.deleteEventsAtHeight(height); err != nil {
 		return errors.Wrapf(err, "could not delete events at height %d", height)
+	}
+	if err = s.deleteStatsHistoryAtHeight(height); err != nil {
+		return errors.Wrapf(err, "could not delete stats history at height %d", height)
 	}
 	s.logger.Info().Int64("height", height).Msg("latest block records have been deleted successfully")
 	return nil
@@ -417,6 +470,12 @@ func (s *Client) deletePoolsHistoryAtHeight(height int64) error {
 
 func (s *Client) deleteEventsAtHeight(height int64) error {
 	q := `DELETE FROM events WHERE height >= $1`
+	_, err := s.db.Exec(q, height)
+	return err
+}
+
+func (s *Client) deleteStatsHistoryAtHeight(height int64) error {
+	q := `DELETE FROM stats_history WHERE height >= $1`
 	_, err := s.db.Exec(q, height)
 	return err
 }
