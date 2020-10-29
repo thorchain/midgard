@@ -93,6 +93,9 @@ type PoolEarningReport struct {
 	SellFee       int64
 	PoolEarned    int64
 	PoolFee       int64
+	AssetDonated  int64
+	RuneDonated   int64
+	PoolDonation  int64
 }
 
 type PoolAPYReport struct {
@@ -104,8 +107,11 @@ type PoolAPYReport struct {
 	TotalBuyFee            int64
 	TotalSellFee           int64
 	TotalPoolFee           int64
+	TotalAssetDonation     int64
+	TotalRuneDonation      int64
+	TotalPoolDonation      int64
 	TotalPoolEarning       int64
-	ActiveDays             float64
+	LastMonthActiveDays    float64
 	LastMonthReward        int64
 	LastMonthPoolDeficit   int64
 	LastMonthGasPaid       int64
@@ -113,6 +119,9 @@ type PoolAPYReport struct {
 	LastMonthBuyFee        int64
 	LastMonthSellFee       int64
 	LastMonthPoolFee       int64
+	LastMonthAssetDonation int64
+	LastMonthRuneDonation  int64
+	LastMonthPoolDonation  int64
 	LastMonthPoolEarning   int64
 	PoolDepth              int64
 	PeriodicRate           float64

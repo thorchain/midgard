@@ -339,7 +339,7 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 	return status, nil
 }
 
-func (uc *Usecase) GetPoolAPYReport(pool common.Asset) (*models.PoolAPYReport, error) {
+func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYReport, error) {
 	poolBasic, err := uc.store.GetPoolBasics(pool)
 	if err != nil {
 		return nil, err
@@ -357,7 +357,7 @@ func (uc *Usecase) GetPoolAPYReport(pool common.Asset) (*models.PoolAPYReport, e
 	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
 		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
 	}
-	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, time.Now().Add(-1000000*time.Hour))
+	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, time.Time{})
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
 	}
@@ -379,8 +379,11 @@ func (uc *Usecase) GetPoolAPYReport(pool common.Asset) (*models.PoolAPYReport, e
 		TotalBuyFee:            totalEarnDetails.BuyFee,
 		TotalSellFee:           totalEarnDetails.SellFee,
 		TotalPoolFee:           totalEarnDetails.PoolFee,
+		TotalAssetDonation:     totalEarnDetails.AssetDonated,
+		TotalRuneDonation:      totalEarnDetails.RuneDonated,
+		TotalPoolDonation:      totalEarnDetails.PoolDonation,
 		TotalPoolEarning:       totalEarnDetails.PoolEarned,
-		ActiveDays:             activeDays,
+		LastMonthActiveDays:    activeDays,
 		LastMonthReward:        lastMonthEarnDetails.Reward,
 		LastMonthPoolDeficit:   lastMonthEarnDetails.Deficit,
 		LastMonthGasPaid:       lastMonthEarnDetails.GasPaid,
@@ -388,6 +391,9 @@ func (uc *Usecase) GetPoolAPYReport(pool common.Asset) (*models.PoolAPYReport, e
 		LastMonthBuyFee:        lastMonthEarnDetails.BuyFee,
 		LastMonthSellFee:       lastMonthEarnDetails.SellFee,
 		LastMonthPoolFee:       lastMonthEarnDetails.PoolFee,
+		LastMonthAssetDonation: lastMonthEarnDetails.AssetDonated,
+		LastMonthRuneDonation:  lastMonthEarnDetails.RuneDonated,
+		LastMonthPoolDonation:  lastMonthEarnDetails.PoolDonation,
 		LastMonthPoolEarning:   lastMonthEarnDetails.PoolEarned,
 		Price:                  calculatePrice(poolBasic.AssetDepth, poolBasic.RuneDepth),
 		PoolDepth:              poolBasic.RuneDepth * 2,

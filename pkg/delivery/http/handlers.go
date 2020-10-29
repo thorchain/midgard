@@ -28,7 +28,7 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		h.logger.Error().Err(err).Str("params.Asset", params.Pool).Msg("invalid asset or format")
 		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
 	}
-	poolAPYReport, err := h.uc.GetPoolAPYReport(pool)
+	poolAPYReport, err := h.uc.GetPoolEarningDetail(pool)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetPoolAPYReport")
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
@@ -43,8 +43,11 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		TotalBuyFee:            Int64ToString(poolAPYReport.TotalBuyFee),
 		TotalSellFee:           Int64ToString(poolAPYReport.TotalSellFee),
 		TotalPoolFee:           Int64ToString(poolAPYReport.TotalPoolFee),
+		TotalRuneDonation:      Int64ToString(poolAPYReport.TotalRuneDonation),
+		TotalAssetDonation:     Int64ToString(poolAPYReport.TotalAssetDonation),
+		TotalPoolDonation:      Int64ToString(poolAPYReport.TotalPoolDonation),
 		TotalPoolEarning:       Int64ToString(poolAPYReport.TotalPoolEarning),
-		LastMonthActiveDays:    Int64ToString(int64(poolAPYReport.ActiveDays)),
+		LastMonthActiveDays:    Float64ToString(poolAPYReport.LastMonthActiveDays),
 		LastMonthReward:        Int64ToString(poolAPYReport.LastMonthReward),
 		LastMonthPoolDeficit:   Int64ToString(poolAPYReport.LastMonthPoolDeficit),
 		LastMonthGasPaid:       Int64ToString(poolAPYReport.LastMonthGasPaid),
@@ -52,6 +55,9 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		LastMonthBuyFee:        Int64ToString(poolAPYReport.LastMonthBuyFee),
 		LastMonthSellFee:       Int64ToString(poolAPYReport.LastMonthSellFee),
 		LastMonthPoolFee:       Int64ToString(poolAPYReport.LastMonthPoolFee),
+		LastMonthRuneDonation:  Int64ToString(poolAPYReport.LastMonthRuneDonation),
+		LastMonthAssetDonation: Int64ToString(poolAPYReport.LastMonthAssetDonation),
+		LastMonthPoolDonation:  Int64ToString(poolAPYReport.LastMonthPoolDonation),
 		LastMonthPoolEarning:   Int64ToString(poolAPYReport.LastMonthPoolEarning),
 		PoolDepth:              Int64ToString(poolAPYReport.PoolDepth),
 		PeriodicRate:           Float64ToString(poolAPYReport.PeriodicRate),
