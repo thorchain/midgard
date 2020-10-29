@@ -1146,52 +1146,88 @@ components:
       properties:
         pool:
           type: string
+          description: pool name
         totalReward:
           type: string
+          description: sum of rewards in reward event
         totalPoolDeficit:
           type: string
+          description: sum of pool deficit in reward event
         totalGasPaid:
           type: string
+          description: sum of gas paid from asset of this pool
         totalGasReimbursed:
           type: string
+          description: sum of gas reimbursed to rune of this pool
         totalBuyFee:
           type: string
+          description: sum of buy fee in rune
         totalSellFee:
           type: string
+          description: sum of sell fee in rune
         totalPoolFee:
           type: string
-        totalPoolDonation:
+          description: sum of pool sell fee in rune (sellFee+buyFee)
+        totalAssetDonation:
             type: string
+            description: sum of asset donated to the pool by add event
+        totalRuneDonation:
+          type: string
+          description: sum of rune donated to the pool by add event
+        totalPoolDonation:
+          type: string
+          description: sum of donation to this pool (totalAssetDonation*price + totalRuneDonation)
         totalPoolEarning:
           type: string
+          description: sum of pool Earning (totalPoolDonation+totalPoolFee + totalReward - totalPoolDeficit + totalGasReimbursed - (totalGasPaid * price))
         lastMonthActiveDays:
           type: string
+          description: number of days that pool was enabled in past 30 days
         lastMonthReward:
           type: string
+          description: sum of rewards in reward event in past 30 days
         lastMonthPoolDeficit:
           type: string
+          description: sum of pool deficit in reward event in past 30 days
         lastMonthGasPaid:
           type: string
+          description: sum of gas paid from asset of this pool in past 30 days
         lastMonthGasReimbursed:
           type: string
+          description: sum of gas reimbursed to rune of this pool in past 30 days
         lastMonthBuyFee:
           type: string
+          description: sum of buy fee in rune in past 30 days
         lastMonthSellFee:
           type: string
+          description: sum of sell fee in rune in past 30 days
         lastMonthPoolFee:
           type: string
+          description: sum of pool sell fee in rune in past 30 days (lastMonthBuyFee+lastMonthSellFee)
+        lastMonthAssetDonation:
+          type: string
+          description: sum of asset donated to the pool by add event in past 30 days
+        lastMonthRuneDonation:
+          type: string
+          description: sum of rune donated to the pool by add event in past 30 days
         lastMonthPoolDonation:
             type: string
+            description: sum of donation to this pool in past 30 days (lastMonthAssetDonation*price + lastMonthRuneDonation)
         lastMonthPoolEarning:
           type: string
+          description: sum of pool Earning in past 30 days (lastMonthPoolDonation+lastMonthPoolFee + lastMonthReward - lastMonthPoolDeficit + lastMonthGasReimbursed - (lastMonthGasPaid * price))
         poolDepth:
           type: string
+          description: pool depth (2 * rune depth)
         periodicRate:
           type: string
+          description: lastMonthPoolEarning/poolDepth (lastMonthPoolEarning may extrapolate if pool was active less than 30 days)
         price:
           type: string
+          description: pool price in rune
         poolAPY:
           type: string
+          description: (1 + periodicRate ) ^ 12 -1
 
 servers:
   - url: http://127.0.0.1:8080
