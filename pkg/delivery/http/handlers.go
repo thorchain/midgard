@@ -34,7 +34,7 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 	asset := poolAPYReport.Asset.String()
-	response := GetEarningReportResponse{
+	response := GetPoolEarningResponse{
 		Pool:                   &asset,
 		TotalReward:            Int64ToString(poolAPYReport.TotalReward),
 		TotalPoolDeficit:       Int64ToString(poolAPYReport.TotalPoolDeficit),
@@ -44,7 +44,7 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		TotalSellFee:           Int64ToString(poolAPYReport.TotalSellFee),
 		TotalPoolFee:           Int64ToString(poolAPYReport.TotalPoolFee),
 		TotalPoolEarning:       Int64ToString(poolAPYReport.TotalPoolEarning),
-		ActiveDays:             Int64ToString(int64(poolAPYReport.ActiveDays)),
+		LastMonthActiveDays:    Int64ToString(int64(poolAPYReport.ActiveDays)),
 		LastMonthReward:        Int64ToString(poolAPYReport.LastMonthReward),
 		LastMonthPoolDeficit:   Int64ToString(poolAPYReport.LastMonthPoolDeficit),
 		LastMonthGasPaid:       Int64ToString(poolAPYReport.LastMonthGasPaid),
