@@ -1175,8 +1175,8 @@ func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (model
 	if err != nil {
 		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
 	}
-	assetEarned := gasUsed.Int64 + buyFee + assetDonated.Int64
-	runeEarned := gasReplenished.Int64 + reward.Int64 + sellFee + runeDonated.Int64
+	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
+	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 	return models.PoolEarningReport{
 		Reward:        reward.Int64,
