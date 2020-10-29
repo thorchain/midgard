@@ -1157,7 +1157,7 @@ func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (model
        	Sum(gas_used), 
        	Sum(gas_replenished),
        	Sum(asset_added),
-       	Sum(rune_added),
+       	Sum(rune_added)
 		FROM   pool_changes_daily 
 		WHERE  pool = $1
 		AND    time >= $2`
