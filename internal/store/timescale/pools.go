@@ -1067,16 +1067,29 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 
 // Get the first time when pool status changed to enabled
 func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
-	stmnt := `
+	var stmnt string
+	var row *sql.Row
+
+	if asset.Chain.GetGasAsset().Equals(asset) {
+		stmnt = `
+		SELECT time 
+		FROM   pools_history 
+		WHERE  pool = $1 	
+		ORDER  BY time ASC 
+		LIMIT  1 `
+		row = s.db.QueryRow(stmnt, asset.String())
+	} else {
+		stmnt = `
 		SELECT time 
 		FROM   pools_history 
 		WHERE  pool = $1 
 		AND status = $2 
 		ORDER  BY time ASC 
 		LIMIT  1 `
+		row = s.db.QueryRow(stmnt, asset.String(), models.Enabled)
+	}
 
 	var inactiveTime sql.NullTime
-	row := s.db.QueryRow(stmnt, asset.String(), models.Enabled)
 
 	if err := row.Scan(&inactiveTime); err != nil {
 		return time.Time{}, errors.Wrap(err, "GetPoolLastEnabledDate failed")

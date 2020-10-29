@@ -10,6 +10,7 @@ import (
 var (
 	BNBAsset     = Asset{"BNB", "BNB", "BNB"}
 	BTCAsset     = Asset{"BTC", "BTC", "BTC"}
+	ETHAsset     = Asset{Chain: "ETHETH", Symbol: "ETH", Ticker: "ETH"}
 	Rune67CAsset = Asset{"BNB", "RUNE-67C", "RUNE"} // testnet
 	RuneB1AAsset = Asset{"BNB", "RUNE-B1A", "RUNE"} // mainnet
 	RuneNative   = Asset{"THOR", "RUNE", "RUNE"}
