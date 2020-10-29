@@ -308,13 +308,13 @@ paths:
         "200":
           $ref: '#/components/responses/GetPoolAggChangesResponse'
 
-  "/v1/pools/earning":
+  "/v1/pools/details/{pool}/earning":
     get:
       operationId: GetEarningDetail
       summary: Get Pool Earning Detail
       description: Returns earning report and apy of the specified pool.
       parameters:
-        - in: query
+        - in: path
           name: pool
           description: Pool asset name
           required: true
