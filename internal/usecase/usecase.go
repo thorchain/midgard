@@ -357,6 +357,7 @@ func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYRepor
 	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
 		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
 	}
+	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
 	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, time.Time{})
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
@@ -365,11 +366,11 @@ func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYRepor
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
 	}
-	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
+	lastMonthPoolEarned := lastMonthEarnDetails.PoolEarned
 	if activeDays < 30 {
-		lastMonthEarnDetails.PoolEarned = int64(float64(lastMonthEarnDetails.PoolEarned) * 30 / activeDays)
+		lastMonthPoolEarned = int64(float64(lastMonthEarnDetails.PoolEarned) * 30 / activeDays)
 	}
-	periodicRate := float64(lastMonthEarnDetails.PoolEarned) / float64(poolBasic.RuneDepth*2)
+	periodicRate := float64(lastMonthPoolEarned) / float64(poolBasic.RuneDepth*2)
 	poolAPYReport := &models.PoolAPYReport{
 		Asset:                  pool,
 		TotalReward:            totalEarnDetails.Reward,

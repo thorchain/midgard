@@ -47,7 +47,7 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		TotalAssetDonation:     Int64ToString(poolAPYReport.TotalAssetDonation),
 		TotalPoolDonation:      Int64ToString(poolAPYReport.TotalPoolDonation),
 		TotalPoolEarning:       Int64ToString(poolAPYReport.TotalPoolEarning),
-		LastMonthActiveDays:    Float64ToString(poolAPYReport.LastMonthActiveDays),
+		LastMonthActiveDays:    Int64ToString(int64(poolAPYReport.LastMonthActiveDays)),
 		LastMonthReward:        Int64ToString(poolAPYReport.LastMonthReward),
 		LastMonthPoolDeficit:   Int64ToString(poolAPYReport.LastMonthPoolDeficit),
 		LastMonthGasPaid:       Int64ToString(poolAPYReport.LastMonthGasPaid),
