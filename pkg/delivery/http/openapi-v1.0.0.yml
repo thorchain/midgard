@@ -308,6 +308,312 @@ paths:
         "200":
           $ref: '#/components/responses/GetPoolAggChangesResponse'
 
+  "v1/thorchain/pool/{pool}":
+    get:
+      operationId: GetThorChainPool
+      summary: Get Pool
+      parameters:
+        - in: path
+          name: pool
+          description: pool name
+          required: true
+          schema:
+            type: string
+          example: BNB.BNB
+      responses:
+        "200":
+          $ref: '#/components/responses/PoolResponse'
+
+  "v1/thorchain/pools":
+    get:
+      operationId: GetThorChainPools
+      summary: Get Pools
+      responses:
+        "200":
+          $ref: '#/components/responses/PoolsBalance'
+
+  "v1/thorchain/pool/{pool}/stakers":
+    get:
+      operationId: GetThorChainStakers
+      summary: Get Staker Info for a specific Pool
+      parameters:
+        - in: path
+          name: pool
+          description: pool name
+          required: true
+          schema:
+            type: string
+          example: BNB.BNB
+      responses:
+        "200":
+          $ref: '#/components/responses/StakerResponse'
+
+  "v1/thorchain/tx/{tx}":
+    get:
+      operationId: GetTxDetails
+      summary: Get details of a tx by address, asset or tx-id
+      description: Return an array containing the event details
+      parameters:
+        - in: path
+          name: tx
+          description: ID of in tx
+          required: True
+          schema:
+            type: string
+          example: 7E5F8B3B6CA38949C4881DDD821FC5CCCF1075CE5DC8591396525D250D436E26
+      responses:
+        "200":
+          $ref: '#/components/responses/TxResponse'
+
+  "v1/thorchain/tx/{tx}/voter":
+    get:
+      operationId: GetTxVoter
+      summary: Get details of a Voter by tx
+      description: Return an array containing the event details
+      parameters:
+        - in: path
+          name: tx
+          description: ID of in tx
+          required: True
+          schema:
+            type: string
+          example: 7E5F8B3B6CA38949C4881DDD821FC5CCCF1075CE5DC8591396525D250D436E26
+      responses:
+        "200":
+          $ref: '#/components/responses/TxResponse'
+
+  "v1/thorchain/keysign/{height}":
+    get:
+      operationId: GetKeySign
+      summary: Get Key Signs by height
+      description: Return Signature by block height
+      parameters:
+        - in: path
+          name: height
+          description: block height
+          required: True
+          schema:
+            type: string
+          example: 953044
+      responses:
+        "200":
+          $ref: '#/components/responses/KeysignResponse'
+
+  "v1/thorchain/keysign/{height}/{pubkey}":
+    get:
+      operationId: GetKeySignPub
+      summary: Get Key Signs by height and pubkey
+      description: Return Signature by block height and pubkey
+      parameters:
+        - in: path
+          name: height
+          description: block height
+          required: True
+          schema:
+            type: string
+          example: 953044
+        - in: path
+          name: pubkey
+          description: Public Key
+          required: True
+          schema:
+            type: string
+          example: thorpub1addwnpepqgvqmy350qahg4dza0vwp34srsjy8rf6sfmcg7hp6xthy4vv4gxrckve06z
+      responses:
+        "200":
+          $ref: '#/components/responses/KeysignResponse'
+
+  "v1/thorchain/keygen/{height}/{pubkey}":
+    get:
+      operationId: GetKeyGenPub
+      summary: Get KeyGen by height and pubkey
+      description: Return KeyGen by block height and pubkey
+      parameters:
+        - in: path
+          name: height
+          description: block height
+          required: True
+          schema:
+            type: string
+          example: 953044
+        - in: path
+          name: pubkey
+          description: Public Key
+          required: True
+          schema:
+            type: string
+          example: thorpub1addwnpepqgvqmy350qahg4dza0vwp34srsjy8rf6sfmcg7hp6xthy4vv4gxrckve06z
+      responses:
+        "200":
+          $ref: '#/components/responses/KeysignResponse'
+
+  "v1/thorchain/queue":
+    get:
+      operationId: GetQueue
+      summary: Get Queue for swap and outbound
+      description: Return Queue
+      responses:
+        "200":
+          $ref: '#/components/responses/QueueResponse'
+
+  "v1/thorchain/lastblock":
+    get:
+      operationId: GetLastBlock
+      summary: Get the Proxied THORChain Lastblock
+      description: Returns a proxied endpoint for the lastblock endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainLastblockResponse'
+
+  "v1/thorchain/observers":
+    get:
+      operationId: GetObservers
+      summary: Get a list of observers
+      description: Return Observers
+      responses:
+        "200":
+          $ref: '#/components/responses/ObserversResponse'
+
+  "v1/thorchain/observer/{observer}":
+    get:
+      operationId: GetObserver
+      summary: Get Observer by thor address
+      description: Return Observer Detail
+      parameters:
+        - in: path
+          name: observer
+          description: observer address
+          required: True
+          schema:
+            type: string
+          example: thor103fz27pa20ny5gznlqf44z778tfqrnr2v4jma3
+      responses:
+        "200":
+          $ref: '#/components/responses/ObserverResponse'
+
+  "v1/thorchain/nodeaccounts":
+    get:
+      operationId: GetNodes
+      summary: Get NodeAccounts
+      description: Return Nodes
+      responses:
+        "200":
+          $ref: '#/components/responses/NodeAccountsResponse'
+
+  "v1/thorchain/nodeaccount/{address}":
+    get:
+      operationId: GetNode
+      summary: Get Node
+      description: Return Node Detail
+      parameters:
+        - in: path
+          name: address
+          description: Node Address
+          required: True
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/NodeAccountResponse'
+
+  "v1/thorchain/nodeaccount/{address}/preflight":
+    get:
+      operationId: GetNodeStatus
+      summary: Get Node Status
+      description: Return Status
+      parameters:
+        - in: path
+          name: address
+          description: Node Address
+          required: True
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/PreflightResponse'
+
+  "v1/thorchain/pool_addresses":
+    get:
+      operationId: GetThorchainProxiedEndpoints
+      summary: Get the Proxied Pool Addresses
+      description: Returns a proxied endpoint for the pool_addresses endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainEndpointsResponse'
+
+  "v1/thorchain/vault":
+    get:
+      operationId: GetVault
+      summary: Get Vault Data
+      description: Return Vault Data
+      responses:
+        "200":
+          $ref: '#/components/responses/VaultResponse'
+
+  "v1/thorchain/vaults/asgard":
+    get:
+      operationId: GetAsgard
+      summary: Get Asgard Vaults Data
+      description: Return an array of Asgard Vault Data
+      responses:
+        "200":
+          $ref: '#/components/responses/AsgardResponse'
+
+  "v1/thorchain/vaults/yggdrasil":
+    get:
+      operationId: GetYggdrasil
+      summary: Get Yggdrasil Vaults Data
+      description: Return an array of Yggdrasil Vault Data
+      responses:
+        "200":
+          $ref: '#/components/responses/YggdrasilResponse'
+
+  "v1/thorchain/vaults/pubkeys":
+    get:
+      operationId: GetVaultPubkey
+      summary: Get Vault Pubkeys
+      description: Return Pubkeys of Asgard and Yggdrasil
+      responses:
+        "200":
+          $ref: '#/components/responses/VaultPubkeysResponse'
+
+  "v1/thorchain/constants":
+    get:
+      operationId: GetThorchainProxiedConstants
+      summary: Get the Proxied THORChain Constants
+      description: Returns a proxied endpoint for the constants endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainConstantsResponse'
+
+  "v1/thorchain/version":
+    get:
+      operationId: GetVersion
+      summary: Get ThorNode Version
+      description: Return ThorNode Version
+      responses:
+        "200":
+          $ref: '#/components/responses/VersionResponse'
+
+  "v1/thorchain/mimir":
+    get:
+      operationId: GetMimir
+      summary: Get ThorNode Mimir
+      description: Return ThorNode Mimir
+      responses:
+        "200":
+          $ref: '#/components/responses/MimirResponse'
+
+  "v1/thorchain/ragnarok":
+    get:
+      operationId: GetRagnarok
+      summary: Get ThorNode Ragnarok
+      description: Return ThorNode Ragnarok
+      responses:
+        "200":
+          $ref: '#/components/responses/RagnarokResponse'
+
+
 components:
   responses:
     PoolsDetailedResponse:
@@ -354,7 +660,7 @@ components:
               txs:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TxDetails'        
+                  $ref: '#/components/schemas/TxDetails'
 
     StakersAddressDataResponse:
       description: array of all the pools the staker is staking in
@@ -406,13 +712,6 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
 
-    ThorchainEndpointsResponse:
-      description: Get Return an object for the proxied pools_addresses endpoint.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ThorchainEndpoints'
-
     NetworkResponse:
       description: Returns an object containing Network data
       content:
@@ -428,20 +727,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/NodeKey'
-
-    ThorchainConstantsResponse:
-      description: Get Return an object for the proxied constants endpoint.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ThorchainConstants'
-
-    ThorchainLastblockResponse:
-      description: Get Return an object for the proxied lastblock endpoint.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ThorchainLastblock'
 
     TotalVolChangesResponse:
       description: Get Return an array of total volume changes.
@@ -460,7 +745,205 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/PoolAggChanges'
+    MimirResponse:
+      description: Return ThorNode Mimir Values
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              mimir//EMISSIONCURVE:
+                type: string
+              mimir//MINIMUMBONDINRUNE:
+                type: string
+              mimir//ROTATEPERBLOCKHEIGHT:
+                type: string
+              mimir//BADVALIDATORRATE:
+                type: string
+              mimir//DESIREVALIDATORSET:
+                type: string
+              mimir//MAXIMUMSTAKERUNE:
+                type: string
+              mimir//NEWPOOLCYCLE:
+                type: string
+              mimir//OLDVALIDATORRATE:
+                type: string
+              mimir//ROTATERETRYBLOCKS:
+                type: string
 
+    RagnarokResponse:
+      description: Return ThorNode Ragnarok
+      content:
+        application/json:
+          schema:
+            type: boolean
+
+    VersionResponse:
+      description: Return ThorNode Version
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              current:
+                type: string
+              next:
+                type: string
+
+    AsgardResponse:
+      description: Return Asgard Vaults Data in array
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AsgardDetail'
+
+    YggdrasilResponse:
+      description: Return Yggdrasil Vaults Data in array
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/YggdrasilDetail'
+
+    VaultResponse:
+      description: Return Vault Data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VaultDetail'
+
+    PoolsBalance:
+      description: Returns all Pools
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/PoolDetail'
+
+    PoolResponse:
+      description: Return one pool
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PoolDetail'
+
+    StakerResponse:
+      description: Return Staker information for specific pool
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StakersDetail'
+
+    KeysignResponse:
+      description: Return Key Signature
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/KeysignDetail'
+
+    QueueResponse:
+      description: Return Queue
+      content:
+        application/json:
+          schema:
+            properties:
+              swap:
+                type: string
+              outbound:
+                type: string
+
+    VaultPubkeysResponse:
+      description: Return Vaults Pubkey
+      content:
+        application/json:
+          schema:
+            properties:
+              asgard:
+                type: array
+                items:
+                  type: string
+              yggdrasil:
+                type: array
+                items:
+                  type: string
+
+    ObserversResponse:
+      description: Return Observers
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+
+    ObserverResponse:
+      description: Return Observer Detail
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObserverDetail'
+
+    NodeAccountsResponse:
+      description: Return NodeAccounts Detail
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NodeDetail'
+
+    NodeAccountResponse:
+      description: Return NodeAccount Detail
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NodeDetail'
+
+    TxResponse:
+      description: Return in-tx information
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TxDetail'
+
+
+    ThorchainEndpointsResponse:
+      description: Get Return an object for the proxied pools_addresses endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainEndpoints'
+
+    ThorchainConstantsResponse:
+      description: Get Return an object for the proxied constants endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainConstants'
+
+    ThorchainLastblockResponse:
+      description: Get Return an object for the proxied lastblock endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainLastblock'
+
+    PreflightResponse:
+      description: Return Node Status
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: string
+              reason:
+                type: string
+              code:
+                type: string
   schemas:
     TxDetails:
       properties:
@@ -1115,6 +1598,427 @@ components:
           type: integer
           format: int64
           description: Count of withdraw events
+    VaultDetail:
+      properties:
+        bond_reward_rune:
+          type: string
+        total_bond_units:
+          type: string
+        total_reserve:
+          type: string
+        total_bep2_rune:
+          type: string
+
+    TxDetail:
+      properties:
+        tx:
+          $ref: '#/components/schemas/tx'
+        status:
+          type: string
+        out_hashes:
+          type: array
+          items:
+            $ref: '#/components/schemas/hash'
+        block_height:
+          type: string
+        signers:
+          type: array
+          items:
+            type: string
+        oberserved_pub_key:
+          type: string
+
+    PoolBalance:
+      type: object
+      properties:
+        balance_rune:
+          type: string
+        balance_asset:
+          type: string
+        asset:
+          $ref: '#/components/schemas/asset'
+        pool_units:
+          type: string
+        status:
+          type: string
+          enum: [Bootstrap, Enabled, Disabled]
+
+    StakersDetail:
+      type: array
+      items:
+        $ref: '#/components/schemas/staker'
+
+    staker:
+      type: object
+      properties:
+        asset:
+          type: string
+        rune_address:
+          type: string
+        asset_address:
+          type: string
+        last_stake:
+          type: string
+        last_unstake:
+          type: string
+        units:
+          type: string
+        pending_rune:
+          type: string
+        pending_tx_id:
+          type: string
+
+    KeysignDetail:
+      type: object
+      properties:
+        keysign:
+          properties:
+            height:
+              type: string
+            tx_array:
+              type: array
+              items:
+                $ref: '#/components/schemas/tx'
+        signature:
+          type: string
+
+    ObserverDetail:
+      type: object
+      properties:
+        node_address:
+          type: string
+        status:
+          type: string
+        pub_key_set:
+          type: object
+          properties:
+            secp256k1:
+              type: string
+            ed25519:
+              type: string
+        validator_cons_pub_key:
+          type: string
+        bond:
+          type: string
+        active_block_height:
+          type: string
+        bond_address:
+          type: string
+        status_since:
+          type: string
+        signer_membership:
+          type: array
+          items:
+            type: string
+        requested_to_leave:
+          type: boolean
+        forced_to_leave:
+          type: boolean
+        leave_height:
+          type: string
+        ip_address:
+          type: string
+        version:
+          type: string
+
+    NodeDetail:
+      type: object
+      properties:
+        node_address:
+          type: string
+        status:
+          type: string
+        pub_key_set:
+          type: object
+          properties:
+            secp256k1:
+              type: string
+            ed25519:
+              type: string
+        validator_cons_pub_key:
+          type: string
+        bond:
+          type: string
+        active_block_height:
+          type: string
+        bond_address:
+          type: string
+        status_since:
+          type: string
+        signer_membership:
+          type: array
+          items:
+            type: string
+        requested_to_leave:
+          type: boolean
+        forced_to_leave:
+          type: boolean
+        leave_height:
+          type: string
+        ip_address:
+          type: string
+        version:
+          type: string
+        slash_points:
+          type: string
+        jail:
+          type: object
+          properties:
+            node_address:
+              type: string
+            release_height:
+              type: string
+            reason:
+              type: string
+        current_reward:
+          type: string
+
+    YggdrasilDetail:
+      type: object
+      properties:
+        vault:
+          $ref: '#/components/schemas/AsgardDetail'
+        status:
+          type: string
+        bond:
+          type: string
+        total_value:
+          type: string
+        addresses:
+          type: array
+          items:
+            type: object
+            properties:
+              chain:
+                type: string
+              address:
+                type: string
+
+    AsgardDetail:
+      type: object
+      properties:
+        block_height:
+          type: string
+        pub_key:
+          type: string
+        coins:
+          type: array
+          items:
+            $ref: '#/components/schemas/coin'
+        type:
+          type: string
+        status:
+          type: string
+        status_since:
+          type: string
+        membership:
+          type: array
+          items:
+            type: string
+        chains:
+          type: string
+        inbound_tx_count:
+          type: string
+        outbound_tx_count:
+          type: string
+        pending_tx_heights:
+          type: string
+        signing_party:
+          type: array
+          items:
+            type: string
+
+    Error:
+      required:
+        - "error"
+      type: object
+      properties:
+        error:
+          type: string
+    coins:
+      type: array
+      items:
+        $ref: '#/components/schemas/coin'
+    coin:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/asset'
+        amount:
+          type: string
+    asset:
+      type: string
+
+    hash:
+      type: string
+
+    tx:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/hash'
+        chain:
+          type: string
+        from_address:
+          type: string
+        to_address:
+          type: string
+        coins:
+          $ref: '#/components/schemas/coins'
+        gas:
+          $ref: '#/components/schemas/gas'
+        memo:
+          type: string
+
+    gas:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/asset'
+        amount:
+          type: string
+
+    ThorchainEndpoint:
+      type: object
+      properties:
+        chain:
+          type: string
+        pub_key:
+          type: string
+        address:
+          type: string
+        halted:
+          type: boolean
+
+    ThorchainEndpoints:
+      type: object
+      properties:
+        current:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThorchainEndpoint'
+
+    ThorchainConstants:
+      type: object
+      properties:
+        int_64_values:
+          $ref: '#/components/schemas/ThorchainInt64Constants'
+        bool_values:
+          $ref: '#/components/schemas/ThorchainBooleanConstants'
+        string_values:
+          $ref: '#/components/schemas/ThorchainStringConstants'
+
+    ThorchainInt64Constants:
+      type: object
+      properties:
+        BadValidatorRate:
+          type: integer
+          format: int64
+        BlocksPerYear:
+          type: integer
+          format: int64
+        DesireValidatorSet:
+          type: integer
+          format: int64
+        DoubleSignMaxAge:
+          type: integer
+          format: int64
+        EmissionCurve:
+          type: integer
+          format: int64
+        FailKeySignSlashPoints:
+          type: integer
+          format: int64
+        FailKeygenSlashPoints:
+          type: integer
+          format: int64
+        FundMigrationInterval:
+          type: integer
+          format: int64
+        JailTimeKeygen:
+          type: integer
+          format: int64
+        JailTimeKeysign:
+          type: integer
+          format: int64
+        LackOfObservationPenalty:
+          type: integer
+          format: int64
+        MinimumBondInRune:
+          type: integer
+          format: int64
+        MinimumNodesForBFT:
+          type: integer
+          format: int64
+        MinimumNodesForYggdrasil:
+          type: integer
+          format: int64
+        NewPoolCycle:
+          type: integer
+          format: int64
+        ObserveSlashPoints:
+          type: integer
+          format: int64
+        OldValidatorRate:
+          type: integer
+          format: int64
+        RotatePerBlockHeight:
+          type: integer
+          format: int64
+        RotateRetryBlocks:
+          type: integer
+          format: int64
+        SigningTransactionPeriod:
+          type: integer
+          format: int64
+        StakeLockUpBlocks:
+          type: integer
+          format: int64
+        TransactionFee:
+          type: integer
+          format: int64
+        ValidatorRotateInNumBeforeFull:
+          type: integer
+          format: int64
+        ValidatorRotateNumAfterFull:
+          type: integer
+          format: int64
+        ValidatorRotateOutNumBeforeFull:
+          type: integer
+          format: int64
+        WhiteListGasAsset:
+          type: integer
+          format: int64
+        YggFundLimit:
+          type: integer
+          format: int64
+
+    ThorchainBooleanConstants:
+      type: object
+      properties:
+        StrictBondStakeRatio:
+          type: boolean
+
+    ThorchainStringConstants:
+      type: object
+      properties:
+        DefaultPoolStatus:
+          type: string
+
+    ThorchainLastblock:
+      type: object
+      properties:
+        chain:
+          type: string
+        lastobservedin:
+          type: integer
+          format: int64
+        lastsignedout:
+          type: integer
+          format: int64
+        thorchain:
+          type: integer
+          format: int64
 
 
 servers:
