@@ -22,7 +22,7 @@ type Handlers struct {
 	logger          zerolog.Logger
 }
 
-func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportParams) error {
+func (h *Handlers) GetEarningDetail(ctx echo.Context, params GetEarningDetailParams) error {
 	pool, err := common.NewAsset(params.Pool)
 	if err != nil {
 		h.logger.Error().Err(err).Str("params.Asset", params.Pool).Msg("invalid asset or format")
@@ -34,7 +34,7 @@ func (h *Handlers) GetEarningReport(ctx echo.Context, params GetEarningReportPar
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 	asset := poolAPYReport.Asset.String()
-	response := GetPoolEarningResponse{
+	response := GetPoolEarningDetailResponse{
 		Pool:                   &asset,
 		TotalReward:            Int64ToString(poolAPYReport.TotalReward),
 		TotalPoolDeficit:       Int64ToString(poolAPYReport.TotalPoolDeficit),

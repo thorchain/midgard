@@ -310,8 +310,8 @@ paths:
 
   "/v1/pools/earning":
     get:
-      operationId: GetEarningReport
-      summary: Get Pool Earning Report
+      operationId: GetEarningDetail
+      summary: Get Pool Earning Detail
       description: Returns earning report and apy of the specified pool.
       parameters:
         - in: query
@@ -323,7 +323,7 @@ paths:
           example: BNB.BNB
       responses:
         "200":
-          $ref: '#/components/responses/GetPoolEarningResponse'
+          $ref: '#/components/responses/GetPoolEarningDetailResponse'
 
 components:
   responses:
@@ -478,12 +478,12 @@ components:
             items:
               $ref: '#/components/schemas/PoolAggChanges'
 
-    GetPoolEarningResponse:
+    GetPoolEarningDetailResponse:
       description: Get Return an array of pool changes.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/PoolEarning'
+            $ref: '#/components/schemas/PoolEarningDetail'
 
   schemas:
     TxDetails:
@@ -1141,7 +1141,7 @@ components:
           description: Count of withdraw events
 
 
-    PoolEarning:
+    PoolEarningDetail:
       type: object
       properties:
         pool:
