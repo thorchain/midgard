@@ -75,16 +75,29 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 // (GET /v1/txs?address={address}&type={t1,t2,t3}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
 func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error {
 	var address common.Address
+	var err error
 	if params.Address != nil {
-		address, _ = common.NewAddress(*params.Address)
+		address, err = common.NewAddress(*params.Address)
+	}
+	if err != nil {
+		h.logger.Err(err).Msg("Invalid address")
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 	var txID common.TxID
 	if params.Txid != nil {
-		txID, _ = common.NewTxID(*params.Txid)
+		txID, err = common.NewTxID(*params.Txid)
+	}
+	if err != nil {
+		h.logger.Err(err).Msg("Invalid txid")
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 	var asset common.Asset
 	if params.Asset != nil {
-		asset, _ = common.NewAsset(*params.Asset)
+		asset, err = common.NewAsset(*params.Asset)
+	}
+	if err != nil {
+		h.logger.Err(err).Msg("Invalid asset")
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}
 	var eventTypes []string
 	if params.Type != nil {
