@@ -5,6 +5,7 @@ import (
 
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gitlab.com/thorchain/midgard/pkg/helpers"
 	. "gopkg.in/check.v1"
 )
 
@@ -189,8 +190,40 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	changes, err := s.Store.GetPoolAggChanges(bnbAsset, models.HourlyInterval, today, tomorrow.Add(time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 4)
-	expected := map[int64]models.PoolAggChanges{
-		tomorrow.Add(time.Hour).Unix(): {
+	expected := []models.PoolAggChanges{
+		{
+			Time:         today,
+			AssetChanges: 100,
+			AssetDepth:   100,
+			AssetStaked:  100,
+			RuneChanges:  200,
+			RuneDepth:    200,
+			RuneStaked:   200,
+			UnitsChanges: 1000,
+			StakeCount:   1,
+		},
+		{
+			Time:         today.Add(time.Hour),
+			AssetDepth:   90,
+			AssetChanges: -10,
+			BuyCount:     1,
+			BuyVolume:    20,
+			RuneChanges:  20,
+			RuneDepth:    220,
+		},
+		{
+			Time:           tomorrow,
+			AssetChanges:   -45,
+			AssetDepth:     45,
+			AssetWithdrawn: 45,
+			RuneChanges:    -109,
+			RuneDepth:      111,
+			RuneWithdrawn:  110,
+			UnitsChanges:   -500,
+			WithdrawCount:  1,
+		},
+		{
+			Time:           tomorrow.Add(time.Hour),
 			AssetChanges:   0,
 			AssetDepth:     45,
 			AssetAdded:     1,
@@ -203,47 +236,29 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 			SellCount:      1,
 			SellVolume:     12,
 		},
-		tomorrow.Unix(): {
-			AssetChanges:   -45,
-			AssetDepth:     45,
-			AssetWithdrawn: 45,
-			RuneChanges:    -109,
-			RuneDepth:      111,
-			RuneWithdrawn:  110,
-			UnitsChanges:   -500,
-			WithdrawCount:  1,
-		},
-		today.Add(time.Hour).Unix(): {
-			AssetDepth:   90,
-			AssetChanges: -10,
-			BuyCount:     1,
-			BuyVolume:    20,
-			RuneChanges:  20,
-			RuneDepth:    220,
-		},
-		today.Unix(): {
-			AssetChanges: 100,
-			AssetDepth:   100,
-			AssetStaked:  100,
-			RuneChanges:  200,
-			RuneDepth:    200,
-			RuneStaked:   200,
-			UnitsChanges: 1000,
-			StakeCount:   1,
-		},
 	}
-	for _, ch := range changes {
-		exp := expected[ch.Time.Unix()]
-		exp.Time = ch.Time
-		c.Assert(ch, DeepEquals, exp)
-	}
+	c.Assert(changes, helpers.DeepEquals, expected)
 
 	// Test daily aggrigation
 	changes, err = s.Store.GetPoolAggChanges(bnbAsset, models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 2)
-	expected = map[int64]models.PoolAggChanges{
-		tomorrow.Unix(): {
+	expected = []models.PoolAggChanges{
+		{
+			Time:         today,
+			AssetChanges: 90,
+			AssetDepth:   90,
+			AssetStaked:  100,
+			BuyCount:     1,
+			BuyVolume:    20,
+			RuneChanges:  220,
+			RuneDepth:    220,
+			RuneStaked:   200,
+			UnitsChanges: 1000,
+			StakeCount:   1,
+		},
+		{
+			Time:           tomorrow,
 			AssetChanges:   -45,
 			AssetDepth:     45,
 			AssetWithdrawn: 45,
@@ -260,31 +275,15 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 			GasReplenished: 12,
 			WithdrawCount:  1,
 		},
-		today.Unix(): {
-			AssetChanges: 90,
-			AssetDepth:   90,
-			AssetStaked:  100,
-			BuyCount:     1,
-			BuyVolume:    20,
-			RuneChanges:  220,
-			RuneDepth:    220,
-			RuneStaked:   200,
-			UnitsChanges: 1000,
-			StakeCount:   1,
-		},
 	}
-	for _, ch := range changes {
-		exp := expected[ch.Time.Unix()]
-		exp.Time = ch.Time
-		c.Assert(ch, DeepEquals, exp)
-	}
+	c.Assert(changes, helpers.DeepEquals, expected)
 
 	// Test yearly aggrigation
 	changes, err = s.Store.GetPoolAggChanges(bnbAsset, models.YearlyInterval, year, year)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
 	exp := models.PoolAggChanges{
-		Time:           changes[0].Time,
+		Time:           year,
 		AssetChanges:   45,
 		AssetDepth:     45,
 		AssetStaked:    100,
@@ -306,7 +305,7 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 		StakeCount:     1,
 		WithdrawCount:  1,
 	}
-	c.Assert(changes[0], DeepEquals, exp)
+	c.Assert(changes[0], helpers.DeepEquals, exp)
 }
 
 func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
@@ -357,54 +356,50 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	// Test daily aggrigation
 	changes, err := s.Store.GetTotalVolChanges(models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
-	expected := map[int64]models.TotalVolChanges{
-		tomorrow.Unix(): {
-			BuyVolume:   5,
-			SellVolume:  20,
-			TotalVolume: 25,
-		},
-		today.Unix(): {
+	expected := []models.TotalVolChanges{
+		{
+			Time:        today,
 			BuyVolume:   125,
 			SellVolume:  50,
 			TotalVolume: 175,
 		},
+		{
+			Time:        tomorrow,
+			BuyVolume:   5,
+			SellVolume:  20,
+			TotalVolume: 25,
+		},
 	}
-	for _, ch := range changes {
-		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.BuyVolume, Equals, exp.BuyVolume)
-		c.Assert(ch.SellVolume, Equals, exp.SellVolume)
-		c.Assert(ch.TotalVolume, Equals, exp.TotalVolume)
-	}
+	c.Assert(changes, helpers.DeepEquals, expected)
 
 	// Test 5 minute aggrigation
 	changes, err = s.Store.GetTotalVolChanges(models.FiveMinInterval, today, tomorrow.Add(time.Minute*5))
 	c.Assert(err, IsNil)
-	expected = map[int64]models.TotalVolChanges{
-		tomorrow.Add(time.Minute * 5).Unix(): {
-			BuyVolume:   5,
-			SellVolume:  0,
-			TotalVolume: 5,
-		},
-		tomorrow.Unix(): {
-			BuyVolume:   0,
-			SellVolume:  20,
-			TotalVolume: 20,
-		},
-		today.Add(time.Minute * 5).Unix(): {
-			BuyVolume:   25,
-			SellVolume:  0,
-			TotalVolume: 25,
-		},
-		today.Unix(): {
+	expected = []models.TotalVolChanges{
+		{
+			Time:        today,
 			BuyVolume:   100,
 			SellVolume:  50,
 			TotalVolume: 150,
 		},
+		{
+			Time:        today.Add(time.Minute * 5),
+			BuyVolume:   25,
+			SellVolume:  0,
+			TotalVolume: 25,
+		},
+		{
+			Time:        tomorrow,
+			BuyVolume:   0,
+			SellVolume:  20,
+			TotalVolume: 20,
+		},
+		{
+			Time:        tomorrow.Add(time.Minute * 5),
+			BuyVolume:   5,
+			SellVolume:  0,
+			TotalVolume: 5,
+		},
 	}
-	for _, ch := range changes {
-		exp := expected[ch.Time.Unix()]
-		c.Assert(ch.BuyVolume, Equals, exp.BuyVolume)
-		c.Assert(ch.SellVolume, Equals, exp.SellVolume)
-		c.Assert(ch.TotalVolume, Equals, exp.TotalVolume)
-	}
+	c.Assert(changes, helpers.DeepEquals, expected)
 }
