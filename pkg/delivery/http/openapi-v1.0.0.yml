@@ -240,6 +240,14 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/ThorchainLastblockResponse'
+  "/v1/thorchain/queue":
+    get:
+      operationId: GetThorchainProxiedQueue
+      summary: Get the Proxied THORChain Queue
+      description: Returns a proxied endpoint for the queue endpoint from a local thornode
+      responses:
+        "200":
+          $ref: '#/components/responses/ThorchainQueueResponse'
   "/v1/history/total_volume":
     get:
       operationId: GetTotalVolChanges
@@ -442,6 +450,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ThorchainLastblock'
+
+    ThorchainQueueResponse:
+      description: Get Return an object for the proxied queue endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ThorchainQueue'
 
     TotalVolChangesResponse:
       description: Get Return an array of total volume changes.
@@ -1026,6 +1041,16 @@ components:
           thorchain:
             type: integer
             format: int64
+
+    ThorchainQueue:
+      type: object
+      properties:
+        swap:
+          type: integer
+          format: int64
+        outbound:
+          type: integer
+          format: int64
 
     TotalVolChanges:
       type: object
