@@ -2178,6 +2178,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			Reward:         0,
 			Units:          100,
 			DateCreated:    stakeBnbEvent0.Time.UTC(),
+			StakeCount:     1,
 		},
 	})
 	err = s.Store.CreateUnStakesRecord(&unstakeBnbEvent1)
@@ -2199,6 +2200,8 @@ func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 			Reward:         0,
 			Units:          0,
 			DateCreated:    unstakeBnbEvent1.Time.UTC(),
+			StakeCount:     1,
+			WithdrawCount:  1,
 		},
 	})
 }

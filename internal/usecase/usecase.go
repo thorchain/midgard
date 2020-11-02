@@ -381,30 +381,31 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
 		PoolVolume24hr:  uint64(vol24),
 		PoolROI12:       poolROI12,
-		PoolFeesTotal:   uint64(basics.BuyFeesTotal + basics.SellFeesTotal),
 		StakersCount:    stakersCount,
 		SwappersCount:   swappersCount,
 		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
 	}
 	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
-	details.BuyVolume = int64(float64(basics.BuyVolume) * details.Price)
-	if basics.BuyCount > 0 {
-		details.BuyFeeAverage = float64(basics.BuyFeesTotal) * details.Price / float64(basics.BuyCount)
-		details.BuySlipAverage = basics.BuySlipTotal / float64(basics.BuyCount)
-		details.BuyTxAverage = float64(basics.BuyVolume) / float64(basics.BuyCount)
+	details.BuyVolume = int64(float64(details.BuyVolume) * details.Price)
+	if details.BuyCount > 0 {
+		details.BuyFeesTotal = int64(float64(details.BuyFeesTotal) * details.Price)
+		details.BuyFeeAverage = float64(details.BuyFeesTotal) / float64(details.BuyCount)
+		details.BuySlipAverage = details.BuySlipTotal / float64(details.BuyCount)
+		details.BuyTxAverage = float64(details.BuyVolume) / float64(details.BuyCount)
 	}
-	if basics.SellCount > 0 {
-		details.SellFeeAverage = float64(basics.SellFeesTotal) / float64(basics.SellCount)
-		details.SellSlipAverage = basics.SellSlipTotal / float64(basics.SellCount)
-		details.SellTxAverage = float64(basics.SellVolume) / float64(basics.SellCount)
+	if details.SellCount > 0 {
+		details.SellFeeAverage = float64(details.SellFeesTotal) / float64(details.SellCount)
+		details.SellSlipAverage = details.SellSlipTotal / float64(details.SellCount)
+		details.SellTxAverage = float64(details.SellVolume) / float64(details.SellCount)
 	}
 	if details.SwappingTxCount > 0 {
-		details.PoolVolume = uint64(basics.BuyVolume + basics.SellVolume)
+		details.PoolVolume = uint64(details.BuyVolume + details.SellVolume)
+		details.PoolFeesTotal = uint64(details.BuyFeesTotal + details.SellFeesTotal)
 		details.PoolFeeAverage = float64(details.PoolFeesTotal) / float64(details.SwappingTxCount)
-		details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+		details.PoolSlipAverage = (details.BuySlipTotal + details.SellSlipTotal) / float64(details.SwappingTxCount)
 		details.PoolTxAverage = float64(details.PoolVolume) / float64(details.SwappingTxCount)
 	}
-	details.PoolStakedTotal = uint64(float64(basics.AssetStaked)*details.Price + float64(basics.RuneStaked))
+	details.PoolStakedTotal = uint64(float64(details.AssetStaked)*details.Price + float64(details.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
 	details.PoolAPY, err = uc.getPoolAPY(asset)
