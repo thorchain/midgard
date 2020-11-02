@@ -8,12 +8,11 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"net/http"
+	"strings"
 )
 
 // AssetDetail defines model for AssetDetail.
@@ -1074,6 +1073,7 @@ func RegisterHandlers(router interface {
 	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 }, si ServerInterface) {
+
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
@@ -1097,6 +1097,7 @@ func RegisterHandlers(router interface {
 	router.GET("/v1/thorchain/pool_addresses", wrapper.GetThorchainProxiedEndpoints)
 	router.GET("/v1/thorchain/queue", wrapper.GetThorchainProxiedQueue)
 	router.GET("/v1/txs", wrapper.GetTxDetails)
+
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
@@ -1212,3 +1213,4 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
+
