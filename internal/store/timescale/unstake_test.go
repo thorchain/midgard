@@ -1,8 +1,9 @@
 package timescale
 
 import (
-	"gitlab.com/thorchain/midgard/internal/common"
 	. "gopkg.in/check.v1"
+
+	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 func (s *TimeScaleSuite) TestUnstake(c *C) {
@@ -93,10 +94,6 @@ func (s *TimeScaleSuite) TestUpdateUnStakes(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(0))
 
-	unstakeEvent.OutTxs = common.Txs{unstakeBnbEvent2.OutTxs[0]}
-	err = s.Store.UpdateUnStakesRecord(unstakeEvent)
-	c.Assert(err, IsNil)
-
 	assetStaked, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetStaked, Equals, int64(0))
@@ -104,10 +101,6 @@ func (s *TimeScaleSuite) TestUpdateUnStakes(c *C) {
 	runeStaked, err = s.Store.runeStaked(asset)
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(-107))
-
-	unstakeEvent.OutTxs = common.Txs{unstakeBnbEvent2.OutTxs[1]}
-	err = s.Store.UpdateUnStakesRecord(unstakeEvent)
-	c.Assert(err, IsNil)
 
 	assetStaked, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
@@ -133,9 +126,6 @@ func (s *TimeScaleSuite) TestUnStakeFee(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(0))
 
-	unstakeEvent.Fee = unstakeBnbEvent2.Fee
-	err = s.Store.UpdateUnStakesRecord(unstakeEvent)
-	c.Assert(err, IsNil)
 	assetStaked, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetStaked, Equals, int64(0))
@@ -143,10 +133,6 @@ func (s *TimeScaleSuite) TestUnStakeFee(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(-3))
 
-	unstakeEvent.Fee = common.Fee{}
-	unstakeEvent.OutTxs = common.Txs{unstakeBnbEvent2.OutTxs[0]}
-	err = s.Store.UpdateUnStakesRecord(unstakeEvent)
-	c.Assert(err, IsNil)
 	assetStaked, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetStaked, Equals, int64(0))
@@ -154,9 +140,6 @@ func (s *TimeScaleSuite) TestUnStakeFee(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeStaked, Equals, int64(-110))
 
-	unstakeEvent.OutTxs = common.Txs{unstakeBnbEvent2.OutTxs[1]}
-	err = s.Store.UpdateUnStakesRecord(unstakeEvent)
-	c.Assert(err, IsNil)
 	assetStaked, err = s.Store.assetStaked(asset)
 	c.Assert(err, IsNil)
 	c.Assert(assetStaked, Equals, int64(-9))

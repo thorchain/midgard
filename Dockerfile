@@ -5,7 +5,7 @@
 #
 # Build
 #
-FROM golang:1.13 AS build
+FROM golang:1.15 AS build
 
 ARG pg_host
 ARG rpc_host

@@ -25,6 +25,7 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 	// get rune/asset amounts from Event.InTx/OutTxs.Coins
 	var runeAmt int64
 	var assetAmt int64
+
 	runeAmt -= record.Fee.RuneFee()
 	assetAmt -= record.Fee.AssetFee()
 	for _, coin := range record.Event.InTx.Coins {
@@ -34,14 +35,10 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 			assetAmt += coin.Amount
 		}
 	}
-	if len(record.Event.OutTxs) > 0 {
-		for _, coin := range record.Event.OutTxs[0].Coins {
-			if common.IsRuneAsset(coin.Asset) {
-				runeAmt -= coin.Amount
-			} else {
-				assetAmt -= coin.Amount
-			}
-		}
+	if common.IsRuneAsset(record.EmitAsset[0].Asset) {
+		runeAmt -= record.EmitAsset[0].Amount
+	} else {
+		assetAmt -= record.EmitAsset[0].Amount
 	}
 	tradeSlip := float64(record.TradeSlip) / slipBasisPoints
 
@@ -143,7 +140,6 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 	} else {
 		change.SwapType = models.SwapTypeSell
 	}
+	return nil
 
-	err = s.UpdatePoolsHistory(change)
-	return errors.Wrap(err, "could not update pool history")
 }

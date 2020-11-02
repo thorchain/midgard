@@ -300,7 +300,6 @@ func (s *Client) fetchAllPoolsSwap() error {
 func (s *Client) updatePoolCache(change *models.PoolChange) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
 	pool := change.Pool.String()
 	p, ok := s.pools[pool]
 	if !ok {
@@ -316,7 +315,6 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 
 	p.AssetDepth += change.AssetAmount
 	p.RuneDepth += change.RuneAmount
-
 	switch change.EventType {
 	case "stake":
 		p.AssetStaked += change.AssetAmount

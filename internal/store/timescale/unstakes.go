@@ -23,15 +23,8 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 	var assetAmt int64
 	runeAmt += record.Fee.RuneFee()
 	assetAmt += record.Fee.AssetFee()
-	for _, tx := range record.Event.OutTxs {
-		for _, coin := range tx.Coins {
-			if common.IsRuneAsset(coin.Asset) {
-				runeAmt += coin.Amount
-			} else if record.Pool.Equals(coin.Asset) {
-				assetAmt += coin.Amount
-			}
-		}
-	}
+	runeAmt += record.EmitRune
+	assetAmt += record.EmitAsset
 
 	change := &models.PoolChange{
 		Time:        record.Time,
@@ -41,38 +34,6 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 		AssetAmount: -assetAmt,
 		RuneAmount:  -runeAmt,
 		Units:       -record.StakeUnits,
-		Height:      record.Height,
-	}
-	err = s.UpdatePoolsHistory(change)
-	return errors.Wrap(err, "could not update pool history")
-}
-
-func (s *Client) UpdateUnStakesRecord(record models.EventUnstake) error {
-	var runeAmt int64
-	var assetAmt int64
-	runeAmt += record.Fee.RuneFee()
-	assetAmt += record.Fee.AssetFee()
-	for _, tx := range record.Event.OutTxs {
-		for _, coin := range tx.Coins {
-			if common.IsRuneAsset(coin.Asset) {
-				runeAmt += coin.Amount
-			} else {
-				assetAmt += coin.Amount
-			}
-		}
-	}
-
-	pool, err := s.GetEventPool(record.ID)
-	if err != nil {
-		return errors.Wrapf(err, "could not get pool of event %d", record.ID)
-	}
-	change := &models.PoolChange{
-		Time:        record.Time,
-		EventID:     record.ID,
-		EventType:   record.Type,
-		Pool:        pool,
-		AssetAmount: -assetAmt,
-		RuneAmount:  -runeAmt,
 		Height:      record.Height,
 	}
 	err = s.UpdatePoolsHistory(change)

@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
@@ -209,7 +210,7 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode unstake")
 	}
-	unstake.Status = pendingEvent
+	unstake.Status = successEvent
 	err = eh.store.CreateUnStakesRecord(&unstake)
 	if err != nil {
 		return errors.Wrap(err, "failed to save unstake event")
@@ -274,6 +275,7 @@ func (eh *eventHandler) processSwapEvent(event thorchain.Event) error {
 			swap.Event.Type = ""
 		}
 	}
+	eh.logger.Info().Msgf("swap event: %+v", swap)
 	err = eh.store.CreateSwapRecord(&swap)
 	if err != nil {
 		return errors.Wrap(err, "failed to save swap event")
@@ -398,30 +400,6 @@ func (eh *eventHandler) processFeeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to save fee event")
 	}
-	inTxID, _ := common.NewTxID(event.Attributes["tx_id"])
-	evts, err := eh.store.GetEventsByTxID(inTxID)
-	if err != nil {
-		return errors.Wrap(err, "failed to get fee event")
-	}
-	if len(evts) > 0 {
-		if evts[0].Type == unstakeEventType {
-			evts[0].Fee = evt.Fee
-			evts[0].Height = eh.height
-			err = eh.store.UpdateUnStakesRecord(models.EventUnstake{
-				Event: evts[0],
-			})
-		} else if evts[0].Type == swapEventType || evts[0].Type == doubleswapEventType {
-			// Only second tx of double swap has fee
-			evts[len(evts)-1].Fee = evt.Fee
-			evts[len(evts)-1].Height = eh.height
-			err = eh.store.UpdateSwapRecord(models.EventSwap{
-				Event: evts[len(evts)-1],
-			})
-		}
-	}
-	if err != nil {
-		return errors.Wrap(err, "failed to update event")
-	}
 	return nil
 }
 
@@ -499,8 +477,6 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			return err
 		}
 		evt.OutTxs = common.Txs{outTx}
-		var unstake models.EventUnstake
-		unstake.Event = evt
 		unstakeEvt, _, err := eh.store.GetTxDetails(common.NoAddress, txID, common.EmptyAsset, nil, 0, 1)
 		if err != nil {
 			return err
@@ -512,11 +488,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 				return err
 			}
 		}
-		unstake.Height = eh.height
-		err = eh.store.UpdateUnStakesRecord(unstake)
-		if err != nil {
-			return err
-		}
+
 	} else if evts[0].Type == swapEventType || evts[0].Type == doubleswapEventType {
 		evt = evts[0]
 		if !outTx.ID.Equals(common.BlankTxID) && len(evts) == 2 { // Second outbound for double swap
