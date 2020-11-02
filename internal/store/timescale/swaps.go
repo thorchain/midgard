@@ -93,7 +93,6 @@ func (s *Client) CreateSwapRecord(record *models.EventSwap) error {
 }
 
 func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
-	return nil
 	var runeAmt int64
 	var assetAmt int64
 	runeAmt += record.Fee.RuneFee()
