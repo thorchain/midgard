@@ -141,5 +141,4 @@ func (s *Client) UpdateSwapRecord(record models.EventSwap) error {
 		change.SwapType = models.SwapTypeSell
 	}
 	return nil
-
 }
