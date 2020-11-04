@@ -339,6 +339,71 @@ func (uc *Usecase) fetchPoolStatus(asset common.Asset) (models.PoolStatus, error
 	return status, nil
 }
 
+func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYReport, error) {
+	poolBasic, err := uc.store.GetPoolBasics(pool)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPYReport failed")
+	}
+	if poolBasic.Status != models.Enabled {
+		return &models.PoolAPYReport{}, nil
+	}
+	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
+	if err != nil {
+		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPYReport failed")
+	}
+	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
+		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+	}
+	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
+	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, time.Time{})
+	if err != nil {
+		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	lastMonthEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, lastActiveDate)
+	if err != nil {
+		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	lastMonthPoolEarned := lastMonthEarnDetails.PoolEarned
+	if activeDays < 30 {
+		lastMonthPoolEarned = int64(float64(lastMonthEarnDetails.PoolEarned) * 30 / activeDays)
+	}
+	periodicRate := float64(lastMonthPoolEarned) / float64(poolBasic.RuneDepth*2)
+	poolAPYReport := &models.PoolAPYReport{
+		Asset:                  pool,
+		TotalReward:            totalEarnDetails.Reward,
+		TotalPoolDeficit:       totalEarnDetails.Deficit,
+		TotalGasPaid:           totalEarnDetails.GasPaid,
+		TotalGasReimbursed:     totalEarnDetails.GasReimbursed,
+		TotalBuyFee:            totalEarnDetails.BuyFee,
+		TotalSellFee:           totalEarnDetails.SellFee,
+		TotalPoolFee:           totalEarnDetails.PoolFee,
+		TotalAssetDonation:     totalEarnDetails.AssetDonated,
+		TotalRuneDonation:      totalEarnDetails.RuneDonated,
+		TotalPoolDonation:      totalEarnDetails.PoolDonation,
+		TotalPoolEarning:       totalEarnDetails.PoolEarned,
+		LastMonthActiveDays:    activeDays,
+		LastMonthReward:        lastMonthEarnDetails.Reward,
+		LastMonthPoolDeficit:   lastMonthEarnDetails.Deficit,
+		LastMonthGasPaid:       lastMonthEarnDetails.GasPaid,
+		LastMonthGasReimbursed: lastMonthEarnDetails.GasReimbursed,
+		LastMonthBuyFee:        lastMonthEarnDetails.BuyFee,
+		LastMonthSellFee:       lastMonthEarnDetails.SellFee,
+		LastMonthPoolFee:       lastMonthEarnDetails.PoolFee,
+		LastMonthAssetDonation: lastMonthEarnDetails.AssetDonated,
+		LastMonthRuneDonation:  lastMonthEarnDetails.RuneDonated,
+		LastMonthPoolDonation:  lastMonthEarnDetails.PoolDonation,
+		LastMonthPoolEarning:   lastMonthEarnDetails.PoolEarned,
+		Price:                  calculatePrice(poolBasic.AssetDepth, poolBasic.RuneDepth),
+		PoolDepth:              poolBasic.RuneDepth * 2,
+		PeriodicRate:           periodicRate,
+		PoolAPY:                calculateAPY(periodicRate, monthsPerYear),
+	}
+	return poolAPYReport, nil
+}
+
 // GetPoolDetails returns price, buyers and sellers and tx statstic data.
 func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, error) {
 	basics, err := uc.store.GetPoolBasics(asset)

@@ -39,6 +39,22 @@ func (c Chain) String() string {
 	return strings.ToUpper(string(c))
 }
 
+// GetGasAsset chain's base asset
+func (c Chain) GetGasAsset() Asset {
+	switch c {
+	case THORChain:
+		return RuneNative
+	case BNBChain:
+		return BNBAsset
+	case BTCChain:
+		return BTCAsset
+	case ETHChain:
+		return ETHAsset
+	default:
+		return EmptyAsset
+	}
+}
+
 func IsBNBChain(c Chain) bool {
 	return c.Equals(BNBChain)
 }

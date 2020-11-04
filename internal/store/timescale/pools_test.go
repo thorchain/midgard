@@ -2070,8 +2070,11 @@ func (s *TimeScaleSuite) TestGetPoolLiquidityFee(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
+	asset, err := common.NewAsset("BNB.AVA-645")
+	c.Assert(err, IsNil)
+
 	now := time.Now().UTC()
-	err := s.Store.CreatePoolRecord(&models.EventPool{
+	err = s.Store.CreatePoolRecord(&models.EventPool{
 		Event: models.Event{
 			Time:   now.Add(-20 * 24 * time.Hour),
 			ID:     17,
@@ -2080,10 +2083,10 @@ func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
 			Type:   "pool",
 		},
 		Status: models.Enabled,
-		Pool:   common.BNBAsset,
+		Pool:   asset,
 	})
 	c.Assert(err, IsNil)
-	lastDate, err := s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	lastDate, err := s.Store.GetPoolLastEnabledDate(asset)
 	c.Assert(err, IsNil)
 	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
 
@@ -2096,11 +2099,11 @@ func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
 			Type:   "pool",
 		},
 		Status: models.Bootstrap,
-		Pool:   common.BNBAsset,
+		Pool:   asset,
 	})
 
 	c.Assert(err, IsNil)
-	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(asset)
 	c.Assert(err, IsNil)
 	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
 
@@ -2113,11 +2116,11 @@ func (s *TimeScaleSuite) TestGetPoolLastEnabledDate(c *C) {
 			Type:   "pool",
 		},
 		Status: models.Enabled,
-		Pool:   common.BNBAsset,
+		Pool:   asset,
 	})
 
 	c.Assert(err, IsNil)
-	lastDate, err = s.Store.GetPoolLastEnabledDate(common.BNBAsset)
+	lastDate, err = s.Store.GetPoolLastEnabledDate(asset)
 	c.Assert(err, IsNil)
 	c.Assert(lastDate.Unix(), Equals, now.Add(-20*24*time.Hour).Unix())
 }

@@ -1067,16 +1067,29 @@ func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 
 // Get the first time when pool status changed to enabled
 func (s *Client) GetPoolLastEnabledDate(asset common.Asset) (time.Time, error) {
-	stmnt := `
+	var stmnt string
+	var row *sql.Row
+
+	if asset.Chain.GetGasAsset().Equals(asset) {
+		stmnt = `
+		SELECT time 
+		FROM   pools_history 
+		WHERE  pool = $1 	
+		ORDER  BY time ASC 
+		LIMIT  1 `
+		row = s.db.QueryRow(stmnt, asset.String())
+	} else {
+		stmnt = `
 		SELECT time 
 		FROM   pools_history 
 		WHERE  pool = $1 
 		AND status = $2 
 		ORDER  BY time ASC 
 		LIMIT  1 `
+		row = s.db.QueryRow(stmnt, asset.String(), models.Enabled)
+	}
 
 	var inactiveTime sql.NullTime
-	row := s.db.QueryRow(stmnt, asset.String(), models.Enabled)
 
 	if err := row.Scan(&inactiveTime); err != nil {
 		return time.Time{}, errors.Wrap(err, "GetPoolLastEnabledDate failed")
@@ -1134,4 +1147,48 @@ func (s *Client) GetPoolEarned(asset common.Asset, from time.Time) (int64, error
 	runeEarned := gasReplenished.Int64 + reward.Int64 + sellFee
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
 	return poolEarned, nil
+}
+
+func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	stmnt := `
+		SELECT 
+		Sum(reward) FILTER (WHERE reward > 0), 
+		Sum(reward) FILTER (WHERE reward < 0),
+       	Sum(gas_used), 
+       	Sum(gas_replenished),
+       	Sum(asset_added),
+       	Sum(rune_added)
+		FROM   pool_changes_daily 
+		WHERE  pool = $1
+		AND    time >= $2`
+	var reward, deficit, gasUsed, gasReplenished, assetDonated, runeDonated sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), from)
+
+	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished, &assetDonated, &runeDonated); err != nil {
+		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
+	if err != nil {
+		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
+	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
+	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
+	return models.PoolEarningReport{
+		Reward:        reward.Int64,
+		Deficit:       deficit.Int64,
+		BuyFee:        int64(float64(buyFee) * priceInRune),
+		SellFee:       sellFee,
+		GasPaid:       gasUsed.Int64,
+		GasReimbursed: gasReplenished.Int64,
+		PoolFee:       int64(float64(buyFee)*priceInRune) + sellFee,
+		PoolEarned:    poolEarned,
+		AssetDonated:  assetDonated.Int64,
+		RuneDonated:   runeDonated.Int64,
+		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
+	}, nil
 }

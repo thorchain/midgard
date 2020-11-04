@@ -22,6 +22,51 @@ type Handlers struct {
 	logger          zerolog.Logger
 }
 
+func (h *Handlers) GetEarningDetail(ctx echo.Context, pool string) error {
+	asset, err := common.NewAsset(pool)
+	if err != nil {
+		h.logger.Error().Err(err).Str("params.Asset", pool).Msg("invalid asset or format")
+		return echo.NewHTTPError(http.StatusBadRequest, GeneralErrorResponse{Error: err.Error()})
+	}
+	poolAPYReport, err := h.uc.GetPoolEarningDetail(asset)
+	if err != nil {
+		h.logger.Err(err).Msg("failed to GetPoolAPYReport")
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
+	assetStr := poolAPYReport.Asset.String()
+	response := GetPoolEarningDetailResponse{
+		Pool:                   &assetStr,
+		TotalReward:            Int64ToString(poolAPYReport.TotalReward),
+		TotalPoolDeficit:       Int64ToString(poolAPYReport.TotalPoolDeficit),
+		TotalGasPaid:           Int64ToString(poolAPYReport.TotalGasPaid),
+		TotalGasReimbursed:     Int64ToString(poolAPYReport.TotalGasReimbursed),
+		TotalBuyFee:            Int64ToString(poolAPYReport.TotalBuyFee),
+		TotalSellFee:           Int64ToString(poolAPYReport.TotalSellFee),
+		TotalPoolFee:           Int64ToString(poolAPYReport.TotalPoolFee),
+		TotalRuneDonation:      Int64ToString(poolAPYReport.TotalRuneDonation),
+		TotalAssetDonation:     Int64ToString(poolAPYReport.TotalAssetDonation),
+		TotalPoolDonation:      Int64ToString(poolAPYReport.TotalPoolDonation),
+		TotalPoolEarning:       Int64ToString(poolAPYReport.TotalPoolEarning),
+		LastMonthActiveDays:    Int64ToString(int64(poolAPYReport.LastMonthActiveDays)),
+		LastMonthReward:        Int64ToString(poolAPYReport.LastMonthReward),
+		LastMonthPoolDeficit:   Int64ToString(poolAPYReport.LastMonthPoolDeficit),
+		LastMonthGasPaid:       Int64ToString(poolAPYReport.LastMonthGasPaid),
+		LastMonthGasReimbursed: Int64ToString(poolAPYReport.LastMonthGasReimbursed),
+		LastMonthBuyFee:        Int64ToString(poolAPYReport.LastMonthBuyFee),
+		LastMonthSellFee:       Int64ToString(poolAPYReport.LastMonthSellFee),
+		LastMonthPoolFee:       Int64ToString(poolAPYReport.LastMonthPoolFee),
+		LastMonthRuneDonation:  Int64ToString(poolAPYReport.LastMonthRuneDonation),
+		LastMonthAssetDonation: Int64ToString(poolAPYReport.LastMonthAssetDonation),
+		LastMonthPoolDonation:  Int64ToString(poolAPYReport.LastMonthPoolDonation),
+		LastMonthPoolEarning:   Int64ToString(poolAPYReport.LastMonthPoolEarning),
+		PoolDepth:              Int64ToString(poolAPYReport.PoolDepth),
+		PeriodicRate:           Float64ToString(poolAPYReport.PeriodicRate),
+		Price:                  Float64ToString(poolAPYReport.Price),
+		PoolAPY:                Float64ToString(poolAPYReport.PoolAPY),
+	}
+	return ctx.JSON(http.StatusOK, response)
+}
+
 // GetThorchainProxiedConstants is just here to meet the golang interface.
 // As the endpoints are generated dynamically the implemented is in server.go
 func (h *Handlers) GetThorchainProxiedConstants(ctx echo.Context) error {

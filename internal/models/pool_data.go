@@ -83,3 +83,48 @@ type PoolDetails struct {
 	SwappingTxCount uint64
 	PoolAPY         float64
 }
+
+type PoolEarningReport struct {
+	Reward        int64
+	Deficit       int64
+	GasReimbursed int64
+	GasPaid       int64
+	BuyFee        int64
+	SellFee       int64
+	PoolEarned    int64
+	PoolFee       int64
+	AssetDonated  int64
+	RuneDonated   int64
+	PoolDonation  int64
+}
+
+type PoolAPYReport struct {
+	Asset                  common.Asset
+	TotalReward            int64
+	TotalPoolDeficit       int64
+	TotalGasPaid           int64
+	TotalGasReimbursed     int64
+	TotalBuyFee            int64
+	TotalSellFee           int64
+	TotalPoolFee           int64
+	TotalAssetDonation     int64
+	TotalRuneDonation      int64
+	TotalPoolDonation      int64
+	TotalPoolEarning       int64
+	LastMonthActiveDays    float64
+	LastMonthReward        int64
+	LastMonthPoolDeficit   int64
+	LastMonthGasPaid       int64
+	LastMonthGasReimbursed int64
+	LastMonthBuyFee        int64
+	LastMonthSellFee       int64
+	LastMonthPoolFee       int64
+	LastMonthAssetDonation int64
+	LastMonthRuneDonation  int64
+	LastMonthPoolDonation  int64
+	LastMonthPoolEarning   int64
+	PoolDepth              int64
+	PeriodicRate           float64
+	Price                  float64
+	PoolAPY                float64
+}
