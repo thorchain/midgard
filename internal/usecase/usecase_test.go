@@ -1730,8 +1730,8 @@ func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time,
 	return s.enabledDate, nil
 }
 
-func (s *TestGetPoolAPYStore) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
-	return s.earned, nil
+func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	return models.PoolEarningReport{PoolEarned: s.earned}, nil
 }
 
 func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
