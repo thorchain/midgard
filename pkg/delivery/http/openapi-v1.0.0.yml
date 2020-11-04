@@ -308,7 +308,7 @@ paths:
         "200":
           $ref: '#/components/responses/GetPoolAggChangesResponse'
 
-  "/v1/pools/details/{pool}/earning":
+  "/v1/pools/details/{pool}/earnings":
     get:
       operationId: GetEarningDetail
       summary: Get Pool Earning Detail
