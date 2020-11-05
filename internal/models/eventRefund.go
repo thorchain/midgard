@@ -1,8 +1,8 @@
 package models
 
 type EventRefundMeta struct {
-	Code   uint32 `json:"code",mapstructure:"code"`
-	Reason string `json:"reason",mapstructure:"reason"`
+	Code   uint32 `json:"code" mapstructure:"code"`
+	Reason string `json:"reason" mapstructure:"reason"`
 }
 
 type EventRefund struct {
