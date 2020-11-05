@@ -924,3 +924,52 @@ func (s *TimeScaleSuite) TestTxDate(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(txDate.Unix(), Equals, stakeTomlEvent1.Time.Unix())
 }
+
+func (s *TimeScaleSuite) TestRefundTx(c *C) {
+	evt := &refundBOLTEvent0
+	evt.Reason = "emit asset 3 less than price limit 1"
+	err := s.Store.CreateRefundRecord(evt)
+	c.Assert(err, IsNil)
+	events, count, err := s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"refund"}, 0, 1)
+	c.Assert(err, IsNil)
+	c.Assert(count, Equals, int64(1))
+	c.Assert(events, DeepEquals, []models.TxDetails{
+		{
+			Pool: common.Asset{
+				Chain:  "BNB",
+				Symbol: "BOLT-014",
+				Ticker: "BOLT",
+			},
+			Status: "Refund",
+			Type:   "refund",
+			In: models.TxData{
+				Address: "bnb1asnv2dvsd64z25n6u5mh2838kmghq3a7876htr",
+				TxID:    "416F961065DF50DC922D2DF18126A0D1917F4E4F05299CF42B0BC7DFB77A15F4",
+				Coin: common.Coins{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "BOLT-014",
+							Ticker: "BLOT",
+						},
+						Amount: 10,
+					},
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-67C",
+							Ticker: "RUNE",
+						},
+						Amount: 5,
+					},
+				},
+			},
+			Options: models.Options{
+				Reason: "emit asset 3 less than price limit 1",
+			},
+			Out:    []models.TxData{},
+			Date:   uint64(evt.Event.Time.Unix()),
+			Height: 11,
+		},
+	})
+}
