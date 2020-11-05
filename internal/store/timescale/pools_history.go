@@ -82,7 +82,7 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from,
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	colsTemplate := "%s"
 	lastTemplate := "%s"
-	timeBucket := getTimeBucket(inv)
+	timeBucket := getTimeBucket(inv, "time")
 	if inv > models.DailyInterval {
 		colsTemplate = "SUM(%s)"
 		lastTemplate = "last(%s, time)"
@@ -153,30 +153,63 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from,
 			WithdrawCount:  changes.WithdrawCount.Int64,
 		})
 	}
-	fmt.Println(result)
 	return result, nil
 }
 
-type totalVolChanges struct {
-	Time        time.Time     `db:"time"`
-	BuyVolume   sql.NullInt64 `db:"buy_volume"`
-	SellVolume  sql.NullInt64 `db:"sell_volume"`
-	TotalVolume sql.NullInt64 `db:"total_volume"`
+type statsChanges struct {
+	Time              time.Time     `db:"time"`
+	StartHeight       sql.NullInt64 `db:"start_height"`
+	EndHeight         sql.NullInt64 `db:"end_height"`
+	TotalRuneDepth    sql.NullInt64 `db:"total_rune_depth"`
+	EnabledPools      sql.NullInt64 `db:"enabled_pools"`
+	BootstrappedPools sql.NullInt64 `db:"bootstrapped_pools"`
+	SuspendedPools    sql.NullInt64 `db:"suspended_pools"`
+	BuyVolume         sql.NullInt64 `db:"buy_volume"`
+	SellVolume        sql.NullInt64 `db:"sell_volume"`
+	TotalReward       sql.NullInt64 `db:"total_reward"`
+	TotalDeficit      sql.NullInt64 `db:"total_deficit"`
+	BuyCount          sql.NullInt64 `db:"buy_count"`
+	SellCount         sql.NullInt64 `db:"sell_count"`
+	AddCount          sql.NullInt64 `db:"add_count"`
+	StakeCount        sql.NullInt64 `db:"stake_count"`
+	WithdrawCount     sql.NullInt64 `db:"withdraw_count"`
 }
 
-func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
+func (s *Client) GetStatsChanges(inv models.Interval, from, to time.Time) ([]models.StatsChanges, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
-	timeBucket := getTimeBucket(interval)
+	colsTemplate := "%s"
+	firstTemplate := "%s"
+	lastTemplate := "%s"
+	timeBucket := getTimeBucket(inv, "stats.time")
+	tableSuffix := getIntervalTableSuffix(inv)
+	if inv > models.DailyInterval {
+		colsTemplate = "SUM(%s)"
+		lastTemplate = "last(%s, stats.time)"
+		firstTemplate = "first(%s, stats.time)"
+		sb.GroupBy(timeBucket)
+	}
 	sb.Select(
 		sb.As(timeBucket, "time"),
-		sb.As("SUM(buy_volume)", "buy_volume"),
-		sb.As("SUM(sell_volume)", "sell_volume"),
-		sb.As("SUM(buy_volume + sell_volume)", "total_volume"),
+		sb.As(fmt.Sprintf(firstTemplate, "start_height"), "start_height"),
+		sb.As(fmt.Sprintf(lastTemplate, "end_height"), "end_height"),
+		sb.As(fmt.Sprintf(lastTemplate, "total_rune_depth"), "total_rune_depth"),
+		sb.As(fmt.Sprintf(lastTemplate, "enabled_pools"), "enabled_pools"),
+		sb.As(fmt.Sprintf(lastTemplate, "bootstrapped_pools"), "bootstrapped_pools"),
+		sb.As(fmt.Sprintf(lastTemplate, "suspended_pools"), "suspended_pools"),
+		sb.As(fmt.Sprintf(colsTemplate, "buy_volume"), "buy_volume"),
+		sb.As(fmt.Sprintf(colsTemplate, "sell_volume"), "sell_volume"),
+		sb.As(fmt.Sprintf(colsTemplate, "total_reward"), "total_reward"),
+		sb.As(fmt.Sprintf(colsTemplate, "total_deficit"), "total_deficit"),
+		sb.As(fmt.Sprintf(colsTemplate, "buy_count"), "buy_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "sell_count"), "sell_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "add_count"), "add_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "stake_count"), "stake_count"),
+		sb.As(fmt.Sprintf(colsTemplate, "withdraw_count"), "withdraw_count"),
 	)
-	sb.From("total_changes" + getIntervalTableSuffix(interval))
-	sb.GroupBy(timeBucket)
-	sb.Where(sb.Between("time", from, to))
-	sb.OrderBy("time")
+	sb.From(sb.As("stats_changes"+tableSuffix, "stats"))
+	sb.JoinWithOption(sqlbuilder.FullJoin, sb.As("total_changes"+tableSuffix, "totals"), "stats.time = totals.time")
+	sb.Where(sb.Between("stats.time", from, to))
+	sb.OrderBy("stats.time")
 
 	q, args := sb.Build()
 	rows, err := s.db.Queryx(q, args...)
@@ -184,19 +217,19 @@ func (s *Client) GetTotalVolChanges(interval models.Interval, from, to time.Time
 		return nil, err
 	}
 
-	result := []models.TotalVolChanges{}
+	result := []models.StatsChanges{}
 	for rows.Next() {
-		var changes totalVolChanges
+		var changes statsChanges
 		err := rows.StructScan(&changes)
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, models.TotalVolChanges{
+		result = append(result, models.StatsChanges{
 			Time:        changes.Time,
 			BuyVolume:   changes.BuyVolume.Int64,
 			SellVolume:  changes.SellVolume.Int64,
-			TotalVolume: changes.TotalVolume.Int64,
+			TotalVolume: changes.BuyVolume.Int64 + changes.SellVolume.Int64,
 		})
 	}
 	return result, nil
@@ -212,11 +245,11 @@ func getIntervalTableSuffix(interval models.Interval) string {
 	return "_daily"
 }
 
-func getTimeBucket(inv models.Interval) string {
+func getTimeBucket(inv models.Interval, col string) string {
 	if inv > models.DailyInterval {
-		return fmt.Sprintf("DATE_TRUNC('%s', time)", getIntervalDateTrunc(inv))
+		return fmt.Sprintf("DATE_TRUNC('%s', %s)", getIntervalDateTrunc(inv), col)
 	}
-	return "time"
+	return col
 }
 
 func getIntervalDateTrunc(inv models.Interval) string {

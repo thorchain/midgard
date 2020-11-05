@@ -770,13 +770,13 @@ func (uc *Usecase) updateConstantsByMimir() error {
 	return nil
 }
 
-// GetTotalVolChanges returns an array of total changes and running total of all pools in rune.
-func (uc *Usecase) GetTotalVolChanges(inv models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
+// GetStatsChanges returns an array of total changes and running total of all pools in rune.
+func (uc *Usecase) GetStatsChanges(inv models.Interval, from, to time.Time) ([]models.StatsChanges, error) {
 	if err := inv.Validate(); err != nil {
 		return nil, err
 	}
 
-	return uc.store.GetTotalVolChanges(inv, from, to)
+	return uc.store.GetStatsChanges(inv, from, to)
 }
 
 // GetPoolAggChanges returns historical aggregated details of the specified pool.

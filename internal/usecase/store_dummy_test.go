@@ -184,7 +184,7 @@ func (s *StoreDummy) UpdateSwapRecord(record models.EventSwap) error {
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) GetTotalVolChanges(inv models.Interval, from, to time.Time) ([]models.TotalVolChanges, error) {
+func (s *StoreDummy) GetStatsChanges(inv models.Interval, from, to time.Time) ([]models.StatsChanges, error) {
 	return nil, ErrNotImplemented
 }
 

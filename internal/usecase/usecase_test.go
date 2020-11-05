@@ -1459,20 +1459,20 @@ func (s *UsecaseSuite) TestPoolSharefactor(c *C) {
 	c.Assert(factor, Equals, float64(0))
 }
 
-type TestGetTotalVolChangesStore struct {
+type TestGetStatsChangesStore struct {
 	StoreDummy
-	changes []models.TotalVolChanges
+	changes []models.StatsChanges
 	err     error
 }
 
-func (s *TestGetTotalVolChangesStore) GetTotalVolChanges(_ models.Interval, _, _ time.Time) ([]models.TotalVolChanges, error) {
+func (s *TestGetStatsChangesStore) GetStatsChanges(_ models.Interval, _, _ time.Time) ([]models.StatsChanges, error) {
 	return s.changes, s.err
 }
 
-func (s *UsecaseSuite) TestGetTotalVolChanges(c *C) {
+func (s *UsecaseSuite) TestGetStatsChanges(c *C) {
 	now := time.Now()
-	store := &TestGetTotalVolChangesStore{
-		changes: []models.TotalVolChanges{
+	store := &TestGetStatsChangesStore{
+		changes: []models.StatsChanges{
 			{
 				Time:        now,
 				BuyVolume:   10,
@@ -1490,20 +1490,20 @@ func (s *UsecaseSuite) TestGetTotalVolChanges(c *C) {
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	changes, err := uc.GetTotalVolChanges(models.DailyInterval, now, now)
+	changes, err := uc.GetStatsChanges(models.DailyInterval, now, now)
 	c.Assert(err, IsNil)
 	c.Assert(changes, DeepEquals, store.changes)
 
-	_, err = uc.GetTotalVolChanges(-1, now, now)
+	_, err = uc.GetStatsChanges(-1, now, now)
 	c.Assert(err, NotNil)
 
-	store = &TestGetTotalVolChangesStore{
+	store = &TestGetStatsChangesStore{
 		err: errors.New("could not fetch requested data"),
 	}
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, err = uc.GetTotalVolChanges(models.DailyInterval, now, now)
+	_, err = uc.GetStatsChanges(models.DailyInterval, now, now)
 	c.Assert(err, NotNil)
 }
 

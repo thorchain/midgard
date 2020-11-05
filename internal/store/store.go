@@ -53,7 +53,7 @@ type Store interface {
 	UpdatePoolUnits(pool common.Asset, units int64)
 	GetLastHeight() (int64, error)
 	UpdateEventStatus(eventID int64, status string) error
-	GetTotalVolChanges(interval models.Interval, from, to time.Time) ([]models.TotalVolChanges, error)
+	GetStatsChanges(interval models.Interval, from, to time.Time) ([]models.StatsChanges, error)
 	GetPoolAggChanges(pool common.Asset, inv models.Interval, from, to time.Time) ([]models.PoolAggChanges, error)
 	DeleteBlock(height int64) error
 	GetPoolROI12(asset common.Asset) (float64, error)
