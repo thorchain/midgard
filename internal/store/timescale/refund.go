@@ -14,21 +14,6 @@ func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
 		return errors.Wrap(err, "Failed to create event record")
 	}
 
-	pool := record.Fee.Asset()
-	if pool.IsEmpty() {
-		return nil
-	}
-	runeDepth, err := s.GetRuneDepth(pool)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get rune depth")
-	}
-	if uint64(record.Fee.PoolDeduct) > runeDepth {
-		record.Fee.PoolDeduct = int64(runeDepth)
-	}
-	err = s.CreateFeeRecord(record.Event, pool)
-	if err != nil {
-		return errors.Wrap(err, "Failed to create Refund record")
-	}
 	meta, err := json.Marshal(map[string]interface{}{
 		"reason": record.Reason,
 		"code":   record.Code,
@@ -44,7 +29,26 @@ func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
 		Meta:      meta,
 	}
 	err = s.UpdatePoolsHistory(change)
-	return errors.Wrap(err, "could not update pool history")
+	if err != nil {
+		return errors.Wrap(err, "could not update pool history")
+	}
+
+	pool := record.Fee.Asset()
+	if pool.IsEmpty() {
+		return nil
+	}
+	runeDepth, err := s.GetRuneDepth(pool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to get rune depth")
+	}
+	if uint64(record.Fee.PoolDeduct) > runeDepth {
+		record.Fee.PoolDeduct = int64(runeDepth)
+	}
+	err = s.CreateFeeRecord(record.Event, pool)
+	if err != nil {
+		return errors.Wrap(err, "Failed to create Refund record")
+	}
+	return nil
 }
 
 func (s *Client) CreateRefundedEvent(record *models.Event, pool common.Asset) error {
