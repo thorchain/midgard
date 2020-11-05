@@ -375,7 +375,7 @@ func (s *Client) priceTarget(eventId uint64) uint64 {
 }
 
 func (s *Client) getRefundReason(eventId uint64) string {
-	stmnt := `SELECT meta->'reason' FROM pools_history WHERE event_id = $1`
+	stmnt := `SELECT meta->>'reason' FROM pools_history WHERE event_id = $1`
 	var reason string
 	row := s.db.QueryRow(stmnt, eventId)
 
