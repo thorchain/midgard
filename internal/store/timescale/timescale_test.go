@@ -15,7 +15,7 @@ import (
 	"gitlab.com/thorchain/midgard/pkg/helpers"
 )
 
-var tables = []string{"coins", "events", "pools_history", "swaps", "txs"}
+var tables = []string{"coins", "events", "pools_history", "stats_history", "swaps", "txs"}
 
 func Test(t *testing.T) {
 	TestingT(t)
@@ -2099,6 +2099,8 @@ func (s *TimeScaleSuite) SetUpTest(c *C) {
 
 	// Reset the pools cache
 	s.Store.pools = map[string]*models.PoolBasics{}
+	s.Store.blockHeight = 0
+	s.Store.blockTime = time.Time{}
 }
 
 func getVar(env, fallback string) string {

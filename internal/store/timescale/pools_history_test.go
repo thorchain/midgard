@@ -308,12 +308,13 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	c.Assert(changes[0], helpers.DeepEquals, exp)
 }
 
-func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
+func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 	today := time.Date(2020, 7, 22, 0, 0, 0, 0, time.UTC)
 	tomorrow := today.Add(time.Hour * 24)
 
 	change := &models.PoolChange{
 		Time:       today,
+		Height:     1,
 		EventType:  "swap",
 		EventID:    1,
 		RuneAmount: 100,
@@ -322,6 +323,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       today,
+		Height:     1,
 		EventType:  "swap",
 		EventID:    2,
 		RuneAmount: -50,
@@ -330,6 +332,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       today.Add(time.Minute * 5),
+		Height:     3,
 		EventType:  "swap",
 		EventID:    3,
 		RuneAmount: 25,
@@ -338,6 +341,7 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       tomorrow,
+		Height:     4,
 		EventType:  "swap",
 		EventID:    4,
 		RuneAmount: -20,
@@ -346,17 +350,28 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:       tomorrow.Add(time.Minute * 5),
+		Height:     5,
 		EventType:  "swap",
 		EventID:    4,
 		RuneAmount: 5,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
+	// Add an empty event to force committing the stats_history.
+	change = &models.PoolChange{
+		Time:   tomorrow.Add(time.Minute * 5),
+		Height: 6,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+
+	// FIXME: Without this delay tests the following tests will fail because of some inconsistency in the timescaledb.
+	time.Sleep(time.Second * 5)
 
 	// Test daily aggrigation
-	changes, err := s.Store.GetTotalVolChanges(models.DailyInterval, today, tomorrow)
+	changes, err := s.Store.GetStatsChanges(models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
-	expected := []models.TotalVolChanges{
+	expected := []models.StatsChanges{
 		{
 			Time:        today,
 			BuyVolume:   125,
@@ -373,9 +388,9 @@ func (s *TimeScaleSuite) TestGetTotalVolChanges(c *C) {
 	c.Assert(changes, helpers.DeepEquals, expected)
 
 	// Test 5 minute aggrigation
-	changes, err = s.Store.GetTotalVolChanges(models.FiveMinInterval, today, tomorrow.Add(time.Minute*5))
+	changes, err = s.Store.GetStatsChanges(models.FiveMinInterval, today, tomorrow.Add(time.Minute*5))
 	c.Assert(err, IsNil)
-	expected = []models.TotalVolChanges{
+	expected = []models.StatsChanges{
 		{
 			Time:        today,
 			BuyVolume:   100,

@@ -439,7 +439,7 @@ func (h *Handlers) GetTotalVolChanges(ctx echo.Context, params GetTotalVolChange
 	from := time.Unix(params.From, 0)
 	to := time.Unix(params.To, 0)
 
-	changes, err := h.uc.GetTotalVolChanges(inv, from, to)
+	changes, err := h.uc.GetStatsChanges(inv, from, to)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
 	}

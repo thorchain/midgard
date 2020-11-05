@@ -56,10 +56,23 @@ type PoolAggChanges struct {
 	WithdrawCount  int64
 }
 
-// TotalVolChanges contains aggregated buy/sell volume changes and running total of all pools.
-type TotalVolChanges struct {
-	Time        time.Time
-	BuyVolume   int64
-	SellVolume  int64
-	TotalVolume int64
+// StatsChanges contains aggregated changes of all pools like buy/sell volume, total depth and etc.
+type StatsChanges struct {
+	Time              time.Time
+	StartHeight       int64
+	EndHeight         int64
+	TotalRuneDepth    int64
+	EnabledPools      int64
+	BootstrappedPools int64
+	SuspendedPools    int64
+	BuyVolume         int64
+	SellVolume        int64
+	TotalVolume       int64
+	TotalReward       int64
+	TotalDeficit      int64
+	BuyCount          int64
+	SellCount         int64
+	AddCount          int64
+	StakeCount        int64
+	WithdrawCount     int64
 }
