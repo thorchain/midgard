@@ -303,6 +303,8 @@ func (s *Client) options(eventId uint64, eventType string) models.Options {
 
 	if eventType == "stake" {
 		options.PriceTarget = s.priceTarget(eventId)
+	} else if eventType == "refund" {
+		options.Reason = s.getRefundReason(eventId)
 	}
 
 	return options
@@ -370,6 +372,18 @@ func (s *Client) priceTarget(eventId uint64) uint64 {
 	}
 
 	return priceTarget
+}
+
+func (s *Client) getRefundReason(eventId uint64) string {
+	stmnt := `SELECT meta->'reason' FROM pools_history WHERE event_id = $1`
+	var reason string
+	row := s.db.QueryRow(stmnt, eventId)
+
+	if err := row.Scan(&reason); err != nil {
+		return ""
+	}
+
+	return reason
 }
 
 func (s *Client) eventBasic(eventId uint64) (time.Time, uint64, string, string, error) {
