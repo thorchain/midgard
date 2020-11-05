@@ -29,7 +29,10 @@ func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to create Refund record")
 	}
-	meta, err := json.Marshal(record.EventRefundMeta)
+	meta, err := json.Marshal(map[string]interface{}{
+		"reason": record.Reason,
+		"code":   record.Code,
+	})
 	if err != nil {
 		return errors.Wrap(err, "Failed to create Refund record")
 	}
