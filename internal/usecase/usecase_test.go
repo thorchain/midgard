@@ -250,18 +250,18 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	txID, _ := common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
-	asset, _ := common.NewAsset("BNB.TOML-4BC")
+	address := "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38"
+	txID := "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
+	asset := "BNB.TOML-4BC"
 	eventTypes := []string{"stake"}
 	page := models.NewPage(0, 2)
-	details, count, err := uc.GetTxDetails(address, txID, asset, eventTypes, page)
+	details, count, err := uc.GetTxDetails(&address, &txID, &asset, eventTypes, page)
 	c.Assert(err, IsNil)
 	c.Assert(details, DeepEquals, store.txDetails)
 	c.Assert(count, Equals, store.count)
-	c.Assert(store.address, Equals, address)
-	c.Assert(store.txID, Equals, txID)
-	c.Assert(store.asset, Equals, asset)
+	c.Assert(store.address.String(), Equals, address)
+	c.Assert(store.txID.String(), Equals, txID)
+	c.Assert(store.asset.String(), Equals, asset)
 	c.Assert(store.eventTypes, DeepEquals, eventTypes)
 	c.Assert(store.offset, Equals, page.Offset)
 	c.Assert(store.limit, Equals, page.Limit)
@@ -272,7 +272,7 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, _, err = uc.GetTxDetails(address, txID, asset, eventTypes, page)
+	_, _, err = uc.GetTxDetails(&address, &txID, &asset, eventTypes, page)
 	c.Assert(err, NotNil)
 }
 
