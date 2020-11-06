@@ -338,7 +338,7 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 		EventType:   "swap",
 		EventID:     3,
 		AssetAmount: 1,
-		RuneAmount:  -50,
+		RuneAmount:  -100,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -347,7 +347,7 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 		Height:     1,
 		EventType:  "rewards",
 		EventID:    4,
-		RuneAmount: -100,
+		RuneAmount: -50,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -417,11 +417,14 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 		EventID:   10,
 		Pool:      common.BNBAsset,
 	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
 	change = &models.PoolChange{
 		Time:      tomorrow.Add(time.Minute * 5),
 		Height:    4,
 		EventType: "stake",
 		EventID:   11,
+		Units:     1000,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -430,6 +433,7 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 		Height:    4,
 		EventType: "unstake",
 		EventID:   12,
+		Units:     -1000,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -455,9 +459,9 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 			TotalRuneDepth: 75,
 			EnabledPools:   1,
 			BuyVolume:      125,
-			SellVolume:     50,
+			SellVolume:     100,
 			TotalReward:    100,
-			TotalDeficit:   100,
+			TotalDeficit:   50,
 			BuyCount:       2,
 			SellCount:      1,
 		},
@@ -471,6 +475,9 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 			SellVolume:        20,
 			BuyCount:          1,
 			SellCount:         1,
+			AddCount:          1,
+			StakeCount:        1,
+			WithdrawCount:     1,
 		},
 	}
 	c.Assert(changes, helpers.DeepEquals, expected)
@@ -480,28 +487,51 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 	c.Assert(err, IsNil)
 	expected = []models.StatsChanges{
 		{
-			Time:        today,
-			BuyVolume:   100,
-			SellVolume:  50,
-			TotalVolume: 150,
+			Time:           today,
+			StartHeight:    1,
+			EndHeight:      1,
+			TotalRuneDepth: 50,
+			EnabledPools:   1,
+			BuyVolume:      100,
+			SellVolume:     100,
+			TotalReward:    100,
+			TotalDeficit:   50,
+			BuyCount:       1,
+			SellCount:      1,
 		},
 		{
-			Time:        today.Add(time.Minute * 5),
-			BuyVolume:   25,
-			SellVolume:  0,
-			TotalVolume: 25,
+			Time:           today.Add(time.Minute * 5),
+			StartHeight:    2,
+			EndHeight:      2,
+			TotalRuneDepth: 75,
+			EnabledPools:   1,
+			BuyVolume:      25,
+			SellVolume:     0,
+			BuyCount:       1,
 		},
 		{
-			Time:        tomorrow,
-			BuyVolume:   0,
-			SellVolume:  20,
-			TotalVolume: 20,
+			Time:              tomorrow,
+			StartHeight:       3,
+			EndHeight:         3,
+			TotalRuneDepth:    55,
+			EnabledPools:      1,
+			BootstrappedPools: 1,
+			BuyVolume:         0,
+			SellVolume:        20,
+			SellCount:         1,
 		},
 		{
-			Time:        tomorrow.Add(time.Minute * 5),
-			BuyVolume:   5,
-			SellVolume:  0,
-			TotalVolume: 5,
+			Time:              tomorrow.Add(time.Minute * 5),
+			StartHeight:       4,
+			EndHeight:         4,
+			TotalRuneDepth:    60,
+			BootstrappedPools: 2,
+			BuyVolume:         5,
+			SellVolume:        0,
+			BuyCount:          1,
+			AddCount:          1,
+			StakeCount:        1,
+			WithdrawCount:     1,
 		},
 	}
 	c.Assert(changes, helpers.DeepEquals, expected)
