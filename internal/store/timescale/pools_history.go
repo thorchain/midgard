@@ -158,8 +158,8 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from,
 
 type statsChanges struct {
 	Time              time.Time     `db:"time"`
-	StartHeight       sql.NullInt64 `db:"start_height"`
-	EndHeight         sql.NullInt64 `db:"end_height"`
+	StartHeight       int64         `db:"start_height"`
+	EndHeight         int64         `db:"end_height"`
 	TotalRuneDepth    sql.NullInt64 `db:"total_rune_depth"`
 	EnabledPools      sql.NullInt64 `db:"enabled_pools"`
 	BootstrappedPools sql.NullInt64 `db:"bootstrapped_pools"`
@@ -226,10 +226,22 @@ func (s *Client) GetStatsChanges(inv models.Interval, from, to time.Time) ([]mod
 		}
 
 		result = append(result, models.StatsChanges{
-			Time:        changes.Time,
-			BuyVolume:   changes.BuyVolume.Int64,
-			SellVolume:  changes.SellVolume.Int64,
-			TotalVolume: changes.BuyVolume.Int64 + changes.SellVolume.Int64,
+			Time:              changes.Time,
+			StartHeight:       changes.StartHeight,
+			EndHeight:         changes.EndHeight,
+			TotalRuneDepth:    changes.TotalRuneDepth.Int64,
+			EnabledPools:      changes.EnabledPools.Int64,
+			BootstrappedPools: changes.BootstrappedPools.Int64,
+			SuspendedPools:    changes.SuspendedPools.Int64,
+			BuyVolume:         changes.BuyVolume.Int64,
+			SellVolume:        changes.SellVolume.Int64,
+			TotalReward:       changes.TotalReward.Int64,
+			TotalDeficit:      changes.TotalDeficit.Int64,
+			BuyCount:          changes.BuyCount.Int64,
+			SellCount:         changes.SellCount.Int64,
+			AddCount:          changes.AddCount.Int64,
+			StakeCount:        changes.StakeCount.Int64,
+			WithdrawCount:     changes.WithdrawCount.Int64,
 		})
 	}
 	return result, nil
