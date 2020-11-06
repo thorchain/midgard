@@ -305,15 +305,13 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 
 	if change.Height > s.blockHeight {
 		// If this is the first time after startup, set the height and time of the block.
-		if s.blockHeight == 0 {
-			s.blockHeight = change.Height
-			s.blockTime = change.Time
+		if s.blockHeight > 0 {
+			err := s.insertBlockStats()
+			if err != nil {
+				s.logger.Error().Err(err).Msg("could not insert block stats")
+			}
 		}
 
-		err := s.insertBlockStats()
-		if err != nil {
-			s.logger.Error().Err(err).Msg("could not insert block stats")
-		}
 		s.blockHeight = change.Height
 		s.blockTime = change.Time
 	}
