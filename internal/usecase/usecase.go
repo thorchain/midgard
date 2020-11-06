@@ -276,16 +276,14 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	if err != nil {
 		return nil, err
 	}
-	assetEarned := -poolEarnDetail.GasPaid + poolEarnDetail.BuyFee + poolEarnDetail.AssetDonated
-	runeEarned := poolEarnDetail.GasReimbursed + poolEarnDetail.Reward + poolEarnDetail.Deficit + poolEarnDetail.SellFee + poolEarnDetail.RuneDonated
 	details := &models.PoolSimpleDetails{
 		PoolBasics:        basics,
 		PoolVolume24Hours: vol24,
 		Price:             price,
 		AssetROI:          assetROI,
-		AssetEarned:       assetEarned,
+		AssetEarned:       poolEarnDetail.AssetEarned,
 		RuneROI:           runeROI,
-		RuneEarned:        runeEarned,
+		RuneEarned:        poolEarnDetail.RuneEarned,
 		PoolROI:           (assetROI + runeROI) / 2,
 		PoolEarned:        poolEarnDetail.PoolEarned,
 	}
@@ -436,12 +434,17 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	if err != nil {
 		return nil, err
 	}
+	poolEarningDetails, err := uc.store.GetPoolEarnedDetails(asset, time.Time{})
+	if err != nil {
+		return nil, err
+	}
 	details := &models.PoolDetails{
 		PoolBasics:      basics,
 		AssetROI:        calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn),
-		AssetEarned:     basics.GasUsed + basics.BuyFeesTotal,
+		AssetEarned:     poolEarningDetails.AssetEarned,
 		RuneROI:         calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn),
-		RuneEarned:      basics.GasReplenished + basics.Reward + basics.SellFeesTotal,
+		RuneEarned:      poolEarningDetails.RuneEarned,
+		PoolEarned:      poolEarningDetails.PoolEarned,
 		Price:           calculatePrice(basics.AssetDepth, basics.RuneDepth),
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
 		PoolVolume24hr:  uint64(vol24),
@@ -472,7 +475,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	}
 	details.PoolStakedTotal = uint64(float64(details.AssetStaked)*details.Price + float64(details.RuneStaked))
 	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
-	details.PoolEarned = int64(float64(details.AssetEarned)*details.Price) + details.RuneEarned
 	details.PoolAPY, err = uc.getPoolAPY(asset)
 	if err != nil {
 		return nil, err
