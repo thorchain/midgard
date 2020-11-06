@@ -1162,5 +1162,7 @@ func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (model
 		AssetDonated:  assetDonated.Int64,
 		RuneDonated:   runeDonated.Int64,
 		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
+		AssetEarned:   assetEarned,
+		RuneEarned:    runeEarned,
 	}, nil
 }

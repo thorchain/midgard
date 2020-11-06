@@ -96,6 +96,8 @@ type PoolEarningReport struct {
 	AssetDonated  int64
 	RuneDonated   int64
 	PoolDonation  int64
+	AssetEarned   int64
+	RuneEarned    int64
 }
 
 type PoolAPYReport struct {
