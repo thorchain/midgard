@@ -186,7 +186,7 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 
-	// Test hourly aggrigation
+	// Test hourly aggregation
 	changes, err := s.Store.GetPoolAggChanges(bnbAsset, models.HourlyInterval, today, tomorrow.Add(time.Hour))
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 4)
@@ -239,7 +239,7 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	}
 	c.Assert(changes, helpers.DeepEquals, expected)
 
-	// Test daily aggrigation
+	// Test daily aggregation
 	changes, err = s.Store.GetPoolAggChanges(bnbAsset, models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 2)
@@ -278,7 +278,7 @@ func (s *TimeScaleSuite) TestGetPoolAggChanges(c *C) {
 	}
 	c.Assert(changes, helpers.DeepEquals, expected)
 
-	// Test yearly aggrigation
+	// Test yearly aggregation
 	changes, err = s.Store.GetPoolAggChanges(bnbAsset, models.YearlyInterval, year, year)
 	c.Assert(err, IsNil)
 	c.Assert(changes, HasLen, 1)
@@ -313,47 +313,123 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 	tomorrow := today.Add(time.Hour * 24)
 
 	change := &models.PoolChange{
-		Time:       today,
-		Height:     1,
-		EventType:  "swap",
-		EventID:    1,
-		RuneAmount: 100,
+		Time:      today,
+		Height:    1,
+		EventType: "pool",
+		EventID:   1,
+		Pool:      common.BNBAsset,
+		Status:    models.Enabled,
 	}
 	err := s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
+		Time:        today,
+		Height:      1,
+		EventType:   "swap",
+		EventID:     2,
+		AssetAmount: -5,
+		RuneAmount:  100,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        today,
+		Height:      1,
+		EventType:   "swap",
+		EventID:     3,
+		AssetAmount: 1,
+		RuneAmount:  -50,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
 		Time:       today,
 		Height:     1,
-		EventType:  "swap",
-		EventID:    2,
-		RuneAmount: -50,
-	}
-	err = s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-	change = &models.PoolChange{
-		Time:       today.Add(time.Minute * 5),
-		Height:     3,
-		EventType:  "swap",
-		EventID:    3,
-		RuneAmount: 25,
-	}
-	err = s.Store.UpdatePoolsHistory(change)
-	c.Assert(err, IsNil)
-	change = &models.PoolChange{
-		Time:       tomorrow,
-		Height:     4,
-		EventType:  "swap",
+		EventType:  "rewards",
 		EventID:    4,
-		RuneAmount: -20,
+		RuneAmount: -100,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
 	change = &models.PoolChange{
-		Time:       tomorrow.Add(time.Minute * 5),
-		Height:     5,
-		EventType:  "swap",
+		Time:       today,
+		Height:     1,
+		EventType:  "rewards",
 		EventID:    4,
-		RuneAmount: 5,
+		RuneAmount: 100,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        today.Add(time.Minute * 5),
+		Height:      2,
+		EventType:   "swap",
+		EventID:     5,
+		AssetAmount: -2,
+		RuneAmount:  25,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:      tomorrow,
+		Height:    3,
+		EventType: "pool",
+		EventID:   6,
+		Pool:      common.BTCAsset,
+		Status:    models.Bootstrap,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow,
+		Height:      3,
+		EventType:   "swap",
+		EventID:     7,
+		AssetAmount: 2,
+		RuneAmount:  -20,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:        tomorrow.Add(time.Minute * 5),
+		Height:      4,
+		EventType:   "swap",
+		EventID:     8,
+		AssetAmount: -1,
+		RuneAmount:  5,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:      tomorrow.Add(time.Minute * 5),
+		Height:    4,
+		EventType: "pool",
+		EventID:   9,
+		Pool:      common.BNBAsset,
+		Status:    models.Bootstrap,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:      tomorrow.Add(time.Minute * 5),
+		Height:    4,
+		EventType: "add",
+		EventID:   10,
+		Pool:      common.BNBAsset,
+	}
+	change = &models.PoolChange{
+		Time:      tomorrow.Add(time.Minute * 5),
+		Height:    4,
+		EventType: "stake",
+		EventID:   11,
+	}
+	err = s.Store.UpdatePoolsHistory(change)
+	c.Assert(err, IsNil)
+	change = &models.PoolChange{
+		Time:      tomorrow.Add(time.Minute * 5),
+		Height:    4,
+		EventType: "unstake",
+		EventID:   12,
 	}
 	err = s.Store.UpdatePoolsHistory(change)
 	c.Assert(err, IsNil)
@@ -368,26 +444,38 @@ func (s *TimeScaleSuite) TestGetStatsChanges(c *C) {
 	// FIXME: Without this delay tests the following tests will fail because of some inconsistency in the timescaledb.
 	time.Sleep(time.Second * 5)
 
-	// Test daily aggrigation
+	// Test daily aggregation
 	changes, err := s.Store.GetStatsChanges(models.DailyInterval, today, tomorrow)
 	c.Assert(err, IsNil)
 	expected := []models.StatsChanges{
 		{
-			Time:        today,
-			BuyVolume:   125,
-			SellVolume:  50,
-			TotalVolume: 175,
+			Time:           today,
+			StartHeight:    1,
+			EndHeight:      2,
+			TotalRuneDepth: 75,
+			EnabledPools:   1,
+			BuyVolume:      125,
+			SellVolume:     50,
+			TotalReward:    100,
+			TotalDeficit:   100,
+			BuyCount:       2,
+			SellCount:      1,
 		},
 		{
-			Time:        tomorrow,
-			BuyVolume:   5,
-			SellVolume:  20,
-			TotalVolume: 25,
+			Time:              tomorrow,
+			StartHeight:       3,
+			EndHeight:         4,
+			TotalRuneDepth:    60,
+			BootstrappedPools: 2,
+			BuyVolume:         5,
+			SellVolume:        20,
+			BuyCount:          1,
+			SellCount:         1,
 		},
 	}
 	c.Assert(changes, helpers.DeepEquals, expected)
 
-	// Test 5 minute aggrigation
+	// Test 5 minute aggregation
 	changes, err = s.Store.GetStatsChanges(models.FiveMinInterval, today, tomorrow.Add(time.Minute*5))
 	c.Assert(err, IsNil)
 	expected = []models.StatsChanges{
