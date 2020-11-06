@@ -173,6 +173,33 @@ func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common
 	return s.txDetails, s.count, s.err
 }
 
+func (s *UsecaseSuite) TestGetTxDetailsValidation(c *C) {
+	store := &TestGetTxDetailsStore{}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	eventTypes := []string{""}
+	page := models.NewPage(0, 2)
+	c.Assert(err, IsNil)
+	address := ""
+	_, _, err = uc.GetTxDetails(&address, nil, nil, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "NoAddress")
+
+	address = "bnb1d97wehqr6a0xe9c8q55qvvavjv3cu7"
+	_, _, err = uc.GetTxDetails(&address, nil, nil, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "address format not supported: "+address)
+
+	txID := "767F189E045DF1493EBAAB5EFE8C48CB218BB06E"
+	_, _, err = uc.GetTxDetails(nil, &txID, nil, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "TxID Error: Must be 64 characters (got 40)")
+
+	asset := "bn.bnb"
+	_, _, err = uc.GetTxDetails(nil, nil, &asset, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "Chain Error: Not enough characters")
+}
+
 func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	store := &TestGetTxDetailsStore{
 		txDetails: []models.TxDetails{
