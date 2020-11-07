@@ -117,7 +117,7 @@ func (uc *Usecase) GetPools() ([]common.Asset, error) {
 
 // GetAssetDetails returns details of requested asset.
 func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, error) {
-	pool, err := uc.store.GetPoolBasics(asset)
+	pool, err := uc.store.GetPool(asset)
 	if err != nil {
 		return nil, err
 	}
