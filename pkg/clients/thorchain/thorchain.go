@@ -204,7 +204,7 @@ func (c *Client) GetMimir() (map[string]string, error) {
 
 // GetPoolPrice fetch price values.
 func (c *Client) GetPool(asset common.Asset) (Pool, error) {
-	url := fmt.Sprintf("%s/pool", c.thorchainEndpoint)
+	url := fmt.Sprintf("%s/pools", c.thorchainEndpoint)
 	var pools []Pool
 	err := c.requestEndpoint(url, &pools)
 	if err != nil {
