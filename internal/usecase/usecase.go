@@ -260,12 +260,12 @@ func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) 
 		}
 	}
 	if uc.conf.UseThorchainBalances {
-		poolData, err := uc.thorchain.GetPool(asset)
-		if err != nil {
-			return models.PoolBasics{}, err
+		if uc.conf.UseThorchainBalances {
+			err := uc.overwriteDepth(&basics)
+			if err != nil {
+				return models.PoolBasics{}, err
+			}
 		}
-		basics.RuneDepth = poolData.BalanceRune
-		basics.AssetDepth = poolData.BalanceAsset
 	}
 	return basics, err
 }
