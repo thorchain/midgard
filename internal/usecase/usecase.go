@@ -118,6 +118,9 @@ func (uc *Usecase) GetPools() ([]common.Asset, error) {
 // GetAssetDetails returns details of requested asset.
 func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, error) {
 	pool, err := uc.store.GetPool(asset)
+	if err != nil {
+		return nil, err
+	}
 	var assetDepth, runeDepth uint64
 	if uc.conf.UseThorchainBalances {
 		poolData, err := uc.thorchain.GetPool(asset)
@@ -293,7 +296,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		basics.RuneDepth = poolData.BalanceRune
 		basics.AssetDepth = poolData.BalanceAsset
 	}
-
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
 	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
 	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
