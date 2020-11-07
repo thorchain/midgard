@@ -29,15 +29,18 @@ type Config struct {
 // Usecase describes the logic layer and it needs to get it's data from
 // pkg data store, tendermint and thorchain clients.
 type Usecase struct {
-	store           store.Store
-	thorchain       thorchain.Thorchain
-	tendermint      thorchain.Tendermint
-	tendermintBatch thorchain.TendermintBatch
-	conf            *Config
-	consts          thorchain.ConstantValues
-	constsMu        sync.Mutex
-	eh              *eventHandler
-	scanner         *thorchain.BlockScanner
+	store               store.Store
+	thorchain           thorchain.Thorchain
+	tendermint          thorchain.Tendermint
+	tendermintBatch     thorchain.TendermintBatch
+	conf                *Config
+	consts              thorchain.ConstantValues
+	constsMu            sync.Mutex
+	eh                  *eventHandler
+	scanner             *thorchain.BlockScanner
+	thorchainPools      []thorchain.Pool
+	thorchainLock       sync.Mutex
+	thorchainLastUpdate time.Time
 }
 
 // NewUsecase initiate a new Usecase.
@@ -57,6 +60,14 @@ func NewUsecase(client thorchain.Thorchain, tendermint thorchain.Tendermint, ten
 		tendermintBatch: tendermintBatch,
 		conf:            conf,
 		consts:          consts,
+	}
+	if conf.UseThorchainBalances {
+		go func() {
+			for {
+				uc.fetchThorchainPool()
+				time.Sleep(conf.ScanInterval)
+			}
+		}()
 	}
 	return &uc, nil
 }
@@ -123,12 +134,15 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 	}
 	var assetDepth, runeDepth uint64
 	if uc.conf.UseThorchainBalances {
-		poolData, err := uc.thorchain.GetPool(asset)
+		basics := models.PoolBasics{
+			Asset: asset,
+		}
+		err := uc.overwriteDepth(&basics)
 		if err != nil {
 			return nil, err
 		}
-		assetDepth = uint64(poolData.BalanceAsset)
-		runeDepth = uint64(poolData.BalanceRune)
+		assetDepth = uint64(basics.AssetDepth)
+		runeDepth = uint64(basics.RuneDepth)
 	} else {
 		assetDepth, err = uc.store.GetAssetDepth(asset)
 		if err != nil {
@@ -268,14 +282,30 @@ func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) 
 	return basics, err
 }
 
-func (uc *Usecase) overwriteDepth(basic *models.PoolBasics) error {
-	poolData, err := uc.thorchain.GetPool(basic.Asset)
-	if err != nil {
-		return err
+func (uc *Usecase) fetchThorchainPool() {
+	pools, err := uc.thorchain.GetPools()
+	if err == nil {
+		uc.thorchainLock.Lock()
+		defer uc.thorchainLock.Unlock()
+		uc.thorchainPools = pools
+		uc.thorchainLastUpdate = time.Now()
 	}
-	basic.RuneDepth = poolData.BalanceRune
-	basic.AssetDepth = poolData.BalanceAsset
-	return nil
+}
+
+func (uc *Usecase) overwriteDepth(basic *models.PoolBasics) error {
+	uc.thorchainLock.Lock()
+	defer uc.thorchainLock.Unlock()
+	if time.Now().Sub(uc.thorchainLastUpdate).Seconds() > uc.conf.ScanInterval.Seconds()*5 {
+		return errors.New("failed to get latest pool balance from THORNode")
+	}
+	for _, pool := range uc.thorchainPools {
+		if pool.Asset == basic.Asset.String() {
+			basic.RuneDepth = pool.BalanceRune
+			basic.AssetDepth = pool.BalanceAsset
+			return nil
+		}
+	}
+	return errors.New("pool not found")
 }
 
 // GetPoolSimpleDetails returns pool depths, status and swap stats of the given asset.
