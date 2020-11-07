@@ -21,8 +21,8 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 	}
 	var meta sql.NullString
 	if change.Meta != nil {
-		err:=meta.Scan(string(change.Meta))
-		if err!=nil{
+		err := meta.Scan(string(change.Meta))
+		if err != nil {
 			return err
 		}
 	}
