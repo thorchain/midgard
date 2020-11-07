@@ -8,6 +8,7 @@ import (
 	"github.com/huandu/go-sqlbuilder"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
+	"gopkg.in/nullbio/null.v4"
 )
 
 func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
@@ -18,9 +19,6 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 	units := sql.NullInt64{
 		Int64: change.Units,
 		Valid: change.Units != 0,
-	}
-	if change.Meta == nil {
-		change.Meta = []byte("{}")
 	}
 
 	q := `INSERT INTO pools_history (time, height, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, status, meta) 
@@ -37,7 +35,7 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		runeDepth,
 		units,
 		change.Status,
-		change.Meta)
+		null.NewString(string(change.Meta), len(change.Meta) > 0))
 	if err != nil {
 		return err
 	}
