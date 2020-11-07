@@ -27,6 +27,7 @@ type Thorchain interface {
 	GetTx(txId common.TxID) (common.Tx, error)
 	GetPoolStatus(pool common.Asset) (models.PoolStatus, error)
 	GetMimir() (map[string]string, error)
+	GetPool(asset common.Asset) (Pool, error)
 }
 
 // Client implements Thorchain and uses http to get requested data from thorchain.
@@ -199,4 +200,20 @@ func (c *Client) GetMimir() (map[string]string, error) {
 		return nil, err
 	}
 	return values, nil
+}
+
+// GetPoolPrice fetch price values.
+func (c *Client) GetPool(asset common.Asset) (Pool, error) {
+	url := fmt.Sprintf("%s/pool", c.thorchainEndpoint)
+	var pools []Pool
+	err := c.requestEndpoint(url, &pools)
+	if err != nil {
+		return Pool{}, err
+	}
+	for _, pool := range pools {
+		if pool.Asset == asset.String() {
+			return pool, nil
+		}
+	}
+	return Pool{}, errors.New("Pool not found")
 }

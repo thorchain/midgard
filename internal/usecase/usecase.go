@@ -22,7 +22,8 @@ const (
 
 // Config contains configuration params to create a new Usecase with NewUsecase.
 type Config struct {
-	ScanInterval time.Duration
+	ScanInterval         time.Duration
+	UseThorchainBalances bool
 }
 
 // Usecase describes the logic layer and it needs to get it's data from
@@ -120,13 +121,23 @@ func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, er
 	if err != nil {
 		return nil, err
 	}
-	assetDepth, err := uc.store.GetAssetDepth(asset)
-	if err != nil {
-		return nil, err
-	}
-	runeDepth, err := uc.store.GetRuneDepth(asset)
-	if err != nil {
-		return nil, err
+	var assetDepth, runeDepth uint64
+	if uc.conf.UseThorchainBalances {
+		poolData, err := uc.thorchain.GetPool(asset)
+		if err != nil {
+			return nil, err
+		}
+		assetDepth = uint64(poolData.BalanceAsset)
+		runeDepth = uint64(poolData.BalanceRune)
+	} else {
+		assetDepth, err = uc.store.GetAssetDepth(asset)
+		if err != nil {
+			return nil, err
+		}
+		runeDepth, err = uc.store.GetRuneDepth(asset)
+		if err != nil {
+			return nil, err
+		}
 	}
 	dateCreated, err := uc.store.GetDateCreated(pool)
 	if err != nil {
@@ -248,6 +259,14 @@ func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) 
 			return models.PoolBasics{}, err
 		}
 	}
+	if uc.conf.UseThorchainBalances {
+		poolData, err := uc.thorchain.GetPool(asset)
+		if err != nil {
+			return models.PoolBasics{}, err
+		}
+		basics.RuneDepth = poolData.BalanceRune
+		basics.AssetDepth = poolData.BalanceAsset
+	}
 	return basics, err
 }
 
@@ -268,6 +287,14 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
 	if err != nil {
 		return nil, err
+	}
+	if uc.conf.UseThorchainBalances {
+		poolData, err := uc.thorchain.GetPool(asset)
+		if err != nil {
+			return nil, err
+		}
+		basics.RuneDepth = poolData.BalanceRune
+		basics.AssetDepth = poolData.BalanceAsset
 	}
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
 	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
@@ -416,6 +443,14 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 			return nil, err
 		}
 		basics.Status = status
+	}
+	if uc.conf.UseThorchainBalances {
+		poolData, err := uc.thorchain.GetPool(asset)
+		if err != nil {
+			return nil, err
+		}
+		basics.RuneDepth = poolData.BalanceRune
+		basics.AssetDepth = poolData.BalanceAsset
 	}
 
 	now := time.Now()
