@@ -117,7 +117,7 @@ func (uc *Usecase) GetPools() ([]common.Asset, error) {
 
 // GetAssetDetails returns details of requested asset.
 func (uc *Usecase) GetAssetDetails(asset common.Asset) (*models.AssetDetails, error) {
-	pool, err := uc.store.GetPool(asset)
+	pool, err := uc.store.GetPoolBasics(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -270,6 +270,16 @@ func (uc *Usecase) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) 
 	return basics, err
 }
 
+func (uc *Usecase) overwriteDepth(basic *models.PoolBasics) error {
+	poolData, err := uc.thorchain.GetPool(basic.Asset)
+	if err != nil {
+		return err
+	}
+	basic.RuneDepth = poolData.BalanceRune
+	basic.AssetDepth = poolData.BalanceAsset
+	return nil
+}
+
 // GetPoolSimpleDetails returns pool depths, status and swap stats of the given asset.
 func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleDetails, error) {
 	basics, err := uc.store.GetPoolBasics(asset)
@@ -289,12 +299,10 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		return nil, err
 	}
 	if uc.conf.UseThorchainBalances {
-		poolData, err := uc.thorchain.GetPool(asset)
+		err := uc.overwriteDepth(&basics)
 		if err != nil {
 			return nil, err
 		}
-		basics.RuneDepth = poolData.BalanceRune
-		basics.AssetDepth = poolData.BalanceAsset
 	}
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
 	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
@@ -380,12 +388,10 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		basics.Status = status
 	}
 	if uc.conf.UseThorchainBalances {
-		poolData, err := uc.thorchain.GetPool(asset)
+		err := uc.overwriteDepth(&basics)
 		if err != nil {
 			return nil, err
 		}
-		basics.RuneDepth = poolData.BalanceRune
-		basics.AssetDepth = poolData.BalanceAsset
 	}
 
 	now := time.Now()
