@@ -253,6 +253,7 @@ paths:
       operationId: GetTotalVolChanges
       summary: Get Total Volume Changes
       description: Returns total volume changes of all pools in specified interval
+      deprecated: true
       parameters:
         - in: query
           name: interval
@@ -315,6 +316,36 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/GetPoolAggChangesResponse'
+  "/v1/history/stats":
+    get:
+      operationId: GetStatsChanges
+      summary: Get Stats Changes
+      description: Returns stats and total changes of all pools in specified interval
+      parameters:
+        - in: query
+          name: interval
+          description: Interval of calculations
+          required: true
+          schema:
+            type: string
+            enum: ["5min", "hour", "day", "week", "month", "year"]
+        - in: query
+          name: from
+          description: Start time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: to
+          description: End time of the query as unix timestamp
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          $ref: '#/components/responses/StatsChangesResponse'
 
   "/v1/pools/details/{pool}/earnings":
     get:
@@ -499,6 +530,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/PoolEarningDetail'
+    
+    StatsChangesResponse:
+      description: Get Return an array of stats changes.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/StatsChanges'
 
   schemas:
     TxDetails:
@@ -1165,7 +1205,6 @@ components:
           format: int64
           description: Count of withdraw events
 
-
     PoolEarningDetail:
       type: object
       properties:
@@ -1253,6 +1292,69 @@ components:
         poolAPY:
           type: string
           description: (1 + periodicRate ) ^ 12 -1
+
+    StatsChanges:
+      type: object
+      properties:
+        time:
+          type: integer
+          format: int64
+          description: Determining end of current time bucket in unix timestamp
+        startHeight:
+          type: integer
+          format: int64
+          description: Determining start height of current time bucket
+        endHeight:
+          type: integer
+          format: int64
+          description: Determining end height of current time bucket
+        totalRuneDepth:
+          type: string
+          description: Total rune depth of all pools at the end of current time bucket
+        enabledPools:
+          type: integer
+          format: int64
+          description: Number of enabled pools since network started
+        bootstrappedPools:
+          type: integer
+          format: int64
+          description: Number of bootstrapped pools since network started
+        suspendedPools:
+          type: integer
+          format: int64
+          description: Number of suspended pools since network started
+        buyVolume:
+          type: string
+          description: Sum of "rune_amount" of buy swap events
+        sellVolume:
+          type: string
+          description: Sum of "rune_amount" of sell swap events
+        totalVolume:
+          type: string
+          description: buyVolume + sellVolume
+        totalReward:
+          type: string
+          description: Total reward of all pools in the current time bucket
+        totalDeficit:
+          type: string
+          description: Total deficit of all pools in the current time bucket
+        buyCount:
+          type: integer
+          format: int64
+          description: Count of buy swaps
+        sellCount:
+          type: integer
+          format: int64
+          description: Count of sell swaps
+        stakeCount:
+          type: integer
+          format: int64
+          description: Count of stake events
+        withdrawCount:
+          type: integer
+          format: int64
+          description: Count of withdraw events
+        
 
 servers:
   - url: http://127.0.0.1:8080
