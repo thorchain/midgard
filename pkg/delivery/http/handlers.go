@@ -548,3 +548,40 @@ func (h *Handlers) GetPoolAggChanges(ctx echo.Context, params GetPoolAggChangesP
 
 	return ctx.JSON(http.StatusOK, response)
 }
+
+// (GET /v1/history/stats)
+func (h *Handlers) GetStatsChanges(ctx echo.Context, params GetStatsChangesParams) error {
+	inv := models.GetIntervalFromString(params.Interval)
+	from := time.Unix(params.From, 0)
+	to := time.Unix(params.To, 0)
+
+	changes, err := h.uc.GetStatsChanges(inv, from, to)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
+	}
+
+	response := make(StatsChangesResponse, len(changes))
+	for i, ch := range changes {
+		t := ch.Time.Unix()
+		response[i] = StatsChanges{
+			Time:              &t,
+			StartHeight:       &changes[i].StartHeight,
+			EndHeight:         &changes[i].EndHeight,
+			TotalRuneDepth:    Int64ToString(ch.TotalRuneDepth),
+			EnabledPools:      &changes[i].EnabledPools,
+			BootstrappedPools: &changes[i].BootstrappedPools,
+			SuspendedPools:    &changes[i].SuspendedPools,
+			BuyVolume:         Int64ToString(ch.BuyVolume),
+			SellVolume:        Int64ToString(ch.SellVolume),
+			TotalVolume:       Int64ToString(ch.TotalVolume),
+			TotalReward:       Int64ToString(ch.TotalReward),
+			TotalDeficit:      Int64ToString(ch.TotalDeficit),
+			BuyCount:          &changes[i].BuyCount,
+			SellCount:         &changes[i].SellCount,
+			StakeCount:        &changes[i].StakeCount,
+			WithdrawCount:     &changes[i].WithdrawCount,
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, response)
+}
