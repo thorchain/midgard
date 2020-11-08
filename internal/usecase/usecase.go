@@ -776,7 +776,14 @@ func (uc *Usecase) GetStatsChanges(inv models.Interval, from, to time.Time) ([]m
 		return nil, err
 	}
 
-	return uc.store.GetStatsChanges(inv, from, to)
+	changes, err := uc.store.GetStatsChanges(inv, from, to)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(changes); i++ {
+		changes[i].TotalVolume = changes[i].BuyVolume + changes[i].SellVolume
+	}
+	return changes, nil
 }
 
 // GetPoolAggChanges returns historical aggregated details of the specified pool.
