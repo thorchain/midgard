@@ -98,10 +98,31 @@ func (uc *Usecase) GetHealth() *models.HealthStatus {
 }
 
 // GetTxDetails returns details and count of txs selected with query.
-func (uc *Usecase) GetTxDetails(address common.Address, txID common.TxID, asset common.Asset, eventType []string, page models.Page) ([]models.TxDetails, int64, error) {
+func (uc *Usecase) GetTxDetails(addressStr, txIDStr, assetStr *string, eventType []string, page models.Page) ([]models.TxDetails, int64, error) {
 	err := page.Validate()
 	if err != nil {
 		return nil, 0, err
+	}
+	address := common.NoAddress
+	if addressStr != nil {
+		address, err = common.NewAddress(*addressStr)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+	txID := common.EmptyTxID
+	if txIDStr != nil {
+		txID, err = common.NewTxID(*txIDStr)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+	asset := common.EmptyAsset
+	if assetStr != nil {
+		asset, err = common.NewAsset(*assetStr)
+		if err != nil {
+			return nil, 0, err
+		}
 	}
 
 	txs, count, err := uc.store.GetTxDetails(address, txID, asset, eventType, page.Offset, page.Limit)
