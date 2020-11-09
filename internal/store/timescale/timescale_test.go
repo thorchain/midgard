@@ -1530,6 +1530,10 @@ var (
 			Height: 11,
 			Type:   "refund",
 			InTx: common.Tx{
+				Chain:       common.BNBChain,
+				ID:          "416F961065DF50DC922D2DF18126A0D1917F4E4F05299CF42B0BC7DFB77A15F4",
+				ToAddress:   "bnb1asnv2dvsd64z25n6u5mh2838kmghq3a7876htr",
+				FromAddress: "bnb1asnv2dvsd64z25n6u5mh2838kmghq3a7876htr",
 				Coins: common.Coins{
 					common.Coin{
 						Asset: common.Asset{
