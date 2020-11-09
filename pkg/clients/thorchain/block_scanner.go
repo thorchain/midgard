@@ -126,7 +126,7 @@ func (sc *BlockScanner) processNextBatch() (bool, error) {
 
 	blocksLen := len(info.BlockMetas)
 	for i := 0; i < blocksLen; i++ {
-		// NOTE: info.BlockMetas is in reverse order i.e. first item is the last block in the batch.
+		// NOTE: info.BlockMetas is in descending order i.e. first item is the last block in the batch..
 		meta := info.BlockMetas[(blocksLen-1)-i]
 		block := blocks[i]
 		if block == nil {
