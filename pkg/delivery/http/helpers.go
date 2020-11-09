@@ -87,6 +87,7 @@ func ConvertOptionsForAPI(options models.Options) *Option {
 		Asymmetry:           Float64ToString(options.Asymmetry),
 		PriceTarget:         Uint64ToString(options.PriceTarget),
 		WithdrawBasisPoints: Float64ToString(options.WithdrawBasisPoints),
+		Reason:              &options.Reason,
 	}
 }
 

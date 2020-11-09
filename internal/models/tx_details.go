@@ -14,6 +14,7 @@ type Options struct {
 	PriceTarget         uint64
 	WithdrawBasisPoints float64
 	Asymmetry           float64
+	Reason              string
 }
 
 type TxGas struct {

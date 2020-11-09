@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"gitlab.com/thorchain/midgard/internal/common"
@@ -26,6 +27,7 @@ type PoolChange struct {
 	SwapType     string
 	TradeSlip    *float64
 	LiquidityFee int64
+	Meta         json.RawMessage
 }
 
 // PoolAggChanges contains aggregated changes of a specific pool
