@@ -716,6 +716,14 @@ func (s *TestGetPoolDetailsStore) GetPoolEarned30d(asset common.Asset) (int64, e
 	return 4000000, nil
 }
 
+func (s *TestGetPoolDetailsStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	return models.PoolEarningReport{
+		AssetEarned: 22461,
+		RuneEarned:  16161712,
+		PoolEarned:  16162767,
+	}, nil
+}
+
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	client := &TestGetPoolDetailsThorchain{
 		status: models.Enabled,
@@ -822,6 +830,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		StakersCount:    1,
 		SwappersCount:   3,
 		SwappingTxCount: 5,
+		PoolAPY:         float64(0.04206528791186814),
 	})
 
 	client.status = models.Bootstrap
@@ -1757,8 +1766,8 @@ func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time,
 	return s.enabledDate, nil
 }
 
-func (s *TestGetPoolAPYStore) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
-	return s.earned, nil
+func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	return models.PoolEarningReport{PoolEarned: s.earned}, nil
 }
 
 func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
