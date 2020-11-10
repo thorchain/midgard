@@ -1874,3 +1874,66 @@ func (s *UsecaseSuite) TestTotalEnabledRuneDepth(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(1000))
 }
+
+type TestThorchainBalance struct {
+	ThorchainDummy
+	assetDepth int64
+	runeDepth  int64
+}
+
+func (t *TestThorchainBalance) GetPools() ([]thorchain.Pool, error) {
+	return []thorchain.Pool{
+		{
+			Asset:        common.BNBAsset.String(),
+			BalanceRune:  t.runeDepth,
+			BalanceAsset: t.assetDepth,
+		},
+	}, nil
+}
+
+func (t *TestThorchainBalance) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
+	return models.Enabled, nil
+}
+
+func (s *UsecaseSuite) TestGetThorchainBalances(c *C) {
+	store := &TestGetPoolBasicsStore{
+		basics: models.PoolBasics{
+			Asset:      common.BNBAsset,
+			AssetDepth: 100,
+			RuneDepth:  2000,
+			Status:     models.Bootstrap,
+		},
+	}
+	config := &Config{
+		UseThorchainBalances: true,
+		ScanInterval:         time.Second,
+	}
+	thorchain := &TestThorchainBalance{
+		assetDepth: 200,
+		runeDepth:  100,
+	}
+	uc, err := NewUsecase(thorchain, s.dummyTendermint, s.dummyTendermint, store, config)
+	c.Assert(err, IsNil)
+
+	time.Sleep(time.Second)
+	basic, err := uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(basic, DeepEquals, models.PoolBasics{
+		AssetDepth: 200,
+		RuneDepth:  100,
+		Asset:      common.BNBAsset,
+		Status:     models.Bootstrap,
+	})
+
+	thorchain.assetDepth = 400
+	thorchain.runeDepth = 500
+	time.Sleep(2 * time.Second)
+	basic, err = uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(basic, DeepEquals, models.PoolBasics{
+		AssetDepth: 400,
+		RuneDepth:  500,
+		Asset:      common.BNBAsset,
+		Status:     models.Bootstrap,
+	})
+}
