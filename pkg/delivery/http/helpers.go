@@ -40,8 +40,7 @@ func ConvertGasForAPI(gas models.TxGas) *Gas {
 }
 
 func ConvertCoinForAPI(coin common.Coin) *Coin {
-	a, _ := common.NewAsset(coin.Asset.Symbol.String())
-	asset := ConvertAssetForAPI(a)
+	asset := ConvertAssetForAPI(coin.Asset)
 
 	return &Coin{
 		Amount: Int64ToString(coin.Amount),
@@ -87,6 +86,7 @@ func ConvertOptionsForAPI(options models.Options) *Option {
 		Asymmetry:           Float64ToString(options.Asymmetry),
 		PriceTarget:         Uint64ToString(options.PriceTarget),
 		WithdrawBasisPoints: Float64ToString(options.WithdrawBasisPoints),
+		Reason:              &options.Reason,
 	}
 }
 

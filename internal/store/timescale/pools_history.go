@@ -19,9 +19,15 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		Int64: change.Units,
 		Valid: change.Units != 0,
 	}
-
-	q := `INSERT INTO pools_history (time, height, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, status) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+	var meta sql.NullString
+	if change.Meta != nil {
+		err := meta.Scan(string(change.Meta))
+		if err != nil {
+			return err
+		}
+	}
+	q := `INSERT INTO pools_history (time, height, event_id, event_type, pool, asset_amount, asset_depth, rune_amount, rune_depth, units, status, meta) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 	_, err := s.db.Exec(q,
 		change.Time,
 		change.Height,
@@ -33,7 +39,8 @@ func (s *Client) UpdatePoolsHistory(change *models.PoolChange) error {
 		change.RuneAmount,
 		runeDepth,
 		units,
-		change.Status)
+		change.Status,
+		meta)
 	if err != nil {
 		return err
 	}

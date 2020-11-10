@@ -23,6 +23,7 @@ CREATE TABLE pools_history (
     rune_depth      BIGINT          NOT NULL,
     units           BIGINT,
     status          SMALLINT        NOT NULL,
+    meta            JSONB,
     PRIMARY KEY (id, time)
 );
 CREATE INDEX pools_history_event_id_idx ON pools_history (event_id);

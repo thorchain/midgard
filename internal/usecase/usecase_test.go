@@ -173,6 +173,33 @@ func (s *TestGetTxDetailsStore) GetTxDetails(address common.Address, txID common
 	return s.txDetails, s.count, s.err
 }
 
+func (s *UsecaseSuite) TestGetTxDetailsValidation(c *C) {
+	store := &TestGetTxDetailsStore{}
+	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
+	eventTypes := []string{""}
+	page := models.NewPage(0, 2)
+	c.Assert(err, IsNil)
+	address := ""
+	_, _, err = uc.GetTxDetails(&address, nil, nil, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "NoAddress")
+
+	address = "bnb1d97wehqr6a0xe9c8q55qvvavjv3cu7"
+	_, _, err = uc.GetTxDetails(&address, nil, nil, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "address format not supported: "+address)
+
+	txID := "767F189E045DF1493EBAAB5EFE8C48CB218BB06E"
+	_, _, err = uc.GetTxDetails(nil, &txID, nil, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "TxID Error: Must be 64 characters (got 40)")
+
+	asset := "bn.bnb"
+	_, _, err = uc.GetTxDetails(nil, nil, &asset, eventTypes, page)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "Chain Error: Not enough characters")
+}
+
 func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	store := &TestGetTxDetailsStore{
 		txDetails: []models.TxDetails{
@@ -250,18 +277,18 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	address, _ := common.NewAddress("bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38")
-	txID, _ := common.NewTxID("E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998")
-	asset, _ := common.NewAsset("BNB.TOML-4BC")
+	address := "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38"
+	txID := "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998"
+	asset := "BNB.TOML-4BC"
 	eventTypes := []string{"stake"}
 	page := models.NewPage(0, 2)
-	details, count, err := uc.GetTxDetails(address, txID, asset, eventTypes, page)
+	details, count, err := uc.GetTxDetails(&address, &txID, &asset, eventTypes, page)
 	c.Assert(err, IsNil)
 	c.Assert(details, DeepEquals, store.txDetails)
 	c.Assert(count, Equals, store.count)
-	c.Assert(store.address, Equals, address)
-	c.Assert(store.txID, Equals, txID)
-	c.Assert(store.asset, Equals, asset)
+	c.Assert(store.address.String(), Equals, address)
+	c.Assert(store.txID.String(), Equals, txID)
+	c.Assert(store.asset.String(), Equals, asset)
 	c.Assert(store.eventTypes, DeepEquals, eventTypes)
 	c.Assert(store.offset, Equals, page.Offset)
 	c.Assert(store.limit, Equals, page.Limit)
@@ -272,7 +299,7 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, _, err = uc.GetTxDetails(address, txID, asset, eventTypes, page)
+	_, _, err = uc.GetTxDetails(&address, &txID, &asset, eventTypes, page)
 	c.Assert(err, NotNil)
 }
 
@@ -689,6 +716,14 @@ func (s *TestGetPoolDetailsStore) GetPoolEarned30d(asset common.Asset) (int64, e
 	return 4000000, nil
 }
 
+func (s *TestGetPoolDetailsStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	return models.PoolEarningReport{
+		AssetEarned: 22461,
+		RuneEarned:  16161712,
+		PoolEarned:  16162767,
+	}, nil
+}
+
 func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 	client := &TestGetPoolDetailsThorchain{
 		status: models.Enabled,
@@ -795,6 +830,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		StakersCount:    1,
 		SwappersCount:   3,
 		SwappingTxCount: 5,
+		PoolAPY:         float64(0.04206528791186814),
 	})
 
 	client.status = models.Bootstrap
@@ -1757,8 +1793,8 @@ func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time,
 	return s.enabledDate, nil
 }
 
-func (s *TestGetPoolAPYStore) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
-	return s.earned, nil
+func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+	return models.PoolEarningReport{PoolEarned: s.earned}, nil
 }
 
 func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
@@ -1864,4 +1900,67 @@ func (s *UsecaseSuite) TestTotalEnabledRuneDepth(c *C) {
 	runeDepth, err = uc.totalEnabledRuneDepth()
 	c.Assert(err, IsNil)
 	c.Assert(runeDepth, Equals, int64(1000))
+}
+
+type TestThorchainBalance struct {
+	ThorchainDummy
+	assetDepth int64
+	runeDepth  int64
+}
+
+func (t *TestThorchainBalance) GetPools() ([]thorchain.Pool, error) {
+	return []thorchain.Pool{
+		{
+			Asset:        common.BNBAsset.String(),
+			BalanceRune:  t.runeDepth,
+			BalanceAsset: t.assetDepth,
+		},
+	}, nil
+}
+
+func (t *TestThorchainBalance) GetPoolStatus(pool common.Asset) (models.PoolStatus, error) {
+	return models.Enabled, nil
+}
+
+func (s *UsecaseSuite) TestGetThorchainBalances(c *C) {
+	store := &TestGetPoolBasicsStore{
+		basics: models.PoolBasics{
+			Asset:      common.BNBAsset,
+			AssetDepth: 100,
+			RuneDepth:  2000,
+			Status:     models.Bootstrap,
+		},
+	}
+	config := &Config{
+		UseThorchainBalances: true,
+		ScanInterval:         time.Second,
+	}
+	thorchain := &TestThorchainBalance{
+		assetDepth: 200,
+		runeDepth:  100,
+	}
+	uc, err := NewUsecase(thorchain, s.dummyTendermint, s.dummyTendermint, store, config)
+	c.Assert(err, IsNil)
+
+	time.Sleep(time.Second)
+	basic, err := uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(basic, DeepEquals, models.PoolBasics{
+		AssetDepth: 200,
+		RuneDepth:  100,
+		Asset:      common.BNBAsset,
+		Status:     models.Bootstrap,
+	})
+
+	thorchain.assetDepth = 400
+	thorchain.runeDepth = 500
+	time.Sleep(2 * time.Second)
+	basic, err = uc.GetPoolBasics(common.BNBAsset)
+	c.Assert(err, IsNil)
+	c.Assert(basic, DeepEquals, models.PoolBasics{
+		AssetDepth: 400,
+		RuneDepth:  500,
+		Asset:      common.BNBAsset,
+		Status:     models.Bootstrap,
+	})
 }

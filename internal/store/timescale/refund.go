@@ -1,6 +1,8 @@
 package timescale
 
 import (
+	"encoding/json"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -10,6 +12,24 @@ func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
 	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
+	}
+
+	meta, err := json.Marshal(map[string]interface{}{
+		"reason": record.Reason,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to create Refund record")
+	}
+	change := &models.PoolChange{
+		Time:      record.Time,
+		EventID:   record.ID,
+		EventType: record.Type,
+		Height:    record.Height,
+		Meta:      meta,
+	}
+	err = s.UpdatePoolsHistory(change)
+	if err != nil {
+		return errors.Wrap(err, "could not update pool history")
 	}
 
 	pool := record.Fee.Asset()
@@ -25,7 +45,7 @@ func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
 	}
 	err = s.CreateFeeRecord(record.Event, pool)
 	if err != nil {
-		return errors.Wrap(err, "Failed to create fee record")
+		return errors.Wrap(err, "Failed to create Refund record")
 	}
 	return nil
 }
