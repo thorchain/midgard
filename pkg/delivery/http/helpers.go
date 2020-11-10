@@ -40,8 +40,7 @@ func ConvertGasForAPI(gas models.TxGas) *Gas {
 }
 
 func ConvertCoinForAPI(coin common.Coin) *Coin {
-	a, _ := common.NewAsset(coin.Asset.Symbol.String())
-	asset := ConvertAssetForAPI(a)
+	asset := ConvertAssetForAPI(coin.Asset)
 
 	return &Coin{
 		Amount: Int64ToString(coin.Amount),
