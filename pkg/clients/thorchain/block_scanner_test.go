@@ -543,6 +543,8 @@ func (t *TestTendermint) BlockchainInfo(minHeight, maxHeight int64) (*coretypes.
 		LastHeight: int64(len(t.metas)),
 		BlockMetas: t.metas[minHeight-1 : maxHeight],
 	}
+	// Same as tendermint, here block headers are returned in descending order (highest first).
+	// https://docs.tendermint.com/master/rpc/#/Info/blockchain
 	for i, j := 0, len(result.BlockMetas)-1; i < j; i, j = i+1, j-1 {
 		result.BlockMetas[i], result.BlockMetas[j] = result.BlockMetas[j], result.BlockMetas[i]
 	}
