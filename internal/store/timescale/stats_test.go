@@ -439,6 +439,20 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	totalEarned, err = s.Store.TotalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(14927112))
+
+	evt := addRuneEvent0
+	evt.Pool = common.BNBAsset
+	err = s.Store.CreateAddRecord(&evt)
+	c.Assert(err, IsNil)
+	totalEarned, err = s.Store.TotalEarned()
+	c.Assert(err, IsNil)
+	c.Assert(totalEarned, Equals, int64(14928112))
+
+	err = s.Store.CreateGasRecord(&gasEvent1)
+	c.Assert(err, IsNil)
+	totalEarned, err = s.Store.TotalEarned()
+	c.Assert(err, IsNil)
+	c.Assert(totalEarned, Equals, int64(14872494))
 }
 
 func (s *TimeScaleSuite) TestTotalStaked(c *C) {
