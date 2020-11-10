@@ -125,24 +125,12 @@ func (h *Handlers) GetHealth(ctx echo.Context) error {
 
 // (GET /v1/txs?address={address}&type={t1,t2,t3}&txid={txid}&asset={asset}&offset={offset}&limit={limit})
 func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) error {
-	var address common.Address
-	if params.Address != nil {
-		address, _ = common.NewAddress(*params.Address)
-	}
-	var txID common.TxID
-	if params.Txid != nil {
-		txID, _ = common.NewTxID(*params.Txid)
-	}
-	var asset common.Asset
-	if params.Asset != nil {
-		asset, _ = common.NewAsset(*params.Asset)
-	}
 	var eventTypes []string
 	if params.Type != nil {
 		eventTypes = strings.Split(*params.Type, ",")
 	}
 	page := models.NewPage(params.Offset, params.Limit)
-	txs, count, err := h.uc.GetTxDetails(address, txID, asset, eventTypes, page)
+	txs, count, err := h.uc.GetTxDetails(params.Address, params.Txid, params.Asset, eventTypes, page)
 	if err != nil {
 		h.logger.Err(err).Msg("failed to GetTxDetails")
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})

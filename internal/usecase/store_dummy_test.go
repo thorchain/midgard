@@ -211,10 +211,6 @@ func (s *StoreDummy) GetSwappersCount(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolEarned(_ common.Asset, _ time.Time) (int64, error) {
-	return 0, nil
-}
-
 func (s *StoreDummy) GetPoolLastEnabledDate(_ common.Asset) (time.Time, error) {
 	return time.Time{}, nil
 }
@@ -228,5 +224,5 @@ func (s *StoreDummy) CreateRefundedEvent(record *models.Event, pool common.Asset
 }
 
 func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{}, ErrNotImplemented
+	return models.PoolEarningReport{}, nil
 }
