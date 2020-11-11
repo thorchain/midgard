@@ -398,7 +398,7 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 				 ON pools_history.event_id = txs.event_id 
 			   JOIN events 
 				 ON pools_history.event_id = events.id 
-		WHERE  pools_history.units != 0 
+		WHERE  (meta->>'pool_units')::BIGINT != 0 
 			   AND txs.from_address = $1
 			   AND events.status = 'Success'
 		GROUP  BY pool 
