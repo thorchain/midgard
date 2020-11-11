@@ -186,7 +186,7 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		}
 		ev.Status = successEvent
 		ev.Meta, err = json.Marshal(map[string]interface{}{
-			"pool_units": stake.StakeUnits,
+			"stake_unit": stake.StakeUnits,
 		})
 		if err != nil {
 			return errors.Wrap(err, "Failed to create meta")
@@ -218,7 +218,7 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 	}
 	unstake.Status = pendingEvent
 	unstake.Meta, err = json.Marshal(map[string]interface{}{
-		"pool_units": -unstake.StakeUnits,
+		"stake_unit": -unstake.StakeUnits,
 	})
 	if err != nil {
 		return errors.Wrap(err, "Failed to create meta")

@@ -71,7 +71,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":100}"),
+		Meta:       []byte("{\"stake_unit\":100}"),
 	}
 
 	stakeBnbEvent1 = models.EventStake{
@@ -114,7 +114,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":100}"),
+		Meta:       []byte("{\"stake_unit\":100}"),
 	}
 	stakeTomlEvent1 = models.EventStake{
 		Event: models.Event{
@@ -156,7 +156,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":100}"),
+		Meta:       []byte("{\"stake_unit\":100}"),
 	}
 	stakeBnbEvent2 = models.EventStake{
 		Event: models.Event{
@@ -202,7 +202,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 200,
-		Meta:       []byte("{\"pool_units\":200}"),
+		Meta:       []byte("{\"stake_unit\":200}"),
 	}
 	stakeTcanEvent3 = models.EventStake{
 		Event: models.Event{
@@ -248,7 +248,7 @@ var (
 			Ticker: "TCAN",
 		},
 		StakeUnits: 1342175000,
-		Meta:       []byte("{\"pool_units\":1342175000}"),
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 	stakeTcanEvent4 = models.EventStake{
 		Event: models.Event{
@@ -294,7 +294,7 @@ var (
 			Ticker: "TCAN",
 		},
 		StakeUnits: 1342175000,
-		Meta:       []byte("{\"pool_units\":1342175000}"),
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 	stakeBoltEvent5 = models.EventStake{
 		Event: models.Event{
@@ -340,7 +340,7 @@ var (
 			Ticker: "BOLT",
 		},
 		StakeUnits: 1342175000,
-		Meta:       []byte("{\"pool_units\":1342175000}"),
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 
 	unstakeTomlEvent0 = models.EventUnstake{
@@ -420,7 +420,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":-100}"),
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeTomlEvent1 = models.EventUnstake{
 		Event: models.Event{
@@ -499,7 +499,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 50,
-		Meta:       []byte("{\"pool_units\":-50}"),
+		Meta:       []byte("{\"stake_unit\":-50}"),
 	}
 	unstakeTomlEvent2 = models.EventUnstake{
 		Event: models.Event{
@@ -578,7 +578,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":-100}"),
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeBnbEvent1 = models.EventUnstake{
 		Event: models.Event{
@@ -657,7 +657,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":-100}"),
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeBnbEvent2 = models.EventUnstake{
 		Event: models.Event{
@@ -736,7 +736,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":-100}"),
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeBoltEvent2 = models.EventUnstake{
 		Event: models.Event{
@@ -815,7 +815,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
-		Meta:       []byte("{\"pool_units\":-100}"),
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	swapSellBolt2RuneEvent1 = models.EventSwap{
 		Event: models.Event{
@@ -1802,7 +1802,7 @@ var (
 			Ticker: "TUSDB",
 		},
 		StakeUnits: 1342175000,
-		Meta:       []byte("{\"pool_units\":1342175000}"),
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 	swapSellTusdb2RuneEvent0 = models.EventSwap{
 		Event: models.Event{
