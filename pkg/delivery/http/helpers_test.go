@@ -44,3 +44,21 @@ func (s *HelpersSuite) TestParseAssets(c *C) {
 	c.Check(err, NotNil)
 	c.Check(got, IsNil)
 }
+
+func (s *HelpersSuite) TestConvertCoinForAPI(c *C) {
+	resp := ConvertCoinForAPI(common.NewCoin(common.BTCAsset, 10))
+	amount := "10"
+	asset := Asset(common.BTCAsset.String())
+	c.Assert(resp, DeepEquals, &Coin{
+		Asset:  &asset,
+		Amount: &amount,
+	})
+
+	resp = ConvertCoinForAPI(common.NewCoin(common.BNBAsset, 2))
+	amount = "2"
+	asset = Asset(common.BNBAsset.String())
+	c.Assert(resp, DeepEquals, &Coin{
+		Asset:  &asset,
+		Amount: &amount,
+	})
+}

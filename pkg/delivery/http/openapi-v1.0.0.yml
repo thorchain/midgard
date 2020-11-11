@@ -747,13 +747,13 @@ components:
           description: Pool ROI over 12 months
         assetEarned:
           type: string
-          description: Amount of pool asset changed by fee and gas
+          description: Amount of pool asset balance changed by fee, gas and assset donation
         runeEarned:
           type: string
-          description: Amount of pool rune changed by fee,reward and gas
+          description: Amount of pool rune balance changed by fee,reward, deficit, gas and rune donation
         poolEarned:
           type: string
-          description: (assetChanges * price) + runeEarned
+          description: (assetEarned * price) + runeEarned
         poolAPY:
           type: string
           description: (1 + (poolEarned/poolDepth)) ^ 12 -1
@@ -815,6 +815,8 @@ components:
         withdrawBasisPoints:
           type: string
         asymmetry:
+          type: string
+        reason:
           type: string
     event:
       type: object

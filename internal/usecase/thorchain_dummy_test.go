@@ -42,3 +42,7 @@ func (t *ThorchainDummy) GetAsgardVaults() ([]thorchain.Vault, error) {
 func (t *ThorchainDummy) GetLastChainHeight() (thorchain.LastHeights, error) {
 	return thorchain.LastHeights{}, ErrNotImplemented
 }
+
+func (t *ThorchainDummy) GetPools() ([]thorchain.Pool, error) {
+	return nil, ErrNotImplemented
+}
