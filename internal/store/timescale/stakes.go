@@ -140,14 +140,15 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 	query := `
 		SELECT Sum((meta->>'pool_units')::BIGINT) 
 		FROM   pools_history 
-			   JOIN txs 
-				 ON pools_history.event_id = txs.event_id 
+		 WHERE event_id in(
+			   SELECT txs.event_id
+			   FROM   txs 
 			   JOIN events 
-				 ON pools_history.event_id = events.id 
+				 ON txs.event_id = events.id 
 		WHERE  pools_history.pool = $1 
 			 AND ( txs.from_address = $2 
 				   OR txs.to_address = $2 )
-			   AND events.status = 'Success' `
+			   AND events.status = 'Success')`
 
 	var stakeUnits sql.NullInt64
 	err := s.db.Get(&stakeUnits, query, asset.String(), address)
