@@ -138,7 +138,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 // particular pool
 func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT Sum(units) 
+		SELECT Sum(meta->>'pool_units') 
 		FROM   pools_history 
 			   JOIN txs 
 				 ON pools_history.event_id = txs.event_id 
@@ -401,7 +401,7 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 			   AND txs.from_address = $1
 			   AND events.status = 'Success'
 		GROUP  BY pool 
-		HAVING Sum(units) > 0 `
+		HAVING Sum(meta->>'pool_units') > 0 `
 
 	rows, err := s.db.Queryx(query, address.String())
 	if err != nil {
