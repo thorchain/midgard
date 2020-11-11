@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"encoding/json"
 	"reflect"
 	"strconv"
 	"strings"
@@ -184,6 +185,12 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 			return errors.Wrap(err, "failed to get InTx")
 		}
 		ev.Status = successEvent
+		ev.Meta, err = json.Marshal(map[string]interface{}{
+			"pool_units": stake.StakeUnits,
+		})
+		if err != nil {
+			return errors.Wrap(err, "Failed to create meta")
+		}
 		err = eh.store.CreateStakeRecord(&ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
