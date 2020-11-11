@@ -374,8 +374,10 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	details.SwappingTxCount = basics.BuyCount + basics.SellCount
 	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
 	poolVolume := int64(float64(details.BuyVolume)*details.Price) + details.SellVolume
-	details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
-	details.PoolTxAverage = float64(poolVolume) / float64(details.SwappingTxCount)
+	if details.SwappingTxCount > 0 {
+		details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+		details.PoolTxAverage = float64(poolVolume) / float64(details.SwappingTxCount)
+	}
 	details.PoolAPY, err = uc.getPoolAPY(asset)
 	if err != nil {
 		return nil, err
