@@ -664,6 +664,40 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 
 	_, err = uc.GetPoolSimpleDetails(common.BNBAsset)
 	c.Assert(err, NotNil)
+
+	store.basics = models.PoolBasics{
+		Asset:          common.BTCAsset,
+		AssetDepth:     120,
+		AssetStaked:    160,
+		AssetWithdrawn: 40,
+		RuneDepth:      60,
+		RuneStaked:     120,
+		RuneWithdrawn:  60,
+		Units:          500,
+		Status:         models.Enabled,
+		BuyVolume:      0,
+		BuySlipTotal:   0,
+		BuyCount:       0,
+		SellVolume:     0,
+		SellSlipTotal:  0,
+		SellCount:      0,
+	}
+	store.err = nil
+	details, err = uc.GetPoolSimpleDetails(common.BTCAsset)
+	c.Assert(err, IsNil)
+	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
+		PoolBasics: store.basics,
+		PoolSwapStats: models.PoolSwapStats{
+			PoolTxAverage:   0,
+			PoolSlipAverage: 0,
+			SwappingTxCount: 0,
+		},
+		Price:             0.5,
+		AssetROI:          0,
+		RuneROI:           0,
+		PoolROI:           0,
+		PoolVolume24Hours: 0,
+	})
 }
 
 type TestGetPoolDetailsThorchain struct {
