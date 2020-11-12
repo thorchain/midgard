@@ -42,6 +42,7 @@ func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
 		RuneAmount:  -runeAmt,
 		Units:       -record.StakeUnits,
 		Height:      record.Height,
+		Meta:        record.Meta,
 	}
 	err = s.UpdatePoolsHistory(change)
 	return errors.Wrap(err, "could not update pool history")

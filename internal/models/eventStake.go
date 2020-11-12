@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/json"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
@@ -12,6 +14,7 @@ type EventStake struct {
 	RuneAmount  int64          `mapstructure:"rune_amount"`
 	AssetAmount int64          `mapstructure:"asset_amount"`
 	TxIDs       map[common.Chain]common.TxID
+	Meta        json.RawMessage
 }
 
 func (evt *EventStake) GetStakes() []EventStake {

@@ -62,6 +62,7 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 	expectedEvent := models.EventStake{
 		Pool:       common.BNBAsset,
 		StakeUnits: 25075000000,
+		Meta:       []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
@@ -114,6 +115,7 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 	expectedEvent1 := models.EventStake{
 		Pool:       common.BTCAsset,
 		StakeUnits: 0,
+		Meta:       []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
@@ -137,6 +139,7 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 	expectedEvent2 := models.EventStake{
 		Pool:       common.BTCAsset,
 		StakeUnits: 25075000000,
+		Meta:       []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
@@ -201,6 +204,7 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 	expectedEvent := models.EventUnstake{
 		Pool:       common.BTCAsset,
 		StakeUnits: 2507500000,
+		Meta:       []byte("{\"stake_unit\":-2507500000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,

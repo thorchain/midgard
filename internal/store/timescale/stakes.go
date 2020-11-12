@@ -36,6 +36,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		RuneAmount:  runeAmt,
 		Units:       record.StakeUnits,
 		Height:      record.Height,
+		Meta:        record.Meta,
 	}
 	s.UpdatePoolUnits(record.Pool, record.StakeUnits)
 	err = s.UpdatePoolsHistory(change)
@@ -137,15 +138,17 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 // particular pool
 func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64, error) {
 	query := `
-		SELECT Sum(units) 
+		SELECT Sum((meta->>'stake_unit')::BIGINT) 
 		FROM   pools_history 
-			   JOIN txs 
-				 ON pools_history.event_id = txs.event_id 
+		 WHERE event_id in(
+			   SELECT txs.event_id
+			   FROM   txs 
 			   JOIN events 
-				 ON pools_history.event_id = events.id 
+				 ON txs.event_id = events.id 
 		WHERE  pools_history.pool = $1 
-			   AND txs.from_address = $2 
-			   AND events.status = 'Success' `
+			 AND ( txs.from_address = $2 
+				   OR txs.to_address = $2 )
+			   AND events.status = 'Success')`
 
 	var stakeUnits sql.NullInt64
 	err := s.db.Get(&stakeUnits, query, asset.String(), address)
@@ -396,11 +399,11 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 				 ON pools_history.event_id = txs.event_id 
 			   JOIN events 
 				 ON pools_history.event_id = events.id 
-		WHERE  pools_history.units != 0 
+		WHERE  (meta->>'stake_unit')::BIGINT != 0 
 			   AND txs.from_address = $1
 			   AND events.status = 'Success'
 		GROUP  BY pool 
-		HAVING Sum(units) > 0 `
+		HAVING Sum((meta->>'stake_unit')::BIGINT) > 0 `
 
 	rows, err := s.db.Queryx(query, address.String())
 	if err != nil {
