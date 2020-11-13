@@ -228,7 +228,7 @@ func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (m
 }
 
 func (s *StoreDummy) AddStaker(_, _ common.Address) error {
-	return ErrNotImplemented
+	return nil
 }
 
 func (s *StoreDummy) GetRuneAddress(_ common.Address) (common.Address, error) {
