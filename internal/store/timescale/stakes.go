@@ -174,12 +174,16 @@ func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*st
 		SUM(rune_amount) FILTER (WHERE rune_amount > 0) as rune_staked,
 		SUM(-rune_amount) FILTER (WHERE rune_amount < 0) as rune_withdrawn
 		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
-		AND events.type in ('stake', 'unstake')
-		 AND ( txs.from_address = $2 
-			   OR txs.to_address = $2 )`
+		AND pools_history.event_type in ('stake', 'unstake')
+		AND pools_history.event_id in (
+			SELECT events.id 
+			FROM events
+			JOIN txs 
+			ON events.id = txs.event_id
+			 AND ( txs.from_address = $2 
+				   OR txs.to_address = $2 )
+		)`
 
 	var result stakerStakeWithdrawn
 	err := s.db.QueryRowx(query, asset.String(), address).StructScan(&result)
