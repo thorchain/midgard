@@ -29,15 +29,9 @@ func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, er
 	query := fmt.Sprintf(`
 		SELECT rune_address 
 		FROM %v
-		WHERE asset_address = $1 limit 1`, models.ModelStakesTable)
-	_, err := s.db.Exec(query,
-		assetAddress.String(),
-	)
-	if err != nil {
-		return common.NoAddress, errors.Wrap(err, "GetRuneAddress failed")
-	}
+		WHERE asset_address = $1 limit 1`, models.ModelStakersTable)
 	var addr sql.NullString
-	row := s.db.QueryRow(query)
+	row := s.db.QueryRow(query, assetAddress.String())
 	if err := row.Scan(&addr); err != nil {
 		return common.NoAddress, errors.Wrap(err, "GetRuneAddress failed")
 	}
