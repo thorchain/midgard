@@ -33,6 +33,9 @@ func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, er
 	_, err := s.db.Exec(query,
 		assetAddress.String(),
 	)
+	if err != nil {
+		return common.NoAddress, errors.Wrap(err, "GetRuneAddress failed")
+	}
 	var addr sql.NullString
 	row := s.db.QueryRow(query)
 	if err := row.Scan(&addr); err != nil {
