@@ -8,13 +8,14 @@ import (
 
 type EventStake struct {
 	Event
-	Pool        common.Asset   `mapstructure:"pool"`
-	StakeUnits  int64          `mapstructure:"stake_units"`
-	RuneAddress common.Address `mapstructure:"rune_address"`
-	RuneAmount  int64          `mapstructure:"rune_amount"`
-	AssetAmount int64          `mapstructure:"asset_amount"`
-	TxIDs       map[common.Chain]common.TxID
-	Meta        json.RawMessage
+	Pool         common.Asset   `mapstructure:"pool"`
+	StakeUnits   int64          `mapstructure:"stake_units"`
+	RuneAddress  common.Address `mapstructure:"rune_address"`
+	AssetAddress common.Address `mapstructure:"asset_address"`
+	RuneAmount   int64          `mapstructure:"rune_amount"`
+	AssetAmount  int64          `mapstructure:"asset_amount"`
+	TxIDs        map[common.Chain]common.TxID
+	Meta         json.RawMessage
 }
 
 func (evt *EventStake) GetStakes() []EventStake {

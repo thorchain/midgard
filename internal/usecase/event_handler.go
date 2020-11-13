@@ -200,6 +200,10 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to save InTx")
 		}
+		err = eh.store.AddStaker(ev.RuneAddress,ev.AssetAddress)
+		if err != nil {
+			return errors.Wrap(err, "failed to save staker address")
+		}
 	}
 	return nil
 }
