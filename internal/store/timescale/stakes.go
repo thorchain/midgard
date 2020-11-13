@@ -396,14 +396,16 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 	query := `
 		SELECT pool 
 		FROM   pools_history 
-			   JOIN txs 
-				 ON pools_history.event_id = txs.event_id 
+		WHERE pools_history.units != 0 
+		AND pools_history.event_id in(
+			   SELECT txs.event_id 
+               FROM   txs
 			   JOIN events 
-				 ON pools_history.event_id = events.id 
-		WHERE  pools_history.units != 0  
-			    AND ( txs.from_address = $2 
-			   		OR txs.to_address = $2 )
-			   AND events.status = 'Success'
+				 ON txs.event_id = events.id 
+				WHERE  events.status = 'Success'  
+			    AND ( txs.from_address = $1 
+			   		OR txs.to_address = $1 )
+		)
 		GROUP  BY pool 
 		HAVING Sum(units) > 0 `
 
