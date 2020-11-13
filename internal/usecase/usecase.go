@@ -88,7 +88,6 @@ func (uc *Usecase) StartScanner() error {
 	if err != nil {
 		return err
 	}
-	height = 130600
 	err = uc.scanner.SetHeight(height)
 	if err != nil {
 		return err
