@@ -166,7 +166,7 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode stake")
 	}
-	err = eh.store.AddStaker(stake.RuneAddress,stake.AssetAddress)
+	err = eh.store.AddStaker(stake.RuneAddress, stake.AssetAddress)
 	if err != nil {
 		return errors.Wrap(err, "failed to save staker address")
 	}

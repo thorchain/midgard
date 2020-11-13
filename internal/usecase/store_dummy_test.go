@@ -227,9 +227,10 @@ func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (m
 	return models.PoolEarningReport{}, nil
 }
 
-func (s *StoreDummy) AddStaker(_,_ common.Address) (error){
+func (s *StoreDummy) AddStaker(_, _ common.Address) error {
 	return ErrNotImplemented
 }
-func (s *StoreDummy)  GetRuneAddress(_ common.Address) (common.Address,error){
-	return common.NoAddress,ErrNotImplemented
+
+func (s *StoreDummy) GetRuneAddress(_ common.Address) (common.Address, error) {
+	return common.NoAddress, ErrNotImplemented
 }
