@@ -3,12 +3,13 @@ package timescale
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/pkg/errors"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) AddStaker(runeAddress,assetAddress common.Address) (error) {
+func (s *Client) AddStaker(runeAddress, assetAddress common.Address) error {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			rune_address,
@@ -24,12 +25,11 @@ func (s *Client) AddStaker(runeAddress,assetAddress common.Address) (error) {
 	return nil
 }
 
-
-func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address,error) {
+func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, error) {
 	query := fmt.Sprintf(`
 		SELECT rune_address 
 		FROM %v
-		WHERE rune_address = $1 limit 1`, models.ModelStakesTable)
+		WHERE asset_address = $1 limit 1`, models.ModelStakesTable)
 	_, err := s.db.Exec(query,
 		assetAddress.String(),
 	)
