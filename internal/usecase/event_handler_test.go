@@ -114,7 +114,7 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 	c.Assert(len(store.record), Equals, 2)
 	expectedEvent1 := models.EventStake{
 		Pool:       common.BTCAsset,
-		StakeUnits: 0,
+		StakeUnits: 25075000000,
 		Meta:       []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
@@ -137,9 +137,8 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 		},
 	}
 	expectedEvent2 := models.EventStake{
-		Pool:       common.BTCAsset,
-		StakeUnits: 25075000000,
-		Meta:       []byte("{\"stake_unit\":25075000000}"),
+		Pool: common.BTCAsset,
+		Meta: []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
