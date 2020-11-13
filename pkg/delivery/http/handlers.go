@@ -140,10 +140,14 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) err
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// (GET /v1/pools)
+// (GET /v1/pools?status={status})
 func (h *Handlers) GetPools(ctx echo.Context, params GetPoolsParams) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
-	pools, err := h.uc.GetPools()
+	status := models.Unknown
+	if params.Status != nil {
+		status = models.PoolStatusStr[strings.Title(*params.Status)]
+	}
+	pools, err := h.uc.GetPools(status)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to GetPools")
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})

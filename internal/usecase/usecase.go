@@ -142,8 +142,24 @@ func (uc *Usecase) GetTxDetails(addressStr, txIDStr, assetStr *string, eventType
 }
 
 // GetPools returns all active pools in the system.
-func (uc *Usecase) GetPools() ([]common.Asset, error) {
-	pools, err := uc.store.GetPools()
+func (uc *Usecase) GetPools(status models.PoolStatus) ([]common.Asset, error) {
+	allPools, err := uc.store.GetPools()
+	if status == models.Unknown {
+		return allPools, err
+	}
+	var pools []common.Asset
+	for _, pool := range allPools {
+		basics, err := uc.store.GetPoolBasics(pool)
+		if basics.Status == models.Unknown {
+			basics.Status, err = uc.fetchPoolStatus(pool)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if status == basics.Status {
+			pools = append(pools, pool)
+		}
+	}
 	return pools, err
 }
 
@@ -694,7 +710,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 }
 
 func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
-	pools, err := uc.GetPools()
+	pools, err := uc.GetPools(models.Enabled)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
 	}
@@ -704,9 +720,7 @@ func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
 		}
-		if poolBasic.Status == models.Enabled {
-			runeDepth += poolBasic.RuneDepth
-		}
+		runeDepth += poolBasic.RuneDepth
 	}
 	return runeDepth, nil
 }
