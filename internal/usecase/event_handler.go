@@ -166,6 +166,10 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to decode stake")
 	}
+	err = eh.store.AddStaker(stake.RuneAddress,stake.AssetAddress)
+	if err != nil {
+		return errors.Wrap(err, "failed to save staker address")
+	}
 	for k, v := range event.Attributes {
 		if strings.HasSuffix(k, "_txid") {
 			chain, err := common.NewChain(strings.Replace(k, "_txid", "", -1))
@@ -199,10 +203,6 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		err = eh.store.ProcessTxRecord("in", stake.Event, tx)
 		if err != nil {
 			return errors.Wrap(err, "failed to save InTx")
-		}
-		err = eh.store.AddStaker(ev.RuneAddress,ev.AssetAddress)
-		if err != nil {
-			return errors.Wrap(err, "failed to save staker address")
 		}
 	}
 	return nil

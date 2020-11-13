@@ -13,7 +13,7 @@ func (s *Client) AddStaker(runeAddress,assetAddress common.Address) (error) {
 		INSERT INTO %v (
 			rune_address,
 			asset_address
-		)  VALUES ( $1, $2) ON CONFLICT DO NOTHING`, models.ModelStakesTable)
+		)  VALUES ( $1, $2) ON CONFLICT DO NOTHING`, models.ModelStakersTable)
 	_, err := s.db.Exec(query,
 		runeAddress.String(),
 		assetAddress.String(),
