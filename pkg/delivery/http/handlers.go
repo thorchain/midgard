@@ -141,7 +141,7 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) err
 }
 
 // (GET /v1/pools)
-func (h *Handlers) GetPools(ctx echo.Context) error {
+func (h *Handlers) GetPools(ctx echo.Context, params GetPoolsParams) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
 	pools, err := h.uc.GetPools()
 	if err != nil {

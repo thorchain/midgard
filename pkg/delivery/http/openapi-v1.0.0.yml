@@ -119,6 +119,16 @@ paths:
       operationId: GetPools
       summary: Get Asset Pools
       description: Returns an array containing all the assets supported on BEPSwap pools
+      parameters:
+        - in: query
+          name: status
+          description: Pool status
+          schema:
+            type: string
+            enum:
+              - enabled
+              - bootstrap
+              - suspended
       responses:
         "400":
           $ref: '#/components/responses/GeneralErrorResponse'
