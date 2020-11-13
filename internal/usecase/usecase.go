@@ -150,6 +150,9 @@ func (uc *Usecase) GetPools(status models.PoolStatus) ([]common.Asset, error) {
 	var pools []common.Asset
 	for _, pool := range allPools {
 		basics, err := uc.store.GetPoolBasics(pool)
+		if err != nil {
+			return nil, err
+		}
 		if basics.Status == models.Unknown {
 			basics.Status, err = uc.fetchPoolStatus(pool)
 			if err != nil {
