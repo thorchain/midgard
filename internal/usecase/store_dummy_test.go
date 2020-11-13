@@ -226,3 +226,10 @@ func (s *StoreDummy) CreateRefundedEvent(record *models.Event, pool common.Asset
 func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
 	return models.PoolEarningReport{}, nil
 }
+
+func (s *StoreDummy) AddStaker(_,_ common.Address) (error){
+	return ErrNotImplemented
+}
+func (s *StoreDummy)  GetRuneAddress(_ common.Address) (common.Address,error){
+	return common.NoAddress,ErrNotImplemented
+}
