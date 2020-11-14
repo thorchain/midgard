@@ -84,21 +84,30 @@ type PoolDetails struct {
 	PoolAPY         float64
 }
 
-type PoolEarningReport struct {
-	Reward        int64
-	Deficit       int64
-	GasReimbursed int64
-	GasPaid       int64
-	BuyFee        int64
-	SellFee       int64
-	PoolEarned    int64
-	PoolFee       int64
-	AssetDonated  int64
-	RuneDonated   int64
-	PoolDonation  int64
-	AssetEarned   int64
-	RuneEarned    int64
-}
+const (
+	LastMonthEarned EarnDuration = iota
+	TotalEarned
+)
+
+type (
+	EarnDuration      int
+	PoolEarningDetail struct {
+		Reward        int64
+		Deficit       int64
+		GasReimbursed int64
+		GasPaid       int64
+		BuyFee        int64
+		SellFee       int64
+		PoolEarned    int64
+		PoolFee       int64
+		AssetDonated  int64
+		RuneDonated   int64
+		PoolDonation  int64
+		AssetEarned   int64
+		RuneEarned    int64
+		ActiveDays    float64
+	}
+)
 
 type PoolAPYReport struct {
 	Asset                  common.Asset

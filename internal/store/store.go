@@ -59,7 +59,7 @@ type Store interface {
 	GetPoolROI12(asset common.Asset) (float64, error)
 	GetStakersCount(asset common.Asset) (uint64, error)
 	GetSwappersCount(asset common.Asset) (uint64, error)
-	GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error)
+	GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error)
 	GetPoolLastEnabledDate(asset common.Asset) (time.Time, error)
 	GetEventPool(id int64) (common.Asset, error)
 }

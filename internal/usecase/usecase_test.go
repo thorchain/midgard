@@ -766,8 +766,8 @@ func (s *TestGetPoolDetailsStore) GetPoolEarned30d(asset common.Asset) (int64, e
 	return 4000000, nil
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{
+func (s *TestGetPoolDetailsStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningDetail, error) {
+	return models.PoolEarningDetail{
 		AssetEarned: 22461,
 		RuneEarned:  16161712,
 		PoolEarned:  16162767,
@@ -1816,8 +1816,8 @@ func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time,
 	return s.enabledDate, nil
 }
 
-func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{PoolEarned: s.earned}, nil
+func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningDetail, error) {
+	return models.PoolEarningDetail{PoolEarned: s.earned}, nil
 }
 
 func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {

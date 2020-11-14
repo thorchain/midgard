@@ -223,6 +223,6 @@ func (s *StoreDummy) CreateRefundedEvent(record *models.Event, pool common.Asset
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{}, nil
+func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningDetail, error) {
+	return models.PoolEarningDetail{}, nil
 }

@@ -1121,7 +1121,17 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 // runeEarned = gasReplenished + reward + deficit + sellFee + runeDonated
 // poolEarned = assetEarned * Price + runeEarned
 
-func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
+func (s *Client) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	from := time.Time{}
+	if duration == models.LastMonthEarned {
+		lastActiveDate, err := s.GetPoolLastEnabledDate(asset)
+		if err != nil {
+			return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		}
+		if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
+			lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+		}
+	}
 	stmnt := `
 		SELECT 
 		Sum(reward) FILTER (WHERE reward > 0), 
@@ -1137,20 +1147,20 @@ func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (model
 	row := s.db.QueryRow(stmnt, asset.String(), from)
 
 	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished, &assetDonated, &runeDonated); err != nil {
-		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
 	}
 	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
 	if err != nil {
-		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
 	}
 	priceInRune, err := s.getPriceInRune(asset)
 	if err != nil {
-		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
 	}
 	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
 	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
 	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
-	return models.PoolEarningReport{
+	return models.PoolEarningDetail{
 		Reward:        reward.Int64,
 		Deficit:       deficit.Int64,
 		BuyFee:        int64(float64(buyFee) * priceInRune),
@@ -1164,5 +1174,6 @@ func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (model
 		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
 		AssetEarned:   assetEarned,
 		RuneEarned:    runeEarned,
+		ActiveDays:    time.Now().Sub(from).Hours() / 24,
 	}, nil
 }
