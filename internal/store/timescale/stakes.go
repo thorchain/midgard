@@ -16,7 +16,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		record.AssetAddress = record.RuneAddress
 	}
 	if record.AssetAddress != "" {
-		err := s.AddStaker(record.RuneAddress, record.AssetAddress, record.Pool.Chain)
+		err := s.addStaker(record.RuneAddress, record.AssetAddress, record.Pool.Chain)
 		if err != nil {
 			return errors.Wrap(err, "failed to save staker address")
 		}
@@ -152,13 +152,13 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 	var err error
 	if address.IsChain(common.RuneAsset().Chain) {
 		runeAddress = address
-		assetAddress, err = s.GetAssetAddress(runeAddress, asset.Chain)
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
 		if err != nil {
 			return 0, errors.Wrap(err, "stakeUnits failed")
 		}
 	} else {
 		assetAddress = address
-		runeAddress, err = s.GetRuneAddress(assetAddress)
+		runeAddress, err = s.getRuneAddress(assetAddress)
 		if err != nil {
 			return 0, errors.Wrap(err, "stakeUnits failed")
 		}
@@ -197,13 +197,13 @@ func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*st
 	var err error
 	if address.IsChain(common.RuneAsset().Chain) {
 		runeAddress = address
-		assetAddress, err = s.GetAssetAddress(runeAddress, asset.Chain)
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
 		if err != nil {
 			return nil, errors.Wrap(err, "stakeWithdrawn failed")
 		}
 	} else {
 		assetAddress = address
-		runeAddress, err = s.GetRuneAddress(assetAddress)
+		runeAddress, err = s.getRuneAddress(assetAddress)
 		if err != nil {
 			return nil, errors.Wrap(err, "stakeWithdrawn failed")
 		}
@@ -424,13 +424,13 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 	var err error
 	if address.IsChain(common.RuneAsset().Chain) {
 		runeAddress = address
-		assetAddress, err = s.GetAssetAddress(runeAddress, asset.Chain)
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
 		if err != nil {
 			return 0, errors.Wrap(err, "dateFirstStaked failed")
 		}
 	} else {
 		assetAddress = address
-		runeAddress, err = s.GetRuneAddress(assetAddress)
+		runeAddress, err = s.getRuneAddress(assetAddress)
 		if err != nil {
 			return 0, errors.Wrap(err, "dateFirstStaked failed")
 		}
@@ -462,13 +462,13 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 	var err error
 	if address.IsChain(common.RuneAsset().Chain) {
 		runeAddress = address
-		assetAddress, err = s.GetAssetAddress(runeAddress, asset.Chain)
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
 		if err != nil {
 			return 0, errors.Wrap(err, "heightLastStaked failed")
 		}
 	} else {
 		assetAddress = address
-		runeAddress, err = s.GetRuneAddress(assetAddress)
+		runeAddress, err = s.getRuneAddress(assetAddress)
 		if err != nil {
 			return 0, errors.Wrap(err, "heightLastStaked failed")
 		}
@@ -502,7 +502,7 @@ func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
 	if address.IsChain(common.RuneAsset().Chain) {
 		runeAddress = address
 	} else {
-		runeAddress, err = s.GetRuneAddress(address)
+		runeAddress, err = s.getRuneAddress(address)
 		if err != nil {
 			return nil, errors.Wrap(err, "getPools failed")
 		}

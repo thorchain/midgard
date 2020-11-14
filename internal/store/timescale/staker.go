@@ -9,7 +9,7 @@ import (
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
-func (s *Client) AddStaker(runeAddress, assetAddress common.Address, chain common.Chain) error {
+func (s *Client) addStaker(runeAddress, assetAddress common.Address, chain common.Chain) error {
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			rune_address,
@@ -22,12 +22,12 @@ func (s *Client) AddStaker(runeAddress, assetAddress common.Address, chain commo
 		chain.String(),
 	)
 	if err != nil {
-		return errors.Wrap(err, "Failed to prepareNamed query for AddStaker")
+		return errors.Wrap(err, "Failed to prepareNamed query for addStaker")
 	}
 	return nil
 }
 
-func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, error) {
+func (s *Client) getRuneAddress(assetAddress common.Address) (common.Address, error) {
 	query := fmt.Sprintf(`
 		SELECT rune_address 
 		FROM   %v 
@@ -35,12 +35,12 @@ func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, er
 	var addr sql.NullString
 	row := s.db.QueryRow(query, assetAddress.String())
 	if err := row.Scan(&addr); err != nil {
-		return common.NoAddress, errors.Wrap(err, "GetRuneAddress failed")
+		return common.NoAddress, errors.Wrap(err, "getRuneAddress failed")
 	}
 	return common.Address(addr.String), nil
 }
 
-func (s *Client) GetAssetAddress(runeAddress common.Address, chain common.Chain) (common.Address, error) {
+func (s *Client) getAssetAddress(runeAddress common.Address, chain common.Chain) (common.Address, error) {
 	if chain.Equals(common.RuneAsset().Chain) {
 		return runeAddress, nil
 	}
@@ -52,7 +52,7 @@ func (s *Client) GetAssetAddress(runeAddress common.Address, chain common.Chain)
 	var addr sql.NullString
 	row := s.db.QueryRow(query, runeAddress.String(), chain.String())
 	if err := row.Scan(&addr); err != nil {
-		return common.NoAddress, errors.Wrap(err, "GetAssetAddress failed")
+		return common.NoAddress, errors.Wrap(err, "getAssetAddress failed")
 	}
 	return common.Address(addr.String), nil
 }

@@ -62,5 +62,4 @@ type Store interface {
 	GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error)
 	GetPoolLastEnabledDate(asset common.Asset) (time.Time, error)
 	GetEventPool(id int64) (common.Asset, error)
-	GetRuneAddress(assetAddress common.Address) (common.Address, error)
 }
