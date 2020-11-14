@@ -160,7 +160,6 @@ func (s *Client) GetPoolAggChanges(pool common.Asset, inv models.Interval, from,
 			WithdrawCount:  changes.WithdrawCount.Int64,
 		})
 	}
-	fmt.Println(result)
 	return result, nil
 }
 
