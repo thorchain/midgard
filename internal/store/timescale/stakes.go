@@ -11,6 +11,13 @@ import (
 )
 
 func (s *Client) CreateStakeRecord(record *models.EventStake) error {
+	if record.AssetAddress != "" {
+		err := s.AddStaker(record.RuneAddress, record.AssetAddress)
+		if err != nil {
+			return errors.Wrap(err, "failed to save staker address")
+		}
+	}
+
 	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "createStakeRecord failed")
