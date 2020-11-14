@@ -612,13 +612,6 @@ func (uc *Usecase) GetStakers() ([]common.Address, error) {
 
 // GetStakerDetails returns staker general details.
 func (uc *Usecase) GetStakerDetails(address common.Address) (*models.StakerAddressDetails, error) {
-	var err error
-	if !address.IsChain(common.RuneAsset().Chain) {
-		address, err = uc.store.GetRuneAddress(address)
-		if err != nil {
-			return nil, err
-		}
-	}
 	details, err := uc.store.GetStakerAddressDetails(address)
 	if err != nil {
 		return nil, err
@@ -628,13 +621,6 @@ func (uc *Usecase) GetStakerDetails(address common.Address) (*models.StakerAddre
 
 // GetStakerAssetDetails returns staker details for an specific asset.
 func (uc *Usecase) GetStakerAssetDetails(address common.Address, asset common.Asset) (*models.StakerAddressAndAssetDetails, error) {
-	var err error
-	if !address.IsChain(common.RuneAsset().Chain) {
-		address, err = uc.store.GetRuneAddress(address)
-		if err != nil {
-			return nil, err
-		}
-	}
 	details, err := uc.store.GetStakersAddressAndAssetDetails(address, asset)
 	if err != nil {
 		return nil, err
