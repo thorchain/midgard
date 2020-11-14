@@ -148,7 +148,7 @@ func (eh *eventHandler) processEvent(event thorchain.Event) error {
 			return err
 		}
 	} else {
-		eh.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
+		eh.logger.Debug().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
 	return nil
 }
