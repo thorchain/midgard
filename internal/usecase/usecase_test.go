@@ -305,12 +305,17 @@ func (s *UsecaseSuite) TestGetTxDetails(c *C) {
 
 type TestGetPoolsStore struct {
 	StoreDummy
-	pools []common.Asset
-	err   error
+	pools  []common.Asset
+	err    error
+	basics models.PoolBasics
 }
 
 func (s *TestGetPoolsStore) GetPools() ([]common.Asset, error) {
 	return s.pools, s.err
+}
+
+func (s *TestGetPoolsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
+	return s.basics, nil
 }
 
 func (s *UsecaseSuite) TestGetPools(c *C) {
@@ -323,11 +328,22 @@ func (s *UsecaseSuite) TestGetPools(c *C) {
 				Ticker: "TOML",
 			},
 		},
+		basics: models.PoolBasics{
+			Status: models.Bootstrap,
+		},
 	}
 	uc, err := NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	pools, err := uc.GetPools()
+	pools, err := uc.GetPools(models.Unknown)
+	c.Assert(err, IsNil)
+	c.Assert(pools, DeepEquals, store.pools)
+
+	pools, err = uc.GetPools(models.Enabled)
+	c.Assert(err, IsNil)
+	c.Assert(pools, DeepEquals, []common.Asset(nil))
+
+	pools, err = uc.GetPools(models.Bootstrap)
 	c.Assert(err, IsNil)
 	c.Assert(pools, DeepEquals, store.pools)
 
@@ -337,7 +353,7 @@ func (s *UsecaseSuite) TestGetPools(c *C) {
 	uc, err = NewUsecase(s.dummyThorchain, s.dummyTendermint, s.dummyTendermint, store, s.config)
 	c.Assert(err, IsNil)
 
-	_, err = uc.GetPools()
+	_, err = uc.GetPools(models.Unknown)
 	c.Assert(err, NotNil)
 }
 

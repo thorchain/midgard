@@ -732,6 +732,13 @@ type GetTotalVolChangesParams struct {
 	To int64 `json:"to"`
 }
 
+// GetPoolsParams defines parameters for GetPools.
+type GetPoolsParams struct {
+
+	// Pool status
+	Status *string `json:"status,omitempty"`
+}
+
 // GetPoolsDetailsParams defines parameters for GetPoolsDetails.
 type GetPoolsDetailsParams struct {
 
@@ -796,7 +803,7 @@ type ServerInterface interface {
 	GetNodes(ctx echo.Context) error
 	// Get Asset Pools
 	// (GET /v1/pools)
-	GetPools(ctx echo.Context) error
+	GetPools(ctx echo.Context, params GetPoolsParams) error
 	// Get Pools Details
 	// (GET /v1/pools/detail)
 	GetPoolsDetails(ctx echo.Context, params GetPoolsDetailsParams) error
@@ -969,8 +976,17 @@ func (w *ServerInterfaceWrapper) GetNodes(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetPools(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPoolsParams
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", ctx.QueryParams(), &params.Status)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter status: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPools(ctx)
+	err = w.Handler.GetPools(ctx, params)
 	return err
 }
 
@@ -1294,22 +1310,22 @@ var swaggerSpec = []string{
 	"Js9vMkKjQTRnBVe5MFZwHgHuI7sXGw2iJWDuSo0HjiYXLqvLc9RkmEiDRXvl5yJcRdVOogNW+us0ndNk",
 	"B4ok25GerXys/170tkFp7TytraG6vXHNwvQy+stDtY7uNDTXBY7NlhvdyVUbWkPhWra2XgXpMbb/V/V/",
 	"LFX33W7aVnSziWyrPetabvP87ULkyu3lDhW2z8/M4815XL9qvs1bSYG9OtnypO/Y2o4jlkDjoinh5Mpe",
-	"4bUFP2vX0jv4Wcdf8hQW56sbVBsslXdYl30JRZ4zrhweo9WSp+zmcQb87XhdvQb+WbJcQ9yKhA6S6tjY",
-	"5pPfvIy9So5WL7j3ZkWiLIn2uOlb6/vNZe/mcLDC/UDg0eNf7KPaoySmrq6cYZGm+liiPa1YNy4JohOt",
-	"gRkS4pj/r6+/3J9WcOcFAlUXGju0Sxz8qf59Oii7dHvVzQ5EHJTtmTJNvtwg8V49FLlj3j2+HJeqlmMd",
-	"vbdNuHdJ0tzfffHkaeWpgOobLmZWRN01vrFf1D6x6vTUXyhI07L/zDkJtlV563C2/omDNq/VNwpW+Tv4",
-	"0xL6tFME6P7IRBfLzR75HuX71DzF7Wzbn9DJ4dfFdH40++nNt1cPI5l8e3M8pfCwOF7ECxnTuRRZXBy/",
-	"ztxaWsN8ZkXt+FyIb+pWE5HW9IWH8YAPaqy6jsY3NbxeZJWhU5rUXff/K2f1Hy6GeT8C49VH7T3XlVJu",
-	"qYL2syMaQuUxjVfRIW31eguvE5ViW/cpu5znz4Y6g6Di1pQZh+WnEbrLZEWGzZ5EhuM5oWbjQ+93rJcr",
-	"V6qjbkbNG0HF0G0Ru+a9QlvWRm9X3qhqo9We00HcbOHo1orqexvllzYqT9T+mos9YIlSFmMVgBhXCzNn",
-	"qaMk5dpAr3tKtloZ+7+C0xaXIt1ibezrrDb3rkorbfYabSut9rdWtpdW3fy0k7Ta36gJlVbz0zPr0lLe",
-	"of48zi4iW4X0HeRWt0TvJLf2Z4q65WbqjpVE2iL7VvZ4bSup1W/hbC8g02y2k3BWvxkUqlDlp4CsZBZ9",
-	"euPN7+3Gc7U0b7O8CFy32wkz/V40Aa7yDA4xyQnY65rpEhF6oDfQF4jQ6hjttgdWnXmGI0ua4lRsuC1y",
-	"Fkjw0bvjo9fHr348Oz/88S/Hx2/Gp69eHR2Nfzp+fTb+y7tXo9Ho8N3Zqx/Hr89HZ0dHp6Px8fnb8+PT",
-	"N+PRjz+dnY5f+yqmC5LsyMIpXTYvyC6p70jsgrac2nnc5qQFJKEKhtallsg7mrJMK5an+8opZkXpbrzk",
-	"eEbsrQBsOjWycaGqHm5QB7efiYlORiE1+gYlqW4adhNSPtuEDvNZn+jkzaiHqO0K9YuuyNDYg8XKDM0R",
-	"fGXjg/JuCo7k4iVJTCeRble2HqrgqcodpcxPDg4Oj34cjoaj4eHJT6OfRpESYP1cOAb88fTfAQAA///v",
-	"h4wHsXkAAA==",
+	"4bUFP2vX0jv4Wcdf8hQW56sbVBsslXdYl30JRZ4zrhweo9WSp+zmcQb8sDhvS1JuE6ketn1LfaSuOmun",
+	"xhVCr/Bcdazt7GX1WvpnybqNsFZm7CCpjrFtrozNy+GrZG31wn1vlibKEm3P3N3aWGQunzeHlRXuBwKP",
+	"nsm0j+qpTEydXznnIk31MUl7erJupBJEJ34DMyQkUPxfXw+6P/XgzlMEqi5YdmiXOPhT/ft0UHYN96qb",
+	"HYg4KF9gykb5coOFwOohzR3XAePLcalqOdbZxLYLgF2SRvd3aDx5Y3lKofqmjJkVUXexb+yntY+uOk/1",
+	"FxPStOyHc06CbZ3eOryuf3KhzWv1zYRV/g7+tIQ+7RSRuj960cVys2e/R/k+NU+VO48RTOjk8OtiOj+a",
+	"/fTm26uHkUy+vTmeUnhYHC/ihYzpXIosLo5fZ24trWE+s6J2fL7EN3WriVFr+sLTioAPfKy6jsY3Prxe",
+	"ZJWhU5rUpwD+V87qP1wM836UxquP2nuuK6XcUgXtZ1A0hMpjGq+iQ9rqdRteJyrFtu5TdjnPnw11BkHF",
+	"rSl7DstPNXSX7YoMmz2SDMdzQs1GjN5/WS+frlRr3YyaN4KKs9sids17hbas1d6uvFHVaqs9sIO42VLS",
+	"rRXV9z/KL39Unqj9dRl74BOlLMYqADGuForO0ktJyrWBXve4bLVS93+Vpy0uRbrF2thnWm02XpVW2ux9",
+	"2lZa7W+/bC+tuhlrJ2m1v5kTKq3mp3DWpaW8Q/25nl1EtgrpO8itbtHeSW7tzyZ1y83UQSuJtEX2rew5",
+	"21ZSq9/m2V5ApvltJ+GsfsMoVKHKTxNZySz69Mab39uN8Gpp3mZ5EbhutxNm+s9oAlzlGRxikhOw10fT",
+	"JSL0QG/oLxCh1bHebQ/QOvMMR5Y0xanYcJvmLJDgo3fHR6+PX/14dn7441+Oj9+MT1+9Ojoa/3T8+mz8",
+	"l3evRqPR4buzVz+OX5+Pzo6OTkfj4/O358enb8ajH386Ox2/9lVwFyTZkYVTumxe2F1S35HYBW2BtfO4",
+	"zUkLSEIVDK1LLZF3NImZ1jBPN5hTzIrS3XjJ8YzYWwrYdGpk40JVPdygLm8/WxOdjEL2DBqUpLqJ2U1I",
+	"+WwTOsxnhqKTN6MeorbbOFh0RYbGnjBWZmiuBFA2PijvyuBILl6SxHQ26fZp66EKnqrcUcr85ODg8OjH",
+	"4Wg4Gh6e/DT6aRQpAdbPhWPAH0//HQAA//8uotVcQXoAAA==",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
