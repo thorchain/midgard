@@ -73,9 +73,10 @@ CREATE TABLE coins (
 );
 
 CREATE TABLE stakers (
-    asset_address varchar not null,
-    rune_address varchar not null,
-    primary key (asset_address, rune_address)
+    asset_address   VARCHAR     NOT NULL,
+    rune_address    VARCHAR     NOT NULL,
+    chain            VARCHAR     NOT NULL,
+    primary key (asset_address, rune_address, chain)
 );
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
