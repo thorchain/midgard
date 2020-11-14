@@ -1,6 +1,8 @@
 package timescale
 
 import (
+	"time"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/models"
 	"gitlab.com/thorchain/midgard/internal/store"
@@ -168,6 +170,122 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
 	assest, err = common.NewAsset("BNB.BNB")
 	c.Assert(err, IsNil)
 	_, err = s.Store.GetStakersAddressAndAssetDetails(stakeTomlEvent1.InTx.FromAddress, assest)
+	c.Assert(err, NotNil)
+	c.Assert(err, Equals, store.ErrPoolNotFound)
+}
+
+func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetailsMultichain(c *C) {
+	evt := models.EventStake{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     0,
+			Status: "Success",
+			Height: 2,
+			Type:   "stake",
+			InTx: common.Tx{
+				ID:          "E7A0395D6A013F37606B86FDDF17BB3B358217C2452B3F5C153E9A7D00FDA998",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset:  common.RuneAsset(),
+						Amount: 100,
+					},
+					{
+						Asset:  common.BTCAsset,
+						Amount: 10,
+					},
+				},
+				Memo: "stake:BTC.BTC",
+			},
+			OutTxs: nil,
+		},
+		Pool:         common.BTCAsset,
+		StakeUnits:   100,
+		Meta:         []byte("{\"stake_unit\":100}"),
+		AssetAddress: "tb1qly9s9x98rfkkgk207wg4q7k4vjlyxafnr2uuer",
+		RuneAddress:  "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+	}
+	err := s.Store.CreateStakeRecord(&evt)
+	c.Assert(err, IsNil)
+	err = s.Store.ProcessTxRecord("in", evt.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175874A", evt.RuneAddress, "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", common.Coins{common.NewCoin(common.RuneAsset(), 100)}, ""))
+	c.Assert(err, IsNil)
+	err = s.Store.ProcessTxRecord("in", evt.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175872B", evt.AssetAddress, "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", common.Coins{common.NewCoin(common.BTCAsset, 10)}, ""))
+	c.Assert(err, IsNil)
+	expectedDetails := models.StakerAddressAndAssetDetails{
+		Asset:            common.BTCAsset,
+		DateFirstStaked:  uint64(evt.Time.Unix()),
+		HeightLastStaked: uint64(2),
+		Units:            100,
+		AssetStaked:      10,
+		RuneStaked:       100,
+	}
+	actualDetails, err := s.Store.GetStakersAddressAndAssetDetails(evt.AssetAddress, common.BTCAsset)
+	c.Assert(err, IsNil)
+	c.Assert(actualDetails, DeepEquals, expectedDetails)
+
+	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(evt.RuneAddress, common.BTCAsset)
+	c.Assert(err, IsNil)
+	c.Assert(actualDetails, DeepEquals, expectedDetails)
+
+	evt1 := models.EventUnstake{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     0,
+			Status: "Success",
+			Height: 3,
+			Type:   "unstake",
+			InTx: common.Tx{
+				ID:          "24F5D0CF0DC1B1F1E3DA0DEC19E13252072F8E1F1CFB2839937C9DE38378E67C",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset:  common.RuneAsset(),
+						Amount: 1,
+					},
+				},
+				Memo: "WITHDRAW:BTC.BTC",
+			},
+		},
+		Pool:       common.BTCAsset,
+		StakeUnits: 50,
+		Meta:       []byte("{\"stake_unit\":-50}"),
+	}
+	err = s.Store.CreateUnStakesRecord(&evt1)
+	c.Assert(err, IsNil)
+	err = s.Store.ProcessTxRecord("out", evt1.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175855A", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", evt.RuneAddress, common.Coins{common.NewCoin(common.RuneAsset(), 50)}, ""))
+	c.Assert(err, IsNil)
+	err = s.Store.ProcessTxRecord("out", evt1.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175823B", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", evt.AssetAddress, common.Coins{common.NewCoin(common.BTCAsset, 5)}, ""))
+	c.Assert(err, IsNil)
+	evt1.OutTxs = common.Txs{common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175855A", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", evt.RuneAddress, common.Coins{common.NewCoin(common.RuneAsset(), 50)}, ""), common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175823B", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", evt.AssetAddress, common.Coins{common.NewCoin(common.BTCAsset, 5)}, "")}
+	err = s.Store.UpdateUnStakesRecord(evt1)
+	c.Assert(err, IsNil)
+	expectedDetails = models.StakerAddressAndAssetDetails{
+		Asset:            common.BTCAsset,
+		DateFirstStaked:  uint64(evt.Time.Unix()),
+		HeightLastStaked: uint64(2),
+		Units:            50,
+		AssetStaked:      10,
+		RuneStaked:       100,
+		AssetWithdrawn:   5,
+		RuneWithdrawn:    50,
+	}
+	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(evt.AssetAddress, common.BTCAsset)
+	c.Assert(err, IsNil)
+	c.Assert(actualDetails, DeepEquals, expectedDetails)
+
+	actualDetails, err = s.Store.GetStakersAddressAndAssetDetails(evt.RuneAddress, common.BTCAsset)
+	c.Assert(err, IsNil)
+	c.Assert(actualDetails, DeepEquals, expectedDetails)
+
+	_, err = s.Store.GetStakersAddressAndAssetDetails(evt.AssetAddress, common.BNBAsset)
+	c.Assert(err, NotNil)
+	c.Assert(err, Equals, store.ErrPoolNotFound)
+
+	_, err = s.Store.GetStakersAddressAndAssetDetails(evt.RuneAddress, common.BNBAsset)
 	c.Assert(err, NotNil)
 	c.Assert(err, Equals, store.ErrPoolNotFound)
 }
