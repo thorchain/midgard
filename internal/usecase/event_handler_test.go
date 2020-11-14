@@ -60,9 +60,10 @@ func (s *EventHandlerSuite) TestStakeEvent(c *C) {
 	eh.NewTx(1, []thorchain.Event{evt})
 	eh.NewBlock(1, blockTime, nil, nil)
 	expectedEvent := models.EventStake{
-		Pool:       common.BNBAsset,
-		StakeUnits: 25075000000,
-		Meta:       []byte("{\"stake_unit\":25075000000}"),
+		Pool:        common.BNBAsset,
+		StakeUnits:  25075000000,
+		RuneAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+		Meta:        []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
@@ -113,9 +114,10 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 	eh.NewBlock(1, blockTime, nil, nil)
 	c.Assert(len(store.record), Equals, 2)
 	expectedEvent1 := models.EventStake{
-		Pool:       common.BTCAsset,
-		StakeUnits: 25075000000,
-		Meta:       []byte("{\"stake_unit\":25075000000}"),
+		Pool:        common.BTCAsset,
+		StakeUnits:  25075000000,
+		RuneAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
+		Meta:        []byte("{\"stake_unit\":25075000000}"),
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
@@ -137,8 +139,9 @@ func (s *EventHandlerSuite) TestCrossChainStakeEvent(c *C) {
 		},
 	}
 	expectedEvent2 := models.EventStake{
-		Pool: common.BTCAsset,
-		Meta: []byte("{\"stake_unit\":25075000000}"),
+		Pool:        common.BTCAsset,
+		Meta:        []byte("{\"stake_unit\":25075000000}"),
+		RuneAddress: "tbnb1mkymsmnqenxthlmaa9f60kd6wgr9yjy9h5mz6q",
 		Event: models.Event{
 			Time:   blockTime,
 			Height: 1,
