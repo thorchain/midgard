@@ -11,6 +11,10 @@ import (
 )
 
 func (s *Client) CreateStakeRecord(record *models.EventStake) error {
+	// for BNB or native chain => assetAddress=runeAddress
+	if record.AssetAddress == "" && record.Pool.Chain.Equals(common.RuneAsset().Chain) {
+		record.AssetAddress = record.RuneAddress
+	}
 	if record.AssetAddress != "" {
 		err := s.AddStaker(record.RuneAddress, record.AssetAddress, record.Pool.Chain)
 		if err != nil {
