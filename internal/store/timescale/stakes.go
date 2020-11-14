@@ -12,7 +12,7 @@ import (
 
 func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 	if record.AssetAddress != "" {
-		err := s.AddStaker(record.RuneAddress, record.AssetAddress)
+		err := s.AddStaker(record.RuneAddress, record.AssetAddress, record.Pool.Chain)
 		if err != nil {
 			return errors.Wrap(err, "failed to save staker address")
 		}
@@ -174,10 +174,13 @@ type stakerStakeWithdrawn struct {
 }
 
 func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*stakerStakeWithdrawn, error) {
+	assetAddress, err := s.GetAssetAddress(address, asset.Chain)
+	if err != nil {
+		return nil, errors.Wrap(err, "stakeWithdrawn failed")
+	}
+	var assetStaked, assetWithdrawn, runeStaked, runeWithdrawn sql.NullInt64
 	query := `
 		SELECT
-		SUM(asset_amount) FILTER (WHERE asset_amount > 0) as asset_staked,
-		SUM(-asset_amount) FILTER (WHERE asset_amount < 0) as asset_withdrawn,
 		SUM(rune_amount) FILTER (WHERE rune_amount > 0) as rune_staked,
 		SUM(-rune_amount) FILTER (WHERE rune_amount < 0) as rune_withdrawn
 		FROM pools_history
@@ -192,13 +195,38 @@ func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*st
 				   OR txs.to_address = $2 )
 		)`
 
-	var result stakerStakeWithdrawn
-	err := s.db.QueryRowx(query, asset.String(), address).StructScan(&result)
+	err = s.db.QueryRowx(query, asset.String(), address).Scan(&runeStaked, &runeWithdrawn)
 	if err != nil {
 		return nil, errors.Wrap(err, "stakeWithdrawn failed")
 	}
 
-	return &result, nil
+	query = `
+		SELECT
+		SUM(asset_amount) FILTER (WHERE asset_amount > 0) as asset_staked,
+		SUM(-asset_amount) FILTER (WHERE asset_amount < 0) as asset_withdrawn
+		FROM pools_history
+		WHERE pool = $1
+		AND pools_history.event_type in ('stake', 'unstake')
+		AND pools_history.event_id in (
+			SELECT events.id 
+			FROM events
+			JOIN txs 
+			ON events.id = txs.event_id
+			 AND ( txs.from_address = $2 
+				   OR txs.to_address = $2 )
+		)`
+
+	err = s.db.QueryRowx(query, asset.String(), assetAddress).Scan(&assetStaked, &assetWithdrawn)
+	if err != nil {
+		return nil, errors.Wrap(err, "stakeWithdrawn failed")
+	}
+
+	return &stakerStakeWithdrawn{
+		AssetWithdrawn: assetWithdrawn,
+		AssetStaked:    assetStaked,
+		RuneWithdrawn:  runeWithdrawn,
+		RuneStaked:     runeStaked,
+	}, nil
 }
 
 // runeStakedForAddress - sum of rune staked by a specific address and pool
