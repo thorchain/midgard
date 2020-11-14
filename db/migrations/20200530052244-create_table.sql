@@ -78,6 +78,8 @@ CREATE TABLE stakers (
     chain            VARCHAR     NOT NULL,
     primary key (asset_address, rune_address, chain)
 );
+CREATE INDEX stakers_asset_address_idx ON stakers  USING hash (asset_address);
+CREATE INDEX stakers_rune_address_chain_idx ON stakers (rune_address, chain);
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
