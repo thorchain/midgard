@@ -108,6 +108,7 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 		}
 	}
 
+	//Staker does not have any unit in this pool
 	if !found {
 		return models.StakerAddressAndAssetDetails{}, store.ErrPoolNotFound
 	}
