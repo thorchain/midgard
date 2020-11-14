@@ -72,6 +72,15 @@ CREATE TABLE coins (
     primary key (id, time, event_id)
 );
 
+CREATE TABLE stakers (
+    asset_address   VARCHAR     NOT NULL,
+    rune_address    VARCHAR     NOT NULL,
+    chain            VARCHAR     NOT NULL,
+    primary key (asset_address, rune_address, chain)
+);
+CREATE INDEX stakers_asset_address_idx ON stakers  USING hash (asset_address);
+CREATE INDEX stakers_rune_address_chain_idx ON stakers (rune_address, chain);
+
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
 SELECT create_hypertable('pools_history', 'time');
@@ -86,5 +95,6 @@ DROP TABLE pools_history;
 DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
+DROP TABLE stakers;
 
 DROP TYPE tx_direction;
