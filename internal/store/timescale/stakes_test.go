@@ -122,7 +122,10 @@ func (s *TimeScaleSuite) TestGetStakerAddresses(c *C) {
 }
 
 func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetails(c *C) {
-	err := s.Store.CreateStakeRecord(&stakeTomlEvent1)
+	evt := &stakeTomlEvent1
+	evt.AssetAddress = "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38"
+	evt.RuneAddress = "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38"
+	err := s.Store.CreateStakeRecord(evt)
 	c.Assert(err, IsNil)
 	assest, err := common.NewAsset("BNB.TOML-4BC")
 	c.Assert(err, IsNil)
