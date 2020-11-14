@@ -228,7 +228,7 @@ func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*st
 				   OR txs.to_address = $2 )
 		)`
 
-	err = s.db.QueryRowx(query, asset.String(), address).Scan(&runeStaked, &runeWithdrawn)
+	err = s.db.QueryRowx(query, asset.String(), runeAddress).Scan(&runeStaked, &runeWithdrawn)
 	if err != nil {
 		return nil, errors.Wrap(err, "stakeWithdrawn failed")
 	}
