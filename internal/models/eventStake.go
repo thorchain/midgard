@@ -37,7 +37,7 @@ func (evt *EventStake) GetStakes() []EventStake {
 				Amount: evt.AssetAmount,
 			})
 		}
-		if chain.Equals(common.RuneAsset().Chain) {
+		if chain.Equals(common.RuneAsset().Chain) || len(evt.TxIDs) == 0 {
 			stakeUnit = evt.StakeUnits
 		}
 		if len(coins) > 0 {

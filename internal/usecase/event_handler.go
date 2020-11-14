@@ -184,6 +184,14 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to get InTx")
 		}
+		// one side cross chain stake event (stake only assets)
+		if stake.RuneAddress == "" && len(strings.Split(string(tx.Memo), ":")) == 3 {
+			// fetch rune address from memo
+			addr, err := common.NewAddress(strings.Split(string(tx.Memo), ":")[2])
+			if err == nil {
+				stake.RuneAddress = addr
+			}
+		}
 		ev.Status = successEvent
 		ev.Meta, err = json.Marshal(map[string]interface{}{
 			"stake_unit": stake.StakeUnits,
