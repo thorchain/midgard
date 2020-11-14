@@ -37,11 +37,7 @@ func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, er
 	if err := row.Scan(&addr); err != nil {
 		return common.NoAddress, errors.Wrap(err, "GetRuneAddress failed")
 	}
-	runeAddress, err := common.NewAddress(addr.String)
-	if err != nil {
-		return common.NoAddress, errors.Wrap(err, "GetRuneAddress failed")
-	}
-	return runeAddress, nil
+	return common.Address(addr.String), nil
 }
 
 func (s *Client) GetAssetAddress(runeAddress common.Address, chain common.Chain) (common.Address, error) {
@@ -55,9 +51,5 @@ func (s *Client) GetAssetAddress(runeAddress common.Address, chain common.Chain)
 	if err := row.Scan(&addr); err != nil {
 		return common.NoAddress, errors.Wrap(err, "GetAssetAddress failed")
 	}
-	assetAddress, err := common.NewAddress(addr.String)
-	if err != nil {
-		return common.NoAddress, errors.Wrap(err, "GetAssetAddress failed")
-	}
-	return assetAddress, nil
+	return common.Address(addr.String), nil
 }
