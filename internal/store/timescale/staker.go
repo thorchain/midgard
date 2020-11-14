@@ -41,6 +41,9 @@ func (s *Client) GetRuneAddress(assetAddress common.Address) (common.Address, er
 }
 
 func (s *Client) GetAssetAddress(runeAddress common.Address, chain common.Chain) (common.Address, error) {
+	if chain.Equals(common.RuneAsset().Chain) {
+		return runeAddress, nil
+	}
 	query := fmt.Sprintf(`
 		SELECT asset_address 
 		FROM   %v 

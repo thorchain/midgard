@@ -22,12 +22,17 @@ func (s *TimeScaleSuite) TestAddStaker(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(assetAddress.String(), Equals, "tb1qly9s9x98rfkkgk207wg4q7k4vjlyxafnr2uudr")
 
+	// Asset address in RuneChain is same as rune address
+	assetAddress, err = s.Store.GetAssetAddress("tbnb1ly7s9x98rfkkgk207wg4q7k4vjlyxafnn80vaz", common.RuneAsset().Chain)
+	c.Assert(err, IsNil)
+	c.Assert(assetAddress.String(), Equals, "tbnb1ly7s9x98rfkkgk207wg4q7k4vjlyxafnn80vaz")
+
 	// Invalid chain
-	assetAddress, err = s.Store.GetAssetAddress("tbnb1ly7s9x98rfkkgk207wg4q7k4vjlyxafnn80vaz", common.BNBChain)
+	assetAddress, err = s.Store.GetAssetAddress("tbnb1ly7s9x98rfkkgk207wg4q7k4vjlyxafnn80vaz", common.ETHChain)
 	c.Assert(err, NotNil)
 
 	// Invalid rune address
-	assetAddress, err = s.Store.GetAssetAddress("tb1qly9s9x98rfkkgk207wg4q7k4vjlyxafnr2uudr", common.BTCChain)
+	assetAddress, err = s.Store.GetAssetAddress("tb1qly9s9x98rfkkgk207wg4q7k4vjlyxafnr2uudr", common.ETHChain)
 	c.Assert(err, NotNil)
 
 	// Invalid asset address
