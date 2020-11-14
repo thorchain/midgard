@@ -42,9 +42,11 @@ func (evt *EventStake) GetStakes() []EventStake {
 		}
 		if len(coins) > 0 {
 			stake := EventStake{
-				Event:      evt.Event,
-				Pool:       evt.Pool,
-				StakeUnits: stakeUnit,
+				Event:        evt.Event,
+				Pool:         evt.Pool,
+				StakeUnits:   stakeUnit,
+				RuneAddress:  evt.RuneAddress,
+				AssetAddress: evt.AssetAddress,
 			}
 			stake.Event.InTx = common.NewTx(txID, evt.RuneAddress, "", coins, "")
 			stakes = append(stakes, stake)
