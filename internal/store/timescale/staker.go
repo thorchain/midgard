@@ -22,7 +22,7 @@ func (s *Client) addStaker(runeAddress, assetAddress common.Address, chain commo
 		chain.String(),
 	)
 	if err != nil {
-		return errors.Wrap(err, "Failed to prepareNamed query for addStaker")
+		return errors.Wrap(err, "addStaker failed")
 	}
 	return nil
 }
