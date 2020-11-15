@@ -600,6 +600,9 @@ func (uc *Usecase) getPoolAPY(pool common.Asset) (float64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "GetPoolAPY failed")
 	}
+	if poolEarnedDetail.ActiveDays == 0 {
+		return 0, nil
+	}
 	if poolEarnedDetail.ActiveDays < 30 {
 		poolEarnedDetail.PoolEarned = int64(float64(poolEarnedDetail.PoolEarned) * 30 / poolEarnedDetail.ActiveDays)
 	}
