@@ -2108,9 +2108,6 @@ func NewTestStore(c *C) (*Client, error) {
 		MigrationsDir:         migrationsDir,
 		MaxConnections:        5,
 		ConnectionMaxLifetime: time.Second * 5,
-		CronJobConfig: config.StoreCronJobConfiguration{
-			PoolEarningInterval: 0,
-		},
 	}
 	return NewClient(cfg)
 }
@@ -2185,7 +2182,59 @@ func (s *TimeScaleSuite) TestFetchAllPoolsEarning(c *C) {
 	s.Store.fetchAllPoolsEarning()
 	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(0))
 	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(0))
-	swap := swapBuyRune2BnbEvent3
+	swap :=  models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     8,
+			Status: "Success",
+			Height: 7,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000000,
+					},
+				},
+				Memo: "swap:BNB.BNB",
+			},
+			OutTxs: []common.Tx{
+				{
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 20000000,
+						},
+					},
+					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
 	swap.OutTxs[0].Coins[0].Amount = 2
 	swap.InTx.Coins[0].Amount = 1
 	swap.Time = time.Now().Add(10 * time.Second)
@@ -2212,7 +2261,59 @@ func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
 			StakeCount:  1,
 		},
 	})
-	swap := swapBuyRune2BnbEvent3
+	swap :=  models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     8,
+			Status: "Success",
+			Height: 7,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000000,
+					},
+				},
+				Memo: "swap:BNB.BNB",
+			},
+			OutTxs: []common.Tx{
+				{
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 20000000,
+						},
+					},
+					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
 	swap.OutTxs[0].Coins[0].Amount = 1
 	err = s.Store.CreateSwapRecord(&swap)
 	c.Assert(err, IsNil)
