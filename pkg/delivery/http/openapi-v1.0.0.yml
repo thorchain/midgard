@@ -917,10 +917,6 @@ components:
           type: string
         blockRewards:
           $ref: '#/components/schemas/BlockRewards'
-        bondingROI:
-          type: string
-        stakingROI:
-          type: string
         nextChurnHeight:
           type: string
         poolActivationCountdown:

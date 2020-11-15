@@ -453,8 +453,6 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 			BondReward:  Uint64ToString(netInfo.BlockReward.BondReward),
 			StakeReward: Uint64ToString(netInfo.BlockReward.StakeReward),
 		},
-		BondingROI:              Float64ToString(netInfo.BondingROI),
-		StakingROI:              Float64ToString(netInfo.StakingROI),
 		NextChurnHeight:         Int64ToString(netInfo.NextChurnHeight),
 		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
 		BondingAPY:              Float64ToString(netInfo.BondingAPY),
