@@ -146,19 +146,28 @@ func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error
 }
 
 func (s *Client) fetchAllPoolsEarning() error {
+	var earnings map[string]*models.PoolBasics
 	for _, basic := range s.pools {
-		earn, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
+		totalEarned, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
 			continue
 		}
-		basic.TotalEarnDetail = earn
-		earn, err = s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
+		lastMonthEarned, err := s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
 			continue
 		}
-		basic.LastMonthEarnDetail = earn
+		earnings[basic.Asset.String()]=&models.PoolBasics{
+			TotalEarnDetail:     totalEarned,
+			LastMonthEarnDetail: lastMonthEarned,
+		}
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, basic := range s.pools {
+		basic.LastMonthEarnDetail = earnings[basic.Asset.String()].LastMonthEarnDetail
+		basic.TotalEarnDetail = earnings[basic.Asset.String()].TotalEarnDetail
 	}
 	return nil
 }
@@ -177,6 +186,7 @@ func (s *Client) calcPoolEarnedDetails(asset common.Asset, duration models.EarnD
 		if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
 			lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
 		}
+		from = lastActiveDate
 	}
 	stmnt := `
 		SELECT 
@@ -465,6 +475,7 @@ func (s *Client) deleteLatestBlock() error {
 }
 
 func (s *Client) DeleteBlock(height int64) error {
+	//return nil
 	var err error
 	if err = s.deleteCoinsAtHeight(height); err != nil {
 		return errors.Wrapf(err, "could not delete coins at height %d", height)
