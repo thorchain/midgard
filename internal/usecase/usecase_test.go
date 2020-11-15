@@ -662,9 +662,6 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 			SwappingTxCount: 102,
 		},
 		Price:             12,
-		AssetROI:          1,
-		RuneROI:           0.5,
-		PoolROI:           0.75,
 		PoolVolume24Hours: 124,
 	})
 
@@ -709,9 +706,6 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 			SwappingTxCount: 0,
 		},
 		Price:             0.5,
-		AssetROI:          0,
-		RuneROI:           0,
-		PoolROI:           0,
 		PoolVolume24Hours: 0,
 	})
 }
@@ -744,10 +738,6 @@ func (s *TestGetPoolDetailsStore) CreatePoolRecord(e *models.EventPool) error {
 
 func (s *TestGetPoolDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
 	return s.basics, s.err
-}
-
-func (s *TestGetPoolDetailsStore) GetPoolROI12(asset common.Asset) (float64, error) {
-	return s.poolROI12, s.err
 }
 
 func (s *TestGetPoolDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
@@ -855,7 +845,6 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 			StakeCount:     1,
 			WithdrawCount:  1,
 		},
-		AssetROI:        499999.0001,
 		AssetEarned:     22461,
 		BuyFeeAverage:   175,
 		BuySlipAverage:  0.1230000035,
@@ -863,16 +852,13 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 		PoolDepth:       4698999994,
 		PoolFeeAverage:  2.9854924e+06,
 		PoolFeesTotal:   14927462,
-		PoolROI:         252563.95637860263,
 		PoolEarned:      16162767,
-		PoolROI12:       253822.64345469698,
 		PoolSlipAverage: 0.09840957219999999,
 		PoolStakedTotal: 465638,
 		PoolTxAverage:   7.27231658e+07,
 		PoolVolume:      363615829,
 		PoolVolume24hr:  140331492,
 		Price:           0.046989999930602,
-		RuneROI:         5128.91265720524,
 		RuneEarned:      16161712,
 		SellFeeAverage:  4.975704e+06,
 		SellSlipAverage: 0.08201595133333334,
@@ -1206,8 +1192,6 @@ func (s *UsecaseSuite) TestZeroStandbyNodes(c *C) {
 			BondReward:  uint64(bondReward),
 			StakeReward: uint64(stakeReward),
 		},
-		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4485,
-		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
 		NextChurnHeight:         51851,
 		PoolActivationCountdown: 49975,
 	})
@@ -1319,8 +1303,6 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			BondReward:  uint64(bondReward),
 			StakeReward: uint64(stakeReward),
 		},
-		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4200,
-		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
 		LiquidityAPY:            liquidityAPY,
 		BondingAPY:              bondingAPY,
 		NextChurnHeight:         51851,

@@ -1984,47 +1984,6 @@ func (s *TimeScaleSuite) TestPoolROI(c *C) {
 	c.Assert(roi, Equals, 1.89970001)
 }
 
-func (s *TimeScaleSuite) TestPoolROI12(c *C) {
-	asset, _ := common.NewAsset("BNB.BNB")
-
-	// No stake
-	roi, err := s.Store.GetPoolROI12(asset)
-	c.Assert(err, NotNil)
-	c.Assert(roi, Equals, 0.0)
-
-	// stake
-	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
-	c.Assert(err, IsNil)
-
-	roi, err = s.Store.GetPoolROI12(asset)
-	c.Assert(err, IsNil)
-	c.Assert(roi, Equals, 0.0)
-
-	// Sell swap
-	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent5)
-	c.Assert(err, IsNil)
-
-	roi, err = s.Store.GetPoolROI12(asset)
-	c.Assert(err, IsNil)
-	c.Assert(roi, Equals, -0.0999)
-
-	// Buy swap
-	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent2)
-	c.Assert(err, IsNil)
-
-	roi, err = s.Store.GetPoolROI12(asset)
-	c.Assert(err, IsNil)
-	c.Assert(roi, Equals, -0.10009999)
-
-	// Buy Another swap
-	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
-	c.Assert(err, IsNil)
-
-	roi, err = s.Store.GetPoolROI12(asset)
-	c.Assert(err, IsNil)
-	c.Assert(roi, Equals, 1.89970001)
-}
-
 func (s *TimeScaleSuite) TestGetDateCreated(c *C) {
 	// Single stake
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)

@@ -199,10 +199,6 @@ func (s *StoreDummy) DeleteBlock(height int64) error {
 	return nil
 }
 
-func (s *StoreDummy) GetPoolROI12(asset common.Asset) (float64, error) {
-	return 0, ErrNotImplemented
-}
-
 func (s *StoreDummy) GetStakersCount(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }

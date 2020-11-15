@@ -743,18 +743,6 @@ components:
         stakersCount:
           type: string
           description: Number of unique stakers
-        assetROI:
-          type: string
-          description: Asset return on investment
-        runeROI:
-          type: string
-          description: RUNE return on investment
-        poolROI:
-          type: string
-          description: Pool ROI (average of RUNE and Asset ROI)
-        poolROI12:
-          type: string
-          description: Pool ROI over 12 months
         assetEarned:
           type: string
           description: Amount of pool asset balance changed by fee, gas and assset donation
@@ -929,10 +917,6 @@ components:
           type: string
         blockRewards:
           $ref: '#/components/schemas/BlockRewards'
-        bondingROI:
-          type: string
-        stakingROI:
-          type: string
         nextChurnHeight:
           type: string
         poolActivationCountdown:
