@@ -746,10 +746,6 @@ func (s *TestGetPoolDetailsStore) GetPoolBasics(asset common.Asset) (models.Pool
 	return s.basics, s.err
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolROI12(asset common.Asset) (float64, error) {
-	return s.poolROI12, s.err
-}
-
 func (s *TestGetPoolDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
 	return s.poolVolume24hr, s.err
 }
