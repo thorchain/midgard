@@ -45,9 +45,6 @@ type PoolSimpleDetails struct {
 	PoolSwapStats
 	PoolVolume24Hours int64
 	Price             float64
-	AssetROI          float64
-	RuneROI           float64
-	PoolROI           float64
 	PoolEarned        int64
 	AssetEarned       int64
 	RuneEarned        int64
@@ -56,7 +53,6 @@ type PoolSimpleDetails struct {
 
 type PoolDetails struct {
 	PoolBasics
-	AssetROI        float64
 	AssetEarned     int64
 	BuyFeeAverage   float64
 	BuySlipAverage  float64
@@ -65,15 +61,12 @@ type PoolDetails struct {
 	PoolEarned      int64
 	PoolFeeAverage  float64
 	PoolFeesTotal   uint64
-	PoolROI         float64
-	PoolROI12       float64
 	PoolSlipAverage float64
 	PoolStakedTotal uint64
 	PoolTxAverage   float64
 	PoolVolume      uint64
 	PoolVolume24hr  uint64
 	Price           float64
-	RuneROI         float64
 	RuneEarned      int64
 	SellFeeAverage  float64
 	SellSlipAverage float64

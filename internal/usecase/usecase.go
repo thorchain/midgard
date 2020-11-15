@@ -373,8 +373,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		}
 	}
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
-	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
-	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
 	poolEarnDetail, err := uc.store.GetPoolEarnedDetails(asset, time.Time{})
 	if err != nil {
 		return nil, err
@@ -383,11 +381,8 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		PoolBasics:        basics,
 		PoolVolume24Hours: vol24,
 		Price:             price,
-		AssetROI:          assetROI,
 		AssetEarned:       poolEarnDetail.AssetEarned,
-		RuneROI:           runeROI,
 		RuneEarned:        poolEarnDetail.RuneEarned,
-		PoolROI:           (assetROI + runeROI) / 2,
 		PoolEarned:        poolEarnDetail.PoolEarned,
 	}
 	details.SwappingTxCount = basics.BuyCount + basics.SellCount
@@ -407,13 +402,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 func calculatePrice(assetDepth int64, runeDepth int64) float64 {
 	if assetDepth > 0 {
 		return float64(runeDepth) / float64(assetDepth)
-	}
-	return 0
-}
-
-func calculateROI(depth, staked int64) float64 {
-	if staked > 0 {
-		return float64(depth-staked) / float64(staked)
 	}
 	return 0
 }
@@ -533,7 +521,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	if err != nil {
 		return nil, err
 	}
-	poolROI12, err := uc.store.GetPoolROI12(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -551,15 +538,12 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	}
 	details := &models.PoolDetails{
 		PoolBasics:      basics,
-		AssetROI:        calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn),
 		AssetEarned:     poolEarningDetails.AssetEarned,
-		RuneROI:         calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn),
 		RuneEarned:      poolEarningDetails.RuneEarned,
 		PoolEarned:      poolEarningDetails.PoolEarned,
 		Price:           calculatePrice(basics.AssetDepth, basics.RuneDepth),
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
 		PoolVolume24hr:  uint64(vol24),
-		PoolROI12:       poolROI12,
 		StakersCount:    stakersCount,
 		SwappersCount:   swappersCount,
 		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
@@ -585,7 +569,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		details.PoolTxAverage = float64(details.PoolVolume) / float64(details.SwappingTxCount)
 	}
 	details.PoolStakedTotal = uint64(float64(details.AssetStaked)*details.Price + float64(details.RuneStaked))
-	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolAPY, err = uc.getPoolAPY(asset)
 	if err != nil {
 		return nil, err
