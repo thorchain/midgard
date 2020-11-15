@@ -611,7 +611,6 @@ func (s *UsecaseSuite) TestGetPoolBasics(c *C) {
 type TestGetPoolSimpleDetailsStore struct {
 	StoreDummy
 	from              time.Time
-	to                time.Time
 	basics            models.PoolBasics
 	poolVolume24Hours int64
 	err               error
@@ -619,12 +618,6 @@ type TestGetPoolSimpleDetailsStore struct {
 
 func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
 	return s.basics, s.err
-}
-
-func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
-	s.from = from
-	s.to = to
-	return s.poolVolume24Hours, s.err
 }
 
 func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
@@ -645,6 +638,7 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 			SellVolume:     100,
 			SellSlipTotal:  10.5,
 			SellCount:      51,
+			Volume24:       124,
 		},
 		poolVolume24Hours: 124,
 	}
@@ -653,7 +647,6 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 
 	details, err := uc.GetPoolSimpleDetails(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
 	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
 		PoolBasics: store.basics,
 		PoolSwapStats: models.PoolSwapStats{
@@ -810,6 +803,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 			Units:          25025000100,
 			StakeCount:     1,
 			WithdrawCount:  1,
+			Volume24:       140331492,
 		},
 		poolROI12:      253822.64345469698,
 		poolVolume24hr: 140331492,
@@ -855,6 +849,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 			Units:          25025000100,
 			StakeCount:     1,
 			WithdrawCount:  1,
+			Volume24:       140331492,
 		},
 		AssetROI:        499999.0001,
 		AssetEarned:     22461,
