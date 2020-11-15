@@ -1116,64 +1116,12 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 	return buyFee.Int64, sellFee.Int64, nil
 }
 
-// Calculate details for poolEarned for a pool from a specified date till now
-// assetEarned  = -gasUsed + buyFee + assetDonated
-// runeEarned = gasReplenished + reward + deficit + sellFee + runeDonated
-// poolEarned = assetEarned * Price + runeEarned
-
 func (s *Client) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
-	from := time.Time{}
+	if _, exists := s.pools[asset.String()]; !exists {
+		return models.PoolEarningDetail{}, errors.New("pool not found")
+	}
 	if duration == models.LastMonthEarned {
-		lastActiveDate, err := s.GetPoolLastEnabledDate(asset)
-		if err != nil {
-			return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
-		}
-		if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
-			lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
-		}
+		return s.pools[asset.String()].LastMonthEarnDetail, nil
 	}
-	stmnt := `
-		SELECT 
-		Sum(reward) FILTER (WHERE reward > 0), 
-		Sum(reward) FILTER (WHERE reward < 0),
-       	Sum(gas_used), 
-       	Sum(gas_replenished),
-       	Sum(asset_added),
-       	Sum(rune_added)
-		FROM   pool_changes_daily 
-		WHERE  pool = $1
-		AND    time >= $2`
-	var reward, deficit, gasUsed, gasReplenished, assetDonated, runeDonated sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), from)
-
-	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished, &assetDonated, &runeDonated); err != nil {
-		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
-	}
-	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
-	if err != nil {
-		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
-	}
-	priceInRune, err := s.getPriceInRune(asset)
-	if err != nil {
-		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
-	}
-	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
-	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
-	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
-	return models.PoolEarningDetail{
-		Reward:        reward.Int64,
-		Deficit:       deficit.Int64,
-		BuyFee:        int64(float64(buyFee) * priceInRune),
-		SellFee:       sellFee,
-		GasPaid:       gasUsed.Int64,
-		GasReimbursed: gasReplenished.Int64,
-		PoolFee:       int64(float64(buyFee)*priceInRune) + sellFee,
-		PoolEarned:    poolEarned,
-		AssetDonated:  assetDonated.Int64,
-		RuneDonated:   runeDonated.Int64,
-		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
-		AssetEarned:   assetEarned,
-		RuneEarned:    runeEarned,
-		ActiveDays:    time.Now().Sub(from).Hours() / 24,
-	}, nil
+	return s.pools[asset.String()].TotalEarnDetail, nil
 }
