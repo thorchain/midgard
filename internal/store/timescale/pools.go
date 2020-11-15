@@ -1117,13 +1117,12 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 }
 
 func (s *Client) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if _, exists := s.pools[asset.String()]; !exists {
-		return models.PoolEarningDetail{}, errors.New("pool not found")
+	basic, err := s.GetPoolBasics(asset)
+	if err != nil {
+		return models.PoolEarningDetail{}, err
 	}
 	if duration == models.LastMonthEarned {
-		return s.pools[asset.String()].LastMonthEarnDetail, nil
+		return basic.LastMonthEarnDetail, nil
 	}
-	return s.pools[asset.String()].TotalEarnDetail, nil
+	return basic.TotalEarnDetail, nil
 }
