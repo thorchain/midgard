@@ -146,7 +146,7 @@ func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error
 }
 
 func (s *Client) fetchAllPoolsEarning() error {
-	var earnings map[string]*models.PoolBasics
+	earnings := make(map[string]*models.PoolBasics)
 	for _, basic := range s.pools {
 		totalEarned, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
 		if err != nil {
@@ -158,7 +158,7 @@ func (s *Client) fetchAllPoolsEarning() error {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
 			continue
 		}
-		earnings[basic.Asset.String()]=&models.PoolBasics{
+		earnings[basic.Asset.String()] = &models.PoolBasics{
 			TotalEarnDetail:     totalEarned,
 			LastMonthEarnDetail: lastMonthEarned,
 		}
@@ -475,7 +475,6 @@ func (s *Client) deleteLatestBlock() error {
 }
 
 func (s *Client) DeleteBlock(height int64) error {
-	//return nil
 	var err error
 	if err = s.deleteCoinsAtHeight(height); err != nil {
 		return errors.Wrapf(err, "could not delete coins at height %d", height)
