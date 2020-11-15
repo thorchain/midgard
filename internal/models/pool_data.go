@@ -34,6 +34,7 @@ type PoolBasics struct {
 	DateCreated         time.Time
 	TotalEarnDetail     PoolEarningDetail
 	LastMonthEarnDetail PoolEarningDetail
+	Volume24            int64
 }
 
 type PoolSwapStats struct {
