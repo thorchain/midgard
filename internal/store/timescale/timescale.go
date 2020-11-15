@@ -138,7 +138,11 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 }
 
 func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error {
-	err := gocron.Every(cronConfig.PoolEarningInterval).Minute().From(gocron.NextTick()).Do(s.fetchAllPoolsEarning)
+	err := gocron.Every(uint64(cronConfig.PoolEarningInterval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchAllPoolsEarning)
+	if err != nil {
+		return err
+	}
+	err = gocron.Every(uint64(cronConfig.PoolEarningInterval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchAllPoolsVolume24)
 	if err == nil {
 		gocron.Start()
 	}
@@ -166,6 +170,25 @@ func (s *Client) fetchAllPoolsEarning() error {
 	for _, basic := range s.pools {
 		basic.LastMonthEarnDetail = earnings[basic.Asset.String()].LastMonthEarnDetail
 		basic.TotalEarnDetail = earnings[basic.Asset.String()].TotalEarnDetail
+	}
+	return nil
+}
+
+func (s *Client) fetchAllPoolsVolume24() error {
+	volume24 := make(map[string]*models.PoolBasics)
+	for _, basic := range s.pools {
+		volume24[basic.Asset.String()] = &models.PoolBasics{}
+		var err error
+		volume24[basic.Asset.String()].Volume24, err = s.calcPoolVolume24(basic.Asset)
+		if err != nil {
+			s.logger.Error().Err(err).Str("failed to get pool volume24 of %s", basic.Asset.String())
+			continue
+		}
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, basic := range s.pools {
+		basic.Volume24 = volume24[basic.Asset.String()].Volume24
 	}
 	return nil
 }
@@ -231,6 +254,25 @@ func (s *Client) calcPoolEarnedDetails(asset common.Asset, duration models.EarnD
 		ActiveDays:    time.Now().Sub(from).Hours() / 24,
 		LastUpdate:    time.Now(),
 	}, nil
+}
+
+func (s *Client) calcPoolVolume24(pool common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(ABS(rune_amount))
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'
+		AND time BETWEEN $2 AND $3
+	`
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+	var vol sql.NullInt64
+	row := s.db.QueryRow(stmnt, pool.String(), pastDay, now)
+
+	if err := row.Scan(&vol); err != nil {
+		return 0, errors.Wrap(err, "calcPoolVolume24 failed")
+	}
+	return vol.Int64, nil
 }
 
 func (s *Client) initPoolCache() error {
