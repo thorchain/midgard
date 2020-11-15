@@ -59,7 +59,7 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
 	}
-	err = cli.initCronJobs()
+	err = cli.initCronJobs(cfg.CronJobConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
 	}
@@ -138,8 +138,8 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 	return value.Int64, err
 }
 
-func (s *Client) initCronJobs() error {
-	err := gocron.Every(1).Do(s.fetchAllPoolsEarning)
+func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error {
+	err := gocron.Every(cronConfig.PoolEarningInterval).Minute().From(gocron.NextTick()).Do(s.fetchAllPoolsEarning)
 	return err
 }
 
