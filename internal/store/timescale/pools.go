@@ -1095,53 +1095,13 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 	return buyFee.Int64, sellFee.Int64, nil
 }
 
-// Calculate details for poolEarned for a pool from a specified date till now
-// assetEarned  = -gasUsed + buyFee + assetDonated
-// runeEarned = gasReplenished + reward + deficit + sellFee + runeDonated
-// poolEarned = assetEarned * Price + runeEarned
-
-func (s *Client) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	stmnt := `
-		SELECT 
-		Sum(reward) FILTER (WHERE reward > 0), 
-		Sum(reward) FILTER (WHERE reward < 0),
-       	Sum(gas_used), 
-       	Sum(gas_replenished),
-       	Sum(asset_added),
-       	Sum(rune_added)
-		FROM   pool_changes_daily 
-		WHERE  pool = $1
-		AND    time >= $2`
-	var reward, deficit, gasUsed, gasReplenished, assetDonated, runeDonated sql.NullInt64
-	row := s.db.QueryRow(stmnt, asset.String(), from)
-
-	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished, &assetDonated, &runeDonated); err != nil {
-		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
-	}
-	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
+func (s *Client) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	basic, err := s.GetPoolBasics(asset)
 	if err != nil {
-		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		return models.PoolEarningDetail{}, err
 	}
-	priceInRune, err := s.getPriceInRune(asset)
-	if err != nil {
-		return models.PoolEarningReport{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	if duration == models.LastMonthEarned {
+		return basic.LastMonthEarnDetail, nil
 	}
-	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
-	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
-	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
-	return models.PoolEarningReport{
-		Reward:        reward.Int64,
-		Deficit:       deficit.Int64,
-		BuyFee:        int64(float64(buyFee) * priceInRune),
-		SellFee:       sellFee,
-		GasPaid:       gasUsed.Int64,
-		GasReimbursed: gasReplenished.Int64,
-		PoolFee:       int64(float64(buyFee)*priceInRune) + sellFee,
-		PoolEarned:    poolEarned,
-		AssetDonated:  assetDonated.Int64,
-		RuneDonated:   runeDonated.Int64,
-		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
-		AssetEarned:   assetEarned,
-		RuneEarned:    runeEarned,
-	}, nil
+	return basic.TotalEarnDetail, nil
 }

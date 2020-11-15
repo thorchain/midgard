@@ -196,7 +196,7 @@ func (s *Client) TotalEarned() (int64, error) {
 	}
 	var totalEarned int64
 	for _, pool := range pools {
-		earnedDetail, err := s.GetPoolEarnedDetails(pool, time.Time{})
+		earnedDetail, err := s.GetPoolEarnedDetails(pool, models.TotalEarned)
 		if err != nil {
 			return 0, err
 		}

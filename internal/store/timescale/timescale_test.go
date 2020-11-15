@@ -2176,6 +2176,167 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 	c.Assert(txsCount, Equals, uint64(2))
 }
 
+func (s *TimeScaleSuite) TestFetchAllPoolsEarning(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsEarning()
+	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(0))
+	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(0))
+	swap := models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     8,
+			Status: "Success",
+			Height: 7,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000000,
+					},
+				},
+				Memo: "swap:BNB.BNB",
+			},
+			OutTxs: []common.Tx{
+				{
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 20000000,
+						},
+					},
+					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
+	swap.OutTxs[0].Coins[0].Amount = 2
+	swap.InTx.Coins[0].Amount = 1
+	swap.Time = time.Now().Add(10 * time.Second)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsEarning()
+	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(94227394))
+	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(94227394))
+}
+
+func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:       common.BNBAsset,
+			AssetStaked: 10,
+			AssetDepth:  10,
+			RuneDepth:   100,
+			RuneStaked:  100,
+			Units:       100,
+			DateCreated: stakeBnbEvent0.Time.UTC(),
+			StakeCount:  1,
+		},
+	})
+	swap := models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     8,
+			Status: "Success",
+			Height: 7,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000000,
+					},
+				},
+				Memo: "swap:BNB.BNB",
+			},
+			OutTxs: []common.Tx{
+				{
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 20000000,
+						},
+					},
+					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
+	swap.OutTxs[0].Coins[0].Amount = 1
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:        common.BNBAsset,
+			AssetDepth:   9,
+			AssetStaked:  10,
+			RuneDepth:    200000100,
+			RuneStaked:   100,
+			Units:        100,
+			DateCreated:  stakeBnbEvent0.Time.UTC(),
+			StakeCount:   1,
+			BuyVolume:    1,
+			BuySlipTotal: 0.123,
+			BuyFeesTotal: 7463556,
+			BuyCount:     1,
+			Volume24:     200000000,
+		},
+	})
+}
+
 func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)

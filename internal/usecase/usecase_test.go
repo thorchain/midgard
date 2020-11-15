@@ -611,7 +611,6 @@ func (s *UsecaseSuite) TestGetPoolBasics(c *C) {
 type TestGetPoolSimpleDetailsStore struct {
 	StoreDummy
 	from              time.Time
-	to                time.Time
 	basics            models.PoolBasics
 	poolVolume24Hours int64
 	err               error
@@ -619,12 +618,6 @@ type TestGetPoolSimpleDetailsStore struct {
 
 func (s *TestGetPoolSimpleDetailsStore) GetPoolBasics(asset common.Asset) (models.PoolBasics, error) {
 	return s.basics, s.err
-}
-
-func (s *TestGetPoolSimpleDetailsStore) GetPoolVolume(asset common.Asset, from, to time.Time) (int64, error) {
-	s.from = from
-	s.to = to
-	return s.poolVolume24Hours, s.err
 }
 
 func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
@@ -645,6 +638,7 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 			SellVolume:     100,
 			SellSlipTotal:  10.5,
 			SellCount:      51,
+			Volume24:       124,
 		},
 		poolVolume24Hours: 124,
 	}
@@ -653,7 +647,6 @@ func (s *UsecaseSuite) TestGetPoolSimpleDetails(c *C) {
 
 	details, err := uc.GetPoolSimpleDetails(common.BNBAsset)
 	c.Assert(err, IsNil)
-	c.Assert(store.to.Sub(store.from), Equals, time.Hour*24)
 	c.Assert(details, DeepEquals, &models.PoolSimpleDetails{
 		PoolBasics: store.basics,
 		PoolSwapStats: models.PoolSwapStats{
@@ -756,11 +749,12 @@ func (s *TestGetPoolDetailsStore) GetPoolEarned30d(asset common.Asset) (int64, e
 	return 4000000, nil
 }
 
-func (s *TestGetPoolDetailsStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{
+func (s *TestGetPoolDetailsStore) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	return models.PoolEarningDetail{
 		AssetEarned: 22461,
 		RuneEarned:  16161712,
 		PoolEarned:  16162767,
+		ActiveDays:  30,
 	}, nil
 }
 
@@ -799,6 +793,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 			Units:          25025000100,
 			StakeCount:     1,
 			WithdrawCount:  1,
+			Volume24:       140331492,
 		},
 		poolROI12:      253822.64345469698,
 		poolVolume24hr: 140331492,
@@ -844,6 +839,7 @@ func (s *UsecaseSuite) TestGetPoolDetails(c *C) {
 			Units:          25025000100,
 			StakeCount:     1,
 			WithdrawCount:  1,
+			Volume24:       140331492,
 		},
 		AssetEarned:     22461,
 		BuyFeeAverage:   175,
@@ -1798,8 +1794,11 @@ func (s *TestGetPoolAPYStore) GetPoolLastEnabledDate(_ common.Asset) (time.Time,
 	return s.enabledDate, nil
 }
 
-func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{PoolEarned: s.earned}, nil
+func (s *TestGetPoolAPYStore) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	return models.PoolEarningDetail{
+		PoolEarned: s.earned,
+		ActiveDays: 30,
+	}, nil
 }
 
 func (s *TestGetPoolAPYStore) GetPoolStatus(_ common.Asset) (models.PoolStatus, error) {
