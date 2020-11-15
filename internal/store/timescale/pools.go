@@ -1033,27 +1033,6 @@ func (s *Client) getDepth12(asset common.Asset) (int64, int64, error) {
 	return assetDepth12, runeDepth12, nil
 }
 
-func (s *Client) GetPoolROI12(asset common.Asset) (float64, error) {
-	assetDepth12, runeDepth12, err := s.getDepth12(asset)
-	if err != nil {
-		return 0, err
-	}
-	assetStaked, runeStaked, err := s.getStakes12(asset)
-	if err != nil {
-		return 0, err
-	}
-
-	var assetROI float64
-	if assetStaked > 0 {
-		assetROI = float64(assetDepth12-assetStaked) / float64(assetStaked)
-	}
-	var runeROI float64
-	if runeStaked > 0 {
-		runeROI = float64(runeDepth12-runeStaked) / float64(runeStaked)
-	}
-	return (assetROI + runeROI) / 2, nil
-}
-
 // GetPoolStatus - latest pool status
 func (s *Client) GetPoolStatus(asset common.Asset) (models.PoolStatus, error) {
 	s.mu.RLock()
