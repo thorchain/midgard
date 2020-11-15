@@ -1192,8 +1192,6 @@ func (s *UsecaseSuite) TestZeroStandbyNodes(c *C) {
 			BondReward:  uint64(bondReward),
 			StakeReward: uint64(stakeReward),
 		},
-		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4485,
-		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
 		NextChurnHeight:         51851,
 		PoolActivationCountdown: 49975,
 	})
@@ -1305,8 +1303,6 @@ func (s *UsecaseSuite) TestGetNetworkInfo(c *C) {
 			BondReward:  uint64(bondReward),
 			StakeReward: uint64(stakeReward),
 		},
-		BondingROI:              (float64(bondReward) * float64(blocksPerYear)) / 4200,
-		StakingROI:              (float64(stakeReward) * float64(blocksPerYear)) / 1500,
 		LiquidityAPY:            liquidityAPY,
 		BondingAPY:              bondingAPY,
 		NextChurnHeight:         51851,
