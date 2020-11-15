@@ -360,12 +360,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 			return nil, err
 		}
 	}
-	now := time.Now()
-	pastDay := now.Add(-day)
-	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
-	if err != nil {
-		return nil, err
-	}
 	if uc.conf.UseThorchainBalances {
 		err := uc.overwriteDepth(&basics)
 		if err != nil {
@@ -381,7 +375,7 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 	}
 	details := &models.PoolSimpleDetails{
 		PoolBasics:        basics,
-		PoolVolume24Hours: vol24,
+		PoolVolume24Hours: basics.Volume24,
 		Price:             price,
 		AssetROI:          assetROI,
 		AssetEarned:       poolEarnDetail.AssetEarned,
@@ -521,13 +515,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 			return nil, err
 		}
 	}
-
-	now := time.Now()
-	pastDay := now.Add(-day)
-	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
-	if err != nil {
-		return nil, err
-	}
 	poolROI12, err := uc.store.GetPoolROI12(asset)
 	if err != nil {
 		return nil, err
@@ -553,7 +540,7 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		PoolEarned:      poolEarningDetails.PoolEarned,
 		Price:           calculatePrice(basics.AssetDepth, basics.RuneDepth),
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
-		PoolVolume24hr:  uint64(vol24),
+		PoolVolume24hr:  uint64(basics.Volume24),
 		PoolROI12:       poolROI12,
 		StakersCount:    stakersCount,
 		SwappersCount:   swappersCount,
