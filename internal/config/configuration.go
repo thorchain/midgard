@@ -76,8 +76,8 @@ func applyDefaultConfig() {
 	viper.SetDefault("timescale.connection_max_lifetime", time.Minute*5)
 	viper.SetDefault("node_proxy.rate_limit", 3)
 	viper.SetDefault("node_proxy.burst_limit", 3)
-	viper.SetDefault("timescale.cron_job_config.pool_earning_interval", time.Minute*5)
-	viper.SetDefault("timescale.cron_job_config.volume_24_interval", time.Minute*2)
+	viper.SetDefault("timescale.cron_job_config.pool_earning_interval", time.Hour)
+	viper.SetDefault("timescale.cron_job_config.volume_24_interval", time.Hour)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
