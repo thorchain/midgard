@@ -1117,6 +1117,8 @@ func (s *Client) getPoolLiquidityFee(asset common.Asset, from time.Time) (int64,
 }
 
 func (s *Client) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	if _, exists := s.pools[asset.String()]; !exists {
 		return models.PoolEarningDetail{}, errors.New("pool not found")
 	}
