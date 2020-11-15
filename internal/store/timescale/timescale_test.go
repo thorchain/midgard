@@ -2182,7 +2182,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsEarning(c *C) {
 	s.Store.fetchAllPoolsEarning()
 	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(0))
 	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(0))
-	swap :=  models.EventSwap{
+	swap := models.EventSwap{
 		Event: models.Event{
 			Time:   time.Now(),
 			ID:     8,
@@ -2261,7 +2261,7 @@ func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
 			StakeCount:  1,
 		},
 	})
-	swap :=  models.EventSwap{
+	swap := models.EventSwap{
 		Event: models.Event{
 			Time:   time.Now(),
 			ID:     8,
