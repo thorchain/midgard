@@ -165,14 +165,14 @@ func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64,
 	}
 	query := `
 		SELECT Sum(units) 
-		FROM   pools_history 
-		 WHERE event_id in(
+		FROM   pools_history
+		WHERE  pools_history.pool = $1  
+		AND event_id in(
 			   SELECT txs.event_id
 			   FROM   txs 
 			   JOIN events 
 				 ON txs.event_id = events.id 
-		WHERE  pools_history.pool = $1 
-			 AND ( txs.from_address = $2 
+			   WHERE ( txs.from_address = $2 
 				   OR txs.from_address = $3 )
 			   AND events.status = 'Success')`
 
