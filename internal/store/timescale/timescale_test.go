@@ -2108,6 +2108,9 @@ func NewTestStore(c *C) (*Client, error) {
 		MigrationsDir:         migrationsDir,
 		MaxConnections:        5,
 		ConnectionMaxLifetime: time.Second * 5,
+		CronJobConfig: config.StoreCronJobConfiguration{
+			PoolEarningInterval: 0,
+		},
 	}
 	return NewClient(cfg)
 }
