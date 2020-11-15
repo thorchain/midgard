@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 
+	"github.com/jasonlvhit/gocron"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -55,6 +56,10 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	}
 
 	err = cli.initPoolCache()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not fetch initial pool depths")
+	}
+	err = cli.initCronJobs()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
 	}
@@ -131,6 +136,91 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 
 	err := row.Scan(&value)
 	return value.Int64, err
+}
+
+func (s *Client) initCronJobs() error {
+	err := gocron.Every(1).Do(s.fetchAllPoolsEarning)
+	return err
+}
+
+func (s *Client) fetchAllPoolsEarning() error {
+	for _, basic := range s.pools {
+		earn, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
+		if err != nil {
+			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
+			continue
+		}
+		basic.TotalEarnDetail = earn
+		earn, err = s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
+		if err != nil {
+			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
+			continue
+		}
+		basic.LastMonthEarnDetail = earn
+	}
+	return nil
+}
+
+// Calculate details for poolEarned for a pool from a specified date till now
+// assetEarned  = -gasUsed + buyFee + assetDonated
+// runeEarned = gasReplenished + reward + deficit + sellFee + runeDonated
+// poolEarned = assetEarned * Price + runeEarned
+func (s *Client) calcPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	from := time.Time{}
+	if duration == models.LastMonthEarned {
+		lastActiveDate, err := s.GetPoolLastEnabledDate(asset)
+		if err != nil {
+			return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		}
+		if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
+			lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+		}
+	}
+	stmnt := `
+		SELECT 
+		Sum(reward) FILTER (WHERE reward > 0), 
+		Sum(reward) FILTER (WHERE reward < 0),
+       	Sum(gas_used), 
+       	Sum(gas_replenished),
+       	Sum(asset_added),
+       	Sum(rune_added)
+		FROM   pool_changes_daily 
+		WHERE  pool = $1
+		AND    time >= $2`
+	var reward, deficit, gasUsed, gasReplenished, assetDonated, runeDonated sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), from)
+
+	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished, &assetDonated, &runeDonated); err != nil {
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
+	if err != nil {
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
+	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
+	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
+	return models.PoolEarningDetail{
+		Reward:        reward.Int64,
+		Deficit:       deficit.Int64,
+		BuyFee:        int64(float64(buyFee) * priceInRune),
+		SellFee:       sellFee,
+		GasPaid:       gasUsed.Int64,
+		GasReimbursed: gasReplenished.Int64,
+		PoolFee:       int64(float64(buyFee)*priceInRune) + sellFee,
+		PoolEarned:    poolEarned,
+		AssetDonated:  assetDonated.Int64,
+		RuneDonated:   runeDonated.Int64,
+		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
+		AssetEarned:   assetEarned,
+		RuneEarned:    runeEarned,
+		ActiveDays:    time.Now().Sub(from).Hours() / 24,
+		LastUpdate:    time.Now(),
+	}, nil
 }
 
 func (s *Client) initPoolCache() error {

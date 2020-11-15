@@ -7,31 +7,33 @@ import (
 )
 
 type PoolBasics struct {
-	Asset          common.Asset
-	AssetDepth     int64
-	AssetStaked    int64
-	AssetWithdrawn int64
-	RuneDepth      int64
-	RuneStaked     int64
-	RuneWithdrawn  int64
-	GasUsed        int64
-	GasReplenished int64
-	AssetAdded     int64
-	RuneAdded      int64
-	Reward         int64
-	Units          int64
-	Status         PoolStatus
-	BuyVolume      int64
-	BuySlipTotal   float64
-	BuyFeesTotal   int64
-	BuyCount       int64
-	SellVolume     int64
-	SellSlipTotal  float64
-	SellFeesTotal  int64
-	SellCount      int64
-	StakeCount     int64
-	WithdrawCount  int64
-	DateCreated    time.Time
+	Asset               common.Asset
+	AssetDepth          int64
+	AssetStaked         int64
+	AssetWithdrawn      int64
+	RuneDepth           int64
+	RuneStaked          int64
+	RuneWithdrawn       int64
+	GasUsed             int64
+	GasReplenished      int64
+	AssetAdded          int64
+	RuneAdded           int64
+	Reward              int64
+	Units               int64
+	Status              PoolStatus
+	BuyVolume           int64
+	BuySlipTotal        float64
+	BuyFeesTotal        int64
+	BuyCount            int64
+	SellVolume          int64
+	SellSlipTotal       float64
+	SellFeesTotal       int64
+	SellCount           int64
+	StakeCount          int64
+	WithdrawCount       int64
+	DateCreated         time.Time
+	TotalEarnDetail     PoolEarningDetail
+	LastMonthEarnDetail PoolEarningDetail
 }
 
 type PoolSwapStats struct {
@@ -106,6 +108,7 @@ type (
 		AssetEarned   int64
 		RuneEarned    int64
 		ActiveDays    float64
+		LastUpdate    time.Time
 	}
 )
 
