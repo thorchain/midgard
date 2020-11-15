@@ -685,8 +685,6 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
-		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
-		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
 		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalEnabledRuneDepth), monthsPerYear),
 		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalActiveBond), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
