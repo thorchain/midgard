@@ -23,15 +23,20 @@ type Configuration struct {
 }
 
 type TimeScaleConfiguration struct {
-	Host                  string        `json:"host" mapstructure:"host"`
-	Port                  int           `json:"port" mapstructure:"port"`
-	UserName              string        `json:"user_name" mapstructure:"user_name"`
-	Password              string        `json:"password" mapstructure:"password"`
-	Database              string        `json:"database" mapstructure:"database"`
-	Sslmode               string        `json:"sslmode" mapstructure:"sslmode"`
-	MigrationsDir         string        `json:"migrationsDir" mapstructure:"migrationsDir"`
-	MaxConnections        int           `json:"max_connections" mapstructure:"max_connections"`
-	ConnectionMaxLifetime time.Duration `json:"connection_max_lifetime" mapstructure:"connection_max_lifetime"`
+	Host                  string                    `json:"host" mapstructure:"host"`
+	Port                  int                       `json:"port" mapstructure:"port"`
+	UserName              string                    `json:"user_name" mapstructure:"user_name"`
+	Password              string                    `json:"password" mapstructure:"password"`
+	Database              string                    `json:"database" mapstructure:"database"`
+	Sslmode               string                    `json:"sslmode" mapstructure:"sslmode"`
+	MigrationsDir         string                    `json:"migrationsDir" mapstructure:"migrationsDir"`
+	MaxConnections        int                       `json:"max_connections" mapstructure:"max_connections"`
+	ConnectionMaxLifetime time.Duration             `json:"connection_max_lifetime" mapstructure:"connection_max_lifetime"`
+	CronJobConfig         StoreCronJobConfiguration `json:"cron_job_config" mapstructure:"cron_job_config"`
+}
+
+type StoreCronJobConfiguration struct {
+	PoolEarningInterval uint64 `json:"pool_earning_interval" mapstructure:"pool_earning_interval"`
 }
 
 type ThorChainConfiguration struct {
@@ -70,6 +75,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("timescale.connection_max_lifetime", time.Minute*5)
 	viper.SetDefault("node_proxy.rate_limit", 3)
 	viper.SetDefault("node_proxy.burst_limit", 3)
+	viper.SetDefault("timescale.cron_job_config.pool_earning_interval", 5)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
