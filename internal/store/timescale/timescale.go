@@ -170,8 +170,10 @@ func (s *Client) fetchAllPoolsEarning() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, basic := range s.pools {
-		basic.LastMonthEarnDetail = earnings[basic.Asset.String()].LastMonthEarnDetail
-		basic.TotalEarnDetail = earnings[basic.Asset.String()].TotalEarnDetail
+		if _, exists := earnings[basic.Asset.String()]; exists {
+			basic.LastMonthEarnDetail = earnings[basic.Asset.String()].LastMonthEarnDetail
+			basic.TotalEarnDetail = earnings[basic.Asset.String()].TotalEarnDetail
+		}
 	}
 	return nil
 }
@@ -189,7 +191,9 @@ func (s *Client) fetchAllPoolsVolume24() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, basic := range s.pools {
-		basic.Volume24 = volume24s[basic.Asset.String()]
+		if _, exists := volume24s[basic.Asset.String()]; exists {
+			basic.Volume24 = volume24s[basic.Asset.String()]
+		}
 	}
 	return nil
 }
