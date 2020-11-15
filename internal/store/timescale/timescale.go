@@ -182,7 +182,6 @@ func (s *Client) fetchAllPoolsVolume24() error {
 		volume24[basic.Asset.String()].Volume24, err = s.calcPoolVolume24(basic.Asset)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool volume24 of %s", basic.Asset.String())
-			continue
 		}
 	}
 	s.mu.Lock()
