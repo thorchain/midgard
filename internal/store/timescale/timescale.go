@@ -152,19 +152,23 @@ func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error
 func (s *Client) fetchAllPoolsEarning() error {
 	earnings := make(map[string]*models.PoolBasics)
 	for _, basic := range s.pools {
-		earnings[basic.Asset.String()] = &models.PoolBasics{}
-		var err error
-		earnings[basic.Asset.String()].TotalEarnDetail, err = s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
+		totalEarnDetail, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
 			continue
 		}
-		earnings[basic.Asset.String()].LastMonthEarnDetail, err = s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
+		lastMonthEarnDetail, err := s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
 			continue
+		}
+
+		earnings[basic.Asset.String()] = &models.PoolBasics{
+			TotalEarnDetail:     totalEarnDetail,
+			LastMonthEarnDetail: lastMonthEarnDetail,
 		}
 	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, basic := range s.pools {
@@ -175,19 +179,19 @@ func (s *Client) fetchAllPoolsEarning() error {
 }
 
 func (s *Client) fetchAllPoolsVolume24() error {
-	volume24 := make(map[string]*models.PoolBasics)
+	volume24s := make(map[string]int64)
 	for _, basic := range s.pools {
-		volume24[basic.Asset.String()] = &models.PoolBasics{}
-		var err error
-		volume24[basic.Asset.String()].Volume24, err = s.calcPoolVolume24(basic.Asset)
+		volume24, err := s.calcPoolVolume24(basic.Asset)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool volume24 of %s", basic.Asset.String())
 		}
+		volume24s[basic.Asset.String()] = volume24
 	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, basic := range s.pools {
-		basic.Volume24 = volume24[basic.Asset.String()].Volume24
+		basic.Volume24 = volume24s[basic.Asset.String()]
 	}
 	return nil
 }
