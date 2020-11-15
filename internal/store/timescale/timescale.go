@@ -155,12 +155,10 @@ func (s *Client) fetchAllPoolsEarning() error {
 		totalEarnDetail, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
-			continue
 		}
 		lastMonthEarnDetail, err := s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
 		if err != nil {
 			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
-			continue
 		}
 
 		earnings[basic.Asset.String()] = &models.PoolBasics{
