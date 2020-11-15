@@ -2179,6 +2179,63 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 	c.Assert(txsCount, Equals, uint64(2))
 }
 
+func (s *TimeScaleSuite) TestFetchAllPoolsEarning(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsEarning()
+	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(0))
+	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(0))
+	swap := swapBuyRune2BnbEvent3
+	swap.OutTxs[0].Coins[0].Amount = 2
+	swap.InTx.Coins[0].Amount = 1
+	swap.Time = time.Now().Add(10 * time.Second)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsEarning()
+	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(94227394))
+	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(94227394))
+}
+
+func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:       common.BNBAsset,
+			AssetStaked: 10,
+			AssetDepth:  10,
+			RuneDepth:   100,
+			RuneStaked:  100,
+			Units:       100,
+			DateCreated: stakeBnbEvent0.Time.UTC(),
+			StakeCount:  1,
+		},
+	})
+	swap := swapBuyRune2BnbEvent3
+	swap.OutTxs[0].Coins[0].Amount = 1
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:        common.BNBAsset,
+			AssetDepth:   9,
+			AssetStaked:  10,
+			RuneDepth:    200000100,
+			RuneStaked:   100,
+			Units:        100,
+			DateCreated:  stakeBnbEvent0.Time.UTC(),
+			StakeCount:   1,
+			BuyVolume:    1,
+			BuySlipTotal: 0.123,
+			BuyFeesTotal: 7463556,
+			BuyCount:     1,
+			Volume24:     200000000,
+		},
+	})
+}
+
 func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
