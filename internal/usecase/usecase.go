@@ -450,16 +450,19 @@ func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYRepor
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPYReport failed")
 	}
-	if poolBasic.Status != models.Enabled {
-		return &models.PoolAPYReport{}, nil
-	}
 	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, models.TotalEarned)
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
 	}
+	if totalEarnDetails.ActiveDays == 0 {
+		return &models.PoolAPYReport{}, nil
+	}
 	lastMonthEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, models.LastMonthEarned)
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	if lastMonthEarnDetails.ActiveDays == 0 {
+		return &models.PoolAPYReport{}, nil
 	}
 	lastMonthPoolEarned := lastMonthEarnDetails.PoolEarned
 	if lastMonthEarnDetails.ActiveDays < 30 {
