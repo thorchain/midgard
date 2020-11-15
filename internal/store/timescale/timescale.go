@@ -60,7 +60,7 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	}
 	err = cli.initCronJobs(cfg.CronJobConfig)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not fetch initial pool depths")
+		return nil, errors.Wrap(err, "could not initialize cron jobs")
 	}
 	return cli, nil
 }
@@ -142,7 +142,7 @@ func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error
 	if err != nil {
 		return err
 	}
-	err = gocron.Every(uint64(cronConfig.PoolEarningInterval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchAllPoolsVolume24)
+	err = gocron.Every(uint64(cronConfig.Volume24Interval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchAllPoolsVolume24)
 	if err == nil {
 		gocron.Start()
 	}
