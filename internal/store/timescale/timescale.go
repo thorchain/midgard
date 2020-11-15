@@ -165,6 +165,7 @@ func (s *Client) fetchAllPoolsEarning() error {
 			continue
 		}
 	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, basic := range s.pools {
@@ -184,6 +185,7 @@ func (s *Client) fetchAllPoolsVolume24() error {
 			s.logger.Error().Err(err).Str("failed to get pool volume24 of %s", basic.Asset.String())
 		}
 	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, basic := range s.pools {
