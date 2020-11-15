@@ -54,7 +54,6 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	if err := cli.deleteLatestBlock(); err != nil {
 		return nil, errors.Wrap(err, "failed to purge latest block records")
 	}
-
 	err = cli.initPoolCache()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
@@ -140,6 +139,9 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 
 func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error {
 	err := gocron.Every(cronConfig.PoolEarningInterval).Minute().From(gocron.NextTick()).Do(s.fetchAllPoolsEarning)
+	if err == nil {
+		gocron.Start()
+	}
 	return err
 }
 
