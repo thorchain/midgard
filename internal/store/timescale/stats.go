@@ -47,10 +47,9 @@ func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
 		FROM   pools_history 
 		WHERE  event_type in ('swap', 'doubleSwap')
 		AND time BETWEEN $1 AND $2`
-	now := time.Now()
-	pastDay := now.Add(-time.Hour * 24)
+
 	var singleSwap, doubleSwap sql.NullInt64
-	row := s.db.QueryRow(stmnt, pastDay, now)
+	row := s.db.QueryRow(stmnt, from, to)
 
 	if err := row.Scan(&singleSwap, &doubleSwap); err != nil {
 		return 0, errors.Wrap(err, "GetTotalVolume failed")
