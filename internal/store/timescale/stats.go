@@ -41,20 +41,10 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 
 // GetTotalVolume returns total volume between "from" to "to".
 func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
-	stmnt := `
-		SELECT SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'swap'),
-		SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'doubleSwap') 
-		FROM   pools_history 
-		WHERE  event_type in ('swap', 'doubleSwap')
-		AND time BETWEEN $1 AND $2`
-
-	var singleSwap, doubleSwap sql.NullInt64
-	row := s.db.QueryRow(stmnt, from, to)
-
-	if err := row.Scan(&singleSwap, &doubleSwap); err != nil {
-		return 0, errors.Wrap(err, "GetTotalVolume failed")
-	}
-	return uint64(singleSwap.Int64) + uint64(doubleSwap.Int64)*2, nil
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("SUM(ABS(runeAmt))").From("swaps")
+	vol, err := s.queryTimestampInt64(sb, from, to)
+	return uint64(vol), err
 }
 
 func (s *Client) TotalStaked() (uint64, error) {
