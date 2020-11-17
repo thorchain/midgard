@@ -2335,6 +2335,28 @@ func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
 			Volume24:     200000000,
 		},
 	})
+
+	swap.Event.Type = "doubleSwap"
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:        common.BNBAsset,
+			AssetDepth:   8,
+			AssetStaked:  10,
+			RuneDepth:    400000100,
+			RuneStaked:   100,
+			Units:        100,
+			DateCreated:  stakeBnbEvent0.Time.UTC(),
+			StakeCount:   1,
+			BuyVolume:    2,
+			BuySlipTotal: 0.246,
+			BuyFeesTotal: 14927112,
+			BuyCount:     2,
+			Volume24:     600000000,
+		},
+	})
 }
 
 func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {

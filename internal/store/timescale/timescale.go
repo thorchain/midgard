@@ -263,21 +263,21 @@ func (s *Client) calcPoolEarnedDetails(asset common.Asset, duration models.EarnD
 
 func (s *Client) calcPoolVolume24(pool common.Asset) (int64, error) {
 	stmnt := `
-		SELECT SUM(ABS(rune_amount))
-		FROM pools_history
-		WHERE pool = $1
-		AND event_type = 'swap'
-		AND time BETWEEN $2 AND $3
-	`
+		SELECT SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'swap'),
+		SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'doubleSwap') 
+		FROM   pools_history 
+		WHERE  pool = $1 
+		AND event_type in ('swap', 'doubleSwap')
+		AND time BETWEEN $2 AND $3`
 	now := time.Now()
 	pastDay := now.Add(-time.Hour * 24)
-	var vol sql.NullInt64
+	var singleSwap, doubleSwap sql.NullInt64
 	row := s.db.QueryRow(stmnt, pool.String(), pastDay, now)
 
-	if err := row.Scan(&vol); err != nil {
+	if err := row.Scan(&singleSwap, &doubleSwap); err != nil {
 		return 0, errors.Wrap(err, "calcPoolVolume24 failed")
 	}
-	return vol.Int64, nil
+	return singleSwap.Int64 + doubleSwap.Int64*2, nil
 }
 
 func (s *Client) initPoolCache() error {
