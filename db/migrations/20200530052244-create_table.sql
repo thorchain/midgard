@@ -59,6 +59,10 @@ CREATE TABLE txs (
     memo varchar,
     primary key (id, time, event_id)
 );
+CREATE INDEX txs_from_address_idx ON txs USING hash (from_address);
+CREATE INDEX txs_to_address_idx ON txs USING hash (to_address);
+CREATE INDEX txs_tx_hash_idx ON txs USING hash (tx_hash);
+CREATE INDEX txs_event_id_idx ON txs (event_id);
 
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
@@ -71,6 +75,7 @@ CREATE TABLE coins (
     amount bigint not null,
     primary key (id, time, event_id)
 );
+CREATE INDEX coins_tx_hash_idx ON txs USING hash (tx_hash);
 
 CREATE TABLE stakers (
     asset_address   VARCHAR     NOT NULL,
