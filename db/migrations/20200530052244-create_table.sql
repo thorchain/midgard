@@ -75,7 +75,7 @@ CREATE TABLE coins (
     amount bigint not null,
     primary key (id, time, event_id)
 );
-CREATE INDEX coins_tx_hash_idx ON txs USING hash (tx_hash);
+CREATE INDEX coins_tx_hash_idx ON coins USING hash (tx_hash);
 
 CREATE TABLE stakers (
     asset_address   VARCHAR     NOT NULL,
