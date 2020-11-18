@@ -22,6 +22,7 @@ const (
 	rotatePerBlockHeight = 51840
 	rotateRetryBlocks    = 720
 	newPoolCycle         = 50000
+	day                  = time.Hour * 24
 	month                = day * 30
 )
 

@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	day           = time.Hour * 24
 	monthsPerYear = 12
 )
 
