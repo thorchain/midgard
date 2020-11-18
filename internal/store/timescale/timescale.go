@@ -26,6 +26,7 @@ type Client struct {
 	migrationsDir string
 	mu            sync.RWMutex
 	pools         map[string]*models.PoolBasics
+	stats         *models.StatsData
 }
 
 func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
@@ -45,6 +46,7 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 		db:            db,
 		logger:        logger,
 		migrationsDir: cfg.MigrationsDir,
+		stats:         &models.StatsData{},
 	}
 
 	if err := cli.MigrationsUp(); err != nil {
@@ -146,6 +148,10 @@ func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error
 	if err == nil {
 		gocron.Start()
 	}
+	err = gocron.Every(uint64(cronConfig.StatsInterval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchStats)
+	if err == nil {
+		gocron.Start()
+	}
 	return err
 }
 
@@ -195,6 +201,95 @@ func (s *Client) fetchAllPoolsVolume24() error {
 			basic.Volume24 = volume24s[basic.Asset.String()]
 		}
 	}
+	return nil
+}
+
+func (s *Client) fetchStats() error {
+	var stats models.StatsData
+	var err error
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+	pastMonth := now.Add(-time.Hour * 24 * 30)
+
+	stats.DailyActiveUsers, err = s.GetUsersCount(&pastDay, &now)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.MonthlyActiveUsers, err = s.GetUsersCount(&pastMonth, &now)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalUsers, err = s.GetUsersCount(nil, nil)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalUsers, err = s.GetTxsCount(&pastDay, &now)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.MonthlyTx, err = s.GetTxsCount(&pastMonth, &now)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalTx, err = s.GetTxsCount(nil, nil)
+	if err != nil {
+		return err
+	}
+	stats.TotalVolume24hr, err = s.GetTotalVolume(&pastDay, &now)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalVolume, err = s.GetTotalVolume(nil, nil)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalStaked, err = s.TotalStaked()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalDepth, err = s.GetTotalDepth()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalEarned, err = s.TotalEarned()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.PoolCount, err = s.PoolCount()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalAssetBuys, err = s.TotalAssetBuys()
+	if err != nil {
+		return err
+	}
+	stats.TotalAssetSells, err = s.TotalAssetSells()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalStakeTx, err = s.TotalStakeTx()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalWithdrawTx, err = s.TotalWithdrawTx()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	s.stats = &stats
 	return nil
 }
 
@@ -263,21 +358,21 @@ func (s *Client) calcPoolEarnedDetails(asset common.Asset, duration models.EarnD
 
 func (s *Client) calcPoolVolume24(pool common.Asset) (int64, error) {
 	stmnt := `
-		SELECT SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'swap'),
-		SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'doubleSwap') 
-		FROM   pools_history 
-		WHERE  pool = $1 
-		AND event_type in ('swap', 'doubleSwap')
-		AND time BETWEEN $2 AND $3`
+		SELECT SUM(ABS(rune_amount))
+		FROM pools_history
+		WHERE pool = $1
+		AND event_type = 'swap'
+		AND time BETWEEN $2 AND $3
+	`
 	now := time.Now()
 	pastDay := now.Add(-time.Hour * 24)
-	var singleSwap, doubleSwap sql.NullInt64
+	var vol sql.NullInt64
 	row := s.db.QueryRow(stmnt, pool.String(), pastDay, now)
 
-	if err := row.Scan(&singleSwap, &doubleSwap); err != nil {
+	if err := row.Scan(&vol); err != nil {
 		return 0, errors.Wrap(err, "calcPoolVolume24 failed")
 	}
-	return singleSwap.Int64 + doubleSwap.Int64*2, nil
+	return vol.Int64, nil
 }
 
 func (s *Client) initPoolCache() error {
