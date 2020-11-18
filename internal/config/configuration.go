@@ -38,6 +38,7 @@ type TimeScaleConfiguration struct {
 type StoreCronJobConfiguration struct {
 	PoolEarningInterval time.Duration `json:"pool_earning_interval" mapstructure:"pool_earning_interval"`
 	Volume24Interval    time.Duration `json:"volume_24_interval" mapstructure:"volume_24_interval"`
+	StatsInterval       time.Duration `json:"stats_interval" mapstructure:"stats_interval"`
 }
 
 type ThorChainConfiguration struct {
@@ -78,6 +79,7 @@ func applyDefaultConfig() {
 	viper.SetDefault("node_proxy.burst_limit", 3)
 	viper.SetDefault("timescale.cron_job_config.pool_earning_interval", time.Hour)
 	viper.SetDefault("timescale.cron_job_config.volume_24_interval", time.Hour)
+	viper.SetDefault("timescale.cron_job_config.stats_interval", time.Hour)
 }
 
 func LoadConfiguration(file string) (*Configuration, error) {
