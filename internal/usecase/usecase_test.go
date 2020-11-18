@@ -22,6 +22,7 @@ const (
 	rotatePerBlockHeight = 51840
 	rotateRetryBlocks    = 720
 	newPoolCycle         = 50000
+	month                = day * 30
 )
 
 var _ = Suite(&UsecaseSuite{})
