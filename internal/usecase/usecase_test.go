@@ -514,6 +514,27 @@ func (s *TestGetStatsStore) TotalEarned() (int64, error) {
 	return s.totalEarned, s.err
 }
 
+func (s *TestGetStatsStore) GetStats() (models.StatsData, error) {
+	return models.StatsData{
+		TotalEarned:        s.totalEarned,
+		TotalStaked:        s.totalStaked,
+		PoolCount:          s.poolCount,
+		DailyActiveUsers:   s.dailyActiveUsers,
+		DailyTx:            s.dailyTx,
+		MonthlyActiveUsers: s.monthlyActiveUsers,
+		MonthlyTx:          s.monthlyTx,
+		TotalAssetBuys:     s.totalAssetBuys,
+		TotalAssetSells:    s.totalAssetSells,
+		TotalDepth:         s.totalDepth,
+		TotalStakeTx:       s.totalStakeTx,
+		TotalTx:            s.totalTx,
+		TotalUsers:         s.totalUsers,
+		TotalVolume:        s.totalVolume,
+		TotalVolume24hr:    s.totalVolume24hr,
+		TotalWithdrawTx:    s.totalWithdrawTx,
+	}, s.err
+}
+
 func (s *UsecaseSuite) TestGetStats(c *C) {
 	store := &TestGetStatsStore{
 		dailyActiveUsers:   2,
