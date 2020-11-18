@@ -11,6 +11,13 @@ import (
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
+func (s *Client) GetStats() (models.StatsData, error) {
+	if s.stats != nil {
+		return *s.stats, nil
+	}
+	return models.StatsData{}, errors.New("failed to get stats")
+}
+
 // GetUsersCount returns total number of unique addresses that done tx between "from" to "to".
 func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()

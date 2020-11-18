@@ -214,92 +214,9 @@ func (uc *Usecase) calculateAssetPrice(assetDepth, runeDepth uint64) float64 {
 
 // GetStats returns some historical statistic data of network.
 func (uc *Usecase) GetStats() (*models.StatsData, error) {
-	now := time.Now()
-	pastDay := now.Add(-day)
-	pastMonth := now.Add(-month)
-
-	dailyActiveUsers, err := uc.store.GetUsersCount(&pastDay, &now)
+	stats, err := uc.store.GetStats()
 	if err != nil {
 		return nil, err
-	}
-	monthlyActiveUsers, err := uc.store.GetUsersCount(&pastMonth, &now)
-	if err != nil {
-		return nil, err
-	}
-	totalUsers, err := uc.store.GetUsersCount(nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	dailyTx, err := uc.store.GetTxsCount(&pastDay, &now)
-	if err != nil {
-		return nil, err
-	}
-	monthlyTx, err := uc.store.GetTxsCount(&pastMonth, &now)
-	if err != nil {
-		return nil, err
-	}
-	totalTx, err := uc.store.GetTxsCount(nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	totalVolume24hr, err := uc.store.GetTotalVolume(&pastDay, &now)
-	if err != nil {
-		return nil, err
-	}
-	totalVolume, err := uc.store.GetTotalVolume(nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	bTotalStaked, err := uc.store.TotalStaked()
-	if err != nil {
-		return nil, err
-	}
-	totalDepth, err := uc.store.GetTotalDepth()
-	if err != nil {
-		return nil, err
-	}
-	totalEarned, err := uc.store.TotalEarned()
-	if err != nil {
-		return nil, err
-	}
-	poolCount, err := uc.store.PoolCount()
-	if err != nil {
-		return nil, err
-	}
-	totalAssetBuys, err := uc.store.TotalAssetBuys()
-	if err != nil {
-		return nil, err
-	}
-	totalAssetSells, err := uc.store.TotalAssetSells()
-	if err != nil {
-		return nil, err
-	}
-	totalStakeTx, err := uc.store.TotalStakeTx()
-	if err != nil {
-		return nil, err
-	}
-	totalWithdrawTx, err := uc.store.TotalWithdrawTx()
-	if err != nil {
-		return nil, err
-	}
-
-	stats := models.StatsData{
-		DailyActiveUsers:   dailyActiveUsers,
-		MonthlyActiveUsers: monthlyActiveUsers,
-		TotalUsers:         totalUsers,
-		DailyTx:            dailyTx,
-		MonthlyTx:          monthlyTx,
-		TotalTx:            totalTx,
-		TotalVolume24hr:    totalVolume24hr,
-		TotalVolume:        totalVolume,
-		TotalStaked:        bTotalStaked,
-		TotalDepth:         totalDepth,
-		TotalEarned:        totalEarned,
-		PoolCount:          poolCount,
-		TotalAssetBuys:     totalAssetBuys,
-		TotalAssetSells:    totalAssetSells,
-		TotalStakeTx:       totalStakeTx,
-		TotalWithdrawTx:    totalWithdrawTx,
 	}
 	return &stats, nil
 }

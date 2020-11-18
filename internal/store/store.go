@@ -61,4 +61,5 @@ type Store interface {
 	GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error)
 	GetPoolLastEnabledDate(asset common.Asset) (time.Time, error)
 	GetEventPool(id int64) (common.Asset, error)
+	GetStats() (models.StatsData, error)
 }
