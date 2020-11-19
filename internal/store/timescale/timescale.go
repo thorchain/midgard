@@ -210,7 +210,6 @@ func (s *Client) fetchStats() error {
 	now := time.Now()
 	pastDay := now.Add(-time.Hour * 24)
 	pastMonth := now.Add(-time.Hour * 24 * 30)
-
 	stats.DailyActiveUsers, err = s.getUsersCount(&pastDay, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
@@ -226,7 +225,7 @@ func (s *Client) fetchStats() error {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalUsers, err = s.getTxCount(&pastDay, &now)
+	stats.DailyTx, err = s.getTxCount(&pastDay, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
