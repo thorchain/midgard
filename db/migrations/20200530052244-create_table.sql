@@ -47,22 +47,26 @@ CREATE TABLE swaps (
 CREATE INDEX idx_swaps ON swaps (from_address, pool);
 
 CREATE TYPE tx_direction as enum('in', 'out');
-CREATE TABLE txs (
-    time        TIMESTAMPTZ       NOT NULL,
-    id SERIAL,
-    tx_hash varchar not null,
-    event_id bigint not null,
-    direction tx_direction not null,
-    chain varchar,
-    from_address varchar,
-    to_address varchar,
-    memo varchar,
-    primary key (id, time, event_id)
+CREATE TABLE txs(
+     time         TIMESTAMPTZ NOT NULL,
+     id           SERIAL,
+     tx_hash      VARCHAR NOT NULL,
+     event_id     BIGINT NOT NULL,
+     direction    TX_DIRECTION NOT NULL,
+     chain        VARCHAR,
+     from_address VARCHAR,
+     to_address   VARCHAR,
+     memo         VARCHAR,
+     meta         JSONB,
+     PRIMARY KEY (id, time, event_id)
 );
 CREATE INDEX txs_from_address_idx ON txs USING hash (from_address);
 CREATE INDEX txs_to_address_idx ON txs USING hash (to_address);
 CREATE INDEX txs_tx_hash_idx ON txs USING hash (tx_hash);
 CREATE INDEX txs_event_id_idx ON txs (event_id);
+CREATE INDEX txs_pool ON txs((meta->>'pool'));
+CREATE INDEX txs_event_type ON txs((meta->>'event_type'));
+
 
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
