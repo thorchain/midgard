@@ -2,6 +2,7 @@ package timescale
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -72,7 +73,17 @@ func (s *Client) processTxsRecord(direction string, parent models.Event, records
 func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
-		_, err := s.createTxRecord(parent, record, direction)
+		meta := map[string]interface{}{
+			"event_id": parent.ID,
+		}
+		if record.GetPool() != common.EmptyAsset {
+			meta["pool"] = record.GetPool().String()
+		}
+		record.Meta, err = json.Marshal(meta)
+		if err != nil {
+			return errors.Wrap(err, "failed to create meta")
+		}
+		_, err = s.createTxRecord(parent, record, direction)
 		if err != nil {
 			return errors.Wrap(err, "Failed createTxRecord on InTx")
 		}
@@ -119,6 +130,13 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 }
 
 func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
+	var meta sql.NullString
+	if record.Meta != nil {
+		err := meta.Scan(string(record.Meta))
+		if err != nil {
+			return 0, errors.Wrap(err, "failed to prepare tx meta")
+		}
+	}
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -128,8 +146,9 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 			chain,
 			from_address,
 			to_address,
-			memo
-		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8) RETURNING event_id`, models.ModelTxsTable)
+			memo,
+			meta
+		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING event_id`, models.ModelTxsTable)
 
 	results, err := s.db.Exec(query,
 		parent.Time,
@@ -140,6 +159,7 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 		record.FromAddress,
 		record.ToAddress,
 		record.Memo,
+		meta,
 	)
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")

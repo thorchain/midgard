@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -56,12 +57,13 @@ func (tx TxID) String() string {
 }
 
 type Tx struct {
-	ID          TxID    `json:"id" mapstructure:"id"`
-	Chain       Chain   `json:"chain" mapstructure:"chain"`
-	FromAddress Address `json:"from_address" mapstructure:"from"`
-	ToAddress   Address `json:"to_address" mapstructure:"to"`
-	Coins       Coins   `json:"coins" mapstructure:"coin"`
-	Memo        Memo    `json:"memo" mapstructure:"memo"`
+	ID          TxID            `json:"id" mapstructure:"id"`
+	Chain       Chain           `json:"chain" mapstructure:"chain"`
+	FromAddress Address         `json:"from_address" mapstructure:"from"`
+	ToAddress   Address         `json:"to_address" mapstructure:"to"`
+	Coins       Coins           `json:"coins" mapstructure:"coin"`
+	Memo        Memo            `json:"memo" mapstructure:"memo"`
+	Meta        json.RawMessage `json:"-"`
 }
 
 type Txs []Tx
@@ -110,4 +112,29 @@ func (tx Tx) IsValid() error {
 	}
 
 	return nil
+}
+
+func (tx Tx) GetPool() Asset {
+	if len(tx.Memo) == 0 {
+		return EmptyAsset
+	}
+	parts := strings.Split(string(tx.Memo), ":")
+	if len(parts) < 2 {
+		return EmptyAsset
+	}
+	asset, err := NewAsset(parts[1])
+	if err != nil {
+		return EmptyAsset
+	}
+	// pool can not be rune
+	if !asset.Equals(RuneAsset()) {
+		return asset
+	} else {
+		for _, coin := range tx.Coins {
+			if !coin.Asset.Equals(RuneAsset()) {
+				return coin.Asset
+			}
+		}
+	}
+	return EmptyAsset
 }
