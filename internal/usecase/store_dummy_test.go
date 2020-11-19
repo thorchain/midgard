@@ -116,42 +116,6 @@ func (s *StoreDummy) GetTotalDepth() (uint64, error) {
 	return 0, ErrNotImplemented
 }
 
-func (s *StoreDummy) GetUsersCount(_, _ *time.Time) (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) GetTxsCount(_, _ *time.Time) (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) GetTotalVolume(_, _ *time.Time) (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalStaked() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) PoolCount() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalAssetBuys() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalAssetSells() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalStakeTx() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalWithdrawTx() (uint64, error) {
-	return 0, ErrNotImplemented
-}
-
 func (s *StoreDummy) GetPoolSwapStats(asset common.Asset) (models.PoolSwapStats, error) {
 	return models.PoolSwapStats{}, ErrNotImplemented
 }
@@ -166,10 +130,6 @@ func (s *StoreDummy) GetStakerAddressDetails(address common.Address) (models.Sta
 
 func (s *StoreDummy) GetStakersAddressAndAssetDetails(address common.Address, asset common.Asset) (models.StakerAddressAndAssetDetails, error) {
 	return models.StakerAddressAndAssetDetails{}, ErrNotImplemented
-}
-
-func (s *StoreDummy) TotalEarned() (int64, error) {
-	return 0, ErrNotImplemented
 }
 
 func (s *StoreDummy) GetEventsByTxID(txID common.TxID) ([]models.Event, error) {
