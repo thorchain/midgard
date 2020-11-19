@@ -66,14 +66,13 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 	if isCount {
 		sb.Select("COUNT(DISTINCT(txs.event_id))")
 	} else {
-		sb.Select("DISTINCT(txs.event_id), events.height")
-		sb.OrderBy("events.height")
+		sb.Select("DISTINCT(txs.event_id)")
+		sb.OrderBy("txs.event_id")
 		sb.Desc()
 		sb.Limit(int(limit))
 		sb.Offset(int(offset))
 	}
 	sb.From("txs")
-	sb.JoinWithOption(sqlbuilder.LeftJoin, "events", "txs.event_id = events.id")
 	if address != "" {
 		sb.Where(sb.Or(sb.Equal("txs.from_address", address), sb.Equal("txs.to_address", address)))
 	}
@@ -81,17 +80,16 @@ func (s *Client) buildEventsQuery(address, txID, asset string, eventTypes []stri
 		sb.Where(sb.Equal("txs.tx_hash", txID))
 	}
 	if asset != "." {
-		sb.JoinWithOption(sqlbuilder.LeftJoin, "pools_history", "pools_history.event_id = events.id")
-		sb.Where(sb.Equal("pools_history.pool", asset))
+		sb.Where(sb.Equal("txs.pool", asset))
 	}
 	if len(eventTypes) > 0 {
 		var types []interface{}
 		for _, ev := range eventTypes {
 			types = append(types, ev)
 		}
-		sb.Where(sb.In("events.type", types...))
+		sb.Where(sb.In("txs.event_type", types...))
 	}
-	sb.Where("events.type != ''")
+	sb.Where("txs.event_type != ''")
 	return sb.Build()
 }
 
