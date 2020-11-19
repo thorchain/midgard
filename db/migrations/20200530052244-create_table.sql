@@ -65,6 +65,8 @@ CREATE INDEX txs_from_address_idx ON txs USING hash (from_address);
 CREATE INDEX txs_to_address_idx ON txs USING hash (to_address);
 CREATE INDEX txs_tx_hash_idx ON txs USING hash (tx_hash);
 CREATE INDEX txs_event_id_idx ON txs (event_id);
+CREATE INDEX txs_event_type ON txs (event_type);
+CREATE INDEX txs_pool ON txs USING hash(pool);
 
 
 CREATE TABLE coins (
