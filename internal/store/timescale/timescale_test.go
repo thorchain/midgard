@@ -2245,6 +2245,66 @@ func (s *TimeScaleSuite) TestFetchAllPoolsEarning(c *C) {
 	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(94227394))
 }
 
+func (s *TimeScaleSuite) TestFetchStats(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	err = s.Store.fetchStats()
+	c.Assert(err, IsNil)
+	c.Assert(s.Store.stats, DeepEquals, &models.StatsData{
+		DailyTx:            1,
+		MonthlyTx:          1,
+		MonthlyActiveUsers: 1,
+		DailyActiveUsers:   1,
+		TotalUsers:         1,
+		TotalStakeTx:       1,
+		PoolCount:          1,
+		TotalStaked:        200,
+		TotalDepth:         100,
+		TotalTx:            1,
+	})
+
+	err = s.Store.CreateSwapRecord(&swapSellTusdb2RuneEvent0)
+	c.Assert(err, IsNil)
+	err = s.Store.fetchStats()
+	c.Assert(err, IsNil)
+	c.Assert(s.Store.stats, DeepEquals, &models.StatsData{
+		DailyTx:            2,
+		MonthlyTx:          2,
+		MonthlyActiveUsers: 1,
+		DailyActiveUsers:   1,
+		TotalUsers:         1,
+		TotalStakeTx:       1,
+		PoolCount:          2,
+		TotalStaked:        200,
+		TotalDepth:         90,
+		TotalTx:            2,
+		TotalVolume24hr:    10,
+		TotalVolume:        10,
+		TotalAssetBuys:     1,
+	})
+
+	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
+	c.Assert(err, IsNil)
+	err = s.Store.fetchStats()
+	c.Assert(err, IsNil)
+	c.Assert(s.Store.stats, DeepEquals, &models.StatsData{
+		DailyTx:            3,
+		MonthlyTx:          3,
+		MonthlyActiveUsers: 1,
+		DailyActiveUsers:   1,
+		TotalUsers:         1,
+		TotalStakeTx:       100,
+		PoolCount:          2,
+		TotalStaked:        200,
+		TotalDepth:         200000090,
+		TotalTx:            3,
+		TotalVolume24hr:    200000010,
+		TotalVolume:        200000010,
+		TotalAssetBuys:     1,
+		TotalAssetSells:    1,
+	})
+}
+
 func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
 	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
