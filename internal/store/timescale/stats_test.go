@@ -9,7 +9,7 @@ import (
 )
 
 func (s *TimeScaleSuite) TestGetUsersCount(c *C) {
-	count, err := s.Store.GetUsersCount(nil, nil)
+	count, err := s.Store.getUsersCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(0))
 
@@ -17,44 +17,44 @@ func (s *TimeScaleSuite) TestGetUsersCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 	to := time.Now()
-	count, err = s.Store.GetUsersCount(&from, &to)
+	count, err = s.Store.getUsersCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(1))
 
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	count, err = s.Store.GetUsersCount(&from, &to)
+	count, err = s.Store.getUsersCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(1))
 
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	count, err = s.Store.GetUsersCount(&from, &to)
+	count, err = s.Store.getUsersCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(1))
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	count, err = s.Store.GetUsersCount(&from, &to)
+	count, err = s.Store.getUsersCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(2))
 
 	from = time.Now().Add(-time.Hour * 2)
 	to = from.Add(time.Hour)
-	count, err = s.Store.GetUsersCount(&from, &to)
+	count, err = s.Store.getUsersCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(0))
 
-	count, err = s.Store.GetUsersCount(nil, nil)
+	count, err = s.Store.getUsersCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(2))
 }
 
 func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
-	count, err := s.Store.GetTxsCount(nil, nil)
+	count, err := s.Store.getTxCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(0))
 
@@ -62,34 +62,34 @@ func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 	to := time.Now()
-	count, err = s.Store.GetTxsCount(&from, &to)
+	count, err = s.Store.getTxCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(1))
 
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	count, err = s.Store.GetTxsCount(&from, &to)
+	count, err = s.Store.getTxCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(2))
 
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	count, err = s.Store.GetTxsCount(&from, &to)
+	count, err = s.Store.getTxCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(3))
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent2)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	count, err = s.Store.GetTxsCount(&from, &to)
+	count, err = s.Store.getTxCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(4))
 
 	from = time.Now().Add(-time.Hour * 2)
 	to = from.Add(time.Hour)
-	count, err = s.Store.GetTxsCount(&from, &to)
+	count, err = s.Store.getTxCount(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(0))
 
@@ -99,13 +99,13 @@ func (s *TimeScaleSuite) TestGetTxsCount(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.CreateRefundRecord(&refundBOLTEvent0)
 	c.Assert(err, IsNil)
-	count, err = s.Store.GetTxsCount(nil, nil)
+	count, err = s.Store.getTxCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, uint64(7))
 }
 
 func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
-	vol, err := s.Store.GetTotalVolume(nil, nil)
+	vol, err := s.Store.getTotalVolume(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(0))
 
@@ -113,38 +113,38 @@ func (s *TimeScaleSuite) TestGetTotalVolume(c *C) {
 	err = s.Store.CreateSwapRecord(&swapSellTusdb2RuneEvent0)
 	c.Assert(err, IsNil)
 	to := time.Now()
-	vol, err = s.Store.GetTotalVolume(&from, &to)
+	vol, err = s.Store.getTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(10))
 
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	vol, err = s.Store.GetTotalVolume(&from, &to)
+	vol, err = s.Store.getTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(200000010))
 
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BoltEvent1)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	vol, err = s.Store.GetTotalVolume(&from, &to)
+	vol, err = s.Store.getTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(200000011))
 
 	err = s.Store.CreateSwapRecord(&swapSellBnb2RuneEvent4)
 	c.Assert(err, IsNil)
 	to = time.Now()
-	vol, err = s.Store.GetTotalVolume(&from, &to)
+	vol, err = s.Store.getTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(200000012))
 
 	from = time.Now().Add(-time.Hour * 2)
 	to = from.Add(time.Hour)
-	vol, err = s.Store.GetTotalVolume(&from, &to)
+	vol, err = s.Store.getTotalVolume(&from, &to)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(0))
 
-	vol, err = s.Store.GetTotalVolume(nil, nil)
+	vol, err = s.Store.getTotalVolume(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(vol, Equals, uint64(200000012))
 }
@@ -253,7 +253,7 @@ func (s *TimeScaleSuite) TestRuneSwaps(c *C) {
 }
 
 func (s *TimeScaleSuite) TestPoolCount(c *C) {
-	poolCount, err := s.Store.PoolCount()
+	poolCount, err := s.Store.poolCount()
 	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(0))
 
@@ -261,7 +261,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	poolCount, err = s.Store.PoolCount()
+	poolCount, err = s.Store.poolCount()
 	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(1))
 
@@ -269,7 +269,7 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	poolCount, err = s.Store.PoolCount()
+	poolCount, err = s.Store.poolCount()
 	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(2))
 
@@ -277,13 +277,13 @@ func (s *TimeScaleSuite) TestPoolCount(c *C) {
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
-	poolCount, err = s.Store.PoolCount()
+	poolCount, err = s.Store.poolCount()
 	c.Assert(err, IsNil)
 	c.Assert(poolCount, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
-	totalAssetBuys, err := s.Store.TotalAssetBuys()
+	totalAssetBuys, err := s.Store.totalAssetBuys()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
@@ -291,7 +291,7 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	totalAssetBuys, err = s.Store.TotalAssetBuys()
+	totalAssetBuys, err = s.Store.totalAssetBuys()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 
@@ -299,13 +299,13 @@ func (s *TimeScaleSuite) TestTotalAssetBuys(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	totalAssetBuys, err = s.Store.TotalAssetBuys()
+	totalAssetBuys, err = s.Store.totalAssetBuys()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetBuys, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
-	totalAssetSells, err := s.Store.TotalAssetSells()
+	totalAssetSells, err := s.Store.totalAssetSells()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
@@ -313,7 +313,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	totalAssetSells, err = s.Store.TotalAssetSells()
+	totalAssetSells, err = s.Store.totalAssetSells()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
@@ -321,7 +321,7 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	totalAssetSells, err = s.Store.TotalAssetSells()
+	totalAssetSells, err = s.Store.totalAssetSells()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 
@@ -329,13 +329,13 @@ func (s *TimeScaleSuite) TestTotalAssetSells(c *C) {
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
-	totalAssetSells, err = s.Store.TotalAssetSells()
+	totalAssetSells, err = s.Store.totalAssetSells()
 	c.Assert(err, IsNil)
 	c.Assert(totalAssetSells, Equals, uint64(0))
 }
 
 func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
-	totalStakeTx, err := s.Store.TotalStakeTx()
+	totalStakeTx, err := s.Store.totalStakeTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(0))
 
@@ -343,7 +343,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	totalStakeTx, err = s.Store.TotalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(1))
 
@@ -351,7 +351,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	totalStakeTx, err = s.Store.TotalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(2))
 
@@ -359,7 +359,7 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
-	totalStakeTx, err = s.Store.TotalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(2))
 
@@ -376,13 +376,13 @@ func (s *TimeScaleSuite) TestTotalStakeTx(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBoltEvent5)
 	c.Assert(err, IsNil)
 
-	totalStakeTx, err = s.Store.TotalStakeTx()
+	totalStakeTx, err = s.Store.totalStakeTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalStakeTx, Equals, uint64(6))
 }
 
 func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
-	totalWithdrawTx, err := s.Store.TotalWithdrawTx()
+	totalWithdrawTx, err := s.Store.totalWithdrawTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
@@ -390,7 +390,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
 
-	totalWithdrawTx, err = s.Store.TotalWithdrawTx()
+	totalWithdrawTx, err = s.Store.totalWithdrawTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
@@ -398,7 +398,7 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	totalWithdrawTx, err = s.Store.TotalWithdrawTx()
+	totalWithdrawTx, err = s.Store.totalWithdrawTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(0))
 
@@ -406,13 +406,13 @@ func (s *TimeScaleSuite) TestTotalWithdrawTx(c *C) {
 	err = s.Store.CreateUnStakesRecord(&unstakeTomlEvent0)
 	c.Assert(err, IsNil)
 
-	totalWithdrawTx, err = s.Store.TotalWithdrawTx()
+	totalWithdrawTx, err = s.Store.totalWithdrawTx()
 	c.Assert(err, IsNil)
 	c.Assert(totalWithdrawTx, Equals, uint64(1))
 }
 
 func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
-	totalEarned, err := s.Store.TotalEarned()
+	totalEarned, err := s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(0))
 
@@ -420,7 +420,7 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsEarning()
 	c.Assert(err, IsNil)
-	totalEarned, err = s.Store.TotalEarned()
+	totalEarned, err = s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(0))
 
@@ -428,7 +428,7 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsEarning()
 	c.Assert(err, IsNil)
-	totalEarned, err = s.Store.TotalEarned()
+	totalEarned, err = s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(0))
 
@@ -436,7 +436,7 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsEarning()
 	c.Assert(err, IsNil)
-	totalEarned, err = s.Store.TotalEarned()
+	totalEarned, err = s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(7463556))
 
@@ -444,7 +444,7 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsEarning()
 	c.Assert(err, IsNil)
-	totalEarned, err = s.Store.TotalEarned()
+	totalEarned, err = s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(14927112))
 
@@ -454,7 +454,7 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsEarning()
 	c.Assert(err, IsNil)
-	totalEarned, err = s.Store.TotalEarned()
+	totalEarned, err = s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(14928112))
 
@@ -462,20 +462,20 @@ func (s *TimeScaleSuite) TestTotalPoolsEarned(c *C) {
 	c.Assert(err, IsNil)
 	err = s.Store.fetchAllPoolsEarning()
 	c.Assert(err, IsNil)
-	totalEarned, err = s.Store.TotalEarned()
+	totalEarned, err = s.Store.totalEarned()
 	c.Assert(err, IsNil)
 	c.Assert(totalEarned, Equals, int64(14872494))
 }
 
 func (s *TimeScaleSuite) TestTotalStaked(c *C) {
-	totalStaked, err := s.Store.TotalStaked()
+	totalStaked, err := s.Store.totalStaked()
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(0))
 
 	err = s.Store.CreateStakeRecord(&stakeTomlEvent1)
 	c.Assert(err, IsNil)
 
-	totalStaked, err = s.Store.TotalStaked()
+	totalStaked, err = s.Store.totalStaked()
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(200))
 
@@ -485,7 +485,7 @@ func (s *TimeScaleSuite) TestTotalStaked(c *C) {
 	err = s.Store.CreateAddRecord(&AddEvt)
 	c.Assert(err, IsNil)
 
-	totalStaked, err = s.Store.TotalStaked()
+	totalStaked, err = s.Store.totalStaked()
 	c.Assert(err, IsNil)
 	c.Assert(totalStaked, Equals, uint64(400))
 }

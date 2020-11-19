@@ -2161,7 +2161,7 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 	height, err := s.Store.GetLastHeight()
 	c.Assert(err, IsNil)
 	c.Assert(height, Equals, int64(7))
-	txsCount, err := s.Store.GetTxsCount(nil, nil)
+	txsCount, err := s.Store.getTxCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(txsCount, Equals, uint64(3))
 
@@ -2171,7 +2171,7 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 	height, err = s.Store.GetLastHeight()
 	c.Assert(err, IsNil)
 	c.Assert(height, Equals, int64(3))
-	txsCount, err = s.Store.GetTxsCount(nil, nil)
+	txsCount, err = s.Store.getTxCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(txsCount, Equals, uint64(2))
 }

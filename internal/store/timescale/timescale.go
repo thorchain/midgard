@@ -211,46 +211,46 @@ func (s *Client) fetchStats() error {
 	pastDay := now.Add(-time.Hour * 24)
 	pastMonth := now.Add(-time.Hour * 24 * 30)
 
-	stats.DailyActiveUsers, err = s.GetUsersCount(&pastDay, &now)
+	stats.DailyActiveUsers, err = s.getUsersCount(&pastDay, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.MonthlyActiveUsers, err = s.GetUsersCount(&pastMonth, &now)
+	stats.MonthlyActiveUsers, err = s.getUsersCount(&pastMonth, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalUsers, err = s.GetUsersCount(nil, nil)
+	stats.TotalUsers, err = s.getUsersCount(nil, nil)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalUsers, err = s.GetTxsCount(&pastDay, &now)
+	stats.TotalUsers, err = s.getTxCount(&pastDay, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.MonthlyTx, err = s.GetTxsCount(&pastMonth, &now)
+	stats.MonthlyTx, err = s.getTxCount(&pastMonth, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalTx, err = s.GetTxsCount(nil, nil)
+	stats.TotalTx, err = s.getTxCount(nil, nil)
 	if err != nil {
 		return err
 	}
-	stats.TotalVolume24hr, err = s.GetTotalVolume(&pastDay, &now)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("failed to get stats")
-		return err
-	}
-	stats.TotalVolume, err = s.GetTotalVolume(nil, nil)
+	stats.TotalVolume24hr, err = s.getTotalVolume(&pastDay, &now)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalStaked, err = s.TotalStaked()
+	stats.TotalVolume, err = s.getTotalVolume(nil, nil)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalStaked, err = s.totalStaked()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
@@ -260,31 +260,31 @@ func (s *Client) fetchStats() error {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalEarned, err = s.TotalEarned()
+	stats.TotalEarned, err = s.totalEarned()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.PoolCount, err = s.PoolCount()
+	stats.PoolCount, err = s.poolCount()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalAssetBuys, err = s.TotalAssetBuys()
+	stats.TotalAssetBuys, err = s.totalAssetBuys()
 	if err != nil {
 		return err
 	}
-	stats.TotalAssetSells, err = s.TotalAssetSells()
-	if err != nil {
-		s.logger.Error().Err(err).Msg("failed to get stats")
-		return err
-	}
-	stats.TotalStakeTx, err = s.TotalStakeTx()
+	stats.TotalAssetSells, err = s.totalAssetSells()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err
 	}
-	stats.TotalWithdrawTx, err = s.TotalWithdrawTx()
+	stats.TotalStakeTx, err = s.totalStakeTx()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get stats")
+		return err
+	}
+	stats.TotalWithdrawTx, err = s.totalWithdrawTx()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to get stats")
 		return err

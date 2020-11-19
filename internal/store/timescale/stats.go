@@ -18,8 +18,8 @@ func (s *Client) GetStats() (models.StatsData, error) {
 	return models.StatsData{}, errors.New("failed to get stats")
 }
 
-// GetUsersCount returns total number of unique addresses that done tx between "from" to "to".
-func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
+// getUsersCount returns total number of unique addresses that done tx between "from" to "to".
+func (s *Client) getUsersCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(DISTINCT(subject_address))")
 	sb.From(`(
@@ -36,8 +36,8 @@ func (s *Client) GetUsersCount(from, to *time.Time) (uint64, error) {
 	return uint64(count), err
 }
 
-// GetTxsCount returns total number of transactions between "from" to "to".
-func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
+// getTxCount returns total number of transactions between "from" to "to".
+func (s *Client) getTxCount(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("COUNT(DISTINCT(id))")
 	sb.From("events")
@@ -46,15 +46,15 @@ func (s *Client) GetTxsCount(from, to *time.Time) (uint64, error) {
 	return uint64(count), err
 }
 
-// GetTotalVolume returns total volume between "from" to "to".
-func (s *Client) GetTotalVolume(from, to *time.Time) (uint64, error) {
+// getTotalVolume returns total volume between "from" to "to".
+func (s *Client) getTotalVolume(from, to *time.Time) (uint64, error) {
 	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
 	sb.Select("SUM(ABS(runeAmt))").From("swaps")
 	vol, err := s.queryTimestampInt64(sb, from, to)
 	return uint64(vol), err
 }
 
-func (s *Client) TotalStaked() (uint64, error) {
+func (s *Client) totalStaked() (uint64, error) {
 	var totalStaked uint64
 
 	pools, err := s.GetPools()
@@ -118,7 +118,7 @@ func (s *Client) runeSwaps() (int64, error) {
 	return runeIncomingSwaps.Int64, nil
 }
 
-func (s *Client) PoolCount() (uint64, error) {
+func (s *Client) poolCount() (uint64, error) {
 	var poolCount uint64
 
 	stmnt := `SELECT DISTINCT(pool) FROM pools_history`
@@ -147,7 +147,7 @@ func (s *Client) PoolCount() (uint64, error) {
 	return poolCount, nil
 }
 
-func (s *Client) TotalAssetBuys() (uint64, error) {
+func (s *Client) totalAssetBuys() (uint64, error) {
 	stmnt := `SELECT COUNT(pool) FROM swaps WHERE assetAmt > 0`
 	var totalAssetBuys sql.NullInt64
 	row := s.db.QueryRow(stmnt)
@@ -159,7 +159,7 @@ func (s *Client) TotalAssetBuys() (uint64, error) {
 	return uint64(totalAssetBuys.Int64), nil
 }
 
-func (s *Client) TotalAssetSells() (uint64, error) {
+func (s *Client) totalAssetSells() (uint64, error) {
 	stmnt := `SELECT COUNT(pool) FROM swaps WHERE runeAmt > 0`
 	var totalAssetSells sql.NullInt64
 	row := s.db.QueryRow(stmnt)
@@ -171,7 +171,7 @@ func (s *Client) TotalAssetSells() (uint64, error) {
 	return uint64(totalAssetSells.Int64), nil
 }
 
-func (s *Client) TotalStakeTx() (uint64, error) {
+func (s *Client) totalStakeTx() (uint64, error) {
 	stmnt := `SELECT COUNT(id) FROM events WHERE type = 'stake'`
 
 	var totalStakeTx sql.NullInt64
@@ -184,7 +184,7 @@ func (s *Client) TotalStakeTx() (uint64, error) {
 	return uint64(totalStakeTx.Int64), nil
 }
 
-func (s *Client) TotalWithdrawTx() (uint64, error) {
+func (s *Client) totalWithdrawTx() (uint64, error) {
 	stmnt := `SELECT COUNT(id) FROM events WHERE type = 'unstake'`
 	var totalStakeTx sql.NullInt64
 	row := s.db.QueryRow(stmnt)
@@ -196,7 +196,7 @@ func (s *Client) TotalWithdrawTx() (uint64, error) {
 	return uint64(totalStakeTx.Int64), nil
 }
 
-func (s *Client) TotalEarned() (int64, error) {
+func (s *Client) totalEarned() (int64, error) {
 	pools, err := s.GetPools()
 	if err != nil {
 		return 0, err
