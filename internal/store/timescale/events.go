@@ -73,15 +73,19 @@ func (s *Client) processTxsRecord(direction string, parent models.Event, records
 func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
-		meta := map[string]interface{}{
-			"event_id": parent.ID,
-		}
-		if record.GetPool() != common.EmptyAsset {
-			meta["pool"] = record.GetPool().String()
-		}
-		record.Meta, err = json.Marshal(meta)
-		if err != nil {
-			return errors.Wrap(err, "failed to create meta")
+
+		// we need to store event type and pool for input transaction only
+		if direction == "in" {
+			meta := map[string]interface{}{
+				"event_type": parent.Type,
+			}
+			if record.GetPool() != common.EmptyAsset {
+				meta["pool"] = record.GetPool().String()
+			}
+			record.Meta, err = json.Marshal(meta)
+			if err != nil {
+				return errors.Wrap(err, "failed to create meta")
+			}
 		}
 		_, err = s.createTxRecord(parent, record, direction)
 		if err != nil {
