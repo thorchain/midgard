@@ -76,15 +76,9 @@ func (s *Client) ProcessTxRecord(direction string, parent models.Event, record c
 
 		// we need to store event type and pool for input transaction only
 		if direction == "in" {
-			meta := map[string]interface{}{
-				"event_type": parent.Type,
-			}
+			record.EventType = parent.Type
 			if record.GetPool() != common.EmptyAsset {
-				meta["pool"] = record.GetPool().String()
-			}
-			record.Meta, err = json.Marshal(meta)
-			if err != nil {
-				return errors.Wrap(err, "failed to create meta")
+				record.Pool = record.GetPool().String()
 			}
 		}
 		_, err = s.createTxRecord(parent, record, direction)
@@ -134,13 +128,6 @@ func (s *Client) createCoinRecord(parent models.Event, record common.Tx, coin co
 }
 
 func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction string) (int64, error) {
-	var meta sql.NullString
-	if record.Meta != nil {
-		err := meta.Scan(string(record.Meta))
-		if err != nil {
-			return 0, errors.Wrap(err, "failed to prepare tx meta")
-		}
-	}
 	query := fmt.Sprintf(`
 		INSERT INTO %v (
 			time,
@@ -151,8 +138,9 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 			from_address,
 			to_address,
 			memo,
-			meta
-		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING event_id`, models.ModelTxsTable)
+			pool,
+			event_type
+		) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING event_id`, models.ModelTxsTable)
 
 	results, err := s.db.Exec(query,
 		parent.Time,
@@ -163,7 +151,8 @@ func (s *Client) createTxRecord(parent models.Event, record common.Tx, direction
 		record.FromAddress,
 		record.ToAddress,
 		record.Memo,
-		meta,
+		record.Pool,
+		record.EventType,
 	)
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to prepareNamed query for TxRecord")
