@@ -22,7 +22,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		}
 	}
 
-	err := s.CreateEventRecord(&record.Event)
+	err := s.CreateEventRecord(&record.Event, record.Pool)
 	if err != nil {
 		return errors.Wrap(err, "createStakeRecord failed")
 	}
@@ -439,7 +439,7 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 		SELECT MIN(pools_history.time)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
-		WHERE pool = $1
+		WHERE pools_history.pool = $1
 		AND units > 0 AND
 		(txs.from_address = $2 OR
 		txs.from_address = $3)`

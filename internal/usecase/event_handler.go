@@ -196,7 +196,7 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 			return errors.Wrap(err, "failed to save stake event")
 		}
 		stake.Event.ID = ev.ID
-		err = eh.store.ProcessTxRecord("in", stake.Event, tx)
+		err = eh.store.ProcessTxRecord("in", stake.Event, tx, ev.Pool)
 		if err != nil {
 			return errors.Wrap(err, "failed to save InTx")
 		}
@@ -480,7 +480,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 				return err
 			}
 			evt.OutTxs = common.Txs{outTx}
-			err = eh.store.ProcessTxRecord("out", evt, outTx)
+			err = eh.store.ProcessTxRecord("out", evt, outTx, common.EmptyAsset)
 			if err != nil {
 				return err
 			}
@@ -507,7 +507,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 	var evt models.Event
 	if evts[0].Type == unstakeEventType {
 		evt = evts[0]
-		err = eh.store.ProcessTxRecord("out", evt, outTx)
+		err = eh.store.ProcessTxRecord("out", evt, outTx, common.EmptyAsset)
 		if err != nil {
 			return err
 		}
@@ -542,7 +542,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 			}
 		}
 		evt.OutTxs = common.Txs{outTx}
-		err = eh.store.ProcessTxRecord("out", evt, outTx)
+		err = eh.store.ProcessTxRecord("out", evt, outTx, common.EmptyAsset)
 		if err != nil {
 			return err
 		}
@@ -563,7 +563,7 @@ func (eh *eventHandler) processOutbound(event thorchain.Event) error {
 		}
 		evt = evts[0]
 		evt.OutTxs = common.Txs{outTx}
-		err = eh.store.ProcessTxRecord("out", evt, outTx)
+		err = eh.store.ProcessTxRecord("out", evt, outTx, common.EmptyAsset)
 		if err != nil {
 			return err
 		}

@@ -10,7 +10,7 @@ func (s *Client) CreateGasRecord(record *models.EventGas) error {
 	// Ignore the input tx of gas event because it's already inserted
 	// from previous events.
 	record.InTx = common.Tx{}
-	err := s.CreateEventRecord(&record.Event)
+	err := s.CreateEventRecord(&record.Event, common.EmptyAsset)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

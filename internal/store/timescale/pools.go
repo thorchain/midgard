@@ -864,7 +864,7 @@ func (s *Client) GetStakersCount(asset common.Asset) (uint64, error) {
 			SELECT from_address
 			FROM pools_history
 			JOIN txs ON pools_history.event_id = txs.event_id
-			WHERE pool = $1
+			WHERE pools_history.pool = $1
 			AND event_type in ('stake', 'unstake')
 			GROUP BY from_address
 			HAVING SUM(units) > 0

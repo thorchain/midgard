@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Client) CreateRefundRecord(record *models.EventRefund) error {
-	err := s.CreateEventRecord(&record.Event)
+	err := s.CreateEventRecord(&record.Event, record.Fee.Asset())
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

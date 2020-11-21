@@ -2,7 +2,6 @@ package timescale
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -23,7 +22,7 @@ func (s *Client) GetLastHeight() (int64, error) {
 	return maxHeight.Int64, nil
 }
 
-func (s *Client) CreateEventRecord(record *models.Event) error {
+func (s *Client) CreateEventRecord(record *models.Event,pool common.Asset) error {
 	if record.Height == 0 {
 		return nil
 	}
@@ -34,7 +33,7 @@ func (s *Client) CreateEventRecord(record *models.Event) error {
 	}
 
 	// Ingest InTx
-	err = s.ProcessTxRecord("in", *record, record.InTx)
+	err = s.ProcessTxRecord("in", *record, record.InTx,pool)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
@@ -70,15 +69,15 @@ func (s *Client) processTxsRecord(direction string, parent models.Event, records
 	return nil
 }
 
-func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
+func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx,pool common.Asset) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
 
 		// we need to store event type and pool for input transaction only
 		if direction == "in" {
 			record.EventType = parent.Type
-			if record.GetPool() != common.EmptyAsset {
-				record.Pool = record.GetPool().String()
+			if pool != common.EmptyAsset {
+				record.Pool = pool.String()
 			}
 		}
 		_, err = s.createTxRecord(parent, record, direction)

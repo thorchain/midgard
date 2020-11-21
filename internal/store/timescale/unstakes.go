@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Client) CreateUnStakesRecord(record *models.EventUnstake) error {
-	err := s.CreateEventRecord(&record.Event)
+	err := s.CreateEventRecord(&record.Event, record.Pool)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

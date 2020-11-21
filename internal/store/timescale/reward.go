@@ -2,12 +2,13 @@ package timescale
 
 import (
 	"github.com/pkg/errors"
+	"gitlab.com/thorchain/midgard/internal/common"
 
 	"gitlab.com/thorchain/midgard/internal/models"
 )
 
 func (s *Client) CreateRewardRecord(record *models.EventReward) error {
-	err := s.CreateEventRecord(&record.Event)
+	err := s.CreateEventRecord(&record.Event, common.EmptyAsset)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}

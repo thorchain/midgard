@@ -7,7 +7,7 @@ import (
 )
 
 func (s *Client) CreateSlashRecord(record *models.EventSlash) error {
-	err := s.CreateEventRecord(&record.Event)
+	err := s.CreateEventRecord(&record.Event, common.EmptyAsset)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create event record")
 	}
