@@ -74,10 +74,14 @@ func (s *Client) ProcessTxRecord(direction string, parent models.Event, record c
 	if err := record.IsValid(); err == nil {
 
 		// we need to store event type and pool for input transaction only
+		record.EventType = parent.Type
 		if direction == "in" {
-			record.EventType = parent.Type
-			if pool != common.EmptyAsset {
-				record.Pool = pool.String()
+			record.Pool = pool.String()
+		} else {
+			for _, coin := range record.Coins {
+				if !coin.Asset.Equals(common.RuneAsset()) {
+					record.Pool = coin.Asset.String()
+				}
 			}
 		}
 		_, err = s.createTxRecord(parent, record, direction)
