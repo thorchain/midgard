@@ -113,28 +113,3 @@ func (tx Tx) IsValid() error {
 
 	return nil
 }
-
-func (tx Tx) GetPool() Asset {
-	if len(tx.Memo) == 0 {
-		return EmptyAsset
-	}
-	parts := strings.Split(string(tx.Memo), ":")
-	if len(parts) < 2 {
-		return EmptyAsset
-	}
-	asset, err := NewAsset(parts[1])
-	if err != nil {
-		return EmptyAsset
-	}
-	// pool can not be rune
-	if !asset.Equals(RuneAsset()) {
-		return asset
-	} else {
-		for _, coin := range tx.Coins {
-			if !coin.Asset.Equals(RuneAsset()) {
-				return coin.Asset
-			}
-		}
-	}
-	return EmptyAsset
-}
