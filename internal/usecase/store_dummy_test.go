@@ -24,7 +24,7 @@ func (s *StoreDummy) GetLastHeight() (int64, error) {
 	return 0, nil
 }
 
-func (s *StoreDummy) ProcessTxRecord(direction string, parent models.Event, record common.Tx) error {
+func (s *StoreDummy) ProcessTxRecord(direction string, parent models.Event, record common.Tx, pool common.Asset) error {
 	return ErrNotImplemented
 }
 

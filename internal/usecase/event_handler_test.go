@@ -28,7 +28,7 @@ func (s *StakeTestStore) CreateStakeRecord(record *models.EventStake) error {
 	return nil
 }
 
-func (s *StakeTestStore) ProcessTxRecord(_ string, _ models.Event, _ common.Tx) error {
+func (s *StakeTestStore) ProcessTxRecord(_ string, _ models.Event, _ common.Tx, _ common.Asset) error {
 	return nil
 }
 
@@ -222,6 +222,7 @@ func (s *EventHandlerSuite) TestUnStakeEvent(c *C) {
 				},
 				Memo:  "WITHDRAW:BTC.BTC:1000",
 				Chain: common.BNBChain,
+				Pool:  "BTC.BTC",
 			},
 			Type:   "unstake",
 			Status: "Pending",
@@ -342,6 +343,7 @@ func (s *EventHandlerSuite) TestSwapEvent(c *C) {
 				},
 				Chain: common.BNBChain,
 				Memo:  "SWAP:BTC.BTC:bcrt1qqqnde7kqe5sf96j6zf8jpzwr44dh4gkd3ehaqh",
+				Pool:  "BNB.BNB",
 			},
 			Type:   "doubleSwap",
 			Status: "Pending",
@@ -382,6 +384,9 @@ func (s *EventHandlerSuite) TestPoolEvent(c *C) {
 			Height: 1,
 			Type:   "pool",
 			Status: "Success",
+			InTx: common.Tx{
+				Pool: "BNB.BNB",
+			},
 		},
 	}
 	c.Assert(store.record, DeepEquals, expectedEvent)
@@ -437,6 +442,7 @@ func (s *EventHandlerSuite) TestAddEvent(c *C) {
 				},
 				Chain: common.BNBChain,
 				Memo:  "ADD:BNB.BNB",
+				Pool:  "BNB.BNB",
 			},
 			Type:   "add",
 			Status: "Success",
@@ -611,6 +617,9 @@ func (s *EventHandlerSuite) TestSlashEvent(c *C) {
 		Height: 1,
 		Type:   "slash",
 		Status: "Success",
+		InTx: common.Tx{
+			Pool: "BNB.BNB",
+		},
 	})
 }
 
@@ -681,7 +690,7 @@ func (s *OutboundTestStore) GetEventsByTxID(_ common.TxID) ([]models.Event, erro
 	return s.events, nil
 }
 
-func (s *OutboundTestStore) ProcessTxRecord(direction string, _ models.Event, record common.Tx) error {
+func (s *OutboundTestStore) ProcessTxRecord(direction string, _ models.Event, record common.Tx, pool common.Asset) error {
 	s.direction = direction
 	s.tx = record
 	return nil

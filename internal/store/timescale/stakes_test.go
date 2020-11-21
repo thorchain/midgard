@@ -209,9 +209,9 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetailsMultichain(c *C) {
 	}
 	err := s.Store.CreateStakeRecord(&evt)
 	c.Assert(err, IsNil)
-	err = s.Store.ProcessTxRecord("in", evt.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175874A", evt.RuneAddress, "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", common.Coins{common.NewCoin(common.RuneAsset(), 100)}, ""))
+	err = s.Store.ProcessTxRecord("in", evt.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175874A", evt.RuneAddress, "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", common.Coins{common.NewCoin(common.RuneAsset(), 100)}, ""), evt.Pool)
 	c.Assert(err, IsNil)
-	err = s.Store.ProcessTxRecord("in", evt.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175872B", evt.AssetAddress, "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", common.Coins{common.NewCoin(common.BTCAsset, 10)}, ""))
+	err = s.Store.ProcessTxRecord("in", evt.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175872B", evt.AssetAddress, "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", common.Coins{common.NewCoin(common.BTCAsset, 10)}, ""), evt.Pool)
 	c.Assert(err, IsNil)
 	expectedDetails := models.StakerAddressAndAssetDetails{
 		Asset:            common.BTCAsset,
@@ -256,9 +256,9 @@ func (s *TimeScaleSuite) TestGetStakersAddressAndAssetDetailsMultichain(c *C) {
 	}
 	err = s.Store.CreateUnStakesRecord(&evt1)
 	c.Assert(err, IsNil)
-	err = s.Store.ProcessTxRecord("out", evt1.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175855A", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", evt.RuneAddress, common.Coins{common.NewCoin(common.RuneAsset(), 50)}, ""))
+	err = s.Store.ProcessTxRecord("out", evt1.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175855A", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", evt.RuneAddress, common.Coins{common.NewCoin(common.RuneAsset(), 50)}, ""), common.EmptyAsset)
 	c.Assert(err, IsNil)
-	err = s.Store.ProcessTxRecord("out", evt1.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175823B", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", evt.AssetAddress, common.Coins{common.NewCoin(common.BTCAsset, 5)}, ""))
+	err = s.Store.ProcessTxRecord("out", evt1.Event, common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175823B", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", evt.AssetAddress, common.Coins{common.NewCoin(common.BTCAsset, 5)}, ""), common.EmptyAsset)
 	c.Assert(err, IsNil)
 	evt1.OutTxs = common.Txs{common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175855A", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8z", evt.RuneAddress, common.Coins{common.NewCoin(common.RuneAsset(), 50)}, ""), common.NewTx("090447C705801391ABDAD19BF67E4488D169250F39C083164E3A6C2175823B", "tbnb1ly9s9x98rfkkgk207wg4q7k4vjlyxafnn80v8d", evt.AssetAddress, common.Coins{common.NewCoin(common.BTCAsset, 5)}, "")}
 	err = s.Store.UpdateUnStakesRecord(evt1)
