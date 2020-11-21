@@ -22,7 +22,7 @@ func (s *Client) GetLastHeight() (int64, error) {
 	return maxHeight.Int64, nil
 }
 
-func (s *Client) CreateEventRecord(record *models.Event,pool common.Asset) error {
+func (s *Client) CreateEventRecord(record *models.Event, pool common.Asset) error {
 	if record.Height == 0 {
 		return nil
 	}
@@ -33,7 +33,7 @@ func (s *Client) CreateEventRecord(record *models.Event,pool common.Asset) error
 	}
 
 	// Ingest InTx
-	err = s.ProcessTxRecord("in", *record, record.InTx,pool)
+	err = s.ProcessTxRecord("in", *record, record.InTx, pool)
 	if err != nil {
 		return errors.Wrap(err, "Failed to process InTx")
 	}
@@ -69,7 +69,7 @@ func (s *Client) processTxsRecord(direction string, parent models.Event, records
 	return nil
 }
 
-func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx,pool common.Asset) error {
+func (s *Client) ProcessTxRecord(direction string, parent models.Event, record common.Tx, pool common.Asset) error {
 	// Ingest InTx
 	if err := record.IsValid(); err == nil {
 
