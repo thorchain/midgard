@@ -628,10 +628,10 @@ func (s *TimeScaleSuite) TestGetTxDetailsByDoubleSwap(c *C) {
 
 	err = s.Store.CreateStakeRecord(&stakeBnbEvent0)
 	c.Assert(err, IsNil)
-	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap", "stake"}, 0, 1)
+	events, count, err = s.Store.GetTxDetails("", common.EmptyTxID, common.EmptyAsset, []string{"doubleSwap", "stake"}, 0, 2)
 	c.Assert(err, IsNil)
 	c.Assert(count, Equals, int64(2))
-	c.Assert(events[0], DeepEquals, evts[0])
+	c.Assert(events[1], DeepEquals, evts[0])
 
 	err = s.Store.CreateSwapRecord(&swapBuyRune2BnbEvent3)
 	c.Assert(err, IsNil)
