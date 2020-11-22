@@ -552,22 +552,19 @@ func (h *Handlers) GetStatsChanges(ctx echo.Context, params GetStatsChangesParam
 	for i, ch := range changes {
 		t := ch.Time.Unix()
 		response[i] = StatsChanges{
-			Time:              &t,
-			StartHeight:       &changes[i].StartHeight,
-			EndHeight:         &changes[i].EndHeight,
-			TotalRuneDepth:    Int64ToString(ch.TotalRuneDepth),
-			EnabledPools:      &changes[i].EnabledPools,
-			BootstrappedPools: &changes[i].BootstrappedPools,
-			SuspendedPools:    &changes[i].SuspendedPools,
-			BuyVolume:         Int64ToString(ch.BuyVolume),
-			SellVolume:        Int64ToString(ch.SellVolume),
-			TotalVolume:       Int64ToString(ch.TotalVolume),
-			TotalReward:       Int64ToString(ch.TotalReward),
-			TotalDeficit:      Int64ToString(ch.TotalDeficit),
-			BuyCount:          &changes[i].BuyCount,
-			SellCount:         &changes[i].SellCount,
-			StakeCount:        &changes[i].StakeCount,
-			WithdrawCount:     &changes[i].WithdrawCount,
+			Time:           &t,
+			StartHeight:    &changes[i].StartHeight,
+			EndHeight:      &changes[i].EndHeight,
+			TotalRuneDepth: Int64ToString(ch.TotalRuneDepth),
+			BuyVolume:      Int64ToString(ch.BuyVolume),
+			SellVolume:     Int64ToString(ch.SellVolume),
+			TotalVolume:    Int64ToString(ch.TotalVolume),
+			TotalReward:    Int64ToString(ch.TotalReward),
+			TotalDeficit:   Int64ToString(ch.TotalDeficit),
+			BuyCount:       &changes[i].BuyCount,
+			SellCount:      &changes[i].SellCount,
+			StakeCount:     &changes[i].StakeCount,
+			WithdrawCount:  &changes[i].WithdrawCount,
 		}
 	}
 

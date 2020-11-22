@@ -136,10 +136,7 @@ AS
 SELECT time_bucket('5 minute', time) AS time,
     MIN(height) AS start_height,
     MAX(height) AS end_height,
-    last(total_rune_depth, height) AS total_rune_depth,
-    last(enabled_pools, height) AS enabled_pools,
-    last(bootstrapped_pools, height) AS bootstrapped_pools,
-    last(suspended_pools, height) AS suspended_pools
+    last(total_rune_depth, height) AS total_rune_depth
 FROM stats_history
 GROUP BY time_bucket('5 minute', time);
 
@@ -149,10 +146,7 @@ AS
 SELECT time_bucket('1 hour', time) AS time,
     MIN(height) AS start_height,
     MAX(height) AS end_height,
-    last(total_rune_depth, height) AS total_rune_depth,
-    last(enabled_pools, height) AS enabled_pools,
-    last(bootstrapped_pools, height) AS bootstrapped_pools,
-    last(suspended_pools, height) AS suspended_pools
+    last(total_rune_depth, height) AS total_rune_depth
 FROM stats_history
 GROUP BY time_bucket('1 hour', time);
 
@@ -162,10 +156,7 @@ AS
 SELECT time_bucket('1 day', time) AS time,
     MIN(height) AS start_height,
     MAX(height) AS end_height,
-    last(total_rune_depth, height) AS total_rune_depth,
-    last(enabled_pools, height) AS enabled_pools,
-    last(bootstrapped_pools, height) AS bootstrapped_pools,
-    last(suspended_pools, height) AS suspended_pools
+    last(total_rune_depth, height) AS total_rune_depth
 FROM stats_history
 GROUP BY time_bucket('1 day', time);
 

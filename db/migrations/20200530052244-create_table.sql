@@ -34,9 +34,6 @@ CREATE TABLE stats_history (
     time                 TIMESTAMPTZ     NOT NULL,
     height               BIGINT          NOT NULL,
     total_rune_depth     BIGINT          NOT NULL,
-    enabled_pools        INT             NOT NULL,
-    bootstrapped_pools   INT             NOT NULL,
-    suspended_pools      INT             NOT NULL,
     PRIMARY KEY (time)
 );
 

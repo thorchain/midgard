@@ -1313,18 +1313,6 @@ components:
         totalRuneDepth:
           type: string
           description: Total rune depth of all pools at the end of current time bucket
-        enabledPools:
-          type: integer
-          format: int64
-          description: Number of enabled pools since network started
-        bootstrappedPools:
-          type: integer
-          format: int64
-          description: Number of bootstrapped pools since network started
-        suspendedPools:
-          type: integer
-          format: int64
-          description: Number of suspended pools since network started
         buyVolume:
           type: string
           description: Sum of "rune_amount" of buy swap events

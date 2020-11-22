@@ -377,33 +377,17 @@ func (s *Client) updatePoolCache(change *models.PoolChange) {
 }
 
 func (s *Client) insertBlockStats() error {
-	var (
-		totalRuneDepth    int64
-		enabledPools      int64
-		bootstrappedPools int64
-		suspendedPools    int64
-	)
+	var totalRuneDepth int64
 	for _, p := range s.pools {
 		totalRuneDepth += p.RuneDepth
-		switch p.Status {
-		case models.Enabled:
-			enabledPools++
-		case models.Bootstrap:
-			bootstrappedPools++
-		case models.Suspended:
-			suspendedPools++
-		}
 	}
 
-	q := `INSERT INTO stats_history (time, height, total_rune_depth, enabled_pools, bootstrapped_pools, suspended_pools) 
-			VALUES ($1, $2, $3, $4, $5, $6)`
+	q := `INSERT INTO stats_history (time, height, total_rune_depth) 
+			VALUES ($1, $2, $3)`
 	_, err := s.db.Exec(q,
 		s.blockTime,
 		s.blockHeight,
-		totalRuneDepth,
-		enabledPools,
-		bootstrappedPools,
-		suspendedPools)
+		totalRuneDepth)
 	return err
 }
 
