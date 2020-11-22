@@ -66,6 +66,10 @@ CREATE TABLE txs (
     memo varchar,
     primary key (id, time, event_id)
 );
+CREATE INDEX txs_from_address_idx ON txs USING hash (from_address);
+CREATE INDEX txs_to_address_idx ON txs USING hash (to_address);
+CREATE INDEX txs_tx_hash_idx ON txs USING hash (tx_hash);
+CREATE INDEX txs_event_id_idx ON txs (event_id);
 
 CREATE TABLE coins (
     time        TIMESTAMPTZ       NOT NULL,
@@ -78,6 +82,16 @@ CREATE TABLE coins (
     amount bigint not null,
     primary key (id, time, event_id)
 );
+CREATE INDEX coins_tx_hash_idx ON coins USING hash (tx_hash);
+
+CREATE TABLE stakers (
+    asset_address   VARCHAR     NOT NULL,
+    rune_address    VARCHAR     NOT NULL,
+    chain            VARCHAR     NOT NULL,
+    primary key (asset_address, rune_address, chain)
+);
+CREATE INDEX stakers_asset_address_idx ON stakers  USING hash (asset_address);
+CREATE INDEX stakers_rune_address_chain_idx ON stakers (rune_address, chain);
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 SELECT create_hypertable('events', 'time');
@@ -95,5 +109,6 @@ DROP TABLE stats_history;
 DROP TABLE swaps;
 DROP TABLE txs;
 DROP TABLE coins;
+DROP TABLE stakers;
 
 DROP TYPE tx_direction;

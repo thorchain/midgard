@@ -142,8 +142,27 @@ func (uc *Usecase) GetTxDetails(addressStr, txIDStr, assetStr *string, eventType
 }
 
 // GetPools returns all active pools in the system.
-func (uc *Usecase) GetPools() ([]common.Asset, error) {
-	pools, err := uc.store.GetPools()
+func (uc *Usecase) GetPools(status models.PoolStatus) ([]common.Asset, error) {
+	allPools, err := uc.store.GetPools()
+	if status == models.Unknown {
+		return allPools, err
+	}
+	var pools []common.Asset
+	for _, pool := range allPools {
+		basics, err := uc.store.GetPoolBasics(pool)
+		if err != nil {
+			return nil, err
+		}
+		if basics.Status == models.Unknown {
+			basics.Status, err = uc.fetchPoolStatus(pool)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if status == basics.Status {
+			pools = append(pools, pool)
+		}
+	}
 	return pools, err
 }
 
@@ -341,12 +360,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 			return nil, err
 		}
 	}
-	now := time.Now()
-	pastDay := now.Add(-day)
-	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
-	if err != nil {
-		return nil, err
-	}
 	if uc.conf.UseThorchainBalances {
 		err := uc.overwriteDepth(&basics)
 		if err != nil {
@@ -354,28 +367,25 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 		}
 	}
 	price := calculatePrice(basics.AssetDepth, basics.RuneDepth)
-	assetROI := calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn)
-	runeROI := calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn)
-	poolEarnDetail, err := uc.store.GetPoolEarnedDetails(asset, time.Time{})
+	poolEarnDetail, err := uc.store.GetPoolEarnedDetails(asset, models.TotalEarned)
 	if err != nil {
 		return nil, err
 	}
 	details := &models.PoolSimpleDetails{
 		PoolBasics:        basics,
-		PoolVolume24Hours: vol24,
+		PoolVolume24Hours: basics.Volume24,
 		Price:             price,
-		AssetROI:          assetROI,
 		AssetEarned:       poolEarnDetail.AssetEarned,
-		RuneROI:           runeROI,
 		RuneEarned:        poolEarnDetail.RuneEarned,
-		PoolROI:           (assetROI + runeROI) / 2,
 		PoolEarned:        poolEarnDetail.PoolEarned,
 	}
 	details.SwappingTxCount = basics.BuyCount + basics.SellCount
 	// NOTE: For backward compatibility we have to return the BuyVolume in rune.
 	poolVolume := int64(float64(details.BuyVolume)*details.Price) + details.SellVolume
-	details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
-	details.PoolTxAverage = float64(poolVolume) / float64(details.SwappingTxCount)
+	if details.SwappingTxCount > 0 {
+		details.PoolSlipAverage = (basics.BuySlipTotal + basics.SellSlipTotal) / float64(details.SwappingTxCount)
+		details.PoolTxAverage = float64(poolVolume) / float64(details.SwappingTxCount)
+	}
 	details.PoolAPY, err = uc.getPoolAPY(asset)
 	if err != nil {
 		return nil, err
@@ -386,13 +396,6 @@ func (uc *Usecase) GetPoolSimpleDetails(asset common.Asset) (*models.PoolSimpleD
 func calculatePrice(assetDepth int64, runeDepth int64) float64 {
 	if assetDepth > 0 {
 		return float64(runeDepth) / float64(assetDepth)
-	}
-	return 0
-}
-
-func calculateROI(depth, staked int64) float64 {
-	if staked > 0 {
-		return float64(depth-staked) / float64(staked)
 	}
 	return 0
 }
@@ -429,28 +432,23 @@ func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYRepor
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPYReport failed")
 	}
-	if poolBasic.Status != models.Enabled {
+	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, models.TotalEarned)
+	if err != nil {
+		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
+	}
+	if totalEarnDetails.ActiveDays == 0 {
 		return &models.PoolAPYReport{}, nil
 	}
-	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
-	if err != nil {
-		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPYReport failed")
-	}
-	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
-		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
-	}
-	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
-	totalEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, time.Time{})
+	lastMonthEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, models.LastMonthEarned)
 	if err != nil {
 		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
 	}
-	lastMonthEarnDetails, err := uc.store.GetPoolEarnedDetails(pool, lastActiveDate)
-	if err != nil {
-		return &models.PoolAPYReport{}, errors.Wrap(err, "GetPoolAPY failed")
+	if lastMonthEarnDetails.ActiveDays == 0 {
+		return &models.PoolAPYReport{}, nil
 	}
 	lastMonthPoolEarned := lastMonthEarnDetails.PoolEarned
-	if activeDays < 30 {
-		lastMonthPoolEarned = int64(float64(lastMonthEarnDetails.PoolEarned) * 30 / activeDays)
+	if lastMonthEarnDetails.ActiveDays < 30 {
+		lastMonthPoolEarned = int64(float64(lastMonthEarnDetails.PoolEarned) * 30 / lastMonthEarnDetails.ActiveDays)
 	}
 	periodicRate := float64(lastMonthPoolEarned) / float64(poolBasic.RuneDepth*2)
 	poolAPYReport := &models.PoolAPYReport{
@@ -466,7 +464,7 @@ func (uc *Usecase) GetPoolEarningDetail(pool common.Asset) (*models.PoolAPYRepor
 		TotalRuneDonation:      totalEarnDetails.RuneDonated,
 		TotalPoolDonation:      totalEarnDetails.PoolDonation,
 		TotalPoolEarning:       totalEarnDetails.PoolEarned,
-		LastMonthActiveDays:    activeDays,
+		LastMonthActiveDays:    lastMonthEarnDetails.ActiveDays,
 		LastMonthReward:        lastMonthEarnDetails.Reward,
 		LastMonthPoolDeficit:   lastMonthEarnDetails.Deficit,
 		LastMonthGasPaid:       lastMonthEarnDetails.GasPaid,
@@ -505,14 +503,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 			return nil, err
 		}
 	}
-
-	now := time.Now()
-	pastDay := now.Add(-day)
-	vol24, err := uc.store.GetPoolVolume(asset, pastDay, now)
-	if err != nil {
-		return nil, err
-	}
-	poolROI12, err := uc.store.GetPoolROI12(asset)
 	if err != nil {
 		return nil, err
 	}
@@ -524,21 +514,18 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 	if err != nil {
 		return nil, err
 	}
-	poolEarningDetails, err := uc.store.GetPoolEarnedDetails(asset, time.Time{})
+	poolEarningDetails, err := uc.store.GetPoolEarnedDetails(asset, models.TotalEarned)
 	if err != nil {
 		return nil, err
 	}
 	details := &models.PoolDetails{
 		PoolBasics:      basics,
-		AssetROI:        calculateROI(basics.AssetDepth, basics.AssetStaked-basics.AssetWithdrawn),
 		AssetEarned:     poolEarningDetails.AssetEarned,
-		RuneROI:         calculateROI(basics.RuneDepth, basics.RuneStaked-basics.RuneWithdrawn),
 		RuneEarned:      poolEarningDetails.RuneEarned,
 		PoolEarned:      poolEarningDetails.PoolEarned,
 		Price:           calculatePrice(basics.AssetDepth, basics.RuneDepth),
 		PoolDepth:       uint64(basics.RuneDepth) * 2,
-		PoolVolume24hr:  uint64(vol24),
-		PoolROI12:       poolROI12,
+		PoolVolume24hr:  uint64(basics.Volume24),
 		StakersCount:    stakersCount,
 		SwappersCount:   swappersCount,
 		SwappingTxCount: uint64(basics.BuyCount + basics.SellCount),
@@ -564,7 +551,6 @@ func (uc *Usecase) GetPoolDetails(asset common.Asset) (*models.PoolDetails, erro
 		details.PoolTxAverage = float64(details.PoolVolume) / float64(details.SwappingTxCount)
 	}
 	details.PoolStakedTotal = uint64(float64(details.AssetStaked)*details.Price + float64(details.RuneStaked))
-	details.PoolROI = (details.AssetROI + details.RuneROI) / 2
 	details.PoolAPY, err = uc.getPoolAPY(asset)
 	if err != nil {
 		return nil, err
@@ -583,20 +569,15 @@ func (uc *Usecase) getPoolAPY(pool common.Asset) (float64, error) {
 	if poolBasic.Status != models.Enabled {
 		return 0, nil
 	}
-	lastActiveDate, err := uc.store.GetPoolLastEnabledDate(pool)
+	poolEarnedDetail, err := uc.store.GetPoolEarnedDetails(pool, models.LastMonthEarned)
 	if err != nil {
 		return 0, errors.Wrap(err, "GetPoolAPY failed")
 	}
-	if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
-		lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+	if poolEarnedDetail.ActiveDays == 0 {
+		return 0, nil
 	}
-	poolEarnedDetail, err := uc.store.GetPoolEarnedDetails(pool, lastActiveDate)
-	if err != nil {
-		return 0, errors.Wrap(err, "GetPoolAPY failed")
-	}
-	activeDays := time.Now().Sub(lastActiveDate).Hours() / 24
-	if activeDays < 30 {
-		poolEarnedDetail.PoolEarned = int64(float64(poolEarnedDetail.PoolEarned) * 30 / activeDays)
+	if poolEarnedDetail.ActiveDays < 30 {
+		poolEarnedDetail.PoolEarned = int64(float64(poolEarnedDetail.PoolEarned) * 30 / poolEarnedDetail.ActiveDays)
 	}
 	periodicRate := float64(poolEarnedDetail.PoolEarned) / float64(poolBasic.RuneDepth*2)
 	return calculateAPY(periodicRate, monthsPerYear), nil
@@ -681,8 +662,6 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 		TotalReserve:            vaultData.TotalReserve,
 		PoolShareFactor:         poolShareFactor,
 		BlockReward:             rewards,
-		BondingROI:              (float64(rewards.BondReward) * blocksPerYear) / float64(totalActiveBond),
-		StakingROI:              (float64(rewards.StakeReward) * blocksPerYear) / float64(totalDepth),
 		LiquidityAPY:            calculateAPY(float64(rewards.StakeReward)*blocksPerMonth/float64(totalEnabledRuneDepth), monthsPerYear),
 		BondingAPY:              calculateAPY(float64(rewards.BondReward)*blocksPerMonth/float64(totalActiveBond), monthsPerYear),
 		NextChurnHeight:         nextChurnHeight,
@@ -692,7 +671,7 @@ func (uc *Usecase) GetNetworkInfo() (*models.NetworkInfo, error) {
 }
 
 func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
-	pools, err := uc.GetPools()
+	pools, err := uc.GetPools(models.Enabled)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
 	}
@@ -702,9 +681,7 @@ func (uc *Usecase) totalEnabledRuneDepth() (int64, error) {
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to get totalEnabledRuneDepth")
 		}
-		if poolBasic.Status == models.Enabled {
-			runeDepth += poolBasic.RuneDepth
-		}
+		runeDepth += poolBasic.RuneDepth
 	}
 	return runeDepth, nil
 }

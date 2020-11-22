@@ -140,10 +140,14 @@ func (h *Handlers) GetTxDetails(ctx echo.Context, params GetTxDetailsParams) err
 	return ctx.JSON(http.StatusOK, response)
 }
 
-// (GET /v1/pools)
-func (h *Handlers) GetPools(ctx echo.Context) error {
+// (GET /v1/pools?status={status})
+func (h *Handlers) GetPools(ctx echo.Context, params GetPoolsParams) error {
 	h.logger.Debug().Str("path", ctx.Path()).Msg("GetAssets")
-	pools, err := h.uc.GetPools()
+	status := models.Unknown
+	if params.Status != nil {
+		status = models.PoolStatusStr[strings.Title(*params.Status)]
+	}
+	pools, err := h.uc.GetPools(status)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to GetPools")
 		return echo.NewHTTPError(http.StatusInternalServerError, GeneralErrorResponse{Error: err.Error()})
@@ -254,13 +258,10 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				Asset:            ConvertAssetForAPI(asset),
 				AssetDepth:       Uint64ToString(uint64(details.AssetDepth)),
 				AssetEarned:      Int64ToString(details.AssetEarned),
-				AssetROI:         Float64ToString(details.AssetROI),
 				AssetStakedTotal: Uint64ToString(uint64(details.AssetStaked)),
 				RuneDepth:        Uint64ToString(uint64(details.RuneDepth)),
 				RuneEarned:       Int64ToString(details.RuneEarned),
-				RuneROI:          Float64ToString(details.RuneROI),
 				RuneStakedTotal:  Uint64ToString(uint64(details.RuneStaked)),
-				PoolROI:          Float64ToString(details.PoolROI),
 				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
 				PoolUnits:        Uint64ToString(uint64(details.Units)),
@@ -283,7 +284,6 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				Status:           pointy.String(details.Status.String()),
 				Asset:            ConvertAssetForAPI(asset),
 				AssetDepth:       Uint64ToString(uint64(details.AssetDepth)),
-				AssetROI:         Float64ToString(details.AssetROI),
 				AssetStakedTotal: Uint64ToString(uint64(details.AssetStaked)),
 				AssetEarned:      Int64ToString(details.AssetEarned),
 				BuyAssetCount:    Uint64ToString(uint64(details.BuyCount)),
@@ -295,8 +295,6 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolDepth:        Uint64ToString(details.PoolDepth),
 				PoolFeeAverage:   Float64ToString(details.PoolFeeAverage),
 				PoolFeesTotal:    Uint64ToString(details.PoolFeesTotal),
-				PoolROI:          Float64ToString(details.PoolROI),
-				PoolROI12:        Float64ToString(details.PoolROI12),
 				PoolSlipAverage:  Float64ToString(details.PoolSlipAverage),
 				PoolStakedTotal:  Uint64ToString(details.PoolStakedTotal),
 				PoolTxAverage:    Float64ToString(details.PoolTxAverage),
@@ -306,7 +304,6 @@ func (h *Handlers) GetPoolsDetails(ctx echo.Context, assetParam GetPoolsDetailsP
 				PoolVolume24hr:   Uint64ToString(details.PoolVolume24hr),
 				Price:            Float64ToString(details.Price),
 				RuneDepth:        Uint64ToString(uint64(details.RuneDepth)),
-				RuneROI:          Float64ToString(details.RuneROI),
 				RuneStakedTotal:  Uint64ToString(uint64(details.RuneStaked)),
 				RuneEarned:       Int64ToString(details.RuneEarned),
 				SellAssetCount:   Uint64ToString(uint64(details.SellCount)),
@@ -456,8 +453,6 @@ func (h *Handlers) GetNetworkData(ctx echo.Context) error {
 			BondReward:  Uint64ToString(netInfo.BlockReward.BondReward),
 			StakeReward: Uint64ToString(netInfo.BlockReward.StakeReward),
 		},
-		BondingROI:              Float64ToString(netInfo.BondingROI),
-		StakingROI:              Float64ToString(netInfo.StakingROI),
 		NextChurnHeight:         Int64ToString(netInfo.NextChurnHeight),
 		PoolActivationCountdown: &netInfo.PoolActivationCountdown,
 		BondingAPY:              Float64ToString(netInfo.BondingAPY),

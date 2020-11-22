@@ -1,17 +1,21 @@
 package models
 
 import (
+	"encoding/json"
+
 	"gitlab.com/thorchain/midgard/internal/common"
 )
 
 type EventStake struct {
 	Event
-	Pool        common.Asset   `mapstructure:"pool"`
-	StakeUnits  int64          `mapstructure:"stake_units"`
-	RuneAddress common.Address `mapstructure:"rune_address"`
-	RuneAmount  int64          `mapstructure:"rune_amount"`
-	AssetAmount int64          `mapstructure:"asset_amount"`
-	TxIDs       map[common.Chain]common.TxID
+	Pool         common.Asset   `mapstructure:"pool"`
+	StakeUnits   int64          `mapstructure:"stake_units"`
+	RuneAddress  common.Address `mapstructure:"rune_address"`
+	AssetAddress common.Address `mapstructure:"asset_address"`
+	RuneAmount   int64          `mapstructure:"rune_amount"`
+	AssetAmount  int64          `mapstructure:"asset_amount"`
+	TxIDs        map[common.Chain]common.TxID
+	Meta         json.RawMessage
 }
 
 func (evt *EventStake) GetStakes() []EventStake {
@@ -33,14 +37,16 @@ func (evt *EventStake) GetStakes() []EventStake {
 				Amount: evt.AssetAmount,
 			})
 		}
-		if chain.Equals(evt.Pool.Chain) {
+		if chain.Equals(common.RuneAsset().Chain) {
 			stakeUnit = evt.StakeUnits
 		}
 		if len(coins) > 0 {
 			stake := EventStake{
-				Event:      evt.Event,
-				Pool:       evt.Pool,
-				StakeUnits: stakeUnit,
+				Event:        evt.Event,
+				Pool:         evt.Pool,
+				StakeUnits:   stakeUnit,
+				RuneAddress:  evt.RuneAddress,
+				AssetAddress: evt.AssetAddress,
 			}
 			stake.Event.InTx = common.NewTx(txID, evt.RuneAddress, "", coins, "")
 			stakes = append(stakes, stake)

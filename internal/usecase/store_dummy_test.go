@@ -199,10 +199,6 @@ func (s *StoreDummy) DeleteBlock(height int64) error {
 	return nil
 }
 
-func (s *StoreDummy) GetPoolROI12(asset common.Asset) (float64, error) {
-	return 0, ErrNotImplemented
-}
-
 func (s *StoreDummy) GetStakersCount(asset common.Asset) (uint64, error) {
 	return 0, ErrNotImplemented
 }
@@ -223,6 +219,6 @@ func (s *StoreDummy) CreateRefundedEvent(record *models.Event, pool common.Asset
 	return ErrNotImplemented
 }
 
-func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, from time.Time) (models.PoolEarningReport, error) {
-	return models.PoolEarningReport{}, nil
+func (s *StoreDummy) GetPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	return models.PoolEarningDetail{}, nil
 }

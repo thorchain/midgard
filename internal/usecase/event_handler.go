@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"encoding/json"
 	"reflect"
 	"strconv"
 	"strings"
@@ -147,7 +148,7 @@ func (eh *eventHandler) processEvent(event thorchain.Event) error {
 			return err
 		}
 	} else {
-		eh.logger.Info().Str("evt.Type", event.Type).Msg("Unknown event type")
+		eh.logger.Debug().Str("evt.Type", event.Type).Msg("Unknown event type")
 	}
 	return nil
 }
@@ -184,6 +185,12 @@ func (eh *eventHandler) processStakeEvent(event thorchain.Event) error {
 			return errors.Wrap(err, "failed to get InTx")
 		}
 		ev.Status = successEvent
+		ev.Meta, err = json.Marshal(map[string]interface{}{
+			"stake_unit": stake.StakeUnits,
+		})
+		if err != nil {
+			return errors.Wrap(err, "Failed to create meta")
+		}
 		err = eh.store.CreateStakeRecord(&ev)
 		if err != nil {
 			return errors.Wrap(err, "failed to save stake event")
@@ -210,6 +217,12 @@ func (eh *eventHandler) processUnstakeEvent(event thorchain.Event) error {
 		return errors.Wrap(err, "failed to decode unstake")
 	}
 	unstake.Status = pendingEvent
+	unstake.Meta, err = json.Marshal(map[string]interface{}{
+		"stake_unit": -unstake.StakeUnits,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to create meta")
+	}
 	err = eh.store.CreateUnStakesRecord(&unstake)
 	if err != nil {
 		return errors.Wrap(err, "failed to save unstake event")

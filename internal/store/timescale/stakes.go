@@ -11,6 +11,17 @@ import (
 )
 
 func (s *Client) CreateStakeRecord(record *models.EventStake) error {
+	// for BNB or native chain => assetAddress=runeAddress
+	if record.AssetAddress == "" && record.Pool.Chain.Equals(common.RuneAsset().Chain) {
+		record.AssetAddress = record.RuneAddress
+	}
+	if record.AssetAddress != "" {
+		err := s.addStaker(record.RuneAddress, record.AssetAddress, record.Pool.Chain)
+		if err != nil {
+			return errors.Wrap(err, "failed to save staker address")
+		}
+	}
+
 	err := s.CreateEventRecord(&record.Event)
 	if err != nil {
 		return errors.Wrap(err, "createStakeRecord failed")
@@ -36,6 +47,7 @@ func (s *Client) CreateStakeRecord(record *models.EventStake) error {
 		RuneAmount:  runeAmt,
 		Units:       record.StakeUnits,
 		Height:      record.Height,
+		Meta:        record.Meta,
 	}
 	s.UpdatePoolUnits(record.Pool, record.StakeUnits)
 	err = s.UpdatePoolsHistory(change)
@@ -136,19 +148,36 @@ func (s *Client) GetStakersAddressAndAssetDetails(address common.Address, asset 
 // stakeUnits - sums the total of staker units a specific address has for a
 // particular pool
 func (s *Client) stakeUnits(address common.Address, asset common.Asset) (uint64, error) {
+	var runeAddress, assetAddress common.Address
+	var err error
+	if address.IsChain(common.RuneAsset().Chain) {
+		runeAddress = address
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
+		if err != nil {
+			return 0, errors.Wrap(err, "stakeUnits failed")
+		}
+	} else {
+		assetAddress = address
+		runeAddress, err = s.getRuneAddress(assetAddress)
+		if err != nil {
+			return 0, errors.Wrap(err, "stakeUnits failed")
+		}
+	}
 	query := `
 		SELECT Sum(units) 
-		FROM   pools_history 
-			   JOIN txs 
-				 ON pools_history.event_id = txs.event_id 
+		FROM   pools_history
+		WHERE  pools_history.pool = $1  
+		AND event_id in(
+			   SELECT txs.event_id
+			   FROM   txs 
 			   JOIN events 
-				 ON pools_history.event_id = events.id 
-		WHERE  pools_history.pool = $1 
-			   AND txs.from_address = $2 
-			   AND events.status = 'Success' `
+				 ON txs.event_id = events.id 
+			   WHERE ( txs.from_address = $2 
+				   OR txs.from_address = $3 )
+			   AND events.status = 'Success')`
 
 	var stakeUnits sql.NullInt64
-	err := s.db.Get(&stakeUnits, query, asset.String(), address)
+	err = s.db.Get(&stakeUnits, query, asset.String(), runeAddress, assetAddress)
 	if err != nil {
 		return 0, errors.Wrap(err, "stakeUnits failed")
 	}
@@ -164,26 +193,73 @@ type stakerStakeWithdrawn struct {
 }
 
 func (s *Client) stakeWithdrawn(address common.Address, asset common.Asset) (*stakerStakeWithdrawn, error) {
+	var runeAddress, assetAddress common.Address
+	var err error
+	if address.IsChain(common.RuneAsset().Chain) {
+		runeAddress = address
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
+		if err != nil {
+			return nil, errors.Wrap(err, "stakeWithdrawn failed")
+		}
+	} else {
+		assetAddress = address
+		runeAddress, err = s.getRuneAddress(assetAddress)
+		if err != nil {
+			return nil, errors.Wrap(err, "stakeWithdrawn failed")
+		}
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "stakeWithdrawn failed")
+	}
+	var assetStaked, assetWithdrawn, runeStaked, runeWithdrawn sql.NullInt64
 	query := `
 		SELECT
-		SUM(asset_amount) FILTER (WHERE asset_amount > 0) as asset_staked,
-		SUM(-asset_amount) FILTER (WHERE asset_amount < 0) as asset_withdrawn,
 		SUM(rune_amount) FILTER (WHERE rune_amount > 0) as rune_staked,
 		SUM(-rune_amount) FILTER (WHERE rune_amount < 0) as rune_withdrawn
 		FROM pools_history
-		JOIN events ON pools_history.event_id = events.id
-		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
-		AND events.type in ('stake', 'unstake')
-		AND txs.from_address = $2`
+		AND pools_history.event_type in ('stake', 'unstake')
+		AND pools_history.event_id in (
+			SELECT events.id 
+			FROM events
+			JOIN txs 
+			ON events.id = txs.event_id
+			 AND ( txs.from_address = $2 
+				   OR txs.to_address = $2 )
+		)`
 
-	var result stakerStakeWithdrawn
-	err := s.db.QueryRowx(query, asset.String(), address).StructScan(&result)
+	err = s.db.QueryRowx(query, asset.String(), runeAddress).Scan(&runeStaked, &runeWithdrawn)
 	if err != nil {
 		return nil, errors.Wrap(err, "stakeWithdrawn failed")
 	}
 
-	return &result, nil
+	query = `
+		SELECT
+		SUM(asset_amount) FILTER (WHERE asset_amount > 0) as asset_staked,
+		SUM(-asset_amount) FILTER (WHERE asset_amount < 0) as asset_withdrawn
+		FROM pools_history
+		WHERE pool = $1
+		AND pools_history.event_type in ('stake', 'unstake')
+		AND pools_history.event_id in (
+			SELECT events.id 
+			FROM events
+			JOIN txs 
+			ON events.id = txs.event_id
+			 AND ( txs.from_address = $2 
+				   OR txs.to_address = $2 )
+		)`
+
+	err = s.db.QueryRowx(query, asset.String(), assetAddress).Scan(&assetStaked, &assetWithdrawn)
+	if err != nil {
+		return nil, errors.Wrap(err, "stakeWithdrawn failed")
+	}
+
+	return &stakerStakeWithdrawn{
+		AssetWithdrawn: assetWithdrawn,
+		AssetStaked:    assetStaked,
+		RuneWithdrawn:  runeWithdrawn,
+		RuneStaked:     runeStaked,
+	}, nil
 }
 
 // runeStakedForAddress - sum of rune staked by a specific address and pool
@@ -344,16 +420,32 @@ func (s *Client) stakersRuneROI(address common.Address, asset common.Asset) (flo
 }
 
 func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (uint64, error) {
+	var runeAddress, assetAddress common.Address
+	var err error
+	if address.IsChain(common.RuneAsset().Chain) {
+		runeAddress = address
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
+		if err != nil {
+			return 0, errors.Wrap(err, "dateFirstStaked failed")
+		}
+	} else {
+		assetAddress = address
+		runeAddress, err = s.getRuneAddress(assetAddress)
+		if err != nil {
+			return 0, errors.Wrap(err, "dateFirstStaked failed")
+		}
+	}
 	query := `
 		SELECT MIN(pools_history.time)
 		FROM pools_history
 		JOIN txs ON pools_history.event_id = txs.event_id
 		WHERE pool = $1
 		AND units > 0 AND
-		txs.from_address = $2`
+		(txs.from_address = $2 OR
+		txs.from_address = $3)`
 
 	firstStaked := sql.NullTime{}
-	err := s.db.Get(&firstStaked, query, asset.String(), address.String())
+	err = s.db.Get(&firstStaked, query, asset.String(), runeAddress.String(), assetAddress.String())
 	if err != nil {
 		return 0, errors.Wrap(err, "dateFirstStaked failed")
 	}
@@ -366,6 +458,21 @@ func (s *Client) dateFirstStaked(address common.Address, asset common.Asset) (ui
 }
 
 func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (uint64, error) {
+	var runeAddress, assetAddress common.Address
+	var err error
+	if address.IsChain(common.RuneAsset().Chain) {
+		runeAddress = address
+		assetAddress, err = s.getAssetAddress(runeAddress, asset.Chain)
+		if err != nil {
+			return 0, errors.Wrap(err, "heightLastStaked failed")
+		}
+	} else {
+		assetAddress = address
+		runeAddress, err = s.getRuneAddress(assetAddress)
+		if err != nil {
+			return 0, errors.Wrap(err, "heightLastStaked failed")
+		}
+	}
 	query := `
 		SELECT MAX(events.height) 
 		FROM events 
@@ -373,10 +480,11 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 		JOIN txs ON events.id = txs.event_id 
 		WHERE type = 'stake'
 		AND pools_history.pool = $1
-		AND txs.from_address = $2`
+		AND (txs.from_address = $2
+		OR txs.from_address = $3)`
 
 	lastStaked := sql.NullInt64{}
-	err := s.db.Get(&lastStaked, query, asset.String(), address.String())
+	err = s.db.Get(&lastStaked, query, asset.String(), runeAddress.String(), assetAddress.String())
 	if err != nil {
 		return 0, errors.Wrap(err, "heightLastStaked failed")
 	}
@@ -389,20 +497,33 @@ func (s *Client) heightLastStaked(address common.Address, asset common.Asset) (u
 }
 
 func (s *Client) getPools(address common.Address) ([]common.Asset, error) {
+	var runeAddress common.Address
+	var err error
+	if address.IsChain(common.RuneAsset().Chain) {
+		runeAddress = address
+	} else {
+		runeAddress, err = s.getRuneAddress(address)
+		if err != nil {
+			return nil, errors.Wrap(err, "getPools failed")
+		}
+	}
 	query := `
 		SELECT pool 
 		FROM   pools_history 
-			   JOIN txs 
-				 ON pools_history.event_id = txs.event_id 
+		WHERE pools_history.units != 0 
+		AND pools_history.event_id in(
+			   SELECT txs.event_id 
+               FROM   txs
 			   JOIN events 
-				 ON pools_history.event_id = events.id 
-		WHERE  pools_history.units != 0 
-			   AND txs.from_address = $1
-			   AND events.status = 'Success'
+				 ON txs.event_id = events.id 
+				WHERE  events.status = 'Success'  
+			    AND ( txs.from_address = $1 
+			   		OR txs.to_address = $1 )
+		)
 		GROUP  BY pool 
 		HAVING Sum(units) > 0 `
 
-	rows, err := s.db.Queryx(query, address.String())
+	rows, err := s.db.Queryx(query, runeAddress.String())
 	if err != nil {
 		return nil, errors.Wrap(err, "getPools failed")
 	}

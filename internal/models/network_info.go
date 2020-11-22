@@ -10,8 +10,6 @@ type NetworkInfo struct {
 	TotalReserve            uint64
 	PoolShareFactor         float64
 	BlockReward             BlockRewards
-	BondingROI              float64
-	StakingROI              float64
 	LiquidityAPY            float64
 	BondingAPY              float64
 	NextChurnHeight         int64

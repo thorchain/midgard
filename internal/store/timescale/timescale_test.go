@@ -71,6 +71,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":100}"),
 	}
 
 	stakeBnbEvent1 = models.EventStake{
@@ -113,6 +114,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":100}"),
 	}
 	stakeTomlEvent1 = models.EventStake{
 		Event: models.Event{
@@ -154,6 +156,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":100}"),
 	}
 	stakeBnbEvent2 = models.EventStake{
 		Event: models.Event{
@@ -199,6 +202,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 200,
+		Meta:       []byte("{\"stake_unit\":200}"),
 	}
 	stakeTcanEvent3 = models.EventStake{
 		Event: models.Event{
@@ -244,6 +248,7 @@ var (
 			Ticker: "TCAN",
 		},
 		StakeUnits: 1342175000,
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 	stakeTcanEvent4 = models.EventStake{
 		Event: models.Event{
@@ -289,6 +294,7 @@ var (
 			Ticker: "TCAN",
 		},
 		StakeUnits: 1342175000,
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 	stakeBoltEvent5 = models.EventStake{
 		Event: models.Event{
@@ -334,6 +340,7 @@ var (
 			Ticker: "BOLT",
 		},
 		StakeUnits: 1342175000,
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 
 	unstakeTomlEvent0 = models.EventUnstake{
@@ -413,6 +420,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeTomlEvent1 = models.EventUnstake{
 		Event: models.Event{
@@ -491,6 +499,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 50,
+		Meta:       []byte("{\"stake_unit\":-50}"),
 	}
 	unstakeTomlEvent2 = models.EventUnstake{
 		Event: models.Event{
@@ -569,6 +578,7 @@ var (
 			Ticker: "TOML",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeBnbEvent1 = models.EventUnstake{
 		Event: models.Event{
@@ -647,6 +657,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeBnbEvent2 = models.EventUnstake{
 		Event: models.Event{
@@ -725,6 +736,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	unstakeBoltEvent2 = models.EventUnstake{
 		Event: models.Event{
@@ -803,6 +815,7 @@ var (
 			Ticker: "BNB",
 		},
 		StakeUnits: 100,
+		Meta:       []byte("{\"stake_unit\":-100}"),
 	}
 	swapSellBolt2RuneEvent1 = models.EventSwap{
 		Event: models.Event{
@@ -1789,6 +1802,7 @@ var (
 			Ticker: "TUSDB",
 		},
 		StakeUnits: 1342175000,
+		Meta:       []byte("{\"stake_unit\":1342175000}"),
 	}
 	swapSellTusdb2RuneEvent0 = models.EventSwap{
 		Event: models.Event{
@@ -2162,6 +2176,189 @@ func (s *TimeScaleSuite) TestDeleteLatestBlock(c *C) {
 	txsCount, err = s.Store.GetTxsCount(nil, nil)
 	c.Assert(err, IsNil)
 	c.Assert(txsCount, Equals, uint64(2))
+}
+
+func (s *TimeScaleSuite) TestFetchAllPoolsEarning(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsEarning()
+	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(0))
+	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(0))
+	swap := models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     8,
+			Status: "Success",
+			Height: 7,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000000,
+					},
+				},
+				Memo: "swap:BNB.BNB",
+			},
+			OutTxs: []common.Tx{
+				{
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 20000000,
+						},
+					},
+					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
+	swap.OutTxs[0].Coins[0].Amount = 2
+	swap.InTx.Coins[0].Amount = 1
+	swap.Time = time.Now().Add(10 * time.Second)
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsEarning()
+	c.Assert(s.Store.pools[common.BNBAsset.String()].LastMonthEarnDetail.PoolEarned, Equals, int64(94227394))
+	c.Assert(s.Store.pools[common.BNBAsset.String()].TotalEarnDetail.PoolEarned, Equals, int64(94227394))
+}
+
+func (s *TimeScaleSuite) TestFetchAllPoolsVolume24(c *C) {
+	err := s.Store.CreateStakeRecord(&stakeBnbEvent0)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:       common.BNBAsset,
+			AssetStaked: 10,
+			AssetDepth:  10,
+			RuneDepth:   100,
+			RuneStaked:  100,
+			Units:       100,
+			DateCreated: stakeBnbEvent0.Time.UTC(),
+			StakeCount:  1,
+		},
+	})
+	swap := models.EventSwap{
+		Event: models.Event{
+			Time:   time.Now(),
+			ID:     8,
+			Status: "Success",
+			Height: 7,
+			Type:   "swap",
+			InTx: common.Tx{
+				ID:          "03C504F33803133740FD6C23998CA612FBA2F3429D7171768A9BA507AA1024C7",
+				Chain:       "BNB",
+				FromAddress: "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+				ToAddress:   "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+				Coins: []common.Coin{
+					{
+						Asset: common.Asset{
+							Chain:  "BNB",
+							Symbol: "RUNE-B1A",
+							Ticker: "RUNE",
+						},
+						Amount: 200000000,
+					},
+				},
+				Memo: "swap:BNB.BNB",
+			},
+			OutTxs: []common.Tx{
+				{
+					ID:          "B4AD548D317741A767E64D900A7CEA61DB0C3B35A6B2BDBCB7445D1EFC0DDF96",
+					Chain:       "BNB",
+					FromAddress: "bnb1llvmhawaxxjchwmfmj8fjzftvwz4jpdhapp5hr",
+					ToAddress:   "bnb1xlvns0n2mxh77mzaspn2hgav4rr4m8eerfju38",
+					Coins: []common.Coin{
+						{
+							Asset: common.Asset{
+								Chain:  "BNB",
+								Symbol: "BNB",
+								Ticker: "BNB",
+							},
+							Amount: 20000000,
+						},
+					},
+					Memo: "OUTBOUND:C64D131EC9887650A623BF21ADB9F35812BF043EDF19CA5FBE2C9D254964E67",
+				},
+			},
+		},
+		Pool: common.Asset{
+			Chain:  "BNB",
+			Symbol: "BNB",
+			Ticker: "BNB",
+		},
+		PriceTarget:  124958592,
+		TradeSlip:    1230,
+		LiquidityFee: 7463556,
+	}
+	swap.OutTxs[0].Coins[0].Amount = 1
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:        common.BNBAsset,
+			AssetDepth:   9,
+			AssetStaked:  10,
+			RuneDepth:    200000100,
+			RuneStaked:   100,
+			Units:        100,
+			DateCreated:  stakeBnbEvent0.Time.UTC(),
+			StakeCount:   1,
+			BuyVolume:    1,
+			BuySlipTotal: 0.123,
+			BuyFeesTotal: 7463556,
+			BuyCount:     1,
+			Volume24:     200000000,
+		},
+	})
+
+	swap.Event.Type = "doubleSwap"
+	err = s.Store.CreateSwapRecord(&swap)
+	c.Assert(err, IsNil)
+	s.Store.fetchAllPoolsVolume24()
+	c.Assert(s.Store.pools, helpers.DeepEquals, map[string]*models.PoolBasics{
+		"BNB.BNB": {
+			Asset:        common.BNBAsset,
+			AssetDepth:   8,
+			AssetStaked:  10,
+			RuneDepth:    400000100,
+			RuneStaked:   100,
+			Units:        100,
+			DateCreated:  stakeBnbEvent0.Time.UTC(),
+			StakeCount:   1,
+			BuyVolume:    2,
+			BuySlipTotal: 0.246,
+			BuyFeesTotal: 14927112,
+			BuyCount:     2,
+			Volume24:     600000000,
+		},
+	})
 }
 
 func (s *TimeScaleSuite) TestFetchAllPoolsBalances(c *C) {

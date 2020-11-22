@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 
+	"github.com/jasonlvhit/gocron"
 	"gitlab.com/thorchain/midgard/internal/common"
 	"gitlab.com/thorchain/midgard/internal/config"
 	"gitlab.com/thorchain/midgard/internal/models"
@@ -55,10 +56,13 @@ func NewClient(cfg config.TimeScaleConfiguration) (*Client, error) {
 	if err := cli.deleteLatestBlock(); err != nil {
 		return nil, errors.Wrap(err, "failed to purge latest block records")
 	}
-
 	err = cli.initPoolCache()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not fetch initial pool depths")
+	}
+	err = cli.initCronJobs(cfg.CronJobConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not initialize cron jobs")
 	}
 	return cli, nil
 }
@@ -133,6 +137,149 @@ func (s *Client) queryTimestampInt64(sb *sqlbuilder.SelectBuilder, from, to *tim
 
 	err := row.Scan(&value)
 	return value.Int64, err
+}
+
+func (s *Client) initCronJobs(cronConfig config.StoreCronJobConfiguration) error {
+	err := gocron.Every(uint64(cronConfig.PoolEarningInterval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchAllPoolsEarning)
+	if err != nil {
+		return err
+	}
+	err = gocron.Every(uint64(cronConfig.Volume24Interval.Seconds())).Second().From(gocron.NextTick()).Do(s.fetchAllPoolsVolume24)
+	if err == nil {
+		gocron.Start()
+	}
+	return err
+}
+
+func (s *Client) fetchAllPoolsEarning() error {
+	earnings := make(map[string]*models.PoolBasics)
+	for _, basic := range s.pools {
+		totalEarnDetail, err := s.calcPoolEarnedDetails(basic.Asset, models.TotalEarned)
+		if err != nil {
+			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
+		}
+		lastMonthEarnDetail, err := s.calcPoolEarnedDetails(basic.Asset, models.LastMonthEarned)
+		if err != nil {
+			s.logger.Error().Err(err).Str("failed to get pool earning of %s", basic.Asset.String())
+		}
+
+		earnings[basic.Asset.String()] = &models.PoolBasics{
+			TotalEarnDetail:     totalEarnDetail,
+			LastMonthEarnDetail: lastMonthEarnDetail,
+		}
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, basic := range s.pools {
+		if _, exists := earnings[basic.Asset.String()]; exists {
+			basic.LastMonthEarnDetail = earnings[basic.Asset.String()].LastMonthEarnDetail
+			basic.TotalEarnDetail = earnings[basic.Asset.String()].TotalEarnDetail
+		}
+	}
+	return nil
+}
+
+func (s *Client) fetchAllPoolsVolume24() error {
+	volume24s := make(map[string]int64)
+	for _, basic := range s.pools {
+		volume24, err := s.calcPoolVolume24(basic.Asset)
+		if err != nil {
+			s.logger.Error().Err(err).Str("failed to get pool volume24 of %s", basic.Asset.String())
+		}
+		volume24s[basic.Asset.String()] = volume24
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, basic := range s.pools {
+		if _, exists := volume24s[basic.Asset.String()]; exists {
+			basic.Volume24 = volume24s[basic.Asset.String()]
+		}
+	}
+	return nil
+}
+
+// Calculate details for poolEarned for a pool from a specified date till now
+// assetEarned  = -gasUsed + buyFee + assetDonated
+// runeEarned = gasReplenished + reward + deficit + sellFee + runeDonated
+// poolEarned = assetEarned * Price + runeEarned
+func (s *Client) calcPoolEarnedDetails(asset common.Asset, duration models.EarnDuration) (models.PoolEarningDetail, error) {
+	from := time.Time{}
+	if duration == models.LastMonthEarned {
+		lastActiveDate, err := s.GetPoolLastEnabledDate(asset)
+		if err != nil {
+			return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+		}
+		if lastActiveDate.Before(time.Now().Add(-30 * 24 * time.Hour)) {
+			lastActiveDate = time.Now().Add(-30 * 24 * time.Hour)
+		}
+		from = lastActiveDate
+	}
+	stmnt := `
+		SELECT 
+		Sum(reward) FILTER (WHERE reward > 0), 
+		Sum(reward) FILTER (WHERE reward < 0),
+       	Sum(gas_used), 
+       	Sum(gas_replenished),
+       	Sum(asset_added),
+       	Sum(rune_added)
+		FROM   pool_changes_daily 
+		WHERE  pool = $1
+		AND    time >= $2`
+	var reward, deficit, gasUsed, gasReplenished, assetDonated, runeDonated sql.NullInt64
+	row := s.db.QueryRow(stmnt, asset.String(), from)
+
+	if err := row.Scan(&reward, &deficit, &gasUsed, &gasReplenished, &assetDonated, &runeDonated); err != nil {
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	buyFee, sellFee, err := s.getPoolLiquidityFee(asset, from)
+	if err != nil {
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	priceInRune, err := s.getPriceInRune(asset)
+	if err != nil {
+		return models.PoolEarningDetail{}, errors.Wrap(err, "GetPoolEarnedDetails failed")
+	}
+	assetEarned := -gasUsed.Int64 + buyFee + assetDonated.Int64
+	runeEarned := gasReplenished.Int64 + reward.Int64 + deficit.Int64 + sellFee + runeDonated.Int64
+	poolEarned := int64(float64(assetEarned)*priceInRune) + runeEarned
+	return models.PoolEarningDetail{
+		Reward:        reward.Int64,
+		Deficit:       deficit.Int64,
+		BuyFee:        int64(float64(buyFee) * priceInRune),
+		SellFee:       sellFee,
+		GasPaid:       gasUsed.Int64,
+		GasReimbursed: gasReplenished.Int64,
+		PoolFee:       int64(float64(buyFee)*priceInRune) + sellFee,
+		PoolEarned:    poolEarned,
+		AssetDonated:  assetDonated.Int64,
+		RuneDonated:   runeDonated.Int64,
+		PoolDonation:  int64(float64(assetDonated.Int64)*priceInRune) + runeDonated.Int64,
+		AssetEarned:   assetEarned,
+		RuneEarned:    runeEarned,
+		ActiveDays:    time.Now().Sub(from).Hours() / 24,
+		LastUpdate:    time.Now(),
+	}, nil
+}
+
+func (s *Client) calcPoolVolume24(pool common.Asset) (int64, error) {
+	stmnt := `
+		SELECT SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'swap'),
+		SUM(ABS(rune_amount)) FILTER (WHERE event_type = 'doubleSwap') 
+		FROM   pools_history 
+		WHERE  pool = $1 
+		AND event_type in ('swap', 'doubleSwap')
+		AND time BETWEEN $2 AND $3`
+	now := time.Now()
+	pastDay := now.Add(-time.Hour * 24)
+	var singleSwap, doubleSwap sql.NullInt64
+	row := s.db.QueryRow(stmnt, pool.String(), pastDay, now)
+
+	if err := row.Scan(&singleSwap, &doubleSwap); err != nil {
+		return 0, errors.Wrap(err, "calcPoolVolume24 failed")
+	}
+	return singleSwap.Int64 + doubleSwap.Int64*2, nil
 }
 
 func (s *Client) initPoolCache() error {

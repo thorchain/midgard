@@ -81,7 +81,6 @@ type NetworkInfo struct {
 
 	// (1 + (bondReward * blocksPerMonth/totalActiveBond)) ^ 12 -1
 	BondingAPY *string `json:"bondingAPY,omitempty"`
-	BondingROI *string `json:"bondingROI,omitempty"`
 
 	// (1 + (stakeReward * blocksPerMonth/totalDepth of active pools)) ^ 12 -1
 	LiquidityAPY    *string `json:"liquidityAPY,omitempty"`
@@ -90,7 +89,6 @@ type NetworkInfo struct {
 	// The remaining time of pool activation (in blocks)
 	PoolActivationCountdown *int64  `json:"poolActivationCountdown,omitempty"`
 	PoolShareFactor         *string `json:"poolShareFactor,omitempty"`
-	StakingROI              *string `json:"stakingROI,omitempty"`
 
 	// Array of Standby Bonds
 	StandbyBonds *[]string `json:"standbyBonds,omitempty"`
@@ -192,9 +190,6 @@ type PoolDetail struct {
 	// Amount of pool asset balance changed by fee, gas and assset donation
 	AssetEarned *string `json:"assetEarned,omitempty"`
 
-	// Asset return on investment
-	AssetROI *string `json:"assetROI,omitempty"`
-
 	// Total Asset staked
 	AssetStakedTotal *string `json:"assetStakedTotal,omitempty"`
 
@@ -231,12 +226,6 @@ type PoolDetail struct {
 	// Total fees
 	PoolFeesTotal *string `json:"poolFeesTotal,omitempty"`
 
-	// Pool ROI (average of RUNE and Asset ROI)
-	PoolROI *string `json:"poolROI,omitempty"`
-
-	// Pool ROI over 12 months
-	PoolROI12 *string `json:"poolROI12,omitempty"`
-
 	// Average pool slip
 	PoolSlipAverage *string `json:"poolSlipAverage,omitempty"`
 
@@ -263,9 +252,6 @@ type PoolDetail struct {
 
 	// Amount of pool rune balance changed by fee,reward, deficit, gas and rune donation
 	RuneEarned *string `json:"runeEarned,omitempty"`
-
-	// RUNE return on investment
-	RuneROI *string `json:"runeROI,omitempty"`
 
 	// Total RUNE staked
 	RuneStakedTotal *string `json:"runeStakedTotal,omitempty"`
@@ -791,6 +777,13 @@ type GetTotalVolChangesParams struct {
 	To int64 `json:"to"`
 }
 
+// GetPoolsParams defines parameters for GetPools.
+type GetPoolsParams struct {
+
+	// Pool status
+	Status *string `json:"status,omitempty"`
+}
+
 // GetPoolsDetailsParams defines parameters for GetPoolsDetails.
 type GetPoolsDetailsParams struct {
 
@@ -858,7 +851,7 @@ type ServerInterface interface {
 	GetNodes(ctx echo.Context) error
 	// Get Asset Pools
 	// (GET /v1/pools)
-	GetPools(ctx echo.Context) error
+	GetPools(ctx echo.Context, params GetPoolsParams) error
 	// Get Pools Details
 	// (GET /v1/pools/detail)
 	GetPoolsDetails(ctx echo.Context, params GetPoolsDetailsParams) error
@@ -1063,8 +1056,17 @@ func (w *ServerInterfaceWrapper) GetNodes(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetPools(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPoolsParams
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", ctx.QueryParams(), &params.Status)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter status: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPools(ctx)
+	err = w.Handler.GetPools(ctx, params)
 	return err
 }
 
@@ -1432,4 +1434,3 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
-

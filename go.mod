@@ -15,6 +15,7 @@ require (
 	github.com/google/go-cmp v0.5.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/huandu/go-sqlbuilder v1.7.0
+	github.com/jasonlvhit/gocron v0.0.1
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/lib/pq v1.2.0
